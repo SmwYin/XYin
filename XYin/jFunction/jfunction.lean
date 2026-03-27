@@ -1769,6 +1769,7 @@ lemma j_cuspFunction_notAnalytic : ¬ AnalyticAt ℂ (cuspFunction 1 j) 0 := by
   have : (1 : ℂ) = 0 := tendsto_nhds_unique hqj_tendsto_one hqj_tendsto_zero
   exact one_ne_zero this
 
+/-
 noncomputable def jFunction : MeromorphicCuspFunction 1 where
   toFun := j
   width_pos := by norm_num
@@ -1863,3 +1864,4 @@ theorem jLaurentqExpansion_three : (laurentqExpansion 1 jFunction).coeff 3 = 864
               (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := jFunction) 4)
     _ = (qExpansion 1 qj).coeff 4 := by rw [jFunction_to_qExpansion]
     _ = 864299970 := qj_exp_four
+-/

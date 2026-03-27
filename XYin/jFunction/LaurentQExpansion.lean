@@ -294,3 +294,7 @@ lemma analyticAt_cuspFunction_poleRemoved (h : ℝ) (f : ℍ → ℂ)
           simpa using (tendsto_const_nhds.mono_left nhdsWithin_le_nhds).limUnder_eq
     exact analyticAt_const.congr
       (eventuallyEq_nhds_of_eventuallyEq_nhdsNE hconst hF0eq).symm
+
+lemma analyticAt_iff (h : ℝ) (f : ℍ → ℂ) :
+    AnalyticAt ℂ (cuspFunction h f) 0 ↔ poleOrder h f = 0 := by
+  sorry
