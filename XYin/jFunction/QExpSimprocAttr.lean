@@ -1,0 +1,4 @@
+import Mathlib.Tactic.Attr.Register
+
+register_simp_attr _q_exp_internal
+register_simp_attr _powerSeries_coeff_internal

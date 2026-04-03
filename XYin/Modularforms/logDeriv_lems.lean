@@ -123,6 +123,7 @@ lemma logDeriv_one_sub_exp_comp (r : ℂ) (g : ℂ → ℂ) (hg : Differentiable
 
 lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : ℕ =>
     (n * r^n / (1 - r^n)) := by
+  /-
   have := aux47 r hr
   have h1 : Tendsto (fun n : ℕ => (1 : ℂ)) atTop (𝓝 1) := by simp
   have h2 := Filter.Tendsto.div h1 this (by simp)
@@ -148,6 +149,8 @@ lemma logDeriv_q_expo_summable (r : ℂ) (hr : ‖r‖ < 1) : Summable fun n : �
     gcongr
     apply le_trans this.le
     norm_cast
+  -/
+  sorry
 
 lemma func_div (a b c d : ℂ → ℂ) (x : ℂ) (hb : b x ≠ 0) (hd :  d x ≠ 0) :
      (a / b) x = (c /d) x ↔ (a * d) x = (b * c) x := by

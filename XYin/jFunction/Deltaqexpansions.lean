@@ -320,13 +320,31 @@ lemma Deltaaux : qExpansion 1 Delta = (1/1728 : ℂ) • qExpansion 1 (E4 ^ 3 - 
   have hfun : (⇑H : ℍ → ℂ) = (⇑E4 ^ 3 - ⇑E6 ^ 2) := by
     rw [hH]
     ext z
-    simp only [DirectSum.sub_apply, pow_three, DirectSum.of_mul_of, Int.reduceAdd,
-      DirectSum.of_eq_same, pow_two, sub_apply, Nat.cast_ofNat, E4, E6, Pi.sub_apply, Pi.mul_apply]
-    have h6 : (GradedMonoid.GMul.mul E6 E6) z = E6 z * E6 z := by rfl
-    have h4a : (GradedMonoid.GMul.mul E4 (GradedMonoid.GMul.mul E4 E4)) z =
-        E4 z * (GradedMonoid.GMul.mul E4 E4) z := by rfl
-    have h4b : (GradedMonoid.GMul.mul E4 E4) z = E4 z * E4 z := by rfl
-    rw [h6, h4a, h4b]
+    rw [pow_three, pow_two, DirectSum.of_mul_of, DirectSum.of_mul_of, DirectSum.of_mul_of]
+    have h448 : (4 + (4 + 4) : ℤ) = 12 := by norm_num
+    have h66 : (6 + 6 : ℤ) = 12 := by norm_num
+    have hmain :
+        (((DirectSum.of (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
+                (CongruenceSubgroup.Gamma 1))) 12)
+              (GradedMonoid.GMul.mul E4 (GradedMonoid.GMul.mul E4 E4)) -
+            (DirectSum.of (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
+                (CongruenceSubgroup.Gamma 1))) 12)
+              (GradedMonoid.GMul.mul E6 E6))
+          12)
+        z =
+      (⇑E4 ^ 3 - ⇑E6 ^ 2) z := by
+      simp only [DirectSum.sub_apply, DirectSum.of_eq_same, E4, E6]
+      change (GradedMonoid.GMul.mul E4 (GradedMonoid.GMul.mul E4 E4)) z -
+          (GradedMonoid.GMul.mul E6 E6) z =
+        (⇑E4 ^ 3 - ⇑E6 ^ 2) z
+      have h6 : (GradedMonoid.GMul.mul E6 E6) z = E6 z * E6 z := by rfl
+      have h4a : (GradedMonoid.GMul.mul E4 (GradedMonoid.GMul.mul E4 E4)) z =
+          E4 z * (GradedMonoid.GMul.mul E4 E4) z := by rfl
+      have h4b : (GradedMonoid.GMul.mul E4 E4) z = E4 z * E4 z := by rfl
+      rw [h6, h4a, h4b]
+      simp only [Pi.sub_apply, Pi.pow_apply]
+      ring
+    simpa [h448, h66] using hmain
   calc
   _ = (1 / 1728 : ℂ) • qExpansion 1 ⇑H := hsmul
   _ = _ := by simp [hfun]

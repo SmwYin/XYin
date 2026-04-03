@@ -28,7 +28,7 @@ instance (priority := 100) MeromorphicCuspFunction.funLike :
   coe := MeromorphicCuspFunction.toFun
   coe_injective' f g h := by cases f; cases g; congr
 
-def MeromorphicCuspFunction.Simps.coe (f : MeromorphicCuspFunction h) : ℍ → ℂ := f
+def MeromorphicCuspFunction.Simps.coe (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) : ℍ → ℂ := f
 
 initialize_simps_projections MeromorphicCuspFunction (toFun → coe, as_prefix coe)
 
@@ -45,7 +45,7 @@ theorem MeromorphicCuspFunction.ext {f g : MeromorphicCuspFunction h} (hfg : ∀
     f = g :=
   DFunLike.ext f g hfg
 
-protected def MeromorphicCuspFunction.copy (f : MeromorphicCuspFunction h) (f' : ℍ → ℂ)
+protected def MeromorphicCuspFunction.copy (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (f' : ℍ → ℂ)
     (h0 : f' = ⇑f) : MeromorphicCuspFunction h where
   toFun := f'
   width_pos := f.width_pos
@@ -77,7 +77,7 @@ lemma cuspFunction_qpow_mul_eq (hh : 0 < h) (f : ℍ → ℂ)
     _ = q ^ n * f (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := by simp [hqparam]
     _ = q ^ n * cuspFunction h f q := by simp [hright]
 
-lemma MeromorphicCuspFunction.cuspFunction_qpow_mul_eq (f : MeromorphicCuspFunction h)
+lemma MeromorphicCuspFunction.cuspFunction_qpow_mul_eq (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ))
     {n : ℕ} {q : ℂ} (hq0 : q ≠ 0) (hqnorm : ‖q‖ < 1) :
     cuspFunction h (fun τ ↦ (𝕢 h τ) ^ n * f τ) q = q ^ n * cuspFunction h f q := by
   simpa using _root_.cuspFunction_qpow_mul_eq f.width_pos (f := (f : ℍ → ℂ))
@@ -201,11 +201,11 @@ lemma cuspFunction_meromorphicAt_to_analyticAt (hh : 0 < h) (f : ℍ → ℂ)
 
 open MeromorphicCuspFunction
 
-lemma MeromorphicCuspFunction.poleOrder_to_analyticAt (f : MeromorphicCuspFunction h) :
+lemma MeromorphicCuspFunction.poleOrder_to_analyticAt (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
     ∃ (M : ℕ), AnalyticAt ℂ (cuspFunction h (fun τ ↦ (𝕢 h τ) ^ M * f τ)) (0 : ℂ) :=
   cuspFunction_meromorphicAt_to_analyticAt f.width_pos (f : ℍ → ℂ) f.meromorphicAtZero
 
-def MeromorphicCuspFunction.poleOrder (f : MeromorphicCuspFunction h) : ℕ := by
+def MeromorphicCuspFunction.poleOrder (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) : ℕ := by
   classical
   exact Nat.find (poleOrder_to_analyticAt f)
 
@@ -214,8 +214,8 @@ def MeromorphicCuspFunction.poleOrder' (f : ℍ → ℂ) : ℕ :=
     Int.natAbs ((meromorphicOrderAt (cuspFunction h f) 0).untopD 0)
   else 0
 
-lemma MeromorphicCuspFunction.AnalyticAt_iff (f : MeromorphicCuspFunction h) :
-    AnalyticAt ℂ (cuspFunction h f) 0 ↔ f.poleOrder = 0 := by
+lemma MeromorphicCuspFunction.AnalyticAt_iff (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
+    AnalyticAt ℂ (cuspFunction h f) 0 ↔ poleOrder h f = 0 := by
   classical
   constructor
   · intro han
@@ -225,7 +225,7 @@ lemma MeromorphicCuspFunction.AnalyticAt_iff (f : MeromorphicCuspFunction h) :
     have hmin :
         Nat.find (MeromorphicCuspFunction.poleOrder_to_analyticAt f) ≤ 0 :=
       Nat.find_min' (MeromorphicCuspFunction.poleOrder_to_analyticAt f) hzero
-    have hmin' : f.poleOrder ≤ 0 := by
+    have hmin' : poleOrder h f ≤ 0 := by
       simpa [MeromorphicCuspFunction.poleOrder] using hmin
     exact Nat.le_zero.mp hmin'
   · intro h0
@@ -235,83 +235,83 @@ lemma MeromorphicCuspFunction.AnalyticAt_iff (f : MeromorphicCuspFunction h) :
     rw [hm] at han
     simpa using han
 
-def MeromorphicCuspFunction.to_analyticAt (f : MeromorphicCuspFunction h) : ℍ → ℂ :=
-  fun τ ↦ (𝕢 h τ) ^ (f.poleOrder) * f τ
+def MeromorphicCuspFunction.to_analyticAt (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) : ℍ → ℂ :=
+  fun τ ↦ (𝕢 h τ) ^ (poleOrder h f) * f τ
 
-def MeromorphicCuspFunction.to_qExpansion (f : MeromorphicCuspFunction h) : PowerSeries ℂ :=
-  qExpansion h (f.to_analyticAt)
+def MeromorphicCuspFunction.to_qExpansion (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) : PowerSeries ℂ :=
+  qExpansion h ((poleRemoved h f))
 
-def laurentqExpansion (h : ℝ) (f : MeromorphicCuspFunction h) : LaurentSeries ℂ :=
-  HahnSeries.single (-(f.poleOrder : ℤ)) 1 * (HahnSeries.ofPowerSeries ℤ ℂ)
-    (f.to_qExpansion)
+def laurentqExpansion (h : ℝ) (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) : LaurentSeries ℂ :=
+  HahnSeries.single (-(poleOrder h f : ℤ)) 1 * (HahnSeries.ofPowerSeries ℤ ℂ)
+    (to_qExpansion h f)
 
-lemma laurentqExpansion.coeff_eq_HahnSeries_add (f : MeromorphicCuspFunction h) {n : ℤ} :
+lemma laurentqExpansion.coeff_eq_HahnSeries_add (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) {n : ℤ} :
     (laurentqExpansion h f).coeff n =
-    ((HahnSeries.ofPowerSeries ℤ ℂ) (f.to_qExpansion)).coeff (n + f.poleOrder) := by
+    ((HahnSeries.ofPowerSeries ℤ ℂ) (to_qExpansion h f)).coeff (n + poleOrder h f) := by
   rw [laurentqExpansion]
   simpa [poleOrder, sub_eq_add_neg] using
     (HahnSeries.coeff_single_mul
       (r := (1 : ℂ))
-      (x := (HahnSeries.ofPowerSeries ℤ ℂ) (f.to_qExpansion))
-      (a := n) (b := -f.poleOrder))
+      (x := (HahnSeries.ofPowerSeries ℤ ℂ) (to_qExpansion h f))
+      (a := n) (b := -poleOrder h f))
 
-lemma laurentqExpansion.coeff_eq_zero_of_lt (f : MeromorphicCuspFunction h) {n : ℤ}
-    (hn : n < -(f.poleOrder : ℤ)) : (laurentqExpansion h f).coeff n = 0 := by
-  let m : ℤ := f.poleOrder
+lemma laurentqExpansion.coeff_eq_zero_of_lt (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) {n : ℤ}
+    (hn : n < -(poleOrder h f : ℤ)) : (laurentqExpansion h f).coeff n = 0 := by
+  let m : ℤ := poleOrder h f
   have hneg : n + m < 0 := by
     linarith
   simpa [laurentqExpansion.coeff_eq_HahnSeries_add, m, hneg]
-    using (PowerSeries.coeff_coe (f := f.to_qExpansion) (i := n + m))
+    using (PowerSeries.coeff_coe (f := to_qExpansion h f) (i := n + m))
 
-lemma laurentqExpansion.coeff_neg_poleOrder_add (f : MeromorphicCuspFunction h) (n : ℕ) :
-    (laurentqExpansion h f).coeff (-(f.poleOrder : ℤ) + n) = (f.to_qExpansion).coeff n := by
+lemma laurentqExpansion.coeff_neg_poleOrder_add (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (n : ℕ) :
+    (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ) + n) = (to_qExpansion h f).coeff n := by
   have hnonneg : (0 : ℤ) ≤ n := by
     exact_mod_cast Nat.zero_le n
   have hnotneg : ¬ ((n : ℤ) < 0) := not_lt_of_ge hnonneg
   calc
-    (laurentqExpansion h f).coeff (-(f.poleOrder : ℤ) + n)
-        = ((HahnSeries.ofPowerSeries ℤ ℂ) (f.to_qExpansion)).coeff (n : ℤ) := by
+    (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ) + n)
+        = ((HahnSeries.ofPowerSeries ℤ ℂ) (to_qExpansion h f)).coeff (n : ℤ) := by
             simp [laurentqExpansion.coeff_eq_HahnSeries_add]
-    _ = (f.to_qExpansion).coeff n := by
-          rw [PowerSeries.coeff_coe (f := f.to_qExpansion) (i := (n : ℤ))]
+    _ = (to_qExpansion h f).coeff n := by
+          rw [PowerSeries.coeff_coe (f := to_qExpansion h f) (i := (n : ℤ))]
           simp [hnotneg]
 
-lemma laurentqExpansion.coeff_of_geq (f : MeromorphicCuspFunction h) {n : ℤ}
-    (hn : n ≥ -(f.poleOrder : ℤ)) : (laurentqExpansion h f).coeff n
-    = (f.to_qExpansion).coeff (Int.toNat (n + f.poleOrder)) := by
-  have hnonneg : 0 ≤ n + f.poleOrder := by
+lemma laurentqExpansion.coeff_of_geq (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) {n : ℤ}
+    (hn : n ≥ -(poleOrder h f : ℤ)) : (laurentqExpansion h f).coeff n
+    = (to_qExpansion h f).coeff (Int.toNat (n + poleOrder h f)) := by
+  have hnonneg : 0 ≤ n + poleOrder h f := by
     linarith
   have hrewrite :
-      (-(f.poleOrder : ℤ) + Int.toNat (n + f.poleOrder) : ℤ) = n := by
+      (-(poleOrder h f : ℤ) + Int.toNat (n + poleOrder h f) : ℤ) = n := by
     rw [Int.toNat_of_nonneg hnonneg]
     linarith
   calc
     (laurentqExpansion h f).coeff n
         = (laurentqExpansion h f).coeff
-            (-(f.poleOrder : ℤ) + Int.toNat (n + f.poleOrder)) := by
+            (-(poleOrder h f : ℤ) + Int.toNat (n + poleOrder h f)) := by
                 conv_lhs => rw [hrewrite.symm]
-    _ = (f.to_qExpansion).coeff (Int.toNat (n + f.poleOrder)) :=
-          laurentqExpansion.coeff_neg_poleOrder_add (h := h) f (Int.toNat (n + f.poleOrder))
+    _ = (to_qExpansion h f).coeff (Int.toNat (n + poleOrder h f)) :=
+          laurentqExpansion.coeff_neg_poleOrder_add (h := h) f (Int.toNat (n + poleOrder h f))
 
-lemma laurentqExpansion.coeff_of_qExpansion (f : MeromorphicCuspFunction h) (n : ℤ) :
-    (laurentqExpansion h f).coeff n = if n < -(f.poleOrder : ℤ) then 0
-    else (f.to_qExpansion).coeff (Int.toNat (n + f.poleOrder))
+lemma laurentqExpansion.coeff_of_qExpansion (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (n : ℤ) :
+    (laurentqExpansion h f).coeff n = if n < -(poleOrder h f : ℤ) then 0
+    else (to_qExpansion h f).coeff (Int.toNat (n + poleOrder h f))
     := by
-  by_cases hlt : n < -(f.poleOrder : ℤ)
+  by_cases hlt : n < -(poleOrder h f : ℤ)
   · simp [hlt, laurentqExpansion.coeff_eq_zero_of_lt (h := h) f hlt]
   · simp [hlt, laurentqExpansion.coeff_of_geq (h := h) f (hn := le_of_not_gt hlt)]
 
-lemma laurentqExpansion.coeff_neg_poleOrder (f : MeromorphicCuspFunction h) :
-    (laurentqExpansion h f).coeff (-(f.poleOrder : ℤ)) = (f.to_qExpansion).coeff 0 := by
+lemma laurentqExpansion.coeff_neg_poleOrder (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
+    (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ)) = (to_qExpansion h f).coeff 0 := by
   simp [laurentqExpansion.coeff_of_qExpansion]
 
-lemma laurentqExpansion.coeff_zero (f : MeromorphicCuspFunction h) :
-    (laurentqExpansion h f).coeff 0 = (f.to_qExpansion).coeff f.poleOrder := by
+lemma laurentqExpansion.coeff_zero (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
+    (laurentqExpansion h f).coeff 0 = (to_qExpansion h f).coeff poleOrder h f := by
   simp [laurentqExpansion.coeff_of_qExpansion]
 
 --需化简
-lemma MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne (f : MeromorphicCuspFunction h)
-    (h0 : f.poleOrder ≠ 0) : (f.to_qExpansion).coeff 0 ≠ 0 := by
+lemma MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ))
+    (h0 : poleOrder h f ≠ 0) : (to_qExpansion h f).coeff 0 ≠ 0 := by
   classical
   rcases Nat.exists_eq_succ_of_ne_zero h0 with ⟨m, hm⟩
   let F : ℂ → ℂ := cuspFunction h (fun τ ↦ (𝕢 h τ) ^ (m + 1) * f τ)
@@ -336,12 +336,12 @@ lemma MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne (f : MeromorphicCuspFu
     exact (MeromorphicAt.meromorphicAt_congr hFG).2 hGmer
   by_contra hcoeff0
   have hF0 : F 0 = 0 := by
-    have hcoeff0' : cuspFunction h f.to_analyticAt 0 = 0 := by
+    have hcoeff0' : cuspFunction h (poleRemoved h f) 0 = 0 := by
       simpa [MeromorphicCuspFunction.to_qExpansion, qExpansion_coeff] using hcoeff0
-    have hFdef : F = cuspFunction h f.to_analyticAt := by
+    have hFdef : F = cuspFunction h (poleRemoved h f) := by
       funext q
       change cuspFunction h (fun τ ↦ (𝕢 h τ) ^ (m + 1) * f τ) q =
-        cuspFunction h (fun τ ↦ (𝕢 h τ) ^ f.poleOrder * f τ) q
+        cuspFunction h (fun τ ↦ (𝕢 h τ) ^ poleOrder h f * f τ) q
       simp [hm]
     exact hFdef.symm ▸ hcoeff0'
   have hFtend : Tendsto F (nhdsWithin (0 : ℂ) ({0}ᶜ)) (nhds (0 : ℂ)) := by
@@ -415,32 +415,32 @@ lemma MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne (f : MeromorphicCuspFu
       rw [continuousAt_iff_punctured_nhds, hH0]
       exact hc
     exact hHmer.analyticAt hHcont
-  have hmin : f.poleOrder ≤ m := Nat.find_min'
+  have hmin : poleOrder h f ≤ m := Nat.find_min'
     (MeromorphicCuspFunction.poleOrder_to_analyticAt f) (by simpa [H] using hHan)
   rw [hm] at hmin
   exact Nat.not_succ_le_self m hmin
 
-lemma MeromorphicCuspFunction.to_qExpansion_ne_zero (f : MeromorphicCuspFunction h)
-    (h0 : f.poleOrder ≠ 0) : f.to_qExpansion ≠ 0 := by
+lemma MeromorphicCuspFunction.to_qExpansion_ne_zero (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ))
+    (h0 : poleOrder h f ≠ 0) : to_qExpansion h f ≠ 0 := by
   intro hq
   have hcoeff := MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne f h0
   simp [hq] at hcoeff
 
 lemma MeromorphicCuspFunction.meromorphicOrderAt_cuspFunction_eq_neg_poleOrder
-    (f : MeromorphicCuspFunction h) (h0 : f.poleOrder ≠ 0) :
-    meromorphicOrderAt (cuspFunction h f) 0 = -(f.poleOrder : ℤ) := by
+    (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (h0 : poleOrder h f ≠ 0) :
+    meromorphicOrderAt (cuspFunction h f) 0 = -(poleOrder h f : ℤ) := by
   classical
-  let G : ℂ → ℂ := cuspFunction h f.to_analyticAt
+  let G : ℂ → ℂ := cuspFunction h (poleRemoved h f)
   have hGan : AnalyticAt ℂ G 0 := by
     simpa [G, MeromorphicCuspFunction.to_analyticAt, MeromorphicCuspFunction.poleOrder] using
       Nat.find_spec (MeromorphicCuspFunction.poleOrder_to_analyticAt f)
   have hG0 : G 0 ≠ 0 := by
-    have hcoeff0 : (f.to_qExpansion).coeff 0 ≠ 0 :=
+    have hcoeff0 : (to_qExpansion h f).coeff 0 ≠ 0 :=
       MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne f h0
     simpa [G, MeromorphicCuspFunction.to_qExpansion, qExpansion_coeff] using hcoeff0
   refine
     (meromorphicOrderAt_eq_int_iff
-      (f := cuspFunction h (f : ℍ → ℂ)) (x := 0) (n := -(f.poleOrder : ℤ))
+      (f := cuspFunction h (f : ℍ → ℂ)) (x := 0) (n := -(poleOrder h f : ℤ))
       f.meromorphicAtZero).2 ?_
   refine ⟨G, hGan, hG0, ?_⟩
   have hnorm0 : {q : ℂ | ‖q‖ < 1} ∈ nhds (0 : ℂ) := by
@@ -449,23 +449,23 @@ lemma MeromorphicCuspFunction.meromorphicOrderAt_cuspFunction_eq_neg_poleOrder
     nhdsWithin_le_nhds hnorm0
   filter_upwards [hnorm, self_mem_nhdsWithin] with q hqnorm hq
   have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hq
-  have hshift : G q = q ^ f.poleOrder * cuspFunction h f q := by
+  have hshift : G q = q ^ poleOrder h f * cuspFunction h f q := by
     simpa [G, MeromorphicCuspFunction.to_analyticAt] using
-      (f.cuspFunction_qpow_mul_eq (n := f.poleOrder) hq0 hqnorm)
-  have hpow_ne : (q ^ f.poleOrder : ℂ) ≠ 0 := pow_ne_zero _ hq0
+      (f.cuspFunction_qpow_mul_eq (n := poleOrder h f) hq0 hqnorm)
+  have hpow_ne : (q ^ poleOrder h f : ℂ) ≠ 0 := pow_ne_zero _ hq0
   calc
-    cuspFunction h f q = (q ^ f.poleOrder)⁻¹ * (q ^ f.poleOrder * cuspFunction h f q) := by
+    cuspFunction h f q = (q ^ poleOrder h f)⁻¹ * (q ^ poleOrder h f * cuspFunction h f q) := by
       rw [← mul_assoc, inv_mul_cancel₀ hpow_ne, one_mul]
-    _ = (q ^ f.poleOrder)⁻¹ * G q := by rw [← hshift]
-    _ = q ^ (-(f.poleOrder : ℤ)) * G q := by
+    _ = (q ^ poleOrder h f)⁻¹ * G q := by rw [← hshift]
+    _ = q ^ (-(poleOrder h f : ℤ)) * G q := by
       rw [← zpow_natCast]
       simp
-    _ = (q - 0) ^ (-(f.poleOrder : ℤ)) • G q := by
+    _ = (q - 0) ^ (-(poleOrder h f : ℤ)) • G q := by
       simp [sub_zero, smul_eq_mul]
 
-theorem order (f : MeromorphicCuspFunction h) :
-    f.poleOrder = Int.toNat (-(meromorphicOrderAt (cuspFunction h f) 0).untopD 0) := by
-  by_cases h0 : f.poleOrder = 0
+theorem order (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
+    poleOrder h f = Int.toNat (-(meromorphicOrderAt (cuspFunction h f) 0).untopD 0) := by
+  by_cases h0 : poleOrder h f = 0
   · rw [h0]
     have han : AnalyticAt ℂ (cuspFunction h f) 0 :=
       (MeromorphicCuspFunction.AnalyticAt_iff f).2 h0
@@ -479,90 +479,90 @@ theorem order (f : MeromorphicCuspFunction h) :
         have hnonpos : -n ≤ 0 := by linarith
         rw [WithTop.untopD_coe, Int.toNat_of_nonpos hnonpos]
   · rw [MeromorphicCuspFunction.meromorphicOrderAt_cuspFunction_eq_neg_poleOrder f h0]
-    have hnonneg : 0 ≤ (f.poleOrder : ℤ) := by
-      exact_mod_cast Nat.zero_le f.poleOrder
-    change f.poleOrder = Int.toNat (-WithTop.untopD 0 ((-(f.poleOrder : ℤ)) : WithTop ℤ))
-    have huntop : WithTop.untopD 0 ((-(f.poleOrder : ℤ)) : WithTop ℤ) = -(f.poleOrder : ℤ) := by
-      simpa using (WithTop.untopD_coe (d := (0 : ℤ)) (x := (-(f.poleOrder : ℤ))))
-    have harg : -WithTop.untopD 0 ((-(f.poleOrder : ℤ)) : WithTop ℤ) = (f.poleOrder : ℤ) := by
+    have hnonneg : 0 ≤ (poleOrder h f : ℤ) := by
+      exact_mod_cast Nat.zero_le poleOrder h f
+    change poleOrder h f = Int.toNat (-WithTop.untopD 0 ((-(poleOrder h f : ℤ)) : WithTop ℤ))
+    have huntop : WithTop.untopD 0 ((-(poleOrder h f : ℤ)) : WithTop ℤ) = -(poleOrder h f : ℤ) := by
+      simpa using (WithTop.untopD_coe (d := (0 : ℤ)) (x := (-(poleOrder h f : ℤ))))
+    have harg : -WithTop.untopD 0 ((-(poleOrder h f : ℤ)) : WithTop ℤ) = (poleOrder h f : ℤ) := by
       simpa using congrArg Neg.neg huntop
     rw [harg]
-    have hnat : ((f.poleOrder : ℤ).toNat) = f.poleOrder := by
+    have hnat : ((poleOrder h f : ℤ).toNat) = poleOrder h f := by
       exact_mod_cast (Int.toNat_of_nonneg hnonneg)
     exact hnat.symm
 
-lemma laurentqExpansion.ne_zero (f : MeromorphicCuspFunction h) (h0 : f.poleOrder ≠ 0) :
+lemma laurentqExpansion.ne_zero (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (h0 : poleOrder h f ≠ 0) :
     laurentqExpansion h f ≠ 0 := by
   rw [laurentqExpansion]
   refine mul_ne_zero ?_ ?_
   · exact HahnSeries.single_ne_zero one_ne_zero
   · intro hq
-    have hq' : (HahnSeries.ofPowerSeries ℤ ℂ) (f.to_qExpansion) =
+    have hq' : (HahnSeries.ofPowerSeries ℤ ℂ) (to_qExpansion h f) =
         (HahnSeries.ofPowerSeries ℤ ℂ) 0 := by
       simpa using hq
     exact MeromorphicCuspFunction.to_qExpansion_ne_zero f h0
       (HahnSeries.ofPowerSeries_injective hq')
 
-lemma laurentqExpansion.poleOrder_to_order (f : MeromorphicCuspFunction h)
-    (h0 : f.poleOrder ≠ 0) : f.poleOrder = -(laurentqExpansion h f).order := by
+lemma laurentqExpansion.poleOrder_to_order (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ))
+    (h0 : poleOrder h f ≠ 0) : poleOrder h f = -(laurentqExpansion h f).order := by
   have hcoeff :
-      (laurentqExpansion h f).coeff (-(f.poleOrder : ℤ)) ≠ 0 := by
+      (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ)) ≠ 0 := by
     simpa [laurentqExpansion.coeff_neg_poleOrder] using
       (MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne f h0)
-  have horder_le : (laurentqExpansion h f).order ≤ -(f.poleOrder : ℤ) :=
+  have horder_le : (laurentqExpansion h f).order ≤ -(poleOrder h f : ℤ) :=
     HahnSeries.order_le_of_coeff_ne_zero hcoeff
-  have horder_ge : -(f.poleOrder : ℤ) ≤ (laurentqExpansion h f).order := by
+  have horder_ge : -(poleOrder h f : ℤ) ≤ (laurentqExpansion h f).order := by
     by_contra hlt
     have hzero :
         (laurentqExpansion h f).coeff (laurentqExpansion h f).order = 0 := by
       exact laurentqExpansion.coeff_eq_zero_of_lt f (lt_of_not_ge hlt)
     exact (HahnSeries.coeff_order_eq_zero.not.2 (laurentqExpansion.ne_zero f h0)) hzero
-  have horder : (laurentqExpansion h f).order = -(f.poleOrder : ℤ) :=
+  have horder : (laurentqExpansion h f).order = -(poleOrder h f : ℤ) :=
     le_antisymm horder_le horder_ge
   simpa using (congrArg Neg.neg horder).symm
 
-lemma laurentqExpansion.to_qExpansion_eq_powerSeriesPart (f : MeromorphicCuspFunction h)
-    (h0 : f.poleOrder ≠ 0) : f.to_qExpansion = (laurentqExpansion h f).powerSeriesPart := by
+lemma laurentqExpansion.to_qExpansion_eq_powerSeriesPart (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ))
+    (h0 : poleOrder h f ≠ 0) : to_qExpansion h f = (laurentqExpansion h f).powerSeriesPart := by
   ext n
   rw [LaurentSeries.powerSeriesPart_coeff]
-  have hm : (f.poleOrder : ℤ) = -(laurentqExpansion h f).order :=
+  have hm : (poleOrder h f : ℤ) = -(laurentqExpansion h f).order :=
     laurentqExpansion.poleOrder_to_order (h := h) f h0
-  have horder : (laurentqExpansion h f).order = -(f.poleOrder : ℤ) := by
+  have horder : (laurentqExpansion h f).order = -(poleOrder h f : ℤ) := by
     simpa using (congrArg Neg.neg hm).symm
   rw [horder]
   simpa using (laurentqExpansion.coeff_neg_poleOrder_add (h := h) f n).symm
 
-lemma laurentqExpansion.eq_qExpansion_iff (f : MeromorphicCuspFunction h) :
-    laurentqExpansion h f = qExpansion h f ↔ f.poleOrder = 0 := by
+lemma laurentqExpansion.eq_qExpansion_iff (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
+    laurentqExpansion h f = qExpansion h f ↔ poleOrder h f = 0 := by
   constructor
   · intro heq
     by_contra h0
     have hcoeff :
-        (laurentqExpansion h f).coeff (-(f.poleOrder : ℤ)) ≠ 0 := by
+        (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ)) ≠ 0 := by
       simpa [laurentqExpansion.coeff_neg_poleOrder] using
         (MeromorphicCuspFunction.to_qExpansion_coeff_zero_ne f h0)
-    have hnatpos : 0 < f.poleOrder := Nat.pos_of_ne_zero h0
-    have hpos : 0 < (f.poleOrder : ℤ) := by
+    have hnatpos : 0 < poleOrder h f := Nat.pos_of_ne_zero h0
+    have hpos : 0 < (poleOrder h f : ℤ) := by
       exact_mod_cast hnatpos
-    have hneg : -(f.poleOrder : ℤ) < 0 := by
+    have hneg : -(poleOrder h f : ℤ) < 0 := by
       linarith
     have hqcoeff :
-        (qExpansion h f : LaurentSeries ℂ).coeff (-(f.poleOrder : ℤ)) = 0 := by
+        (qExpansion h f : LaurentSeries ℂ).coeff (-(poleOrder h f : ℤ)) = 0 := by
       simpa [hneg, hnatpos] using
-        (PowerSeries.coeff_coe (f := qExpansion h f) (i := -(f.poleOrder : ℤ)))
+        (PowerSeries.coeff_coe (f := qExpansion h f) (i := -(poleOrder h f : ℤ)))
     have hEqCoeff := congrArg
-      (fun g : LaurentSeries ℂ => g.coeff (-(f.poleOrder : ℤ))) heq
+      (fun g : LaurentSeries ℂ => g.coeff (-(poleOrder h f : ℤ))) heq
     have hEqCoeff' :
-        (laurentqExpansion h f).coeff (-(f.poleOrder : ℤ)) =
-          (qExpansion h f : LaurentSeries ℂ).coeff (-(f.poleOrder : ℤ)) := by
+        (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ)) =
+          (qExpansion h f : LaurentSeries ℂ).coeff (-(poleOrder h f : ℤ)) := by
       simpa using hEqCoeff
     rw [hqcoeff] at hEqCoeff'
     exact hcoeff hEqCoeff'
   · intro h0
-    have hfun : f.to_analyticAt = (f : ℍ → ℂ) := by
+    have hfun : (poleRemoved h f) = (f : ℍ → ℂ) := by
       funext τ
       simp [MeromorphicCuspFunction.to_analyticAt, h0]
-    have hqexp : f.to_qExpansion = qExpansion h f := by
+    have hqexp : to_qExpansion h f = qExpansion h f := by
       rw [MeromorphicCuspFunction.to_qExpansion, hfun]
     simp [laurentqExpansion, h0, hqexp]
 
@@ -585,33 +585,33 @@ lemma qExpansion_coeff_eq_circleIntegral_of_differentiableOn
           simp [smul_eq_mul, sub_zero, div_eq_inv_mul, mul_assoc, mul_left_comm, mul_comm]
 
 lemma MeromorphicCuspFunction.cuspFunction_to_analyticAt_meromorphicAt
-    (f : MeromorphicCuspFunction h) :
-    MeromorphicAt (cuspFunction h f.to_analyticAt) (0 : ℂ) := by
-  let G : ℂ → ℂ := fun q ↦ q ^ f.poleOrder * cuspFunction h f q
+    (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
+    MeromorphicAt (cuspFunction h (poleRemoved h f)) (0 : ℂ) := by
+  let G : ℂ → ℂ := fun q ↦ q ^ poleOrder h f * cuspFunction h f q
   have hGmer : MeromorphicAt G (0 : ℂ) := by
-    exact ((analyticAt_id.pow f.poleOrder).meromorphicAt.mul f.meromorphicAtZero)
+    exact ((analyticAt_id.pow poleOrder h f).meromorphicAt.mul f.meromorphicAtZero)
   have hnorm0 : {q : ℂ | ‖q‖ < 1} ∈ nhds (0 : ℂ) := by
     simpa [Metric.ball, dist_eq_norm] using (Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
   have hnorm : {q : ℂ | ‖q‖ < 1} ∈ nhdsWithin (0 : ℂ) ({0}ᶜ) :=
     nhdsWithin_le_nhds hnorm0
-  have hFG : cuspFunction h f.to_analyticAt =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)] G := by
+  have hFG : cuspFunction h (poleRemoved h f) =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)] G := by
     filter_upwards [hnorm, self_mem_nhdsWithin] with q hqnorm hq
     have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hq
     simpa [G, MeromorphicCuspFunction.to_analyticAt] using
-      (f.cuspFunction_qpow_mul_eq (n := f.poleOrder) hq0 hqnorm)
+      (f.cuspFunction_qpow_mul_eq (n := poleOrder h f) hq0 hqnorm)
   exact (MeromorphicAt.meromorphicAt_congr hFG).2 hGmer
 
 lemma MeromorphicCuspFunction.cuspFunction_to_analyticAt_analyticAt
-    (f : MeromorphicCuspFunction h) :
-    AnalyticAt ℂ (cuspFunction h f.to_analyticAt) (0 : ℂ) := by
+    (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
+    AnalyticAt ℂ (cuspFunction h (poleRemoved h f)) (0 : ℂ) := by
   classical
   simpa [MeromorphicCuspFunction.to_analyticAt, MeromorphicCuspFunction.poleOrder] using
     Nat.find_spec (MeromorphicCuspFunction.poleOrder_to_analyticAt f)
 
 lemma MeromorphicCuspFunction.exists_pos_lt_one_differentiableOn_closedBall_to_analyticAt
-    (f : MeromorphicCuspFunction h) :
+    (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
     ∃ R : ℝ, 0 < R ∧ R < 1 ∧
-      DifferentiableOn ℂ (cuspFunction h f.to_analyticAt) (Metric.closedBall 0 R) := by
+      DifferentiableOn ℂ (cuspFunction h (poleRemoved h f)) (Metric.closedBall 0 R) := by
   rcases (f.cuspFunction_to_analyticAt_analyticAt).exists_ball_analyticOnNhd with
       ⟨R0, hR0pos, hR0⟩
   let R : ℝ := min (R0 / 2) (1 / 2)
@@ -630,7 +630,7 @@ lemma MeromorphicCuspFunction.exists_pos_lt_one_differentiableOn_closedBall_to_a
   exact (hR0.analyticOn.differentiableOn).mono (Metric.closedBall_subset_ball hRltR0)
 
 lemma laurentqExpansion_coeff_eq_circleIntegral
-    (f : MeromorphicCuspFunction h) :
+    (h : ℝ) {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
     ∃ R : ℝ, 0 < R ∧ R < 1 ∧ ∀ n : ℤ,
       (laurentqExpansion h f).coeff n =
         ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h f z / z ^ (n + 1)) := by
@@ -638,14 +638,14 @@ lemma laurentqExpansion_coeff_eq_circleIntegral
       ⟨R, hRpos, hRlt1, hDiff⟩
   refine ⟨R, hRpos, hRlt1, ?_⟩
   intro n
-  by_cases hn : n < -(f.poleOrder : ℤ)
+  by_cases hn : n < -(poleOrder h f : ℤ)
   · have hcoeff0 : (laurentqExpansion h f).coeff n = 0 :=
       laurentqExpansion.coeff_eq_zero_of_lt (h := h) (f := f) hn
-    let k : ℕ := Int.toNat (-(n + f.poleOrder + 1))
-    let F : ℂ → ℂ := fun z ↦ z ^ k * cuspFunction h f.to_analyticAt z
-    have hk_nonneg : 0 ≤ -(n + f.poleOrder + 1) := by
+    let k : ℕ := Int.toNat (-(n + poleOrder h f + 1))
+    let F : ℂ → ℂ := fun z ↦ z ^ k * cuspFunction h (poleRemoved h f) z
+    have hk_nonneg : 0 ≤ -(n + poleOrder h f + 1) := by
       linarith
-    have hk : (k : ℤ) = -(n + f.poleOrder + 1) := by
+    have hk : (k : ℤ) = -(n + poleOrder h f + 1) := by
       simpa [k] using (Int.toNat_of_nonneg hk_nonneg)
     have hDiffF : DifferentiableOn ℂ F (Metric.closedBall (0 : ℂ) R) := by
       exact (differentiableOn_id.pow k).mul hDiff
@@ -669,35 +669,35 @@ lemma laurentqExpansion_coeff_eq_circleIntegral
           ‖z‖ = R := by simpa [Metric.mem_sphere, dist_eq_norm] using hz
           _ < 1 := hRlt1
       have hcf :
-          cuspFunction h f.to_analyticAt z = z ^ f.poleOrder * cuspFunction h f z := by
+          cuspFunction h (poleRemoved h f) z = z ^ poleOrder h f * cuspFunction h f z := by
         simpa [MeromorphicCuspFunction.to_analyticAt] using
-          (f.cuspFunction_qpow_mul_eq (n := f.poleOrder) hz0 hqnorm)
-      have hk0 : (k : ℤ) + (f.poleOrder : ℤ) + (n + 1) = 0 := by
+          (f.cuspFunction_qpow_mul_eq (n := poleOrder h f) hz0 hqnorm)
+      have hk0 : (k : ℤ) + (poleOrder h f : ℤ) + (n + 1) = 0 := by
         linarith [hk]
       exact (div_eq_iff (zpow_ne_zero (n + 1) hz0)).2 <| by
         simp only [F]
         rw [hcf, ← zpow_natCast, ← zpow_natCast]
         have haux :
-            (z ^ (k : ℤ) * (z ^ (f.poleOrder : ℤ) * cuspFunction h f z)) * z ^ (n + 1) =
+            (z ^ (k : ℤ) * (z ^ (poleOrder h f : ℤ) * cuspFunction h f z)) * z ^ (n + 1) =
               cuspFunction h f z := by
           calc
-            (z ^ (k : ℤ) * (z ^ (f.poleOrder : ℤ) * cuspFunction h f z)) * z ^ (n + 1)
-                = (z ^ (k : ℤ) * z ^ (f.poleOrder : ℤ) * z ^ (n + 1)) *
+            (z ^ (k : ℤ) * (z ^ (poleOrder h f : ℤ) * cuspFunction h f z)) * z ^ (n + 1)
+                = (z ^ (k : ℤ) * z ^ (poleOrder h f : ℤ) * z ^ (n + 1)) *
                     cuspFunction h f z := by
                       simp [mul_assoc, mul_left_comm, mul_comm]
-            _ = (z ^ ((k : ℤ) + (f.poleOrder : ℤ)) * z ^ (n + 1)) * cuspFunction h f z := by
+            _ = (z ^ ((k : ℤ) + (poleOrder h f : ℤ)) * z ^ (n + 1)) * cuspFunction h f z := by
                   have hkm :
-                      z ^ (k : ℤ) * z ^ (f.poleOrder : ℤ) =
-                        z ^ ((k : ℤ) + (f.poleOrder : ℤ)) := by
-                    simpa using (zpow_add₀ hz0 (k : ℤ) (f.poleOrder : ℤ)).symm
+                      z ^ (k : ℤ) * z ^ (poleOrder h f : ℤ) =
+                        z ^ ((k : ℤ) + (poleOrder h f : ℤ)) := by
+                    simpa using (zpow_add₀ hz0 (k : ℤ) (poleOrder h f : ℤ)).symm
                   simpa [mul_assoc, mul_left_comm, mul_comm] using
                     congrArg (fun t : ℂ => t * z ^ (n + 1) * cuspFunction h f z) hkm
-            _ = (z ^ ((k : ℤ) + (f.poleOrder : ℤ) + (n + 1))) * cuspFunction h f z := by
+            _ = (z ^ ((k : ℤ) + (poleOrder h f : ℤ) + (n + 1))) * cuspFunction h f z := by
                   have hkmn :
-                      z ^ ((k : ℤ) + (f.poleOrder : ℤ)) * z ^ (n + 1) =
-                        z ^ (((k : ℤ) + (f.poleOrder : ℤ)) + (n + 1)) := by
+                      z ^ ((k : ℤ) + (poleOrder h f : ℤ)) * z ^ (n + 1) =
+                        z ^ (((k : ℤ) + (poleOrder h f : ℤ)) + (n + 1)) := by
                     simpa using
-                      (zpow_add₀ hz0 (((k : ℤ) + (f.poleOrder : ℤ))) (n + 1)).symm
+                      (zpow_add₀ hz0 (((k : ℤ) + (poleOrder h f : ℤ))) (n + 1)).symm
                   simpa [mul_assoc] using
                     congrArg (fun t : ℂ => t * cuspFunction h f z) hkmn
             _ = cuspFunction h f z := by simp [hk0]
@@ -713,25 +713,25 @@ lemma laurentqExpansion_coeff_eq_circleIntegral
       (laurentqExpansion h f).coeff n = 0 := hcoeff0
       _ = ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h f z / z ^ (n + 1)) := by
             simp [hIntZero]
-  · have hn' : -(f.poleOrder : ℤ) ≤ n := by
+  · have hn' : -(poleOrder h f : ℤ) ≤ n := by
       exact le_of_not_gt hn
-    let m : ℕ := Int.toNat (n + f.poleOrder)
-    have hm_nonneg : 0 ≤ n + f.poleOrder := by
+    let m : ℕ := Int.toNat (n + poleOrder h f)
+    have hm_nonneg : 0 ≤ n + poleOrder h f := by
       linarith
-    have hm : (m : ℤ) = n + f.poleOrder := by
+    have hm : (m : ℤ) = n + poleOrder h f := by
       simpa [m] using (Int.toNat_of_nonneg hm_nonneg).symm
     have hcoeff :
-        (laurentqExpansion h f).coeff n = f.to_qExpansion.coeff m := by
+        (laurentqExpansion h f).coeff n = to_qExpansion h f.coeff m := by
       simpa [m] using (laurentqExpansion.coeff_of_geq (h := h) (f := f) (hn := hn'))
     have hCoeffInt :
-        f.to_qExpansion.coeff m =
-          ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h f.to_analyticAt z / z ^ (m + 1)) := by
+        to_qExpansion h f.coeff m =
+          ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h (poleRemoved h f) z / z ^ (m + 1)) := by
       simpa [MeromorphicCuspFunction.to_qExpansion] using
         (qExpansion_coeff_eq_circleIntegral_of_differentiableOn
-          (h := h) (g := f.to_analyticAt) (R := R) hRpos hDiff m)
+          (h := h) (g := (poleRemoved h f)) (R := R) hRpos hDiff m)
     have hEqOn :
         Set.EqOn
-          (fun z : ℂ => cuspFunction h f.to_analyticAt z / z ^ (m + 1))
+          (fun z : ℂ => cuspFunction h (poleRemoved h f) z / z ^ (m + 1))
           (fun z : ℂ => cuspFunction h f z / z ^ (n + 1))
           (Metric.sphere (0 : ℂ) R) := by
       intro z hz
@@ -745,12 +745,12 @@ lemma laurentqExpansion_coeff_eq_circleIntegral
           ‖z‖ = R := by simpa [Metric.mem_sphere, dist_eq_norm] using hz
           _ < 1 := hRlt1
       have hcf :
-          cuspFunction h f.to_analyticAt z = z ^ f.poleOrder * cuspFunction h f z := by
+          cuspFunction h (poleRemoved h f) z = z ^ poleOrder h f * cuspFunction h f z := by
         simpa [MeromorphicCuspFunction.to_analyticAt] using
-          (f.cuspFunction_qpow_mul_eq (n := f.poleOrder) hz0 hqnorm)
+          (f.cuspFunction_qpow_mul_eq (n := poleOrder h f) hz0 hqnorm)
       have hpow :
-          z ^ (((m + 1 : ℕ) : ℤ)) / z ^ (n + 1) = z ^ (f.poleOrder : ℤ) := by
-        have hm' : (m : ℤ) - n = (f.poleOrder : ℤ) := by
+          z ^ (((m + 1 : ℕ) : ℤ)) / z ^ (n + 1) = z ^ (poleOrder h f : ℤ) := by
+        have hm' : (m : ℤ) - n = (poleOrder h f : ℤ) := by
           linarith [hm]
         have hsub : (((m + 1 : ℕ) : ℤ) - (n + 1)) = (m : ℤ) - n := by
           calc
@@ -761,7 +761,7 @@ lemma laurentqExpansion_coeff_eq_circleIntegral
               = z ^ ((((m + 1 : ℕ) : ℤ) - (n + 1))) := by
                   simpa using (zpow_sub₀ hz0 (((m + 1 : ℕ) : ℤ)) (n + 1)).symm
           _ = z ^ ((m : ℤ) - n) := by rw [hsub]
-          _ = z ^ (f.poleOrder : ℤ) := by rw [hm']
+          _ = z ^ (poleOrder h f : ℤ) := by rw [hm']
       exact (div_eq_iff (pow_ne_zero (m + 1) hz0)).2 <| by
         rw [hcf]
         have hcalc :
@@ -770,17 +770,17 @@ lemma laurentqExpansion_coeff_eq_circleIntegral
                     rw [zpow_natCast]
                     simp [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
         calc
-          z ^ f.poleOrder * cuspFunction h f z
-              = z ^ (f.poleOrder : ℤ) * cuspFunction h f z := by rw [zpow_natCast]
+          z ^ poleOrder h f * cuspFunction h f z
+              = z ^ (poleOrder h f : ℤ) * cuspFunction h f z := by rw [zpow_natCast]
           _ = (z ^ (((m + 1 : ℕ) : ℤ)) / z ^ (n + 1)) * cuspFunction h f z := by rw [hpow]
           _ = cuspFunction h f z / z ^ (n + 1) * z ^ (m + 1) := hcalc.symm
     have hIntEq :
-        ∮ z in C(0, R), cuspFunction h f.to_analyticAt z / z ^ (m + 1) =
+        ∮ z in C(0, R), cuspFunction h (poleRemoved h f) z / z ^ (m + 1) =
           ∮ z in C(0, R), cuspFunction h f z / z ^ (n + 1) := by
       exact circleIntegral.integral_congr hRpos.le hEqOn
     calc
-      (laurentqExpansion h f).coeff n = f.to_qExpansion.coeff m := hcoeff
-      _ = ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h f.to_analyticAt z / z ^ (m + 1)) :=
+      (laurentqExpansion h f).coeff n = to_qExpansion h f.coeff m := hcoeff
+      _ = ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h (poleRemoved h f) z / z ^ (m + 1)) :=
         hCoeffInt
       _ = ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h f z / z ^ (n + 1)) := by
             simp [hIntEq]

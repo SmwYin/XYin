@@ -3,10 +3,13 @@ import Mathlib.RingTheory.PowerSeries.Basic
 
 namespace IntegralPowerSeries
 
+--TODO: generalise to more rings
+-- define some R-module inside space of modular forms
+-- isRIntegral
 abbrev hom : ℤ →+* ℂ := Int.castRingHom ℂ
 def coeToComplexPowerSeries.ringHom : PowerSeries ℤ →+* PowerSeries ℂ :=
     PowerSeries.map (hom)
-def IntegralPowerSeriesSubring : Subring (PowerSeries ℂ) :=
+noncomputable def IntegralPowerSeriesSubring : Subring (PowerSeries ℂ) :=
     coeToComplexPowerSeries.ringHom.range
 def IsIntegralPowerSeries (x : PowerSeries ℂ) : Prop := x ∈ IntegralPowerSeriesSubring
 

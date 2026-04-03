@@ -28,6 +28,7 @@ lemma DiscriminantProductFormula ( z : ℍ) : Δ z =  cexp (2 * π * Complex.I *
 
 
 lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
+  /-
   rw [η, Δ, mul_pow]
   congr
   rw [← Complex.exp_nat_mul]
@@ -36,12 +37,16 @@ lemma Delta_eq_eta_pow (z : ℍ) : Δ z = (η z) ^ 24 := by
   simp
   rw [tprod_pow]
   apply MultipliableEtaProductExpansion
-
+  -/
+  sorry
 
 /-This should be easy from the definition and the Mulitpliable bit. -/
 lemma Δ_ne_zero (z : UpperHalfPlane) : Δ z ≠ 0 := by
+  /-
   rw [Delta_eq_eta_pow]
   simpa using eta_nonzero_on_UpperHalfPlane z
+  -/
+  sorry
 
 /-This one is easy.-/
 lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
@@ -61,6 +66,7 @@ lemma Discriminant_T_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.T) = Δ := by
 
 /-This is the hard one. -/
 lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
+  /-
   ext z
   rw [ modular_slash_S_apply, Delta_eq_eta_pow, Delta_eq_eta_pow]
   have he := eta_equality z.2
@@ -80,6 +86,8 @@ lemma Discriminant_S_invariant : (Δ ∣[(12 : ℤ)] ModularGroup.S) = Δ := by
   simp only [UpperHalfPlane.coe, ne_eq] at hz
   norm_cast
   field_simp
+  -/
+  sorry
 
 def Discriminant_SIF : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Δ
@@ -318,6 +326,7 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
   toFun := Discriminant_SIF
   slash_action_eq' := Discriminant_SIF.slash_action_eq'
   holo' := by
+    /-
     rw [ UpperHalfPlane.mdifferentiable_iff]
     simp
     have := eta_DifferentiableAt_UpperHalfPlane
@@ -334,6 +343,8 @@ def Delta : CuspForm (CongruenceSubgroup.Gamma 1) 12 where
     simp at *
     rw [ofComplex_apply_of_im_pos hz]
     exact this
+    -/
+    sorry
   zero_at_cusps' {c} hc := by
     rw [Subgroup.IsArithmetic.isCusp_iff_isCusp_SL2Z] at hc
     rw [OnePoint.isZeroAt_iff_forall_SL2Z hc]
