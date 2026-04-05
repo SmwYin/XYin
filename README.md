@@ -1,13 +1,19 @@
 # XYin
 
-## GitHub configuration
+This repository is based on Chris Birkbeck's modular forms repository and is used for my PhD project on formalising modular curves in Lean.
 
-To set up your new GitHub repository, follow these steps:
+## Current progress
 
-* Under your repository name, click **Settings**.
-* In the **Actions** section of the sidebar, click "General".
-* Check the box **Allow GitHub Actions to create and approve pull requests**.
-* Click the **Pages** section of the settings sidebar.
-* In the **Source** dropdown menu, select "GitHub Actions".
+The main completed components so far are:
 
-After following the steps above, you can remove this section from the README file.
+1. Generalising the current `qExpansion` API in mathlib from modular forms to functions on the upper half plane that are periodic, holomorphic, and bounded at infinity.
+2. Proving that the modular discriminant Delta and the j-function have integral q-expansion coefficients, and computing their first few coefficients explicitly.
+
+## Ongoing work
+
+Current projects include:
+
+1. Building a new API for q-expansions as formal Laurent series.
+2. Writing tactics for power series coefficients and q-expansions.
+3. Building the APIs `IsRIntegralPowerSeries` and `HasRIntegralQExpansion` for general rings.
+4. Defining modular equations.
