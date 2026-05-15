@@ -1,10 +1,12 @@
-import XYin.jFunction.generalised
+import Mathlib.NumberTheory.ModularForms.LevelOne
+import Mathlib.NumberTheory.ModularForms.QExpansion
 import XYin.jFunction.HasIntegralQExpansion
 import XYin.jFunction.Deltaqexpansions
 import XYin.jFunction.LaurentQExpansion
 
 open Complex Filter ModularForm ModularFormClass UpperHalfPlane MatrixGroups PowerSeries
   SlashInvariantFormClass Real Function IntegralPowerSeries
+open scoped Manifold
 
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
@@ -62,10 +64,13 @@ lemma InfSumDeltashift_eq_Deltaoverq : InfSumDeltashift = Deltaoverq := by
   let q : ℂ := cexp (2 * π * Complex.I * z)
   let a : ℕ → ℂ := fun n => (qExpansion 1 Delta).coeff n * q ^ n
   have hcoeff0 : (qExpansion 1 Delta).coeff 0 = 0 := by simpa [qExpansion_coeff] using
-      (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) one_mem_strictPeriods_SL2Z)
+      (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) (by simp))
   have hq : q ≠ 0 := by simp [q]
-  have hs : HasSum a (Delta z) := by simpa [a, q, smul_eq_mul, Periodic.qParam] using
-      (hasSum_qExpansion Delta (by norm_num) one_mem_strictPeriods_SL2Z z)
+  have hs : HasSum a (Delta z) := by
+    have hDelta := UpperHalfPlane.hasSum_qExpansion (h := 1) (f := Delta) (by norm_num)
+        (SlashInvariantFormClass.periodic_comp_ofComplex Delta (by simp))
+        (ModularFormClass.holo Delta) (ModularFormClass.bdd_at_infty Delta) z
+    simpa [a, q, smul_eq_mul, Periodic.qParam] using hDelta
   have hs_shift : HasSum (fun n => a (n + 1)) (Delta z) := by
     have hs' : HasSum (fun n => a (n + 1)) (Delta z - ∑ i ∈ Finset.range 1, a i) :=
       (hasSum_nat_add_iff' 1).2 hs
@@ -88,9 +93,12 @@ lemma InfSumDeltashift_hasSum (z : ℍ) : HasSum
   have hq : q ≠ 0 := by simp [q, Periodic.qParam]
   have hcoeff0 : (qExpansion 1 Delta).coeff 0 = 0 := by
     simpa [qExpansion_coeff] using
-        (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) one_mem_strictPeriods_SL2Z)
+        (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) (by simp))
   have hs : HasSum (fun m => (qExpansion 1 Delta).coeff m • q ^ m) (Delta z) := by
-    simpa [q] using (hasSum_qExpansion Delta (by norm_num) one_mem_strictPeriods_SL2Z z)
+    have hDelta := UpperHalfPlane.hasSum_qExpansion (h := 1) (f := Delta) (by norm_num)
+        (SlashInvariantFormClass.periodic_comp_ofComplex Delta (by simp))
+        (ModularFormClass.holo Delta) (ModularFormClass.bdd_at_infty Delta) z
+    simpa [q] using hDelta
   have hs_shift :
     HasSum (fun m => (qExpansion 1 Delta).coeff (m + 1) • q ^ (m + 1)) (Delta z) := by
     have hs' : HasSum (fun m => (qExpansion 1 Delta).coeff (m + 1) • q ^ (m + 1))
@@ -179,8 +187,8 @@ lemma InfSumDeltashift_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 InfSumDeltash
 lemma InfSumDeltashift_coeff_eq (n : ℕ) :
     (qExpansion 1 InfSumDeltashift).coeff n = (qExpansion 1 Delta).coeff (n + 1) := by
   let cshift : ℕ → ℂ := fun m => (qExpansion 1 Delta).coeff (m + 1)
-  simpa [cshift] using (qExpansion_coeff_unique'
-      (by norm_num) InfSumDeltashift_AnalyticAt InfSumDeltashift_hasSum n).symm
+  simpa [cshift] using (UpperHalfPlane.qExpansion_coeff_unique (f := InfSumDeltashift)
+      (h := 1) (by norm_num) InfSumDeltashift_AnalyticAt InfSumDeltashift_hasSum n).symm
 
 lemma DeltaoverqIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 Deltaoverq) := by
   rw [int_iff]
@@ -289,7 +297,7 @@ lemma qoverDelta_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 qoverDelta) 0 := by
   simpa [cuspFunction_qoverDelta_EqInv] using Deltaoverq_Inv_AnalyticAt
 
 lemma E4_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 E4) 0 := by
-  exact analyticAt_cuspFunction_zero E4 (by norm_num) one_mem_strictPeriods_SL2Z
+  exact ModularFormClass.analyticAt_cuspFunction_zero E4 (by norm_num) (by simp)
 
 lemma E4cubed_isModularForm : ∃ f : ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
     (CongruenceSubgroup.Gamma 1)) 12, (f : ℍ → ℂ) = E4 ^ 3 := by
@@ -299,7 +307,8 @@ lemma E4cubed_isModularForm : ∃ f : ModularForm (Subgroup.map (Matrix.SpecialL
 
 lemma E4cubed_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 (E4 ^ 3)) 0 := by
   rcases E4cubed_isModularForm with ⟨f, hf⟩
-  simpa [hf] using (analyticAt_cuspFunction_zero f (by norm_num) one_mem_strictPeriods_SL2Z)
+  simpa [hf] using
+    (ModularFormClass.analyticAt_cuspFunction_zero f (by norm_num) (by simp))
 
 lemma integralDeltaoverq_mul_qoverDelta_qExpansion :
     coeToComplexPowerSeries.ringHom integralDeltaoverq * qExpansion 1 qoverDelta = 1 := by
@@ -319,11 +328,11 @@ lemma integralDeltaoverq_mul_qoverDelta_qExpansion :
   ext z
   rw [qExpansion_coeff]
   by_cases hz : z = 0
-  · simp only [hz, Nat.factorial_zero, Nat.cast_one, inv_one, SlashInvariantFormClass.cuspFunction,
+  · simp only [hz, Nat.factorial_zero, Nat.cast_one, inv_one, UpperHalfPlane.cuspFunction,
         Pi.one_comp, iteratedDeriv_zero, one_mul, coeff_one, ↓reduceIte, Periodic.cuspFunction,
         Pi.one_comp, update_self]
     exact Tendsto.limUnder_eq tendsto_const_nhds
-  · simp only [SlashInvariantFormClass.cuspFunction, Pi.one_comp, coeff_one, hz, ↓reduceIte,
+  · simp only [UpperHalfPlane.cuspFunction, Pi.one_comp, coeff_one, hz, ↓reduceIte,
         mul_eq_zero, _root_.inv_eq_zero, Nat.cast_eq_zero]
     right
     have h3 : Periodic.cuspFunction 1 (1 : ℂ → ℂ) = (fun _ : ℂ => (1 : ℂ)) := by
@@ -379,12 +388,10 @@ lemma qj_periodic : Periodic (qj ∘ UpperHalfPlane.ofComplex) 1 := by
       simp [τ, UpperHalfPlane.ofComplex_apply_of_im_pos hw1, UpperHalfPlane.coe_vadd, add_comm]
     have hE4 : E4 ((1 : ℝ) +ᵥ τ) = E4 τ := by
       simpa using
-        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := E4) (τ := τ)
-          (hH := one_mem_strictPeriods_SL2Z))
+        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := E4) (τ := τ) (hH := by simp))
     have hDelta : Delta ((1 : ℝ) +ᵥ τ) = Delta τ := by
       simpa using
-        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := Delta) (τ := τ)
-          (hH := one_mem_strictPeriods_SL2Z))
+        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := Delta) (τ := τ) (hH := by simp))
     have hj : j ((1 : ℝ) +ᵥ τ) = j τ := by
       simp [j, hE4, hDelta]
     have hexp :
@@ -423,15 +430,20 @@ lemma qj_holomorphic : ∀ z : ℂ, 0 < Complex.im z →
       (((fun τ : ℍ ↦ cexp (2 * π * Complex.I * (τ : ℂ))) ∘ UpperHalfPlane.ofComplex)) z := by
     exact hexp.congr_of_eventuallyEq hEqExp
   have hE4 : DifferentiableAt ℂ (E4 ∘ UpperHalfPlane.ofComplex) z :=
-    ModularFormClass.differentiableAt_comp_ofComplex (f := E4) hz
+    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo E4 ⟨z, hz⟩)
   have hDelta : DifferentiableAt ℂ (Delta ∘ UpperHalfPlane.ofComplex) z :=
-    ModularFormClass.differentiableAt_comp_ofComplex (f := Delta) hz
+    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo Delta ⟨z, hz⟩)
   have hDelta0 : (Delta ∘ UpperHalfPlane.ofComplex) z ≠ 0 := by
     simpa [comp, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Delta_apply] using
       (Δ_ne_zero (UpperHalfPlane.ofComplex z))
   have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) z := by
     simpa [j, comp] using (hE4.pow 3).div hDelta hDelta0
   simpa [qj, comp, Pi.mul_apply] using hexpH.mul hj
+
+lemma qj_MDifferentiable : MDiff qj := by
+  rw [UpperHalfPlane.mdifferentiable_iff]
+  intro z hz
+  exact (qj_holomorphic z hz).differentiableWithinAt
 
 lemma E4_IsBoundedAtImInfty : IsBoundedAtImInfty E4 := by simp [ModularFormClass.bdd_at_infty]
 
@@ -463,7 +475,8 @@ lemma qj_IsBoundedAtImInfty : IsBoundedAtImInfty qj := by
 
 lemma hasSum_qExpansion_qj {τ : ℍ} :
     HasSum (fun m : ℕ ↦ (qExpansion 1 qj).coeff m • 𝕢 1 τ ^ m) (qj τ) := by
-  exact hasSum_qExpansion' (by positivity) qj_periodic qj_holomorphic qj_IsBoundedAtImInfty τ
+  exact UpperHalfPlane.hasSum_qExpansion (h := 1) (f := qj) (by positivity) qj_periodic
+    qj_MDifferentiable qj_IsBoundedAtImInfty τ
 
 lemma InfSumqj_Summable {z : ℍ} :
     Summable (fun n : ℕ => (qj_coeffs n) * cexp (2 * π * Complex.I * z) ^ n) := by
@@ -570,7 +583,7 @@ lemma qj_exp_zero : (qExpansion 1 qj).coeff 0 = 1 := by
     exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE4coeff0 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE4pow0 : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
@@ -605,18 +618,18 @@ lemma Delta_exp_two : (qExpansion 1 Delta).coeff 2 = -24 := by
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
       _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
+        simpa using (ModularFormClass.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
+          (hΓ := by simp) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
       _ = _ := by
         have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
+      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := by simp) E6 2
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -679,18 +692,18 @@ lemma Delta_exp_three : (qExpansion 1 Delta).coeff 3 = 252 := by
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
       _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
+        simpa using (ModularFormClass.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
+          (hΓ := by simp) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
       _ = _ := by
         have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
+      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := by simp) E6 2
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -772,18 +785,18 @@ lemma Delta_exp_four : (qExpansion 1 Delta).coeff 4 = -1472 := by
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
       _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
+        simpa using (ModularFormClass.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
+          (hΓ := by simp) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
       _ = _ := by
         have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
+      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := by simp) E6 2
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -892,18 +905,18 @@ lemma Delta_exp_five : (qExpansion 1 Delta).coeff 5 = 4830 := by
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
       _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
+        simpa using (ModularFormClass.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
+          (hΓ := by simp) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
       _ = _ := by
         have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
         have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
         simp [pow_three, pow_two, hf, hg]
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
+      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := by simp) E6 2
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -1039,7 +1052,7 @@ lemma qj_exp_one : (qExpansion 1 qj).coeff 1 = 744 := by
     exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -1111,7 +1124,7 @@ lemma qj_exp_two : (qExpansion 1 qj).coeff 2 = 196884 := by
     exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -1235,7 +1248,7 @@ lemma qj_exp_three : (qExpansion 1 qj).coeff 3 = 21493760 := by
     exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -1419,7 +1432,7 @@ lemma qj_exp_four : (qExpansion 1 qj).coeff 4 = 864299970 := by
     exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
@@ -1697,8 +1710,8 @@ theorem j_HasIntegralQExpansion : HasIntegralQExpansion 1 j := by
 end
 
 lemma qj_cuspFunction_DifferentiableOn : DifferentiableOn ℂ (cuspFunction 1 qj) (Metric.ball 0 1) :=
-  differentiableOn_cuspFunction_ball' (h := 1) (f := qj) (by norm_num)
-    qj_periodic qj_holomorphic qj_IsBoundedAtImInfty
+  UpperHalfPlane.differentiableOn_cuspFunction_ball (h := 1) (f := qj) (by norm_num)
+    qj_periodic qj_MDifferentiable qj_IsBoundedAtImInfty
 
 lemma qj_cuspFunction_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 qj) 0 :=
   DifferentiableOn.analyticAt
@@ -1891,14 +1904,21 @@ theorem jLaurentqExpansion_three : (laurentqExpansion 1 j).coeff 3 = 864299970 :
 
 section modularEquation
 
-noncomputable def jN (N : ℕ+) : ℍ → ℂ := j ∘ (N • ·)
+private lemma natCast_mul_im_pos (N : ℕ) [NeZero N] (z : ℍ) :
+    0 < ((↑N : ℂ) * (z : ℂ)).im := by
+  rw [Complex.mul_im]
+  simp only [natCast_re, natCast_im, zero_mul, add_zero]
+  exact mul_pos (Nat.cast_pos.mpr (NeZero.pos N)) z.2
+
+noncomputable def jN (N : ℕ) [NeZero N] : ℍ → ℂ :=
+  fun z => j ⟨(↑N : ℂ) * (z : ℂ), natCast_mul_im_pos N z⟩
 
 lemma j_invariant (γ : SL(2, ℤ)) (z : ℍ) : j (γ • z) = j z := by
   have := congrFun (j_slashInvariant γ) z
   simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at this
   exact this
 
-private def gamma0Conjugate (N : ℕ+) (γ : SL(2, ℤ))
+private def gamma0Conjugate (N : ℕ) [NeZero N] (γ : SL(2, ℤ))
     (hγ : γ ∈ CongruenceSubgroup.Gamma0 N) : SL(2, ℤ) :=
   let a := γ 0 0; let b := γ 0 1; let c := γ 1 0; let d := γ 1 1
   ⟨!![a, ↑N * b; c / ↑N, d], by
@@ -1912,12 +1932,14 @@ private def gamma0Conjugate (N : ℕ+) (γ : SL(2, ℤ))
     rw [Int.mul_ediv_cancel' hdvd]
     linarith⟩
 
-private lemma natPosSMul_gamma0_comm (N : ℕ+) (γ : SL(2, ℤ))
+private lemma natPosSMul_gamma0_comm (N : ℕ) [NeZero N] (γ : SL(2, ℤ))
     (hγ : γ ∈ CongruenceSubgroup.Gamma0 N) (z : ℍ) :
-    N • (γ • z) = gamma0Conjugate N γ hγ • (N • z) := by
+    (⟨(↑N : ℂ) * ((γ • z : ℍ) : ℂ), natCast_mul_im_pos N (γ • z)⟩ : ℍ) =
+      gamma0Conjugate N γ hγ •
+        (⟨(↑N : ℂ) * (z : ℂ), natCast_mul_im_pos N z⟩ : ℍ) := by
   ext
-  simp only [natPosSMul_apply, coe_specialLinearGroup_apply, gamma0Conjugate,
-    Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one]
+  simp only [coe_specialLinearGroup_apply, gamma0Conjugate, Matrix.of_apply,
+    Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one]
   have hdvd : (↑N : ℤ) ∣ γ 1 0 :=
     (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp (CongruenceSubgroup.Gamma0_mem.mp hγ)
   have hcN : (↑N : ℤ) * (γ 1 0 / ↑N) = γ 1 0 := Int.mul_ediv_cancel' hdvd
@@ -1928,7 +1950,7 @@ private lemma natPosSMul_gamma0_comm (N : ℕ+) (γ : SL(2, ℤ))
       (↑((algebraMap ℤ ℝ) (γ 1 0)) : ℂ) * ↑z := by
     rw [← mul_assoc, show (↑((algebraMap ℤ ℝ) (γ 1 0 / ↑N)) : ℂ) * ↑N =
       ↑((algebraMap ℤ ℝ) (γ 1 0)) from by exact_mod_cast hR]
-  rw [hC, map_mul, show (algebraMap ℤ ℝ) (↑↑N : ℤ) = (↑↑N : ℝ) from by simp [algebraMap_int_eq]]
+  rw [hC, map_mul, show (algebraMap ℤ ℝ) (↑N : ℤ) = (↑N : ℝ) from by simp [algebraMap_int_eq]]
   push_cast
   rw [← mul_div_assoc]
   congr 1; ring
@@ -1936,80 +1958,92 @@ private lemma natPosSMul_gamma0_comm (N : ℕ+) (γ : SL(2, ℤ))
 --rename jLevelN, notation
 -- try integer/natural number with instance non-zero
 --check
-lemma jN_slashInvariant (N : ℕ+) (γ : CongruenceSubgroup.Gamma0 N) :
+lemma jN_slashInvariant (N : ℕ) [NeZero N] (γ : CongruenceSubgroup.Gamma0 N) :
     jN N ∣[(0 : ℤ)] (γ : SL(2, ℤ)) = jN N := by
   ext z
-  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one, jN, Function.comp]
+  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one, jN]
   rw [natPosSMul_gamma0_comm N γ γ.prop z]
   exact j_invariant _ _
 
-noncomputable def qjN (N : ℕ+) : ℍ → ℂ := qj ∘ (N • ·)
+noncomputable def qjN (N : ℕ) [NeZero N] : ℍ → ℂ :=
+  fun z => qj ⟨(↑N : ℂ) * (z : ℂ), natCast_mul_im_pos N z⟩
 
-lemma natPosSMul_ofComplex_coe (N : ℕ+) {w : ℂ} (hw : 0 < w.im) :
-    N • UpperHalfPlane.ofComplex w = UpperHalfPlane.ofComplex ((↑↑N : ℂ) * w) := by
-  have hNw : 0 < ((↑↑N : ℂ) * w).im := by
+lemma natCast_mul_ofComplex_coe (N : ℕ) [NeZero N] {w : ℂ} (hw : 0 < w.im) :
+    (⟨(↑N : ℂ) * (UpperHalfPlane.ofComplex w : ℂ),
+        natCast_mul_im_pos N (UpperHalfPlane.ofComplex w)⟩ : ℍ) =
+      UpperHalfPlane.ofComplex ((↑N : ℂ) * w) := by
+  have hNw : 0 < ((↑N : ℂ) * w).im := by
     rw [Complex.mul_im]
     simp only [natCast_re, natCast_im, zero_mul, add_zero]
-    exact mul_pos (Nat.cast_pos.mpr N.pos) hw
+    exact mul_pos (Nat.cast_pos.mpr (NeZero.pos N)) hw
   apply UpperHalfPlane.ext
-  rw [natPosSMul_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hw,
+  rw [UpperHalfPlane.coe_mk, UpperHalfPlane.ofComplex_apply_of_im_pos hw,
     UpperHalfPlane.ofComplex_apply_of_im_pos hNw]
 
-lemma qjN_periodic (N : ℕ+) : Periodic (qjN N ∘ UpperHalfPlane.ofComplex) N := by
-  have hqNN : Periodic (qj ∘ UpperHalfPlane.ofComplex) ((↑↑N : ℂ) * ↑↑N) := by
-    have := qj_periodic.nat_mul ((N : ℕ) * N)
+lemma qjN_periodic (N : ℕ) [NeZero N] : Periodic (qjN N ∘ UpperHalfPlane.ofComplex) N := by
+  have hqNN : Periodic (qj ∘ UpperHalfPlane.ofComplex) ((↑N : ℂ) * ↑N) := by
+    have := qj_periodic.nat_mul (N * N)
     simpa [Nat.cast_mul] using this
   intro w
   simp only [Function.comp, qjN]
   by_cases hw : 0 < Complex.im w
-  · have hwN : 0 < Complex.im (w + ↑↑N) := by simp [Complex.add_im]; linarith
-    have hkey := hqNN ((↑↑N : ℂ) * w)
-    rw [show (↑↑N : ℂ) * w + (↑↑N : ℂ) * ↑↑N = (↑↑N : ℂ) * (w + ↑↑N) from by ring] at hkey
+  · have hwN : 0 < Complex.im (w + ↑N) := by simp [Complex.add_im]; linarith
+    have hkey := hqNN ((↑N : ℂ) * w)
+    rw [show (↑N : ℂ) * w + (↑N : ℂ) * ↑N = (↑N : ℂ) * (w + ↑N) from by ring] at hkey
     simp only [Function.comp] at hkey
-    rw [natPosSMul_ofComplex_coe N hwN, natPosSMul_ofComplex_coe N hw]
+    rw [natCast_mul_ofComplex_coe N hwN, natCast_mul_ofComplex_coe N hw]
     exact hkey
   · have hw0 := le_of_not_gt hw
-    have hwN : Complex.im (w + ↑↑N) ≤ 0 := by simp [Complex.add_im]; linarith
+    have hwN : Complex.im (w + ↑N) ≤ 0 := by simp [Complex.add_im]; linarith
     simp [UpperHalfPlane.ofComplex_apply_of_im_nonpos hw0,
       UpperHalfPlane.ofComplex_apply_of_im_nonpos hwN]
 
-lemma qjN_holomorphic (N : ℕ+) :
+lemma qjN_holomorphic (N : ℕ) [NeZero N] :
     ∀ z : ℂ, 0 < Complex.im z → DifferentiableAt ℂ (qjN N ∘ UpperHalfPlane.ofComplex) z := by
   intro z hz
-  have hNz : 0 < Complex.im ((↑↑N : ℂ) * z) := by
+  have hNz : 0 < Complex.im ((↑N : ℂ) * z) := by
     rw [Complex.mul_im]
     simp only [natCast_re, natCast_im, zero_mul, add_zero]
-    exact mul_pos (Nat.cast_pos.mpr N.pos) hz
+    exact mul_pos (Nat.cast_pos.mpr (NeZero.pos N)) hz
   have hqj := qj_holomorphic _ hNz
-  have hN : DifferentiableAt ℂ (fun w => (↑↑N : ℂ) * w) z :=
+  have hN : DifferentiableAt ℂ (fun w => (↑N : ℂ) * w) z :=
     (differentiableAt_const _).mul differentiableAt_id
   refine (hqj.comp z hN).congr_of_eventuallyEq ?_
   filter_upwards [IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im) hz] with w hw
   simp only [Function.comp, qjN]
-  rw [natPosSMul_ofComplex_coe N hw]
+  rw [natCast_mul_ofComplex_coe N hw]
 
-lemma qjN_IsBoundedAtImInfty (N : ℕ+) :
+lemma qjN_MDifferentiable (N : ℕ) [NeZero N] : MDiff (qjN N) := by
+  rw [UpperHalfPlane.mdifferentiable_iff]
+  intro z hz
+  exact (qjN_holomorphic N z hz).differentiableWithinAt
+
+lemma qjN_IsBoundedAtImInfty (N : ℕ) [NeZero N] :
     IsBoundedAtImInfty (qjN N) := by
   apply qj_IsBoundedAtImInfty.comp_tendsto
   rw [show atImInfty = Filter.comap UpperHalfPlane.im
     Filter.atTop from rfl, Filter.tendsto_comap_iff]
-  have hN_pos : (0 : ℝ) < ↑↑N := Nat.cast_pos.mpr N.pos
+  have hN_pos : (0 : ℝ) < ↑N := Nat.cast_pos.mpr (NeZero.pos N)
   have him_eq :
-      UpperHalfPlane.im ∘ (fun x : ℍ => N • x) = (fun x => ↑↑N * x) ∘ UpperHalfPlane.im := by
+      UpperHalfPlane.im ∘
+          (fun x : ℍ =>
+            (⟨(↑N : ℂ) * (x : ℂ), natCast_mul_im_pos N x⟩ : ℍ)) =
+        (fun x : ℝ => (↑N : ℝ) * x) ∘ UpperHalfPlane.im := by
     ext τ
-    simp only [Function.comp, UpperHalfPlane.im, natPosSMul_apply, Complex.mul_im,
-      Complex.natCast_re, Complex.natCast_im, zero_mul, add_zero]
+    simp only [Function.comp, UpperHalfPlane.im, Complex.mul_im, Complex.natCast_re,
+      Complex.natCast_im, zero_mul, add_zero]
   rw [him_eq]
   exact (Filter.Tendsto.const_mul_atTop hN_pos Filter.tendsto_id).comp Filter.tendsto_comap
 
-lemma qjN_cuspFunction_analyticAt (N : ℕ+) : AnalyticAt ℂ (cuspFunction N (qjN N)) 0 :=
-  DifferentiableOn.analyticAt (fun q hq => (differentiableOn_cuspFunction_ball'
-    (Nat.cast_pos.mpr N.pos) (qjN_periodic N) (qjN_holomorphic N) (qjN_IsBoundedAtImInfty N)) q hq)
+lemma qjN_cuspFunction_analyticAt (N : ℕ) [NeZero N] : AnalyticAt ℂ (cuspFunction N (qjN N)) 0 :=
+  DifferentiableOn.analyticAt (fun q hq => (UpperHalfPlane.differentiableOn_cuspFunction_ball
+    (Nat.cast_pos.mpr (NeZero.pos N)) (qjN_periodic N)
+    (qjN_MDifferentiable N) (qjN_IsBoundedAtImInfty N)) q hq)
       (by simpa [ball_zero_eq] using Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
 
-lemma jN_cuspFunction_eq (N : ℕ+) {q : ℂ} (hq0 : q ≠ 0) (hq : ‖q‖ < 1) :
-    cuspFunction N (jN N) q = q⁻¹ ^ ((N : ℕ) * N) * cuspFunction N (qjN N) q := by
-  have hN : (0 : ℝ) < N := Nat.cast_pos.mpr N.pos
+lemma jN_cuspFunction_eq (N : ℕ) [NeZero N] {q : ℂ} (hq0 : q ≠ 0) (hq : ‖q‖ < 1) :
+    cuspFunction N (jN N) q = q⁻¹ ^ (N * N) * cuspFunction N (qjN N) q := by
+  have hN : (0 : ℝ) < N := Nat.cast_pos.mpr (NeZero.pos N)
   have him := Periodic.im_invQParam_pos_of_norm_lt_one hN hq hq0
   let τ : ℍ := ⟨Periodic.invQParam N q, him⟩
   have hjN_eq : cuspFunction N (jN N) q = jN N τ := by
@@ -2020,20 +2054,26 @@ lemma jN_cuspFunction_eq (N : ℕ+) {q : ℂ} (hq0 : q ≠ 0) (hq : ‖q‖ < 1)
     change Periodic.cuspFunction N _ q = _
     rw [Periodic.cuspFunction_eq_of_nonzero N _ hq0]
     simp [τ, UpperHalfPlane.ofComplex_apply_of_im_pos him]
-  have hcexp : cexp (2 * ↑π * Complex.I * (↑(N • τ) : ℂ)) = q ^ ((N : ℕ) * N) := by
-    rw [natPosSMul_apply, show 2 * ↑π * Complex.I * ((↑↑N : ℂ) * (τ : ℂ)) = ↑((N : ℕ) * N) *
-      (2 * ↑π * Complex.I * (τ : ℂ) / ↑↑N) from by field_simp; push_cast; ring, Complex.exp_nat_mul]
+  have hcexp :
+      cexp (2 * ↑π * Complex.I *
+        (↑(⟨(↑N : ℂ) * (τ : ℂ), natCast_mul_im_pos N τ⟩ : ℍ) : ℂ)) = q ^ (N * N) := by
+    rw [UpperHalfPlane.coe_mk]
+    have hNnzC : (↑N : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne N)
+    rw [show 2 * ↑π * Complex.I * ((↑N : ℂ) * (τ : ℂ)) = ↑(N * N) *
+      (2 * ↑π * Complex.I * (τ : ℂ) / ↑N) from by field_simp [hNnzC]; push_cast; ring,
+      Complex.exp_nat_mul]
     congr 1
     simpa [τ, Periodic.qParam] using Periodic.qParam_right_inv (ne_of_gt hN) hq0
   rw [hjN_eq, hqjN_eq]
-  simp only [jN, qjN, Function.comp, qj, Pi.mul_apply]
+  simp only [jN, qjN, qj, Pi.mul_apply]
   rw [hcexp, inv_pow, ← mul_assoc, inv_mul_cancel₀ (pow_ne_zero _ hq0), one_mul]
 
-lemma jN_cuspFunction_Meromorphic (N : ℕ+) : MeromorphicAt (cuspFunction N (jN N)) (0 : ℂ) := by
+lemma jN_cuspFunction_Meromorphic (N : ℕ) [NeZero N] :
+    MeromorphicAt (cuspFunction N (jN N)) (0 : ℂ) := by
   have hqjN_mer : MeromorphicAt (cuspFunction N (qjN N)) (0 : ℂ) := by
     change MeromorphicAt (Function.Periodic.cuspFunction N (qjN N ∘ UpperHalfPlane.ofComplex)) 0
     exact (qjN_cuspFunction_analyticAt N).meromorphicAt
-  have hpow : MeromorphicAt (fun q : ℂ => q⁻¹ ^ ((N : ℕ) * N)) (0 : ℂ) :=
+  have hpow : MeromorphicAt (fun q : ℂ => q⁻¹ ^ (N * N)) (0 : ℂ) :=
     ((MeromorphicAt.id (0 : ℂ)).inv).pow _
   refine (hpow.mul hqjN_mer).congr ?_
   have hnorm : {q : ℂ | ‖q‖ < 1} ∈ nhdsWithin (0 : ℂ) ({0}ᶜ) :=
@@ -2043,37 +2083,37 @@ lemma jN_cuspFunction_Meromorphic (N : ℕ+) : MeromorphicAt (cuspFunction N (jN
   simp only [Pi.mul_apply]
   exact (jN_cuspFunction_eq N (by simpa using hq') hq).symm
 
-lemma jN_Meromorphic (N : ℕ+) {z : ℍₒ} :
+lemma jN_Meromorphic (N : ℕ) [NeZero N] {z : ℍₒ} :
     DifferentiableAt ℂ (jN N ∘ UpperHalfPlane.ofComplex) z := by
   obtain ⟨z, hz⟩ := z
   have hz' := Set.mem_setOf.mp hz
-  have hNz : 0 < Complex.im ((↑↑N : ℂ) * z) := by
+  have hNz : 0 < Complex.im ((↑N : ℂ) * z) := by
     rw [Complex.mul_im]
-    simp only [natCast_re, natCast_im, zero_mul, add_zero, Nat.cast_pos, PNat.pos,
+    simp only [natCast_re, natCast_im, zero_mul, add_zero, Nat.cast_pos, NeZero.pos,
         mul_pos_iff_of_pos_left]
     exact hz'
-  have hE4 := ModularFormClass.differentiableAt_comp_ofComplex (f := E4) hNz
-  have hΔ := ModularFormClass.differentiableAt_comp_ofComplex (f := Delta) hNz
-  have hΔ0 : (Delta ∘ UpperHalfPlane.ofComplex) (↑↑N * z) ≠ 0 := by
+  have hE4 := UpperHalfPlane.mdifferentiableAt_iff.mp
+    (ModularFormClass.holo E4 ⟨↑N * z, hNz⟩)
+  have hΔ := UpperHalfPlane.mdifferentiableAt_iff.mp
+    (ModularFormClass.holo Delta ⟨↑N * z, hNz⟩)
+  have hΔ0 : (Delta ∘ UpperHalfPlane.ofComplex) (↑N * z) ≠ 0 := by
     simp only [Function.comp, UpperHalfPlane.ofComplex_apply_of_im_pos hNz, Delta_apply]
     exact Δ_ne_zero _
-  have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) (↑↑N * z) := by
+  have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) (↑N * z) := by
     simpa [j, Function.comp] using (hE4.pow 3).div hΔ hΔ0
-  have hN : DifferentiableAt ℂ (· * (↑↑N : ℂ)) z := differentiableAt_id.mul_const _
   have hcomp := hj.comp z (by
-    change DifferentiableAt ℂ (fun w => (↑↑N : ℂ) * w) z
+    change DifferentiableAt ℂ (fun w => (↑N : ℂ) * w) z
     exact differentiableAt_const _ |>.mul differentiableAt_id)
   have hEq : (jN N ∘ UpperHalfPlane.ofComplex)
-      =ᶠ[nhds z] ((j ∘ UpperHalfPlane.ofComplex) ∘ fun w => (↑↑N : ℂ) * w) := by
+      =ᶠ[nhds z] ((j ∘ UpperHalfPlane.ofComplex) ∘ fun w => (↑N : ℂ) * w) := by
     filter_upwards [IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im) hz']
       with w hw
     simp only [Function.comp, jN, UpperHalfPlane.ofComplex_apply_of_im_pos hw,
-      UpperHalfPlane.ofComplex_apply_of_im_pos (show 0 < (↑↑N * w).im by
+      UpperHalfPlane.ofComplex_apply_of_im_pos (show 0 < (↑N * w).im by
         rw [Complex.mul_im]; simp only [natCast_re, natCast_im, zero_mul, add_zero, Nat.cast_pos,
-            PNat.pos, mul_pos_iff_of_pos_left]; exact hw)]
-    exact congr_arg j (UpperHalfPlane.ext rfl)
+            NeZero.pos, mul_pos_iff_of_pos_left]; exact hw)]
   change DifferentiableAt ℂ (jN N ∘ UpperHalfPlane.ofComplex) z
-  have hcomp' : DifferentiableAt ℂ ((j ∘ UpperHalfPlane.ofComplex) ∘ fun w => (↑↑N : ℂ) * w) z := by
+  have hcomp' : DifferentiableAt ℂ ((j ∘ UpperHalfPlane.ofComplex) ∘ fun w => (↑N : ℂ) * w) z := by
     convert hcomp using 2
   exact hcomp'.congr_of_eventuallyEq hEq
 

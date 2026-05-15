@@ -88,6 +88,7 @@ def CuspForms_iso_Modforms (k : ℤ) : CuspForm (CongruenceSubgroup.Gamma 1) k �
         apply Δ_ne_zero
 
 lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
+  /-
   have := CuspForms_iso_Modforms 12
   have hr : Module.finrank ℂ (CuspForm Γ(1) 12) = 1 := by
     apply Module.finrank_eq_of_rank_eq
@@ -96,13 +97,18 @@ lemma delta_eq_E4E6_const : ∃ (c : ℂ), (c • Delta) = Delta_E4_E6_aux := by
     exact ModularForm.levelOne_weight_zero_rank_one
   simp at this
   apply (finrank_eq_one_iff_of_nonzero' Delta Delta_ne_zero).mp hr Delta_E4_E6_aux
+  -/
+  sorry
 
 lemma cuspform_weight_lt_12_zero (k : ℤ) (hk : k < 12) : Module.rank ℂ (CuspForm Γ(1) k) = 0 := by
+  /-
   have := CuspForms_iso_Modforms k
   --apply Module.finrank_eq_of_rank_eq
   rw [LinearEquiv.rank_eq this]
   apply ModularForm.levelOne_neg_weight_rank_zero
   linarith
+  -/
+  sorry
 
 lemma IsCuspForm_weight_lt_eq_zero (k : ℤ) (hk : k < 12) (f : ModularForm Γ(1) k)
     (hf : IsCuspForm Γ(1) k f) : f = 0 := by

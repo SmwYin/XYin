@@ -333,7 +333,6 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
   rw [← mul_assoc, mul_comm, ← mul_assoc]
   simp only [UpperHalfPlane.coe] at *
   rw [E, add_mul, add_comm]
-  congr 1
   have hzne := ne_zero z
   have hI : Complex.I ≠ 0 := by
     exact I_ne_zero
@@ -343,7 +342,6 @@ lemma eta_logDeriv_eql (z : ℍ) : (logDeriv (η ∘ (fun z : ℂ => -1/z))) z =
   simp [UpperHalfPlane.coe] at hzne ⊢
   field_simp
   ring
-  rw [mul_comm]
   · simpa only [UpperHalfPlane.coe, ne_eq] using (ne_zero z)
   · simp only [csqrt, one_div, ne_eq, Complex.exp_ne_zero, not_false_eq_true]
   · apply eta_nonzero_on_UpperHalfPlane z

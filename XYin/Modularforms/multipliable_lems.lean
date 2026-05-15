@@ -69,20 +69,9 @@ lemma MultipliableEtaProductExpansion (z : ℍ) :
 
 lemma MultipliableEtaProductExpansion_pnat (z : ℍ) :
   Multipliable (fun (n : ℕ+) => (1 - cexp (2 * π * Complex.I * n * z))) := by
-  conv =>
-    enter [1]
-    ext n
-    rw [sub_eq_add_neg]
-  let g := (fun (n : ℕ) => (1 - cexp (2 * π * Complex.I * n * z)) )
-  have := MultipliableEtaProductExpansion z
-  conv at this =>
-    enter [1]
-    ext n
-    rw [show (n : ℂ) + 1 = (((n + 1) : ℕ) : ℂ) by simp]
-  rw [ ← pnat_multipliable_iff_multipliable_succ (f := g)] at this
-  apply this.congr
-  intro b
-  rfl
+  rw [multipliable_pnat_iff_multipliable_succ
+    (f := fun n : ℕ => 1 - cexp (2 * π * Complex.I * n * z))]
+  simpa using MultipliableEtaProductExpansion z
 
 
 

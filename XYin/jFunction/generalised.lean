@@ -1,3 +1,4 @@
+/-
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import XYin.Modularforms.qExpansion_lems
 
@@ -209,3 +210,4 @@ lemma ModularForm.qExpansion_sub (hh : 0 < h) (hΓ : h ∈ Γ.strictPeriods) {a 
 end
 
 #min_imports
+-/

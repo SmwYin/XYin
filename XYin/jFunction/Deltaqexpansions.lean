@@ -33,13 +33,13 @@ def integralE6 : PowerSeries ℤ := toIntegralPowerSeries E6IsIntegralPowerSerie
 lemma E4CubedIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 (E4 ^ 3)) := by
   have hq : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   rw [hq]
   exact IntegralPowerSeriesSubring.pow_mem E4IsIntegralPowerSeries 3
 
 lemma Delta_exp_zero : (qExpansion 1 Delta).coeff 0 = 0 := by
   simpa [qExpansion_coeff] using
-    (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) one_mem_strictPeriods_SL2Z)
+    (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) (by simp))
 
 lemma mod3 (d : ℕ) : 3 ∣ (5 * d ^ 3 + 7 * d ^ 5) := by
   rw [← Int.natCast_dvd_natCast]
@@ -257,10 +257,10 @@ lemma aux1 : coeToComplexPowerSeries.ringHom (integralE4 ^ 3 - integralE6 ^ 2)
   have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
   have hpow4 : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hpow6 : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
+      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := by simp) E6 2
   calc
   _ = coeToComplexPowerSeries.ringHom (integralE4 ^ 3)
       - coeToComplexPowerSeries.ringHom (integralE6 ^ 2) := by
@@ -274,9 +274,8 @@ lemma aux1 : coeToComplexPowerSeries.ringHom (integralE4 ^ 3 - integralE6 ^ 2)
     have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
     simp [pow_three, pow_two, hf, hg]
   _ = qExpansion 1 ((E4.mul (E4.mul E4)) - (E6.mul E6)) := by
-    rw [qExpansion_sub]
-    · exact Real.zero_lt_one
-    · exact one_mem_strictPeriods_SL2Z
+    rw [ModularFormClass.qExpansion_sub (hh := by norm_num)
+      (hΓ := by simp)]
   _ = _ := by
     have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
     have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl

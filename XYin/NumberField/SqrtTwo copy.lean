@@ -1,0 +1,985 @@
+import Mathlib
+
+/-!
+# The real quadratic field `ℚ(√2)`
+
+This file is the real quadratic half of `Experiment.lean`. It focuses on
+`QSqrtTwo = QuadraticAlgebra ℚ 2 0`, i.e. `ℚ(√2)`, and compares this main model
+with the corresponding `AdjoinRoot (X ^ 2 - C (2 : ℚ))` presentation.
+-/
+
+noncomputable section
+
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+open Module NumberField Polynomial
+
+namespace XYin.NumberField.SqrtTwo
+
+/-! ## II. The real quadratic field `ℚ(√2)` -/
+
+/-!
+Unlike Part I, this side is not cyclotomic-specific: there is no primitive-root-of-unity
+generator, and no direct analogue of `IsCyclotomicExtension {3} ℚ K`.
+-/
+
+/-! ### 1. Basic field construction and generator -/
+
+instance : Fact (∀ r : ℚ, r ^ 2 ≠ (2 : ℚ) + (0 : ℚ) * r) := by
+  refine ⟨?_⟩
+  intro r hr
+  have hsquare : IsSquare (2 : ℚ) := by
+    rw [isSquare_iff_exists_sq]
+    refine ⟨r, ?_⟩
+    nlinarith
+  norm_num at hsquare
+
+/-- The real quadratic field `ℚ(√2)`, constructed as a quadratic algebra. -/
+abbrev QSqrtTwo : Type := QuadraticAlgebra ℚ (2 : ℚ) 0
+
+example : Field QSqrtTwo := by infer_instance
+
+instance : NumberField QSqrtTwo :=
+  NumberField.of_module_finite ℚ QSqrtTwo
+
+/-- The distinguished square root of `2` in the quadratic-algebra model. -/
+abbrev sqrtTwoRoot : QSqrtTwo := QuadraticAlgebra.omega
+
+theorem sqrtTwoRoot_sq : sqrtTwoRoot ^ 2 = (2 : QSqrtTwo) := by
+  rw [pow_two, sqrtTwoRoot, QuadraticAlgebra.omega_mul_omega_eq_add]
+  ext <;> norm_num
+
+/-! ### 2. Alternative `AdjoinRoot` presentations -/
+
+/-- The polynomial defining the real quadratic field `ℚ(√2)`. -/
+abbrev sqrtTwoPolynomial : ℚ[X] := X ^ 2 - C (2 : ℚ)
+
+instance : Fact (Irreducible sqrtTwoPolynomial) := by
+  refine ⟨?_⟩
+  apply Polynomial.irreducible_of_degree_le_three_of_not_isRoot
+  · rw [sqrtTwoPolynomial, Finset.mem_Icc]
+    change 1 ≤ (X ^ 2 - C (2 : ℚ)).natDegree ∧
+      (X ^ 2 - C (2 : ℚ)).natDegree ≤ 3
+    rw [natDegree_X_pow_sub_C]
+    norm_num
+  · intro x hx
+    have hx2 : x ^ 2 = 2 := by
+      have hzero : x ^ 2 - 2 = 0 := by
+        simpa [sqrtTwoPolynomial, IsRoot] using hx
+      nlinarith
+    have hsquare : IsSquare (2 : ℚ) := by
+      rw [isSquare_iff_exists_sq]
+      exact ⟨x, hx2.symm⟩
+    norm_num at hsquare
+
+/-- The `AdjoinRoot` presentation of `ℚ(√2)`. -/
+abbrev QSqrtTwoAdjoinRoot : Type := AdjoinRoot sqrtTwoPolynomial
+
+example : Field QSqrtTwoAdjoinRoot := by infer_instance
+
+example : NumberField QSqrtTwoAdjoinRoot := by infer_instance
+
+/-- The formal square root of `2` in the `AdjoinRoot` presentation. -/
+abbrev sqrtTwoAdjoinRoot : QSqrtTwoAdjoinRoot := AdjoinRoot.root sqrtTwoPolynomial
+
+theorem sqrtTwoAdjoinRoot_sq : sqrtTwoAdjoinRoot ^ 2 = (2 : QSqrtTwoAdjoinRoot) := by
+  have hroot : sqrtTwoAdjoinRoot ^ 2 - 2 = 0 := by
+    simpa [sqrtTwoAdjoinRoot, sqrtTwoPolynomial] using
+      (AdjoinRoot.eval₂_root sqrtTwoPolynomial)
+  calc
+    sqrtTwoAdjoinRoot ^ 2 = sqrtTwoAdjoinRoot ^ 2 - 2 + 2 := by ring
+    _ = 2 := by rw [hroot]; ring
+
+def sqrtTwoAdjoinRootToQuadratic : QSqrtTwoAdjoinRoot →ₐ[ℚ] QSqrtTwo :=
+  AdjoinRoot.liftAlgHom sqrtTwoPolynomial (Algebra.ofId ℚ QSqrtTwo) sqrtTwoRoot (by
+    calc
+      sqrtTwoPolynomial.eval₂ (Algebra.ofId ℚ QSqrtTwo) sqrtTwoRoot =
+          sqrtTwoRoot ^ 2 - 2 := by
+        simp [sqrtTwoPolynomial]
+      _ = 0 := by rw [sqrtTwoRoot_sq]; ring)
+
+@[simp]
+theorem sqrtTwoAdjoinRootToQuadratic_root :
+    sqrtTwoAdjoinRootToQuadratic sqrtTwoAdjoinRoot = sqrtTwoRoot := by
+  rw [sqrtTwoAdjoinRootToQuadratic, sqrtTwoAdjoinRoot]
+  exact AdjoinRoot.liftAlgHom_root sqrtTwoPolynomial (Algebra.ofId ℚ QSqrtTwo) sqrtTwoRoot _
+
+def sqrtTwoQuadraticToAdjoinRoot : QSqrtTwo →ₐ[ℚ] QSqrtTwoAdjoinRoot :=
+  (QuadraticAlgebra.lift (R := ℚ) (a := (2 : ℚ)) (b := 0)) ⟨sqrtTwoAdjoinRoot, by
+    rw [← pow_two, sqrtTwoAdjoinRoot_sq]
+    simp⟩
+
+@[simp]
+theorem sqrtTwoQuadraticToAdjoinRoot_root :
+    sqrtTwoQuadraticToAdjoinRoot sqrtTwoRoot = sqrtTwoAdjoinRoot := by
+  simp [sqrtTwoQuadraticToAdjoinRoot, sqrtTwoRoot]
+
+def sqrtTwoAdjoinRootEquivQuadratic : QSqrtTwoAdjoinRoot ≃ₐ[ℚ] QSqrtTwo where
+  __ := sqrtTwoAdjoinRootToQuadratic
+  invFun := sqrtTwoQuadraticToAdjoinRoot
+  left_inv x := by
+    have hcomp :
+        sqrtTwoQuadraticToAdjoinRoot.comp sqrtTwoAdjoinRootToQuadratic =
+          AlgHom.id ℚ QSqrtTwoAdjoinRoot := by
+      apply AdjoinRoot.algHom_ext
+      change sqrtTwoQuadraticToAdjoinRoot
+          (sqrtTwoAdjoinRootToQuadratic sqrtTwoAdjoinRoot) = sqrtTwoAdjoinRoot
+      rw [sqrtTwoAdjoinRootToQuadratic_root, sqrtTwoQuadraticToAdjoinRoot_root]
+    exact DFunLike.congr_fun hcomp x
+  right_inv x := by
+    have hcomp :
+        sqrtTwoAdjoinRootToQuadratic.comp sqrtTwoQuadraticToAdjoinRoot =
+          AlgHom.id ℚ QSqrtTwo := by
+      apply QuadraticAlgebra.algHom_ext
+      change sqrtTwoAdjoinRootToQuadratic
+          (sqrtTwoQuadraticToAdjoinRoot sqrtTwoRoot) = sqrtTwoRoot
+      rw [sqrtTwoQuadraticToAdjoinRoot_root, sqrtTwoAdjoinRootToQuadratic_root]
+    exact DFunLike.congr_fun hcomp x
+
+/-- The usual power basis `1, √2`. -/
+abbrev sqrtTwoAdjoinRootPowerBasis : PowerBasis ℚ QSqrtTwoAdjoinRoot :=
+  AdjoinRoot.powerBasis (f := sqrtTwoPolynomial)
+    ((Fact.out : Irreducible sqrtTwoPolynomial).ne_zero)
+
+abbrev sqrtTwoPowerBasis : PowerBasis ℚ QSqrtTwo :=
+  sqrtTwoAdjoinRootPowerBasis.map sqrtTwoAdjoinRootEquivQuadratic
+
+@[simp]
+theorem sqrtTwoPowerBasis_gen : sqrtTwoPowerBasis.gen = sqrtTwoRoot := by
+  change sqrtTwoAdjoinRootEquivQuadratic sqrtTwoAdjoinRoot = sqrtTwoRoot
+  exact sqrtTwoAdjoinRootToQuadratic_root
+
+/-- The field is generated by the single element `√2`. -/
+example : Algebra.adjoin ℚ ({sqrtTwoRoot} : Set QSqrtTwo) = ⊤ := by
+  rw [← sqrtTwoPowerBasis_gen]
+  exact sqrtTwoPowerBasis.adjoin_gen_eq_top
+
+theorem sqrtTwoPowerBasis_dim : sqrtTwoPowerBasis.dim = 2 := by
+  change sqrtTwoAdjoinRootPowerBasis.dim = 2
+  change sqrtTwoPolynomial.natDegree = 2
+  rw [sqrtTwoPolynomial, natDegree_X_pow_sub_C]
+
+example : Module.finrank ℚ QSqrtTwo = 2 := by
+  rw [PowerBasis.finrank sqrtTwoPowerBasis]
+  exact sqrtTwoPowerBasis_dim
+
+instance : Algebra.IsQuadraticExtension ℚ QSqrtTwo where
+  finrank_eq_two' := by
+    rw [PowerBasis.finrank sqrtTwoPowerBasis]
+    change sqrtTwoPolynomial.natDegree = 2
+    rw [sqrtTwoPolynomial, natDegree_X_pow_sub_C]
+
+/--
+The element `1 + √2` satisfies `X^2 - 2X - 1`.
+This is a useful second presentation because `1 + √2` is a unit.
+-/
+abbrev sqrtTwoUnitPolynomial : ℚ[X] :=
+  C (1 : ℚ) * X ^ 2 + C (-2 : ℚ) * X + C (-1 : ℚ)
+
+instance : Fact (Irreducible sqrtTwoUnitPolynomial) := by
+  refine ⟨?_⟩
+  apply Polynomial.irreducible_of_degree_le_three_of_not_isRoot
+  · rw [sqrtTwoUnitPolynomial, Finset.mem_Icc, natDegree_quadratic (by norm_num : (1 : ℚ) ≠ 0)]
+    norm_num
+  · intro x hx
+    have hzero : x ^ 2 + -(2 * x) + -1 = 0 := by
+      simpa [sqrtTwoUnitPolynomial, IsRoot] using hx
+    have hsquare : IsSquare (2 : ℚ) := by
+      rw [isSquare_iff_exists_sq]
+      refine ⟨x - 1, ?_⟩
+      nlinarith
+    norm_num at hsquare
+
+/-- The same field, now generated by a root of `X^2 - 2X - 1`. -/
+abbrev QSqrtTwoUnitModel : Type := AdjoinRoot sqrtTwoUnitPolynomial
+
+example : Field QSqrtTwoUnitModel := by infer_instance
+
+example : NumberField QSqrtTwoUnitModel := by infer_instance
+
+/-- The formal root corresponding to `1 + √2`. -/
+abbrev sqrtTwoUnitRoot : QSqrtTwoUnitModel := AdjoinRoot.root sqrtTwoUnitPolynomial
+
+theorem sqrtTwoUnitRoot_relation :
+    sqrtTwoUnitRoot ^ 2 - 2 * sqrtTwoUnitRoot - 1 = 0 := by
+  simpa [sqrtTwoUnitRoot, sqrtTwoUnitPolynomial] using
+    (AdjoinRoot.eval₂_root sqrtTwoUnitPolynomial)
+
+/-- The map from `ℚ(√2)` to the `1 + √2` presentation sends `√2` to `β - 1`. -/
+def sqrtTwoToUnitModel : QSqrtTwo →ₐ[ℚ] QSqrtTwoUnitModel :=
+  (QuadraticAlgebra.lift (R := ℚ) (a := (2 : ℚ)) (b := 0))
+    ⟨sqrtTwoUnitRoot - 1, by
+      calc
+        _ = (2 : QSqrtTwoUnitModel) := by
+          calc
+            _ = sqrtTwoUnitRoot ^ 2 - 2 * sqrtTwoUnitRoot + 1 := by ring
+            _ = 2 := by
+              have h := sqrtTwoUnitRoot_relation
+              ring_nf at h ⊢
+              linear_combination h
+        _ = _ := by norm_num [Algebra.smul_def]⟩
+
+@[simp]
+theorem sqrtTwoToUnitModel_root :
+    sqrtTwoToUnitModel sqrtTwoRoot = sqrtTwoUnitRoot - 1 := by
+  simp [sqrtTwoToUnitModel, sqrtTwoRoot]
+
+/-- The inverse map sends the shifted generator to `√2 + 1`. -/
+def unitModelToSqrtTwo : QSqrtTwoUnitModel →ₐ[ℚ] QSqrtTwo :=
+  AdjoinRoot.liftAlgHom sqrtTwoUnitPolynomial (Algebra.ofId ℚ QSqrtTwo)
+    (sqrtTwoRoot + 1) (by
+      calc
+        sqrtTwoUnitPolynomial.eval₂ (Algebra.ofId ℚ QSqrtTwo) (sqrtTwoRoot + 1)
+            = (sqrtTwoRoot + 1) ^ 2 + -(2 * (sqrtTwoRoot + 1)) + -1 := by
+              simp [sqrtTwoUnitPolynomial]
+        _ = sqrtTwoRoot ^ 2 - 2 := by ring
+        _ = 0 := by rw [sqrtTwoRoot_sq]; ring)
+
+@[simp]
+theorem unitModelToSqrtTwo_root :
+    unitModelToSqrtTwo sqrtTwoUnitRoot = sqrtTwoRoot + 1 := by
+  rw [unitModelToSqrtTwo, sqrtTwoUnitRoot]
+  exact AdjoinRoot.liftAlgHom_root sqrtTwoUnitPolynomial (Algebra.ofId ℚ QSqrtTwo)
+    (sqrtTwoRoot + 1) _
+
+/-- The two `AdjoinRoot` presentations of `ℚ(√2)` are equivalent. -/
+def sqrtTwoEquivUnitModel : QSqrtTwo ≃ₐ[ℚ] QSqrtTwoUnitModel where
+  __ := sqrtTwoToUnitModel
+  invFun := unitModelToSqrtTwo
+  left_inv x := by
+    have hcomp :
+        unitModelToSqrtTwo.comp sqrtTwoToUnitModel = AlgHom.id ℚ QSqrtTwo := by
+      apply QuadraticAlgebra.algHom_ext
+      change unitModelToSqrtTwo (sqrtTwoToUnitModel sqrtTwoRoot) = sqrtTwoRoot
+      rw [sqrtTwoToUnitModel_root]
+      simp only [map_sub, map_one, unitModelToSqrtTwo_root]
+      ring
+    change (unitModelToSqrtTwo.comp sqrtTwoToUnitModel) x = (AlgHom.id ℚ QSqrtTwo) x
+    rw [hcomp]
+  right_inv x := by
+    have hcomp :
+        sqrtTwoToUnitModel.comp unitModelToSqrtTwo = AlgHom.id ℚ QSqrtTwoUnitModel := by
+      apply AdjoinRoot.algHom_ext
+      change sqrtTwoToUnitModel (unitModelToSqrtTwo sqrtTwoUnitRoot) = sqrtTwoUnitRoot
+      rw [unitModelToSqrtTwo_root]
+      simp only [map_add, map_one, sqrtTwoToUnitModel_root]
+      ring
+    change (sqrtTwoToUnitModel.comp unitModelToSqrtTwo) x =
+      (AlgHom.id ℚ QSqrtTwoUnitModel) x
+    rw [hcomp]
+
+theorem sqrtTwoEquivUnitModel_root :
+    sqrtTwoEquivUnitModel sqrtTwoRoot = sqrtTwoUnitRoot - 1 :=
+  sqrtTwoToUnitModel_root
+
+/-! ### 3. Ring of integers and integral bases -/
+
+/-- The ring of integers of `ℚ(√2)`. -/
+abbrev O2 : Type := 𝓞 QSqrtTwo
+
+example : CommRing O2 := by infer_instance
+
+example : IsDomain O2 := by infer_instance
+
+example : Algebra O2 QSqrtTwo := by infer_instance
+
+theorem sqrtTwoRoot_isIntegral : IsIntegral ℤ sqrtTwoRoot := by
+  refine ⟨X ^ 2 - C (2 : ℤ), ?_, ?_⟩
+  · exact monic_X_pow_sub_C (2 : ℤ) (by norm_num : (2 : ℕ) ≠ 0)
+  · simp [sqrtTwoRoot_sq]
+
+/-- The algebraic integer `√2`. -/
+abbrev sqrtTwoInteger : O2 :=
+  ⟨sqrtTwoRoot, sqrtTwoRoot_isIntegral⟩
+
+local notation "𝓟₂" => Submodule.span ℤ ({(2 : ℤ)} : Set ℤ)
+
+/-- The same polynomial, now over `ℤ`. -/
+abbrev sqrtTwoIntegerPolynomial : ℤ[X] := X ^ 2 - C (2 : ℤ)
+
+/-- The rational minimal polynomial of the chosen root `√2`. -/
+theorem sqrtTwo_minpoly_rat : minpoly ℚ sqrtTwoRoot = sqrtTwoPolynomial := by
+  rw [← sqrtTwoAdjoinRootToQuadratic_root]
+  change minpoly ℚ (sqrtTwoAdjoinRootEquivQuadratic sqrtTwoAdjoinRoot) =
+    sqrtTwoPolynomial
+  rw [minpoly.algEquiv_eq sqrtTwoAdjoinRootEquivQuadratic sqrtTwoAdjoinRoot]
+  simpa [sqrtTwoPolynomial] using
+    (AdjoinRoot.minpoly_root ((Fact.out : Irreducible sqrtTwoPolynomial).ne_zero) :
+      minpoly ℚ (AdjoinRoot.root sqrtTwoPolynomial) =
+        sqrtTwoPolynomial * C sqrtTwoPolynomial.leadingCoeff⁻¹)
+
+theorem sqrtTwoPolynomial_eq_minpoly : sqrtTwoPolynomial = minpoly ℚ sqrtTwoRoot := by
+  rw [sqrtTwo_minpoly_rat]
+
+/-- The integral minimal polynomial of `√2`, viewed as an element of the field. -/
+theorem sqrtTwo_minpoly_int : minpoly ℤ sqrtTwoRoot = sqrtTwoIntegerPolynomial := by
+  apply (Polynomial.map_injective (algebraMap ℤ ℚ) Int.cast_injective)
+  rw [← minpoly.isIntegrallyClosed_eq_field_fractions' (K := ℚ) sqrtTwoRoot_isIntegral,
+    sqrtTwo_minpoly_rat]
+  change X ^ 2 - C (2 : ℚ) =
+    map (algebraMap ℤ ℚ) (X ^ 2 - C (2 : ℤ))
+  rw [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
+  rw [show (algebraMap ℤ ℚ) (2 : ℤ) = (2 : ℚ) by norm_num]
+
+/-- The polynomial `X^2 - 2` is Eisenstein at `2`. -/
+theorem sqrtTwo_minpoly_int_isEisenstein :
+    (minpoly ℤ sqrtTwoRoot).IsEisensteinAt 𝓟₂ := by
+  rw [sqrtTwo_minpoly_int]
+  refine
+    (monic_X_pow_sub_C (2 : ℤ)
+      (by norm_num : (2 : ℕ) ≠ 0)).isEisensteinAt_of_mem_of_notMem ?_ ?_ ?_
+  · rw [ne_eq, Ideal.eq_top_iff_one]
+    simp [Ideal.submodule_span_eq, Ideal.mem_span_singleton]
+  · intro n hn
+    rw [natDegree_X_pow_sub_C] at hn
+    interval_cases n <;>
+      simp [Ideal.submodule_span_eq]
+  · simp [Ideal.submodule_span_eq, Ideal.span_singleton_pow, Ideal.mem_span_singleton]
+
+/-! ### 4. Discriminants and change-of-basis formulas -/
+
+/-- The discriminant of the order `ℤ[√2]` with basis `1, √2` is `8`. -/
+theorem sqrtTwoPowerBasis_discr :
+    Algebra.discr ℚ sqrtTwoPowerBasis.basis = (8 : ℚ) := by
+  rw [Algebra.discr_powerBasis_eq_norm]
+  have hdim : sqrtTwoPowerBasis.dim = 2 := by
+    change sqrtTwoPolynomial.natDegree = 2
+    rw [sqrtTwoPolynomial, natDegree_X_pow_sub_C]
+  have hfin : Module.finrank ℚ QSqrtTwo = 2 := by
+    rw [PowerBasis.finrank sqrtTwoPowerBasis]
+    exact hdim
+  have hgen : sqrtTwoPowerBasis.gen = sqrtTwoRoot := by
+    exact sqrtTwoPowerBasis_gen
+  have hnorm_two : Algebra.norm ℚ (1 + 1 : QSqrtTwo) = (4 : ℚ) := by
+    rw [show (1 + 1 : QSqrtTwo) = algebraMap ℚ QSqrtTwo (2 : ℚ) by norm_num]
+    rw [Algebra.norm_algebraMap, hfin]
+    norm_num
+  have hnorm_root : Algebra.norm ℚ sqrtTwoRoot = (-2 : ℚ) := by
+    rw [← hgen, Algebra.PowerBasis.norm_gen_eq_coeff_zero_minpoly sqrtTwoPowerBasis]
+    rw [hdim, hgen, sqrtTwo_minpoly_rat]
+    simp [sqrtTwoPolynomial]
+  rw [hfin, hgen, sqrtTwo_minpoly_rat]
+  simp [sqrtTwoRoot, sqrtTwoPolynomial, hnorm_two, hnorm_root]
+  norm_num
+
+/--
+Every algebraic integer in `ℚ(√2)` lies in `ℤ[√2]`.
+
+The proof uses the discriminant bound `8 • z ∈ ℤ[√2]`, then removes the factor
+`2^3` with the Eisenstein theorem for `X^2 - 2`.
+-/
+theorem sqrtTwo_integral_mem_adjoin (z : QSqrtTwo) (hz : IsIntegral ℤ z) :
+    z ∈ Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo) := by
+  have hBint : IsIntegral ℤ sqrtTwoPowerBasis.gen := by
+    rw [sqrtTwoPowerBasis_gen]
+    exact sqrtTwoRoot_isIntegral
+  have hdiscr :=
+    Algebra.discr_mul_isIntegral_mem_adjoin (K := ℚ) (L := QSqrtTwo)
+      (R := ℤ) (B := sqrtTwoPowerBasis) hBint hz
+  have hpow :
+      (2 : ℤ) ^ 3 • z ∈ Algebra.adjoin ℤ ({sqrtTwoPowerBasis.gen} : Set QSqrtTwo) := by
+    convert hdiscr using 1
+    rw [sqrtTwoPowerBasis_discr]
+    norm_num [Algebra.smul_def]
+  have hmem :
+      z ∈ Algebra.adjoin ℤ ({sqrtTwoPowerBasis.gen} : Set QSqrtTwo) :=
+    mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt
+      (R := ℤ) (K := ℚ) (L := QSqrtTwo) (B := sqrtTwoPowerBasis)
+      (p := (2 : ℤ)) (n := 3) Int.prime_two hBint hz hpow
+      (by rw [sqrtTwoPowerBasis_gen]; exact sqrtTwo_minpoly_int_isEisenstein)
+  rwa [sqrtTwoPowerBasis_gen] at hmem
+
+/--
+`ℤ[√2]` is integrally closed in `ℚ(√2)` in the same sense as the cyclotomic
+singleton-adjoin theorem on the `ζ₃` side.
+-/
+example :
+    IsIntegralClosure
+      (Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo)) ℤ QSqrtTwo := by
+  refine ⟨?_, ?_⟩
+  · intro x y hxy
+    exact Subtype.ext hxy
+  · intro x
+    constructor
+    · intro hx
+      exact ⟨⟨x, sqrtTwo_integral_mem_adjoin x hx⟩, rfl⟩
+    · rintro ⟨y, rfl⟩
+      letI : Algebra.IsIntegral ℤ (Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo)) :=
+        Algebra.IsIntegral.adjoin
+          (by
+            intro x hx
+            simp only [Set.mem_singleton_iff] at hx
+            rw [hx]
+            exact sqrtTwoRoot_isIntegral)
+      exact IsIntegral.algebraMap (Algebra.IsIntegral.isIntegral y)
+
+/-- The ring of integers of `ℚ(√2)` is generated over `ℤ` by `√2`. -/
+theorem sqrtTwoInteger_adjoin_eq_top :
+    Algebra.adjoin ℤ ({sqrtTwoInteger} : Set O2) = ⊤ := by
+  apply le_antisymm le_top
+  intro x hx
+  have hfield :
+      (x : QSqrtTwo) ∈ Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo) :=
+    sqrtTwo_integral_mem_adjoin (x : QSqrtTwo) x.2
+  rw [Algebra.adjoin_singleton_eq_range_aeval] at hfield
+  rcases hfield with ⟨P, hP⟩
+  have hx_eq : x = aeval sqrtTwoInteger P := by
+    apply Subtype.ext
+    change (x : QSqrtTwo) = ((aeval sqrtTwoInteger P : O2) : QSqrtTwo)
+    rw [← hP]
+    simpa [sqrtTwoInteger] using
+      (Polynomial.aeval_algHom_apply
+        (algebraMap O2 QSqrtTwo).toIntAlgHom sqrtTwoInteger P)
+  rw [hx_eq]
+  rw [Algebra.adjoin_singleton_eq_range_aeval]
+  exact ⟨P, rfl⟩
+
+/-- The integral minimal polynomial of `√2` as an element of `𝓞 ℚ(√2)`. -/
+theorem sqrtTwoInteger_minpoly :
+    minpoly ℤ sqrtTwoInteger = sqrtTwoIntegerPolynomial := by
+  letI : IsScalarTower ℤ O2 QSqrtTwo :=
+    IsScalarTower.of_algebraMap_eq fun z => by
+      rfl
+  have hint : IsIntegral ℤ sqrtTwoInteger := Algebra.IsIntegral.isIntegral sqrtTwoInteger
+  have hfrac :
+      minpoly ℚ ((algebraMap O2 QSqrtTwo) sqrtTwoInteger) =
+        map (algebraMap ℤ ℚ) (minpoly ℤ sqrtTwoInteger) :=
+    @minpoly.isIntegrallyClosed_eq_field_fractions ℤ O2
+      inferInstance inferInstance inferInstance inferInstance
+      ℚ QSqrtTwo inferInstance inferInstance inferInstance inferInstance inferInstance
+      inferInstance inferInstance inferInstance inferInstance this inferInstance inferInstance
+      sqrtTwoInteger hint
+  apply (Polynomial.map_injective (algebraMap ℤ ℚ) Int.cast_injective)
+  rw [← hfrac]
+  change minpoly ℚ sqrtTwoRoot = map (algebraMap ℤ ℚ) sqrtTwoIntegerPolynomial
+  rw [sqrtTwo_minpoly_rat]
+  change X ^ 2 - C (2 : ℚ) =
+    map (algebraMap ℤ ℚ) (X ^ 2 - C (2 : ℤ))
+  rw [Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
+  rw [show (algebraMap ℤ ℚ) (2 : ℤ) = (2 : ℚ) by norm_num]
+
+/--
+An explicit integral power basis of `𝓞 ℚ(√2)`: the generator is the algebraic
+integer `√2`.
+-/
+abbrev sqrtTwoExplicitIntegralPowerBasis : PowerBasis ℤ O2 :=
+  PowerBasis.ofAdjoinEqTop'
+    (Algebra.IsIntegral.isIntegral sqrtTwoInteger)
+    sqrtTwoInteger_adjoin_eq_top
+
+theorem sqrtTwoExplicitIntegralPowerBasis_gen :
+    sqrtTwoExplicitIntegralPowerBasis.gen = sqrtTwoInteger := by
+  exact PowerBasis.ofAdjoinEqTop'_gen
+    (Algebra.IsIntegral.isIntegral sqrtTwoInteger)
+    sqrtTwoInteger_adjoin_eq_top
+
+theorem sqrtTwoExplicitIntegralPowerBasis_dim :
+    sqrtTwoExplicitIntegralPowerBasis.dim = 2 := by
+  rw [sqrtTwoExplicitIntegralPowerBasis, PowerBasis.ofAdjoinEqTop'_dim,
+    sqrtTwoInteger_minpoly]
+  change sqrtTwoIntegerPolynomial.natDegree = 2
+  rw [sqrtTwoIntegerPolynomial, natDegree_X_pow_sub_C]
+
+/-- The explicit integral basis `[1, √2]` of the ring of integers. -/
+abbrev sqrtTwoExplicitIntegralBasis : Basis (Fin 2) ℤ O2 :=
+  sqrtTwoExplicitIntegralPowerBasis.basis.reindex
+    (finCongr sqrtTwoExplicitIntegralPowerBasis_dim)
+
+/-- The first vector in the explicit integral basis is `1`. -/
+theorem sqrtTwoExplicitIntegralBasis_zero :
+    sqrtTwoExplicitIntegralBasis 0 = 1 := by
+  rw [sqrtTwoExplicitIntegralBasis, Basis.reindex_apply]
+  rw [sqrtTwoExplicitIntegralPowerBasis.basis_eq_pow]
+  have hcoe :
+      (((finCongr sqrtTwoExplicitIntegralPowerBasis_dim).symm (0 : Fin 2) :
+        Fin sqrtTwoExplicitIntegralPowerBasis.dim) : ℕ) = 0 := rfl
+  rw [hcoe]
+  simp
+
+example : sqrtTwoExplicitIntegralBasis 0 = 1 :=
+  sqrtTwoExplicitIntegralBasis_zero
+
+/-- The second vector in the explicit integral basis is `√2`. -/
+theorem sqrtTwoExplicitIntegralBasis_one :
+    sqrtTwoExplicitIntegralBasis 1 = sqrtTwoInteger := by
+  rw [sqrtTwoExplicitIntegralBasis, Basis.reindex_apply]
+  rw [sqrtTwoExplicitIntegralPowerBasis.basis_eq_pow]
+  have hcoe :
+      (((finCongr sqrtTwoExplicitIntegralPowerBasis_dim).symm (1 : Fin 2) :
+        Fin sqrtTwoExplicitIntegralPowerBasis.dim) : ℕ) = 1 := rfl
+  rw [hcoe]
+  simp
+
+example : sqrtTwoExplicitIntegralBasis 1 = sqrtTwoInteger :=
+  sqrtTwoExplicitIntegralBasis_one
+
+theorem sqrtTwoInteger_sq : sqrtTwoInteger ^ 2 = (2 : O2) := by
+  apply Subtype.ext
+  change sqrtTwoRoot ^ 2 = (2 : QSqrtTwo)
+  exact sqrtTwoRoot_sq
+
+set_option linter.flexible false in
+/-- The discriminant of the explicit integral basis `[1, √2]` is `8`. -/
+theorem sqrtTwoExplicitIntegralBasis_discr :
+    Algebra.discr ℤ sqrtTwoExplicitIntegralBasis = (8 : ℤ) := by
+  let bInt : Basis (Fin 2) ℤ (𝓞 QSqrtTwo) := sqrtTwoExplicitIntegralBasis
+  haveI : IsScalarTower ℤ (𝓞 QSqrtTwo) QSqrtTwo := IsScalarTower.of_algebraMap_eq fun _ => rfl
+  have hdiscLoc :=
+    @Algebra.discr_localizationLocalization
+      ℤ (𝓞 QSqrtTwo) _ _ _ ℚ _ _ ℤ⁰ _ QSqrtTwo _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ QSqrtTwo)
+      (by infer_instance : IsScalarTower ℤ (𝓞 QSqrtTwo) QSqrtTwo)
+      (by
+        infer_instance :
+          IsLocalization (Algebra.algebraMapSubmonoid (𝓞 QSqrtTwo) ℤ⁰) QSqrtTwo)
+      (Fin 2) (by infer_instance) (by infer_instance) bInt
+  let bLoc : Basis (Fin 2) ℚ QSqrtTwo :=
+    @Module.Basis.localizationLocalization
+      ℤ ℚ _ ℤ⁰ _ _ _ (𝓞 QSqrtTwo) _ _ QSqrtTwo _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ QSqrtTwo)
+      (by infer_instance : IsScalarTower ℤ (𝓞 QSqrtTwo) QSqrtTwo)
+      (by
+        infer_instance :
+          IsLocalization (Algebra.algebraMapSubmonoid (𝓞 QSqrtTwo) ℤ⁰) QSqrtTwo)
+      (Fin 2) bInt
+  apply (algebraMap ℤ ℚ).injective_int
+  change (algebraMap ℤ ℚ) (Algebra.discr ℤ bInt) = (algebraMap ℤ ℚ) 8
+  rw [← hdiscLoc]
+  change Algebra.discr ℚ bLoc = (8 : ℚ)
+  have hBasis : bLoc = sqrtTwoPowerBasis.basis.reindex (finCongr sqrtTwoPowerBasis_dim) := by
+    apply DFunLike.ext
+    intro i
+    fin_cases i
+    · simp [bLoc, bInt, Basis.localizationLocalization_apply, sqrtTwoExplicitIntegralBasis_zero]
+      change (1 : QSqrtTwo) =
+        sqrtTwoPowerBasis.basis ((finCongr sqrtTwoPowerBasis_dim).symm (0 : Fin 2))
+      rw [sqrtTwoPowerBasis.basis_eq_pow]
+      have hcoe :
+          (((finCongr sqrtTwoPowerBasis_dim).symm (0 : Fin 2) :
+            Fin sqrtTwoPowerBasis.dim) : ℕ) = 0 := rfl
+      rw [hcoe]
+      simp
+    · simp [bLoc, bInt, Basis.localizationLocalization_apply, sqrtTwoExplicitIntegralBasis_one]
+      change sqrtTwoRoot =
+        sqrtTwoPowerBasis.basis ((finCongr sqrtTwoPowerBasis_dim).symm (1 : Fin 2))
+      rw [sqrtTwoPowerBasis.basis_eq_pow]
+      have hcoe :
+          (((finCongr sqrtTwoPowerBasis_dim).symm (1 : Fin 2) :
+            Fin sqrtTwoPowerBasis.dim) : ℕ) = 1 := rfl
+      rw [hcoe]
+      rw [pow_one, sqrtTwoPowerBasis_gen]
+  rw [hBasis]
+  simpa [Basis.coe_reindex] using
+    (Algebra.discr_reindex ℚ sqrtTwoPowerBasis.basis (finCongr sqrtTwoPowerBasis_dim)).trans
+      sqrtTwoPowerBasis_discr
+
+theorem sqrtTwo_numberField_discr :
+    NumberField.discr QSqrtTwo = 8 := by
+  rw [← NumberField.discr_eq_discr QSqrtTwo sqrtTwoExplicitIntegralBasis]
+  exact sqrtTwoExplicitIntegralBasis_discr
+
+attribute [local instance] DivisionRing.toRatAlgebra in
+example : Algebra.discr ℚ (NumberField.integralBasis QSqrtTwo) = (8 : ℚ) := by
+  have h := NumberField.coe_discr QSqrtTwo
+  rw [sqrtTwo_numberField_discr] at h
+  simpa using h.symm
+
+theorem discr_matrix_mulVec_sqrtTwo
+    (P : Matrix (Fin sqrtTwoPowerBasis.dim) (Fin sqrtTwoPowerBasis.dim) ℚ) :
+    Algebra.discr ℚ (Matrix.mulVec (P.map (algebraMap ℚ QSqrtTwo)) sqrtTwoPowerBasis.basis) =
+      P.det ^ 2 * Algebra.discr ℚ sqrtTwoPowerBasis.basis :=
+  Algebra.discr_of_matrix_mulVec _ _
+
+example (P : Matrix (Fin sqrtTwoPowerBasis.dim) (Fin sqrtTwoPowerBasis.dim) ℚ)
+    (hdet : P.det = 1 ∨ P.det = -1) :
+    Algebra.discr ℚ (Matrix.mulVec (P.map (algebraMap ℚ QSqrtTwo)) sqrtTwoPowerBasis.basis) =
+      (8 : ℚ) := by
+  rw [discr_matrix_mulVec_sqrtTwo, sqrtTwoPowerBasis_discr]
+  rcases hdet with h | h
+  · rw [h]
+    norm_num
+  · rw [h]
+    norm_num
+
+/--
+Ramification-flavoured analogue of `(ζ - 1) ∣ 3` on the cyclotomic side:
+here the element `√2` divides `2` in `𝓞 ℚ(√2)`.
+-/
+example : sqrtTwoInteger ∣ (2 : O2) := by
+  use sqrtTwoInteger
+  simpa [pow_two] using sqrtTwoInteger_sq.symm
+
+/-! ### 5. Units -/
+
+/-!
+This Pell-theoretic unit analysis is genuinely specific to the real quadratic side.
+There is no corresponding Pell section for `ℚ(ζ₃)`, which is imaginary quadratic.
+-/
+
+/-- The concrete quadratic order `ℤ[√2]` from mathlib's Pell API. -/
+abbrev ZSqrtTwo : Type := Zsqrtd (2 : ℤ)
+
+/-- The concrete `ℤ√2` model maps to the ring of integers by `√2 ↦ √2`. -/
+abbrev zsqrtTwoToO2 : ZSqrtTwo →+* O2 :=
+  Zsqrtd.lift ⟨sqrtTwoInteger, by simpa [sq] using sqrtTwoInteger_sq⟩
+
+theorem zsqrtTwoToO2_apply (a b : ℤ) :
+    zsqrtTwoToO2 (⟨a, b⟩ : ZSqrtTwo) =
+      (a : O2) + b * sqrtTwoInteger := by
+  simp [zsqrtTwoToO2]
+
+theorem two_not_int_square : ∀ n : ℤ, (2 : ℤ) ≠ n * n := by
+  intro n hn
+  have hsquare : IsSquare (2 : ℤ) := ⟨n, hn⟩
+  norm_num at hsquare
+
+theorem zsqrtTwoToO2_injective : Function.Injective zsqrtTwoToO2 :=
+  Zsqrtd.lift_injective
+    ⟨sqrtTwoInteger, by simpa [sq] using sqrtTwoInteger_sq⟩
+    two_not_int_square
+
+theorem zsqrtTwoToO2_surjective : Function.Surjective zsqrtTwoToO2 := by
+  intro x
+  let a : ℤ := sqrtTwoExplicitIntegralBasis.repr x 0
+  let b : ℤ := sqrtTwoExplicitIntegralBasis.repr x 1
+  refine ⟨(⟨a, b⟩ : ZSqrtTwo), ?_⟩
+  rw [zsqrtTwoToO2_apply]
+  have hsum := sqrtTwoExplicitIntegralBasis.sum_repr x
+  have h0 :
+      sqrtTwoExplicitIntegralPowerBasis.basis
+          ((finCongr sqrtTwoExplicitIntegralPowerBasis_dim).symm (0 : Fin 2)) =
+        (1 : O2) := by
+    simpa [sqrtTwoExplicitIntegralBasis, Basis.reindex_apply] using
+      sqrtTwoExplicitIntegralBasis_zero
+  have h1 :
+      sqrtTwoExplicitIntegralPowerBasis.basis
+          ((finCongr sqrtTwoExplicitIntegralPowerBasis_dim).symm (1 : Fin 2)) =
+        sqrtTwoInteger := by
+    simpa [sqrtTwoExplicitIntegralBasis, Basis.reindex_apply] using
+      sqrtTwoExplicitIntegralBasis_one
+  rw [show (a : O2) = (a : O2) * (1 : O2) by rw [mul_one]]
+  rw [← h0, ← h1]
+  simpa [a, b, Fin.sum_univ_two] using hsum
+
+/-- The explicit ring equivalence `ℤ√2 ≃ 𝓞 ℚ(√2)`. -/
+abbrev zsqrtTwoEquivO2 : ZSqrtTwo ≃+* O2 :=
+  RingEquiv.ofBijective zsqrtTwoToO2
+    ⟨zsqrtTwoToO2_injective, zsqrtTwoToO2_surjective⟩
+
+/-- The unit `1 + √2` in the ring of integers. -/
+abbrev sqrtTwoFundamentalUnit : O2ˣ where
+  val := sqrtTwoInteger + 1
+  inv := sqrtTwoInteger - 1
+  val_inv := by
+    apply Subtype.ext
+    calc
+      (sqrtTwoRoot + 1) * (sqrtTwoRoot - 1) = sqrtTwoRoot ^ 2 - 1 := by ring
+      _ = (1 : QSqrtTwo) := by rw [sqrtTwoRoot_sq]; ring
+  inv_val := by
+    apply Subtype.ext
+    calc
+      (sqrtTwoRoot - 1) * (sqrtTwoRoot + 1) = sqrtTwoRoot ^ 2 - 1 := by ring
+      _ = (1 : QSqrtTwo) := by rw [sqrtTwoRoot_sq]; ring
+
+/-- The same unit `1 + √2`, but in mathlib's concrete `ℤ√2` model. -/
+abbrev zsqrtTwoFundamentalUnit : ZSqrtTwoˣ where
+  val := ⟨1, 1⟩
+  inv := ⟨-1, 1⟩
+  val_inv := by
+    ext <;> norm_num
+  inv_val := by
+    ext <;> norm_num
+
+theorem zsqrtTwoFundamentalUnit_norm :
+    Zsqrtd.norm (zsqrtTwoFundamentalUnit : ZSqrtTwo) = -1 := by
+  norm_num [zsqrtTwoFundamentalUnit, Zsqrtd.norm]
+
+theorem zsqrtTwoEquivO2_fundamentalUnit :
+    Units.mapEquiv zsqrtTwoEquivO2.toMulEquiv zsqrtTwoFundamentalUnit =
+      sqrtTwoFundamentalUnit := by
+  apply Units.ext
+  change zsqrtTwoEquivO2 (⟨1, 1⟩ : ZSqrtTwo) = sqrtTwoInteger + 1
+  change zsqrtTwoToO2 (⟨1, 1⟩ : ZSqrtTwo) = sqrtTwoInteger + 1
+  rw [zsqrtTwoToO2_apply]
+  ring
+
+theorem zsqrtTwoEquivO2_unitsMap_neg (v : ZSqrtTwoˣ) :
+    Units.mapEquiv zsqrtTwoEquivO2.toMulEquiv (-v) =
+      -(Units.mapEquiv zsqrtTwoEquivO2.toMulEquiv v) := by
+  apply Units.ext
+  change zsqrtTwoEquivO2 (-(v : ZSqrtTwo)) =
+    -zsqrtTwoEquivO2 (v : ZSqrtTwo)
+  rw [map_neg]
+
+/--
+The square of `1 + √2` is `3 + 2√2`, a norm-one unit.
+Mathlib's Pell API phrases "fundamental" for norm-one solutions, so this is
+the Pell solution attached to the fundamental unit `1 + √2`.
+-/
+theorem sqrtTwoFundamentalUnit_sq :
+    ((sqrtTwoFundamentalUnit ^ 2 : O2ˣ) : O2) =
+      3 + 2 * sqrtTwoInteger := by
+  apply Subtype.ext
+  calc
+    (sqrtTwoRoot + 1) ^ 2 =
+        sqrtTwoRoot ^ 2 + 2 * sqrtTwoRoot + 1 := by ring
+    _ = (3 : QSqrtTwo) + 2 * sqrtTwoRoot := by rw [sqrtTwoRoot_sq]; ring
+
+/-- The Pell solution `3 + 2√2`, i.e. `(1 + √2)^2`. -/
+abbrev pellTwoFundamentalSolution : Pell.Solution₁ (2 : ℤ) :=
+  Pell.Solution₁.mk 3 2 (by norm_num)
+
+/--
+`3 + 2√2` is the fundamental norm-one solution of Pell's equation
+`x^2 - 2y^2 = 1`. Equivalently, the unit `1 + √2` is the usual fundamental
+unit, with square equal to the fundamental positive norm-one unit.
+-/
+theorem pellTwoFundamentalSolution_isFundamental :
+    Pell.IsFundamental pellTwoFundamentalSolution := by
+  refine ⟨?_, ?_, ?_⟩
+  · norm_num [pellTwoFundamentalSolution]
+  · norm_num [pellTwoFundamentalSolution]
+  · intro b hb
+    by_contra hlt
+    have hsmall : b.x < 3 := by
+      have h := not_le.mp hlt
+      simpa [pellTwoFundamentalSolution] using h
+    have hx2 : b.x = 2 := by omega
+    have hprop := b.prop
+    rw [hx2] at hprop
+    have hodd : 2 * b.y ^ 2 = 3 := by nlinarith
+    omega
+
+/-- Every norm-one Pell unit for `d = 2` is a signed power of `3 + 2√2`. -/
+theorem pellTwoFundamentalSolution_generates_normOnePell
+    (a : Pell.Solution₁ (2 : ℤ)) :
+    ∃ n : ℤ, a = pellTwoFundamentalSolution ^ n ∨
+      a = -pellTwoFundamentalSolution ^ n :=
+  pellTwoFundamentalSolution_isFundamental.eq_zpow_or_neg_zpow a
+
+theorem zsqrtTwoFundamentalUnit_sq_toPell :
+    (Unitary.toUnits pellTwoFundamentalSolution : ZSqrtTwoˣ) =
+      zsqrtTwoFundamentalUnit ^ 2 := by
+  ext <;> norm_num [pellTwoFundamentalSolution, zsqrtTwoFundamentalUnit,
+    pow_two]
+
+theorem zsqrtTwo_normOneUnit_generated_by_square
+    (u : ZSqrtTwoˣ) (hnorm : Zsqrtd.norm (u : ZSqrtTwo) = 1) :
+    ∃ n : ℤ, u = zsqrtTwoFundamentalUnit ^ (2 * n) ∨
+      u = -(zsqrtTwoFundamentalUnit ^ (2 * n)) := by
+  let a : Pell.Solution₁ (2 : ℤ) :=
+    ⟨(u : ZSqrtTwo), Zsqrtd.norm_eq_one_iff_mem_unitary.mp hnorm⟩
+  have hua : u = Unitary.toUnits a := by
+    apply Units.ext
+    rfl
+  obtain ⟨n, hn | hn⟩ := pellTwoFundamentalSolution_generates_normOnePell a
+  · refine ⟨n, Or.inl ?_⟩
+    calc
+      u = Unitary.toUnits a := hua
+      _ = Unitary.toUnits (pellTwoFundamentalSolution ^ n) := by rw [hn]
+      _ = (Unitary.toUnits pellTwoFundamentalSolution : ZSqrtTwoˣ) ^ n := by
+        exact (Unitary.toUnits : unitary ZSqrtTwo →* ZSqrtTwoˣ).map_zpow
+          pellTwoFundamentalSolution n
+      _ = (zsqrtTwoFundamentalUnit ^ 2) ^ n := by
+        rw [zsqrtTwoFundamentalUnit_sq_toPell]
+      _ = zsqrtTwoFundamentalUnit ^ (2 * n) :=
+        (zpow_mul zsqrtTwoFundamentalUnit 2 n).symm
+  · refine ⟨n, Or.inr ?_⟩
+    calc
+      u = Unitary.toUnits a := hua
+      _ = Unitary.toUnits (-(pellTwoFundamentalSolution ^ n)) := by rw [hn]
+      _ = -Unitary.toUnits (pellTwoFundamentalSolution ^ n) := by
+        apply Units.ext
+        rfl
+      _ = -((Unitary.toUnits pellTwoFundamentalSolution : ZSqrtTwoˣ) ^ n) := by
+        have hpow :
+            Unitary.toUnits (pellTwoFundamentalSolution ^ n) =
+              (Unitary.toUnits pellTwoFundamentalSolution : ZSqrtTwoˣ) ^ n :=
+          (Unitary.toUnits : unitary ZSqrtTwo →* ZSqrtTwoˣ).map_zpow
+            pellTwoFundamentalSolution n
+        rw [hpow]
+      _ = -(zsqrtTwoFundamentalUnit ^ (2 * n)) := by
+        rw [zsqrtTwoFundamentalUnit_sq_toPell]
+        exact congrArg Neg.neg
+          (zpow_mul zsqrtTwoFundamentalUnit 2 n).symm
+
+/-- Every unit of `ℤ√2` is a signed power of `1 + √2`. -/
+theorem zsqrtTwo_units_generated_by_fundamental (u : ZSqrtTwoˣ) :
+    ∃ n : ℤ, u = zsqrtTwoFundamentalUnit ^ n ∨
+      u = -(zsqrtTwoFundamentalUnit ^ n) := by
+  have hnormUnit : IsUnit (Zsqrtd.norm (u : ZSqrtTwo)) :=
+    (Zsqrtd.isUnit_iff_norm_isUnit (u : ZSqrtTwo)).mp u.isUnit
+  rcases Int.isUnit_eq_one_or hnormUnit with hnorm | hnorm
+  · obtain ⟨n, hn | hn⟩ :=
+      zsqrtTwo_normOneUnit_generated_by_square u hnorm
+    · exact ⟨2 * n, Or.inl hn⟩
+    · exact ⟨2 * n, Or.inr hn⟩
+  · have hmulnorm :
+        Zsqrtd.norm ((u * zsqrtTwoFundamentalUnit : ZSqrtTwoˣ) :
+          ZSqrtTwo) = 1 := by
+      rw [Units.val_mul, Zsqrtd.norm_mul, hnorm,
+        zsqrtTwoFundamentalUnit_norm]
+      norm_num
+    obtain ⟨n, hn | hn⟩ :=
+      zsqrtTwo_normOneUnit_generated_by_square
+        (u * zsqrtTwoFundamentalUnit) hmulnorm
+    · refine ⟨2 * n - 1, Or.inl ?_⟩
+      calc
+        u = (u * zsqrtTwoFundamentalUnit) *
+            zsqrtTwoFundamentalUnit⁻¹ := by group
+        _ = (zsqrtTwoFundamentalUnit ^ (2 * n)) *
+            zsqrtTwoFundamentalUnit⁻¹ := by rw [hn]
+        _ = zsqrtTwoFundamentalUnit ^ (2 * n - 1) := by
+          rw [← zpow_neg_one zsqrtTwoFundamentalUnit, ← zpow_add]
+          ring_nf
+    · refine ⟨2 * n - 1, Or.inr ?_⟩
+      calc
+        u = (u * zsqrtTwoFundamentalUnit) *
+            zsqrtTwoFundamentalUnit⁻¹ := by group
+        _ = (-(zsqrtTwoFundamentalUnit ^ (2 * n))) *
+            zsqrtTwoFundamentalUnit⁻¹ := by rw [hn]
+        _ = -(zsqrtTwoFundamentalUnit ^ (2 * n - 1)) := by
+          rw [neg_mul, ← zpow_neg_one zsqrtTwoFundamentalUnit, ← zpow_add]
+          ring_nf
+
+/-- Every unit of `𝓞 ℚ(√2)` is a signed power of the unit `1 + √2`. -/
+theorem sqrtTwoFundamentalUnit_generates_unitGroup (u : O2ˣ) :
+    ∃ n : ℤ, u = sqrtTwoFundamentalUnit ^ n ∨
+      u = -(sqrtTwoFundamentalUnit ^ n) := by
+  let e : ZSqrtTwoˣ ≃* O2ˣ :=
+    Units.mapEquiv zsqrtTwoEquivO2.toMulEquiv
+  obtain ⟨n, hn | hn⟩ :=
+    zsqrtTwo_units_generated_by_fundamental (e.symm u)
+  · refine ⟨n, Or.inl ?_⟩
+    calc
+      u = e (e.symm u) := (e.apply_symm_apply u).symm
+      _ = e (zsqrtTwoFundamentalUnit ^ n) := by rw [hn]
+      _ = e zsqrtTwoFundamentalUnit ^ n := by
+        exact map_zpow e zsqrtTwoFundamentalUnit n
+      _ = sqrtTwoFundamentalUnit ^ n := by
+        rw [zsqrtTwoEquivO2_fundamentalUnit]
+  · refine ⟨n, Or.inr ?_⟩
+    calc
+      u = e (e.symm u) := (e.apply_symm_apply u).symm
+      _ = e (-(zsqrtTwoFundamentalUnit ^ n)) := by rw [hn]
+      _ = -(e (zsqrtTwoFundamentalUnit ^ n)) := by
+        exact zsqrtTwoEquivO2_unitsMap_neg (zsqrtTwoFundamentalUnit ^ n)
+      _ = -(e zsqrtTwoFundamentalUnit ^ n) := by
+        rw [map_zpow e zsqrtTwoFundamentalUnit n]
+      _ = -(sqrtTwoFundamentalUnit ^ n) := by
+        rw [zsqrtTwoEquivO2_fundamentalUnit]
+
+/--
+The unit `1 + √2` is fundamental, in the standard Pell normalization: its
+square is the positive norm-one generator, and that generator produces all
+norm-one Pell units up to sign.
+-/
+theorem sqrtTwoFundamentalUnit_isFundamental :
+    ((sqrtTwoFundamentalUnit ^ 2 : O2ˣ) : O2) =
+        3 + 2 * sqrtTwoInteger ∧
+      ∀ a : Pell.Solution₁ (2 : ℤ), ∃ n : ℤ,
+        a = pellTwoFundamentalSolution ^ n ∨
+          a = -pellTwoFundamentalSolution ^ n := by
+  exact ⟨sqrtTwoFundamentalUnit_sq,
+    pellTwoFundamentalSolution_generates_normOnePell⟩
+
+/- id="nzw7so"
+Remark: for this `AdjoinRoot` model, the file records the stronger explicit statement
+`sqrtTwoFundamentalUnit_generates_unitGroup` instead of short global formulas such as
+`Units.torsionOrder QSqrtTwo = 2` and `Units.rank QSqrtTwo = 1`.
+-/
+
+/-! ### 6. Minkowski bounds and class groups -/
+
+example : Fintype (ClassGroup O2) := by infer_instance
+
+example (C : ClassGroup O2) : ∃ I : (Ideal O2)⁰, ClassGroup.mk0 I = C :=
+  ClassGroup.mk0_surjective C
+
+abbrev trivialFractionalIdealSqrtTwo : (FractionalIdeal O2⁰ QSqrtTwo)ˣ :=
+  1
+
+example : 0 < mixedEmbedding.minkowskiBound QSqrtTwo trivialFractionalIdealSqrtTwo :=
+  mixedEmbedding.minkowskiBound_pos QSqrtTwo trivialFractionalIdealSqrtTwo
+
+example : mixedEmbedding.minkowskiBound QSqrtTwo trivialFractionalIdealSqrtTwo < ⊤ :=
+  mixedEmbedding.minkowskiBound_lt_top QSqrtTwo trivialFractionalIdealSqrtTwo
+
+/- Remark: unlike the cyclotomic side (`IsCyclotomicExtension.Rat.three_pid`), we do not
+have a similarly short API lemma here giving `IsPrincipalIdealRing O2` or
+`NumberField.classNumber QSqrtTwo = 1` directly from this `AdjoinRoot` presentation. -/
+
+/-! ### 7. Galois theory and conjugation -/
+
+/-- The nontrivial conjugation automorphism sends `√2` to `-√2`. -/
+def sqrtTwoConjHom : QSqrtTwo →ₐ[ℚ] QSqrtTwo :=
+  (QuadraticAlgebra.lift (R := ℚ) (a := (2 : ℚ)) (b := 0)) ⟨-sqrtTwoRoot, by
+    rw [← pow_two, neg_sq, sqrtTwoRoot_sq]
+    ext <;> norm_num⟩
+
+@[simp]
+theorem sqrtTwoConjHom_root : sqrtTwoConjHom sqrtTwoRoot = -sqrtTwoRoot := by
+  simp [sqrtTwoConjHom, sqrtTwoRoot]
+
+/-- The conjugation map is an involutive `ℚ`-algebra equivalence. -/
+def sqrtTwoConj : QSqrtTwo ≃ₐ[ℚ] QSqrtTwo where
+  __ := sqrtTwoConjHom
+  invFun := sqrtTwoConjHom
+  left_inv x := by
+    have hcomp : sqrtTwoConjHom.comp sqrtTwoConjHom = AlgHom.id ℚ QSqrtTwo := by
+      apply QuadraticAlgebra.algHom_ext
+      change sqrtTwoConjHom (sqrtTwoConjHom sqrtTwoRoot) = sqrtTwoRoot
+      rw [sqrtTwoConjHom_root]
+      simp only [map_neg, sqrtTwoConjHom_root, neg_neg]
+    change (sqrtTwoConjHom.comp sqrtTwoConjHom) x = (AlgHom.id ℚ QSqrtTwo) x
+    rw [hcomp]
+  right_inv x := by
+    have hcomp : sqrtTwoConjHom.comp sqrtTwoConjHom = AlgHom.id ℚ QSqrtTwo := by
+      apply QuadraticAlgebra.algHom_ext
+      change sqrtTwoConjHom (sqrtTwoConjHom sqrtTwoRoot) = sqrtTwoRoot
+      rw [sqrtTwoConjHom_root]
+      simp only [map_neg, sqrtTwoConjHom_root, neg_neg]
+    change (sqrtTwoConjHom.comp sqrtTwoConjHom) x = (AlgHom.id ℚ QSqrtTwo) x
+    rw [hcomp]
+
+example : sqrtTwoConj sqrtTwoRoot = -sqrtTwoRoot :=
+  sqrtTwoConjHom_root
+
+example : IsGalois ℚ QSqrtTwo := by infer_instance
+
+theorem sqrtTwo_gal_eq_id_or_conj (σ : Gal(QSqrtTwo/ℚ)) :
+    σ = 1 ∨ σ = sqrtTwoConj := by
+  have hsq : (σ sqrtTwoRoot) ^ 2 = (2 : QSqrtTwo) := by
+    rw [← map_pow, sqrtTwoRoot_sq]
+    change σ (algebraMap ℚ QSqrtTwo (2 : ℚ)) = algebraMap ℚ QSqrtTwo (2 : ℚ)
+    exact σ.commutes 2
+  have hfactor : (σ sqrtTwoRoot - sqrtTwoRoot) * (σ sqrtTwoRoot + sqrtTwoRoot) = 0 := by
+    calc
+      (σ sqrtTwoRoot - sqrtTwoRoot) * (σ sqrtTwoRoot + sqrtTwoRoot) =
+          (σ sqrtTwoRoot) ^ 2 - sqrtTwoRoot ^ 2 := by ring
+      _ = 2 - 2 := by rw [hsq, sqrtTwoRoot_sq]
+      _ = 0 := by norm_num
+  rcases mul_eq_zero.mp hfactor with h | h
+  · left
+    have hσ : (σ : QSqrtTwo →ₐ[ℚ] QSqrtTwo) = AlgHom.id ℚ QSqrtTwo := by
+      apply QuadraticAlgebra.algHom_ext
+      change σ sqrtTwoRoot = sqrtTwoRoot
+      exact sub_eq_zero.mp h
+    exact DFunLike.ext _ _ fun x => DFunLike.congr_fun hσ x
+  · right
+    have hσ : (σ : QSqrtTwo →ₐ[ℚ] QSqrtTwo) = sqrtTwoConj.toAlgHom := by
+      apply QuadraticAlgebra.algHom_ext
+      calc
+        σ sqrtTwoRoot = -sqrtTwoRoot := eq_neg_iff_add_eq_zero.mpr h
+        _ = sqrtTwoConj sqrtTwoRoot := by
+          change -sqrtTwoRoot = sqrtTwoConjHom sqrtTwoRoot
+          exact sqrtTwoConjHom_root.symm
+    exact DFunLike.ext _ _ fun x => DFunLike.congr_fun hσ x
+
+/- Remark: the file gives the concrete two-automorphism classification above rather than
+packaging a full group equivalence `Gal(QSqrtTwo / ℚ) ≃* Multiplicative (ZMod 2)`. -/
+
+
+end XYin.NumberField.SqrtTwo
