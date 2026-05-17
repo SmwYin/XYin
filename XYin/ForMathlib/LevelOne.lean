@@ -5,9 +5,9 @@ Authors: Chris Birkbeck
 -/
 import Mathlib.Analysis.Complex.AbsMax
 import Mathlib.NumberTheory.Modular
-import LeanModularForms.ForMathlib.QExpansion
-import LeanModularForms.ForMathlib.CongruenceSubgrps
-import LeanModularForms.ForMathlib.Identities
+import XYin.ForMathlib.QExpansion
+import XYin.ForMathlib.CongruenceSubgrps
+import XYin.ForMathlib.Identities
 import Mathlib.NumberTheory.ModularForms.LevelOne
 /-!
 # Level one modular forms

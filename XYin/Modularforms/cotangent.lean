@@ -8,7 +8,7 @@ import Mathlib.Analysis.Complex.IntegerCompl
 import Mathlib.Analysis.Complex.LocallyUniformLimit
 import Mathlib.Analysis.PSeries
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.EulerSineProd
-import LeanModularForms.Modularforms.uniformcts
+import XYin.Modularforms.uniformcts
 
 /-!
 # Cotangent

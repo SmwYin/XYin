@@ -9,7 +9,7 @@ import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 import Mathlib.NumberTheory.ModularForms.Basic
 import Mathlib.NumberTheory.ModularForms.Identities
 import Mathlib.NumberTheory.ModularForms.QExpansion
-import LeanModularForms.ForMathlib.Identities
+import XYin.ForMathlib.Identities
 import Mathlib.RingTheory.PowerSeries.Basic
 
 /-!

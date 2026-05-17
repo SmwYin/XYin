@@ -7,7 +7,7 @@ Authors: Chris Birkbeck
 import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 import Mathlib.NumberTheory.ModularForms.Identities
-import LeanModularForms.ForMathlib.CongruenceSubgrps
+import XYin.ForMathlib.CongruenceSubgrps
 
 /-!
 # Identities of ModularForms and SlashInvariantForms

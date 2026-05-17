@@ -1,10 +1,8 @@
-/-
+/- /-
 Copyright (c) 2025 Chris Birkbeck. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Chris Birkbeck
 -/
-
-/-
 import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.CStarAlgebra.Classes
@@ -1022,5 +1020,4 @@ lemma E_k_q_expansion {k : ℕ} (hk : 3 ≤ k) (hk2 : Even k) (z : ℍ) :
   ring
 
 #min_imports
-
--/
+ -/

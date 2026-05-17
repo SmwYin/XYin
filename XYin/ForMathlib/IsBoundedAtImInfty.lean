@@ -9,8 +9,8 @@ import Mathlib.Analysis.Normed.Order.Lattice
 import Mathlib.NumberTheory.ModularForms.EisensteinSeries.UniformConvergence
 import Mathlib.NumberTheory.ModularForms.Identities
 import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
-import LeanModularForms.ForMathlib.CongruenceSubgrps
-import LeanModularForms.ForMathlib.Identities
+import XYin.ForMathlib.CongruenceSubgrps
+import XYin.ForMathlib.Identities
 
 /-!
 # Boundedness of Eisenstein series
