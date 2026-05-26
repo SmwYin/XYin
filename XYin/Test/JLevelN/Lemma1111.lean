@@ -33,6 +33,7 @@ Lemma 11.11 used in the modular-equation product. -/
 abbrev Gamma0RightCosets (N : ℕ+) :=
   Quotient (QuotientGroup.rightRel (CongruenceSubgroup.Gamma0 (N : ℕ)))
 
+/-- Finiteness of the Cox right-coset quotient, using finite index of `Γ₀(N)`. -/
 noncomputable instance gamma0RightCosetsFintype (N : ℕ+) :
     Fintype (Gamma0RightCosets N) := by
   letI : NeZero (N : ℕ) := ⟨PNat.ne_zero N⟩
@@ -62,7 +63,7 @@ noncomputable def gamma0RightCosetEval (N : ℕ+) (c : Gamma0RightCosets N)
       jN N (x • z) = jN N ((δ : SL(2, ℤ)) • (x • z)) := hinv.symm
       _ = jN N (y • z) := by rw [← hact]
 
-/-- Cox equation (11.14), specialized at the second variable `j z`, as a
+/-- Cox equation (11.14), specialised at the second variable `j z`, as a
 pointwise product over right cosets. -/
 noncomputable def coxPhiAtJ (N : ℕ+) (z : ℍ) : Polynomial ℂ :=
   ∏ c : Gamma0RightCosets N,
@@ -78,6 +79,7 @@ theorem coxPhiAtJ_eval_jN (N : ℕ+) (z : ℍ) :
     (Quotient.mk _ (1 : SL(2, ℤ)) : Gamma0RightCosets N)) ?_
   simp [gamma0RightCosetEval]
 
+/-- The Cox pointwise product has `jN N z` as a root. -/
 theorem coxPhiAtJ_isRoot_jN (N : ℕ+) (z : ℍ) :
     (coxPhiAtJ N z).IsRoot (jN N z) := by
   simpa [Polynomial.IsRoot] using coxPhiAtJ_eval_jN N z
@@ -90,6 +92,7 @@ theorem coxPhiAtJ_monic (N : ℕ+) (z : ℍ) : (coxPhiAtJ N z).Monic := by
       (fun c => Polynomial.X - Polynomial.C (gamma0RightCosetEval N c z))
       (fun c _ => Polynomial.monic_X_sub_C (gamma0RightCosetEval N c z))
 
+/-- Cox's pointwise right-coset product is nonzero because it is monic. -/
 theorem coxPhiAtJ_ne_zero (N : ℕ+) (z : ℍ) : coxPhiAtJ N z ≠ 0 :=
   (coxPhiAtJ_monic N z).ne_zero
 
@@ -161,6 +164,7 @@ theorem coxPhiAtJ_sl2_smul (N : ℕ+) (δ : SL(2, ℤ)) (z : ℍ) :
           (fun c : Gamma0RightCosets N =>
             Polynomial.X - Polynomial.C (gamma0RightCosetEval N c z)))
 
+/-- Coefficients of the pointwise Cox product are invariant under `SL₂(ℤ)`. -/
 theorem coxPhiAtJ_coeff_sl2_smul (N : ℕ+) (δ : SL(2, ℤ)) (z : ℍ) (n : ℕ) :
     (coxPhiAtJ N (δ • z)).coeff n = (coxPhiAtJ N z).coeff n :=
   congrArg (fun P : Polynomial ℂ => P.coeff n) (coxPhiAtJ_sl2_smul N δ z)
@@ -186,12 +190,13 @@ noncomputable def coxPhiFunction (N : ℕ+) : Polynomial (ℍ → ℂ) :=
     (Polynomial.X - Polynomial.C (fun z => gamma0RightCosetEval N c z))
 
 /-- Point evaluation of the function-valued Cox product recovers the
-specialized product in Cox equation (11.14). -/
+specialised product in Cox equation (11.14). -/
 theorem coxPhiFunction_map_eval (N : ℕ+) (z : ℍ) :
     (coxPhiFunction N).map (evalAtUpper z) = coxPhiAtJ N z := by
   classical
   simp [coxPhiFunction, coxPhiAtJ, evalAtUpper, Polynomial.map_prod]
 
+/-- Coefficients of the function-valued Cox product evaluate to pointwise coefficients. -/
 theorem coxPhiFunction_coeff_apply (N : ℕ+) (n : ℕ) (z : ℍ) :
     (coxPhiFunction N).coeff n z = (coxPhiAtJ N z).coeff n := by
   rw [← coxPhiFunction_map_eval N z, Polynomial.coeff_map]
@@ -208,6 +213,7 @@ theorem coxPhiFunction_eval_jN (N : ℕ+) :
     simpa [evalAtUpper, Polynomial.eval_map] using h
   simpa [evalAtUpper] using happly
 
+/-- Coefficients of the function-valued Cox product are invariant under `SL₂(ℤ)`. -/
 theorem coxPhiFunction_coeff_sl2_smul
     (N : ℕ+) (δ : SL(2, ℤ)) (n : ℕ) (z : ℍ) :
     (coxPhiFunction N).coeff n (δ • z) =

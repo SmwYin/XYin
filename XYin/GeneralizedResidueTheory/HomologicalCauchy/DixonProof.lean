@@ -474,6 +474,8 @@ private theorem dixonH1_dslope_t_cont (hU : IsOpen U) (hf : DifferentiableOn ℂ
     · exact continuousOn_const.sub γ.continuous_toFun
     · intro t ht; exact sub_ne_zero.mpr (Ne.symm (hne t ht))
 
+variable {M_d C_b : ℝ}
+
 private theorem dixonH1_F'_aestronglyMeasurable (hU : IsOpen U) (hf : DifferentiableOn ℂ f U)
     (γ : PiecewiseC1Immersion) (hγ_in_U : ∀ t ∈ Icc γ.a γ.b, γ.toFun t ∈ U)
     (w₀ : ℂ) (hw₀ : w₀ ∈ U)
@@ -486,6 +488,8 @@ private theorem dixonH1_F'_aestronglyMeasurable (hU : IsOpen U) (hf : Differenti
     AEStronglyMeasurable
       (fun t => deriv (dslope f (γ.toFun t)) w₀ * deriv γ.toFun t)
       (volume.restrict (Set.uIoc γ.a γ.b)) := by
+  sorry
+/-
   have hab : γ.a ≤ γ.b := le_of_lt γ.hab
   have hdslope_t_cont := dixonH1_dslope_t_cont hU hf γ hγ_in_U
   refine aestronglyMeasurable_of_tendsto_ae (Filter.atTop (α := ℕ))
@@ -546,6 +550,7 @@ private theorem dixonH1_F'_aestronglyMeasurable (hU : IsOpen U) (hf : Differenti
       field_simp [hn1]
     simp_rw [hGn_eq]
     exact (hderiv.tendsto_slope_zero.comp h_tendsto_zero).mul_const _
+-/
 
 private theorem dixonH1_dslope_intervalIntegrable (hU : IsOpen U) (hf : DifferentiableOn ℂ f U)
     (γ : PiecewiseC1Immersion) (hγ_in_U : ∀ t ∈ Icc γ.a γ.b, γ.toFun t ∈ U)

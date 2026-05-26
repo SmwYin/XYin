@@ -196,3 +196,10 @@ lemma qExpansion_injective [hn : NeZero n] (f : ModularForm Γ(n) k) :
     simpa using (qExpansion_zero (h := n))
   -/
   sorry
+
+namespace SlashInvariantFormClass
+
+protected noncomputable abbrev cuspFunction (h : ℝ) (f : UpperHalfPlane → ℂ) : ℂ → ℂ :=
+  UpperHalfPlane.cuspFunction h f
+
+end SlashInvariantFormClass

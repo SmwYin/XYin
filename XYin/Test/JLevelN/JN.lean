@@ -25,7 +25,7 @@ section modularEquation
 /-! ## `jN` and `Γ₀(N)` invariance
 
 This section uses Cox Theorem 11.2(ii), the `SL₂(ℤ)`-invariance of `j`, to
-formalize the `j(mτ)` invariance assertion in Theorem 11.9(ii).
+formalise the `j(mτ)` invariance assertion in Theorem 11.9(ii).
 -/
 
 section JNInvariance
@@ -35,6 +35,7 @@ from Theorem 11.9(ii), with the level `m` represented by a positive natural. -/
 noncomputable def jN (N : ℕ+) : ℍ → ℂ :=
   fun z => j (N • z)
 
+/-- The level-one `j`-function is invariant under the usual `SL₂(ℤ)` action on `ℍ`. -/
 lemma j_invariant (γ : SL(2, ℤ)) (z : ℍ) : j (γ • z) = j z := by
   have := congrFun (j_slashInvariant γ) z
   simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at this
@@ -54,6 +55,7 @@ private def gamma0Conjugate (N : ℕ+) (γ : SL(2, ℤ))
     rw [Int.mul_ediv_cancel' hdvd]
     linarith⟩
 
+/-- Scaling by `N` commutes with the `Γ₀(N)` action after conjugating the matrix. -/
 private lemma natPosSMul_gamma0_comm (N : ℕ+) (γ : SL(2, ℤ))
     (hγ : γ ∈ CongruenceSubgroup.Gamma0 (N : ℕ)) (z : ℍ) :
     (N • (γ • z) : ℍ) = gamma0Conjugate N γ hγ • (N • z : ℍ) := by
@@ -90,17 +92,18 @@ end JNInvariance
 
 /-! ## Cusp and differentiability data for `jN`
 
-The `qj` and `qjN` constructions encode the q-expansion behavior from Cox
+The `qj` and `qjN` constructions encode the q-expansion behaviour from Cox
 Theorem 11.8, and provide the meromorphic cusp data used later.
 -/
 
 section JNAtCusps
 
 /-- The holomorphic remainder `qj` scaled by `N`, reflecting the q-expansion
-normalization in Cox Theorem 11.8. -/
+normalisation in Cox Theorem 11.8. -/
 noncomputable def qjN (N : ℕ+) : ℍ → ℂ :=
   fun z => qj (N • z)
 
+/-- Coercion formula for scaling an upper-half-plane point built from a complex number. -/
 lemma natPosSMul_ofComplex_coe (N : ℕ+) {w : ℂ} (hw : 0 < w.im) :
     (N • UpperHalfPlane.ofComplex w : ℍ) = UpperHalfPlane.ofComplex ((↑N : ℂ) * w) := by
   have hNw : 0 < ((↑N : ℂ) * w).im := by
@@ -131,6 +134,7 @@ lemma qjN_periodic (N : ℕ+) : Periodic (qjN N ∘ UpperHalfPlane.ofComplex) (N
     simp [UpperHalfPlane.ofComplex_apply_of_im_nonpos hw0,
       UpperHalfPlane.ofComplex_apply_of_im_nonpos hwN]
 
+/-- The scaled pole-removed function `qjN N` is holomorphic on the upper half-plane. -/
 lemma qjN_holomorphic (N : ℕ+) :
     ∀ z : ℂ, 0 < Complex.im z →
       DifferentiableAt ℂ (qjN N ∘ UpperHalfPlane.ofComplex) z := by
@@ -147,11 +151,13 @@ lemma qjN_holomorphic (N : ℕ+) :
   simp only [Function.comp, qjN]
   rw [natPosSMul_ofComplex_coe N hw]
 
+/-- The scaled pole-removed function `qjN N` is manifold-differentiable on `ℍ`. -/
 lemma qjN_MDifferentiable (N : ℕ+) : MDiff (qjN N) := by
   rw [UpperHalfPlane.mdifferentiable_iff]
   intro z hz
   exact (qjN_holomorphic N z hz).differentiableWithinAt
 
+/-- The scaled pole-removed function `qjN N` remains bounded as `im τ → ∞`. -/
 lemma qjN_IsBoundedAtImInfty (N : ℕ+) :
     IsBoundedAtImInfty (qjN N) := by
   apply qj_IsBoundedAtImInfty.comp_tendsto
@@ -177,6 +183,7 @@ lemma qjN_cuspFunction_analyticAt (N : ℕ+) :
     (qjN_MDifferentiable N) (qjN_IsBoundedAtImInfty N)) q hq)
       (by simpa [ball_zero_eq] using Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
 
+/-- Cusp expansion of `jN N`: a pole term times the analytic remainder `qjN N`. -/
 lemma jN_cuspFunction_eq (N : ℕ+) {q : ℂ} (hq0 : q ≠ 0) (hq : ‖q‖ < 1) :
     cuspFunction (N : ℕ) (jN N) q =
       q⁻¹ ^ ((N : ℕ) * (N : ℕ)) * cuspFunction (N : ℕ) (qjN N) q := by
@@ -245,12 +252,13 @@ theorem jN_exists_analytic_remainder (N : ℕ+) :
   intro q hq0 hq
   simpa using jN_cuspFunction_eq N hq0 hq
 
-/-- Level-`2` specialization of `jN_cuspFunction_eq`. -/
+/-- Level-`2` specialisation of `jN_cuspFunction_eq`. -/
 theorem jN_cuspFunction_eq_two {q : ℂ} (hq0 : q ≠ 0) (hq : ‖q‖ < 1) :
     cuspFunction (2 : ℕ) (jN (2 : ℕ+)) q =
       q⁻¹ ^ (4 : ℕ) * cuspFunction (2 : ℕ) (qjN (2 : ℕ+)) q := by
   simpa using jN_cuspFunction_eq (N := (2 : ℕ+)) hq0 hq
 
+/-- Holomorphicity of `jN N` on `ℍ`, expressed through the `ofComplex` chart. -/
 lemma jN_Meromorphic (N : ℕ+) {z : ℍₒ} :
     DifferentiableAt ℂ (jN N ∘ UpperHalfPlane.ofComplex) z := by
   obtain ⟨z, hz⟩ := z

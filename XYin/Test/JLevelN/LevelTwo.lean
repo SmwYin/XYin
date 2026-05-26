@@ -39,12 +39,14 @@ noncomputable def gamma0TwoRightCosetRepQuotient (i : Fin 3) :
     Gamma0RightCosets (2 : ℕ+) :=
   Quotient.mk _ (gamma0TwoRightCosetReps i)
 
+/-- In `ZMod 2`, every nonzero element is `1`. -/
 private lemma zmodTwo_eq_one_of_ne_zero (x : ZMod 2) (hx : x ≠ 0) : x = 1 := by
   fin_cases x
   · exfalso
     exact hx rfl
   · rfl
 
+/-- Every `Γ₀(2)` right coset has one of the three standard representatives. -/
 theorem gamma0TwoRightCosetReps_surjective :
     Function.Surjective gamma0TwoRightCosetRepQuotient := by
   intro c
@@ -81,6 +83,7 @@ theorem gamma0TwoRightCosetReps_surjective :
       simpa [gamma0TwoRightCosetReps, ModularGroup.S, ModularGroup.T, Matrix.mul_apply,
         Fin.sum_univ_two] using hsum
 
+/-- The three standard `Γ₀(2)` right-coset representatives are distinct. -/
 theorem gamma0TwoRightCosetReps_injective :
     Function.Injective gamma0TwoRightCosetRepQuotient := by
   intro i j hij
@@ -135,6 +138,7 @@ noncomputable def gamma0TwoRightCosetsEquiv : Fin 3 ≃ Gamma0RightCosets (2 : �
   Equiv.ofBijective gamma0TwoRightCosetRepQuotient
     ⟨gamma0TwoRightCosetReps_injective, gamma0TwoRightCosetReps_surjective⟩
 
+/-- Reindex the level-`2` Cox product by the three explicit right cosets. -/
 theorem coxPhiAtJ_two_eq_fin3_product (z : ℍ) :
     coxPhiAtJ (2 : ℕ+) z =
       ∏ i : Fin 3,
@@ -146,6 +150,7 @@ theorem coxPhiAtJ_two_eq_fin3_product (z : ℍ) :
       (fun c : Gamma0RightCosets (2 : ℕ+) =>
         Polynomial.X - Polynomial.C (gamma0RightCosetEval (2 : ℕ+) c z))).symm
 
+/-- The reindexed level-`2` Cox product still has `jN 2 z` as a root. -/
 theorem coxPhiAtJ_two_fin3_product_eval_jN (z : ℍ) :
     Polynomial.eval (jN (2 : ℕ+) z)
       (∏ i : Fin 3,
@@ -160,6 +165,7 @@ def halfUpper (z : ℍ) : ℍ :=
     have hz : 0 < (z : ℂ).im := z.2
     simpa using div_pos hz (by norm_num : (0 : ℝ) < 2)⟩
 
+/-- The complex coordinate of `halfUpper z` is `z / 2`. -/
 theorem coe_halfUpper (z : ℍ) :
     ((halfUpper z : ℍ) : ℂ) = (z : ℂ) / 2 := rfl
 
@@ -169,9 +175,11 @@ def halfTranslateUpper (z : ℍ) : ℍ :=
     have hz : 0 < ((z : ℂ) + 1).im := by simpa using z.2
     simpa using div_pos hz (by norm_num : (0 : ℝ) < 2)⟩
 
+/-- The complex coordinate of `halfTranslateUpper z` is `(z + 1) / 2`. -/
 theorem coe_halfTranslateUpper (z : ℍ) :
     ((halfTranslateUpper z : ℍ) : ℂ) = ((z : ℂ) + 1) / 2 := rfl
 
+/-- Doubling `halfUpper z` recovers `z`. -/
 theorem two_nsmul_halfUpper (z : ℍ) :
     (2 : ℕ+) • halfUpper z = z := by
   ext
@@ -179,6 +187,7 @@ theorem two_nsmul_halfUpper (z : ℍ) :
   norm_num
   field_simp
 
+/-- Doubling `halfTranslateUpper z` gives the `T`-translate of `z`. -/
 theorem two_nsmul_halfTranslateUpper (z : ℍ) :
     (2 : ℕ+) • halfTranslateUpper z = ModularGroup.T • z := by
   ext
@@ -192,6 +201,7 @@ theorem two_nsmul_halfTranslateUpper (z : ℍ) :
       rw [ModularGroup.coe_T_zpow_smul_eq]
       norm_num
 
+/-- The `S`-root for the level-`2` product is represented by `halfUpper`. -/
 theorem two_nsmul_modular_S_smul_halfUpper (z : ℍ) :
     (2 : ℕ+) • (ModularGroup.S • z) = ModularGroup.S • halfUpper z := by
   ext
@@ -204,6 +214,7 @@ theorem two_nsmul_modular_S_smul_halfUpper (z : ℍ) :
     exact ne_of_gt z.2 him
   field_simp [hz0]
 
+/-- The `S*T`-root for the level-`2` product is represented by `halfTranslateUpper`. -/
 theorem two_nsmul_modular_ST_smul_halfTranslateUpper (z : ℍ) :
     (2 : ℕ+) • ((ModularGroup.S * ModularGroup.T) • z) =
       ModularGroup.S • halfTranslateUpper z := by
@@ -222,12 +233,14 @@ theorem two_nsmul_modular_ST_smul_halfTranslateUpper (z : ℍ) :
   rw [show -(z : ℂ) + -1 = -((z : ℂ) + 1) by ring]
   field_simp [hz0]
 
+/-- The identity coset root is `jN 2`. -/
 theorem gamma0RightCosetEval_two_one (z : ℍ) :
     gamma0RightCosetEval (2 : ℕ+) (gamma0TwoRightCosetsEquiv 0) z =
       jN (2 : ℕ+) z := by
   simp [gamma0TwoRightCosetsEquiv, gamma0TwoRightCosetRepQuotient, gamma0TwoRightCosetReps,
     gamma0RightCosetEval]
 
+/-- The `S` coset root is `j(z / 2)`. -/
 theorem gamma0RightCosetEval_two_S (z : ℍ) :
     gamma0RightCosetEval (2 : ℕ+) (gamma0TwoRightCosetsEquiv 1) z =
       j (halfUpper z) := by
@@ -238,6 +251,7 @@ theorem gamma0RightCosetEval_two_S (z : ℍ) :
   rw [two_nsmul_modular_S_smul_halfUpper]
   exact j_invariant ModularGroup.S (halfUpper z)
 
+/-- The `S*T` coset root is `j((z + 1) / 2)`. -/
 theorem gamma0RightCosetEval_two_ST (z : ℍ) :
     gamma0RightCosetEval (2 : ℕ+) (gamma0TwoRightCosetsEquiv 2) z =
       j (halfTranslateUpper z) := by
@@ -273,6 +287,7 @@ theorem coxPhiTwoExplicit_eval_jN (z : ℍ) :
   rw [← coxPhiAtJ_two_eq_explicit z]
   exact coxPhiAtJ_eval_jN (2 : ℕ+) z
 
+/-- Root formulation of `coxPhiTwoExplicit_eval_jN`. -/
 theorem coxPhiTwoExplicit_isRoot_jN (z : ℍ) :
     (coxPhiTwoExplicit z).IsRoot (jN (2 : ℕ+) z) := by
   simpa [Polynomial.IsRoot] using coxPhiTwoExplicit_eval_jN z
@@ -288,10 +303,13 @@ coefficient identities.  The general finite q-order estimates live in
 
 section LevelTwoCuspChanges
 
+/-- Level-one periodicity of `j` after extending to all complex inputs by `ofComplex`. -/
 private theorem j_comp_ofComplex_periodic_one :
     Periodic (j ∘ UpperHalfPlane.ofComplex) (1 : ℝ) :=
   periodic_comp_of_slashInvariant_one j_slashInvariant
 
+/-- At the width-`2` cusp, the half-root `j(τ / 2)` has the level-one `j`
+cusp function. -/
 private theorem cuspFunction_two_j_halfUpper_eventuallyEq :
     cuspFunction (2 : ℝ) (fun τ : ℍ => j (halfUpper τ))
       =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)]
@@ -332,6 +350,8 @@ private theorem cuspFunction_two_j_halfUpper_eventuallyEq :
   rw [← hqparam]
   simpa [UpperHalfPlane.ofComplex_apply_of_im_pos (halfUpper τ).2] using hcusp.symm
 
+/-- At the width-`2` cusp, the translated half-root corresponds to evaluating
+the level-one cusp function at `-q`. -/
 private theorem cuspFunction_two_j_halfTranslateUpper_eventuallyEq :
     cuspFunction (2 : ℝ) (fun τ : ℍ => j (halfTranslateUpper τ))
       =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)]
@@ -373,6 +393,8 @@ private theorem cuspFunction_two_j_halfTranslateUpper_eventuallyEq :
   rw [← hqparam]
   simpa [UpperHalfPlane.ofComplex_apply_of_im_pos (halfTranslateUpper τ).2] using hcusp.symm
 
+/-- At the width-`2` cusp, `j(2τ)` corresponds to the level-one cusp function
+evaluated at `q^4`. -/
 private theorem cuspFunction_two_jN_two_eventuallyEq :
     cuspFunction (2 : ℝ) (jN (2 : ℕ+))
       =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)]
@@ -438,6 +460,7 @@ noncomputable def coxPhiTwoFunctionExplicit : Polynomial (ℍ → ℂ) :=
   (Polynomial.X - Polynomial.C (fun z : ℍ => j (halfUpper z))) *
   (Polynomial.X - Polynomial.C (fun z : ℍ => j (halfTranslateUpper z)))
 
+/-- Evaluating the function-valued explicit product gives the pointwise product. -/
 private theorem coxPhiTwoFunctionExplicit_map_eval (z : ℍ) :
     coxPhiTwoFunctionExplicit.map (evalAtUpper z) = coxPhiTwoExplicit z := by
   simp [coxPhiTwoFunctionExplicit, coxPhiTwoExplicit, evalAtUpper, Polynomial.map_mul]
@@ -570,8 +593,8 @@ noncomputable def modularEquationTwo : Polynomial (Polynomial ℂ) :=
     Polynomial.C modularEquationTwoCoeffY1 * Y +
       Polynomial.C modularEquationTwoCoeffY0
 
-/-- Cox Theorem 11.18(i) for `m = 2`: the explicit `Φ₂` from Cox
-the `N = 2` example as a polynomial with integer coefficients.
+/-- Cox Theorem 11.18(i) for `m = 2`: the explicit `Φ₂` for the `N = 2`
+example as a polynomial with integer coefficients.
 
 The inner polynomial variable is `X` and the outer polynomial variable is `Y`,
 matching `modularEquationTwo`. -/
@@ -581,10 +604,12 @@ def modularEquationTwoInt : Polynomial (Polynomial ℤ) :=
     Polynomial.C modularEquationTwoIntCoeffY1 * Y +
       Polynomial.C modularEquationTwoIntCoeffY0
 
+/-- A natural numeral in a polynomial ring is the corresponding constant polynomial. -/
 private theorem polynomial_C_ofNat {R : Type*} [Semiring R] (n : ℕ) [n.AtLeastTwo] :
     Polynomial.C (OfNat.ofNat n : R) = (OfNat.ofNat n : Polynomial R) :=
   Polynomial.C_eq_natCast n
 
+/-- Over `ZMod 2`, a polynomial numeral is the corresponding constant polynomial. -/
 private theorem polynomial_ofNat_zmod_two (n : ℕ) [n.AtLeastTwo] :
     (OfNat.ofNat n : Polynomial (ZMod 2)) = Polynomial.C (OfNat.ofNat n : ZMod 2) :=
   (Polynomial.C_eq_natCast n).symm
@@ -615,7 +640,7 @@ theorem modularEquationTwoIntCoeffY0_map_complex :
   rw [polynomial_C_ofNat 162000, polynomial_C_ofNat 8748000000,
     polynomial_C_ofNat 157464000000000]
 
-/-- Mapping the integral level-`2` polynomial to `ℂ` recovers the
+/-- Mapping the integral `N = 2` example polynomial to `ℂ` recovers the
 existing complex-coefficient polynomial. -/
 theorem modularEquationTwoInt_map_complex :
     modularEquationTwoInt.map (Polynomial.mapRingHom (Int.castRingHom ℂ)) =
@@ -642,6 +667,7 @@ private noncomputable def modularEquationTwoIntEvalOneModThree : Polynomial ℤ 
   (Polynomial.evalRingHom (1 : ZMod 3)).comp
     (Polynomial.mapRingHom (Int.castRingHom (ZMod 3)))
 
+/-- Specialising the inner variable to `1` modulo `3` gives a cubic over `𝔽₃`. -/
 private theorem modularEquationTwoInt_map_evalOneModThree :
     modularEquationTwoInt.map modularEquationTwoIntEvalOneModThree =
       Polynomial.X ^ 3 + Polynomial.C (2 : ZMod 3) * Polynomial.X ^ 2 + 1 := by
@@ -661,6 +687,7 @@ private theorem modularEquationTwoInt_map_evalOneModThree :
   rw [show (2 : ZMod 3) = -1 by decide]
   simp
 
+/-- The cubic over `𝔽₃` used for irreducibility has no roots. -/
 private theorem modularEquationTwoInt_mod_three_cubic_irreducible :
     Irreducible
       (Polynomial.X ^ 3 + Polynomial.C (2 : ZMod 3) * Polynomial.X ^ 2 + 1 :
@@ -739,7 +766,7 @@ theorem modularEquationTwoInt_kronecker_mod_two :
   simp [CharTwo.neg_eq, CharTwo.sub_eq_add]
   ring_nf
 
-/-- The diagonal specialization `Φ₂(X,X)` over `ℤ`. -/
+/-- The diagonal specialisation `Φ₂(X,X)` over `ℤ`. -/
 def modularEquationTwoIntDiagonal : Polynomial ℤ :=
   modularEquationTwoInt.eval Polynomial.X
 
@@ -832,6 +859,8 @@ with the corresponding coefficient polynomials in `j`.
 
 section LevelTwoCoefficientIdentities
 
+/-- At the width-`2` cusp, `P(j)` becomes `P` evaluated at the level-one
+cusp function with parameter `q^2`. -/
 private theorem cuspFunction_two_polynomialInJ_eventuallyEq (P : Polynomial ℂ) :
     cuspFunction (2 : ℝ) (polynomialInJ P)
       =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)]
@@ -870,6 +899,49 @@ private theorem cuspFunction_two_polynomialInJ_eventuallyEq (P : Polynomial ℂ)
   exact congrArg P.eval
     (by simpa [UpperHalfPlane.ofComplex_apply_of_im_pos τ.2] using hcusp.symm)
 
+/-- Away from the cusp point, `cuspFunction` commutes with subtraction pointwise. -/
+private theorem cuspFunction_sub_apply_of_ne_zero
+    (h : ℝ) (f g : ℍ → ℂ) {q : ℂ} (hq : q ≠ 0) :
+    cuspFunction h (f - g) q = cuspFunction h f q - cuspFunction h g q := by
+  change Periodic.cuspFunction h _ q =
+    Periodic.cuspFunction h _ q - Periodic.cuspFunction h _ q
+  rw [Periodic.cuspFunction_eq_of_nonzero h _ hq,
+    Periodic.cuspFunction_eq_of_nonzero h _ hq,
+    Periodic.cuspFunction_eq_of_nonzero h _ hq]
+  simp
+
+/-- Away from the cusp point, `cuspFunction` commutes with negation pointwise. -/
+private theorem cuspFunction_neg_apply_of_ne_zero (h : ℝ) (f : ℍ → ℂ) {q : ℂ}
+    (hq : q ≠ 0) :
+    cuspFunction h (-f) q = -cuspFunction h f q := by
+  change Periodic.cuspFunction h _ q = -Periodic.cuspFunction h _ q
+  rw [Periodic.cuspFunction_eq_of_nonzero h _ hq,
+    Periodic.cuspFunction_eq_of_nonzero h _ hq]
+  simp
+
+/-- Away from the cusp point, `cuspFunction` commutes with addition pointwise. -/
+private theorem cuspFunction_add_apply_of_ne_zero
+    (h : ℝ) (f g : ℍ → ℂ) {q : ℂ} (hq : q ≠ 0) :
+    cuspFunction h (f + g) q = cuspFunction h f q + cuspFunction h g q := by
+  change Periodic.cuspFunction h _ q =
+    Periodic.cuspFunction h _ q + Periodic.cuspFunction h _ q
+  rw [Periodic.cuspFunction_eq_of_nonzero h _ hq,
+    Periodic.cuspFunction_eq_of_nonzero h _ hq,
+    Periodic.cuspFunction_eq_of_nonzero h _ hq]
+  simp
+
+/-- Away from the cusp point, `cuspFunction` commutes with multiplication pointwise. -/
+private theorem cuspFunction_mul_apply_of_ne_zero
+    (h : ℝ) (f g : ℍ → ℂ) {q : ℂ} (hq : q ≠ 0) :
+    cuspFunction h (f * g) q = cuspFunction h f q * cuspFunction h g q := by
+  change Periodic.cuspFunction h _ q =
+    Periodic.cuspFunction h _ q * Periodic.cuspFunction h _ q
+  rw [Periodic.cuspFunction_eq_of_nonzero h _ hq,
+    Periodic.cuspFunction_eq_of_nonzero h _ hq,
+    Periodic.cuspFunction_eq_of_nonzero h _ hq]
+  simp
+
+/-- Cusp-function form of the `Y^2` coefficient remainder. -/
 private theorem coxPhiTwo_coeff_two_remainder_cuspFunction_two_eventuallyEq :
     cuspFunction (2 : ℝ)
       ((coxPhiFunction (2 : ℕ+)).coeff 2 -
@@ -887,42 +959,17 @@ private theorem coxPhiTwo_coeff_two_remainder_cuspFunction_two_eventuallyEq :
     cuspFunction_two_polynomialInJ_eventuallyEq modularEquationTwoCoeffY2,
     self_mem_nhdsWithin] with q hjN hhalf htrans hpoly hqmem
   have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hqmem
-  have hsub :
-      cuspFunction (2 : ℝ)
-        ((coxPhiFunction (2 : ℕ+)).coeff 2 - polynomialInJ modularEquationTwoCoeffY2) q =
-        cuspFunction (2 : ℝ) ((coxPhiFunction (2 : ℕ+)).coeff 2) q -
-          cuspFunction (2 : ℝ) (polynomialInJ modularEquationTwoCoeffY2) q := by
-    change Periodic.cuspFunction (2 : ℝ) _ q =
-      Periodic.cuspFunction (2 : ℝ) _ q - Periodic.cuspFunction (2 : ℝ) _ q
-    rw [Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-      Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-      Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0]
-    simp
   have hcoeff :
       cuspFunction (2 : ℝ) ((coxPhiFunction (2 : ℕ+)).coeff 2) q =
         -(cuspFunction 1 j (q ^ 4) + cuspFunction 1 j q + cuspFunction 1 j (-q)) := by
     rw [coxPhiFunction_two_coeff_two]
-    have hsum :
-        cuspFunction (2 : ℝ)
-          (-((jN (2 : ℕ+)) +
-            (fun z : ℍ => j (halfUpper z)) +
-            (fun z : ℍ => j (halfTranslateUpper z)))) q =
-          -(cuspFunction (2 : ℝ) (jN (2 : ℕ+)) q +
-            cuspFunction (2 : ℝ) (fun z : ℍ => j (halfUpper z)) q +
-              cuspFunction (2 : ℝ) (fun z : ℍ => j (halfTranslateUpper z)) q) := by
-      change Periodic.cuspFunction (2 : ℝ) _ q =
-        -(Periodic.cuspFunction (2 : ℝ) _ q +
-          Periodic.cuspFunction (2 : ℝ) _ q +
-            Periodic.cuspFunction (2 : ℝ) _ q)
-      rw [Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0]
-      simp
-    rw [hsum, hjN, hhalf, htrans]
-  rw [hsub, hcoeff, hpoly]
+    rw [cuspFunction_neg_apply_of_ne_zero (2 : ℝ) _ hq0,
+      cuspFunction_add_apply_of_ne_zero (2 : ℝ) _ _ hq0,
+      cuspFunction_add_apply_of_ne_zero (2 : ℝ) _ _ hq0, hjN, hhalf, htrans]
+  rw [cuspFunction_sub_apply_of_ne_zero (2 : ℝ) _ _ hq0, hcoeff, hpoly]
   simp [modularEquationTwoCoeffY2]
 
+/-- Cusp-function form of the `Y` coefficient remainder. -/
 private theorem coxPhiTwo_coeff_one_remainder_cuspFunction_two_eventuallyEq :
     cuspFunction (2 : ℝ)
       ((coxPhiFunction (2 : ℕ+)).coeff 1 -
@@ -940,48 +987,21 @@ private theorem coxPhiTwo_coeff_one_remainder_cuspFunction_two_eventuallyEq :
     cuspFunction_two_polynomialInJ_eventuallyEq modularEquationTwoCoeffY1,
     self_mem_nhdsWithin] with q hjN hhalf htrans hpoly hqmem
   have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hqmem
-  have hsub :
-      cuspFunction (2 : ℝ)
-        ((coxPhiFunction (2 : ℕ+)).coeff 1 - polynomialInJ modularEquationTwoCoeffY1) q =
-        cuspFunction (2 : ℝ) ((coxPhiFunction (2 : ℕ+)).coeff 1) q -
-          cuspFunction (2 : ℝ) (polynomialInJ modularEquationTwoCoeffY1) q := by
-    change Periodic.cuspFunction (2 : ℝ) _ q =
-      Periodic.cuspFunction (2 : ℝ) _ q - Periodic.cuspFunction (2 : ℝ) _ q
-    rw [Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-      Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-      Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0]
-    simp
   have hcoeff :
       cuspFunction (2 : ℝ) ((coxPhiFunction (2 : ℕ+)).coeff 1) q =
         cuspFunction 1 j (q ^ 4) * cuspFunction 1 j q +
           cuspFunction 1 j (q ^ 4) * cuspFunction 1 j (-q) +
             cuspFunction 1 j q * cuspFunction 1 j (-q) := by
     rw [coxPhiFunction_two_coeff_one]
-    have hsum :
-        cuspFunction (2 : ℝ)
-          ((jN (2 : ℕ+)) * (fun z : ℍ => j (halfUpper z)) +
-          (jN (2 : ℕ+)) * (fun z : ℍ => j (halfTranslateUpper z)) +
-          (fun z : ℍ => j (halfUpper z)) *
-            (fun z : ℍ => j (halfTranslateUpper z))) q =
-          cuspFunction (2 : ℝ) (jN (2 : ℕ+)) q *
-            cuspFunction (2 : ℝ) (fun z : ℍ => j (halfUpper z)) q +
-          cuspFunction (2 : ℝ) (jN (2 : ℕ+)) q *
-            cuspFunction (2 : ℝ) (fun z : ℍ => j (halfTranslateUpper z)) q +
-          cuspFunction (2 : ℝ) (fun z : ℍ => j (halfUpper z)) q *
-            cuspFunction (2 : ℝ) (fun z : ℍ => j (halfTranslateUpper z)) q := by
-      change Periodic.cuspFunction (2 : ℝ) _ q =
-        Periodic.cuspFunction (2 : ℝ) _ q * Periodic.cuspFunction (2 : ℝ) _ q +
-        Periodic.cuspFunction (2 : ℝ) _ q * Periodic.cuspFunction (2 : ℝ) _ q +
-        Periodic.cuspFunction (2 : ℝ) _ q * Periodic.cuspFunction (2 : ℝ) _ q
-      rw [Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0]
-      simp
-    rw [hsum, hjN, hhalf, htrans]
-  rw [hsub, hcoeff, hpoly]
+    rw [cuspFunction_add_apply_of_ne_zero (2 : ℝ) _ _ hq0,
+      cuspFunction_add_apply_of_ne_zero (2 : ℝ) _ _ hq0,
+      cuspFunction_mul_apply_of_ne_zero (2 : ℝ) _ _ hq0,
+      cuspFunction_mul_apply_of_ne_zero (2 : ℝ) _ _ hq0,
+      cuspFunction_mul_apply_of_ne_zero (2 : ℝ) _ _ hq0, hjN, hhalf, htrans]
+  rw [cuspFunction_sub_apply_of_ne_zero (2 : ℝ) _ _ hq0, hcoeff, hpoly]
   simp [modularEquationTwoCoeffY1]
 
+/-- Cusp-function form of the constant coefficient remainder. -/
 private theorem coxPhiTwo_coeff_zero_remainder_cuspFunction_two_eventuallyEq :
     cuspFunction (2 : ℝ)
       ((coxPhiFunction (2 : ℕ+)).coeff 0 -
@@ -1000,43 +1020,134 @@ private theorem coxPhiTwo_coeff_zero_remainder_cuspFunction_two_eventuallyEq :
     cuspFunction_two_polynomialInJ_eventuallyEq modularEquationTwoCoeffY0,
     self_mem_nhdsWithin] with q hjN hhalf htrans hpoly hqmem
   have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hqmem
-  have hsub :
-      cuspFunction (2 : ℝ)
-        ((coxPhiFunction (2 : ℕ+)).coeff 0 - polynomialInJ modularEquationTwoCoeffY0) q =
-        cuspFunction (2 : ℝ) ((coxPhiFunction (2 : ℕ+)).coeff 0) q -
-          cuspFunction (2 : ℝ) (polynomialInJ modularEquationTwoCoeffY0) q := by
-    change Periodic.cuspFunction (2 : ℝ) _ q =
-      Periodic.cuspFunction (2 : ℝ) _ q - Periodic.cuspFunction (2 : ℝ) _ q
-    rw [Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-      Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-      Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0]
-    simp
   have hcoeff :
       cuspFunction (2 : ℝ) ((coxPhiFunction (2 : ℕ+)).coeff 0) q =
         -(cuspFunction 1 j (q ^ 4) * cuspFunction 1 j q *
           cuspFunction 1 j (-q)) := by
     rw [coxPhiFunction_two_coeff_zero]
-    have hprod :
-        cuspFunction (2 : ℝ)
-          (-((jN (2 : ℕ+)) *
-            (fun z : ℍ => j (halfUpper z)) *
-            (fun z : ℍ => j (halfTranslateUpper z)))) q =
-          -(cuspFunction (2 : ℝ) (jN (2 : ℕ+)) q *
-            cuspFunction (2 : ℝ) (fun z : ℍ => j (halfUpper z)) q *
-            cuspFunction (2 : ℝ) (fun z : ℍ => j (halfTranslateUpper z)) q) := by
-      change Periodic.cuspFunction (2 : ℝ) _ q =
-        -(Periodic.cuspFunction (2 : ℝ) _ q *
-          Periodic.cuspFunction (2 : ℝ) _ q *
-            Periodic.cuspFunction (2 : ℝ) _ q)
-      rw [Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero (2 : ℝ) _ hq0]
-      simp
-    rw [hprod, hjN, hhalf, htrans]
-  rw [hsub, hcoeff, hpoly]
+    rw [cuspFunction_neg_apply_of_ne_zero (2 : ℝ) _ hq0,
+      cuspFunction_mul_apply_of_ne_zero (2 : ℝ) _ _ hq0,
+      cuspFunction_mul_apply_of_ne_zero (2 : ℝ) _ _ hq0, hjN, hhalf, htrans]
+  rw [cuspFunction_sub_apply_of_ne_zero (2 : ℝ) _ _ hq0, hcoeff, hpoly]
   simp [modularEquationTwoCoeffY0]
 
+/-- The punctured neighbourhood of `0` in `ℂ`. -/
+private abbrev puncturedZero : Filter ℂ :=
+  nhdsWithin (0 : ℂ) ({0}ᶜ)
+
+/-- Non-zero powers preserve the punctured neighbourhood of `0` and tend to `0`. -/
+private theorem tendsto_pow_puncturedZero (n : ℕ) (hn : n ≠ 0) :
+    Tendsto (fun q : ℂ => q ^ n) puncturedZero puncturedZero := by
+  have hq : Tendsto (fun q : ℂ => q) puncturedZero (nhds 0) := by
+    simpa [puncturedZero] using
+      (tendsto_id.mono_right nhdsWithin_le_nhds :
+        Tendsto (fun q : ℂ => q) (nhdsWithin (0 : ℂ) ({0}ᶜ)) (nhds 0))
+  refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
+    (by
+      have hzero : (0 : ℂ) ^ n = 0 := zero_pow hn
+      simpa [hzero] using hq.pow n) ?_
+  unfold puncturedZero
+  filter_upwards [self_mem_nhdsWithin] with q hqmem
+  exact Set.mem_compl_singleton_iff.mpr
+    (pow_ne_zero n (Set.mem_compl_singleton_iff.mp hqmem))
+
+/-- Negation preserves the punctured neighbourhood of `0` and tends to `0`. -/
+private theorem tendsto_neg_puncturedZero :
+    Tendsto (fun q : ℂ => -q) puncturedZero puncturedZero := by
+  refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
+    (by
+      have hq : Tendsto (fun q : ℂ => q) puncturedZero (nhds 0) := by
+        simpa [puncturedZero] using
+          (tendsto_id.mono_right nhdsWithin_le_nhds :
+            Tendsto (fun q : ℂ => q) (nhdsWithin (0 : ℂ) ({0}ᶜ)) (nhds 0))
+      simpa using hq.neg) ?_
+  unfold puncturedZero
+  filter_upwards [self_mem_nhdsWithin] with q hqmem
+  exact Set.mem_compl_singleton_iff.mpr
+    (neg_ne_zero.mpr (Set.mem_compl_singleton_iff.mp hqmem))
+
+/-- Multiplying a finite-limit function by a positive power of `q` gives limit `0`. -/
+private theorem tendsto_qpow_mul_puncturedZero {n : ℕ} (hn : n ≠ 0)
+    {g : ℂ → ℂ} {a : ℂ} (hg : Tendsto g puncturedZero (nhds a)) :
+    Tendsto (fun q : ℂ => q ^ n * g q) puncturedZero (nhds 0) := by
+  have hqn : Tendsto (fun q : ℂ => q ^ n) puncturedZero (nhds 0) :=
+    (tendsto_pow_puncturedZero n hn).mono_right nhdsWithin_le_nhds
+  simpa using hqn.mul hg
+
+/-- Pointwise addition of two functions tending to zero still tends to zero. -/
+private theorem tendsto_function_add_zero {f g : ℂ → ℂ}
+    (hf : Tendsto f puncturedZero (nhds 0)) (hg : Tendsto g puncturedZero (nhds 0)) :
+    Tendsto (f + g) puncturedZero (nhds 0) := by
+  simpa [Pi.add_apply] using hf.add hg
+
+/-- A finite list sum of functions tending to zero also tends to zero. -/
+private theorem list_sum_tendsto_zero (l : List (ℂ → ℂ))
+    (h : ∀ f ∈ l, Tendsto f puncturedZero (nhds 0)) :
+    Tendsto l.sum puncturedZero (nhds 0) := by
+  induction l with
+  | nil =>
+      change Tendsto (fun _ : ℂ => (0 : ℂ)) puncturedZero (nhds 0)
+      exact tendsto_const_nhds
+  | cons f fs ih =>
+      simpa using tendsto_function_add_zero
+        (h f (by simp)) (ih fun g hg => h g (by simp [hg]))
+
+/-- The one-term Laurent remainder for `j`, used in the `Y^2` coefficient model. -/
+private def coxPhiTwoCoeffTwoR (q : ℂ) : ℂ :=
+  (cuspFunction 1 j q - (q⁻¹ + 744 + 196884 * q)) / q
+
+/-- The level-`2` `Y^2`-coefficient Laurent remainder tends to zero. -/
+private theorem coxPhiTwoCoeffTwoR_tendsto_zero :
+    Tendsto coxPhiTwoCoeffTwoR puncturedZero (nhds 0) := by
+  simpa [coxPhiTwoCoeffTwoR, puncturedZero] using j_cuspFunction_three_term_remainder
+
+/-- The simple model obtained after substituting the first Laurent remainder in
+the `Y^2` coefficient identity. -/
+private def coxPhiTwoCoeffTwoModel : ℂ → ℂ := fun q =>
+  2 * coxPhiTwoCoeffTwoR (q ^ 2) - q * coxPhiTwoCoeffTwoR q +
+    q * coxPhiTwoCoeffTwoR (-q) +
+      q ^ 4 *
+        ((196884 + coxPhiTwoCoeffTwoR (q ^ 2)) ^ 2 - 196884 -
+          coxPhiTwoCoeffTwoR (q ^ 4))
+
+/-- The `Y^2`-coefficient model tends to zero. -/
+private theorem coxPhiTwoCoeffTwoModel_tendsto_zero :
+    Tendsto coxPhiTwoCoeffTwoModel puncturedZero (nhds 0) := by
+  have hR := coxPhiTwoCoeffTwoR_tendsto_zero
+  have hRneg : Tendsto (fun q : ℂ => coxPhiTwoCoeffTwoR (-q)) puncturedZero
+      (nhds 0) :=
+    hR.comp tendsto_neg_puncturedZero
+  have hR2 : Tendsto (fun q : ℂ => coxPhiTwoCoeffTwoR (q ^ 2)) puncturedZero
+      (nhds 0) :=
+    hR.comp (tendsto_pow_puncturedZero 2 (by norm_num))
+  have hR4 : Tendsto (fun q : ℂ => coxPhiTwoCoeffTwoR (q ^ 4)) puncturedZero
+      (nhds 0) :=
+    hR.comp (tendsto_pow_puncturedZero 4 (by norm_num))
+  have hqpow {n : ℕ} (hn : n ≠ 0) {g : ℂ → ℂ} {a : ℂ}
+      (hg : Tendsto g puncturedZero (nhds a)) :
+      Tendsto (fun q : ℂ => q ^ n * g q) puncturedZero (nhds 0) :=
+    tendsto_qpow_mul_puncturedZero hn hg
+  have hmodel :
+      Tendsto
+        (fun q : ℂ =>
+          2 * coxPhiTwoCoeffTwoR (q ^ 2) - q * coxPhiTwoCoeffTwoR q +
+            q * coxPhiTwoCoeffTwoR (-q) +
+              q ^ 4 * ((196884 + coxPhiTwoCoeffTwoR (q ^ 2)) ^ 2 - 196884 -
+                coxPhiTwoCoeffTwoR (q ^ 4)))
+        puncturedZero (nhds 0) := by
+    convert
+      ((((tendsto_const_nhds (x := (2 : ℂ))).mul hR2).sub
+        (hqpow (show (1 : ℕ) ≠ 0 by norm_num) hR)).add
+        (hqpow (show (1 : ℕ) ≠ 0 by norm_num) hRneg)).add
+        (hqpow (show (4 : ℕ) ≠ 0 by norm_num)
+          ((((tendsto_const_nhds (x := (196884 : ℂ))).add hR2).pow 2).sub
+            (tendsto_const_nhds (x := (196884 : ℂ))) |>.sub hR4))
+        using 1
+    · ring_nf
+    · ring_nf
+  simpa [coxPhiTwoCoeffTwoModel] using hmodel
+
+/-- The explicit Laurent model for the `Y^2` coefficient remainder tends to zero. -/
 private theorem coxPhiTwo_coeff_two_model_tendsto_zero :
     Tendsto
       (fun q : ℂ =>
@@ -1045,63 +1156,140 @@ private theorem coxPhiTwo_coeff_two_model_tendsto_zero :
             1488 * cuspFunction 1 j (q ^ 2) - 162000))
       (nhdsWithin (0 : ℂ) ({0}ᶜ))
       (nhds 0) := by
-  let R : ℂ → ℂ := fun q =>
-    (cuspFunction 1 j q - (q⁻¹ + 744 + 196884 * q)) / q
-  let l := nhdsWithin (0 : ℂ) ({0}ᶜ)
-  have hR : Tendsto R l (nhds 0) := by
-    simpa [R, l] using j_cuspFunction_three_term_remainder
-  have hq : Tendsto (fun q : ℂ => q) l (nhds 0) :=
-    tendsto_id.mono_right nhdsWithin_le_nhds
-  have hneg : Tendsto (fun q : ℂ => -q) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.neg) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (neg_ne_zero.mpr (Set.mem_compl_singleton_iff.mp hqmem))
-  have hpow2 : Tendsto (fun q : ℂ => q ^ 2) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.pow 2) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (pow_ne_zero 2 (Set.mem_compl_singleton_iff.mp hqmem))
-  have hpow4 : Tendsto (fun q : ℂ => q ^ 4) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.pow 4) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (pow_ne_zero 4 (Set.mem_compl_singleton_iff.mp hqmem))
-  have hRneg : Tendsto (fun q : ℂ => R (-q)) l (nhds 0) := hR.comp hneg
-  have hR2 : Tendsto (fun q : ℂ => R (q ^ 2)) l (nhds 0) := hR.comp hpow2
-  have hR4 : Tendsto (fun q : ℂ => R (q ^ 4)) l (nhds 0) := hR.comp hpow4
-  have hmodel :
-      Tendsto
-        (fun q : ℂ =>
-          2 * R (q ^ 2) - q * R q + q * R (-q) +
-            q ^ 4 * ((196884 + R (q ^ 2)) ^ 2 - 196884 - R (q ^ 4)))
-        l (nhds 0) := by
-    convert
-      (((tendsto_const_nhds.mul hR2).sub (hq.mul hR)).add (hq.mul hRneg)).add
-        ((hq.pow 4).mul (((tendsto_const_nhds.add hR2).pow 2).sub
-          tendsto_const_nhds |>.sub hR4)) using 1
-    · ring_nf
   have hEq :
       (fun q : ℂ =>
         -(cuspFunction 1 j (q ^ 4) + cuspFunction 1 j q + cuspFunction 1 j (-q)) -
           (-(cuspFunction 1 j (q ^ 2)) ^ 2 +
-            1488 * cuspFunction 1 j (q ^ 2) - 162000)) =ᶠ[l]
-        fun q : ℂ =>
-          2 * R (q ^ 2) - q * R q + q * R (-q) +
-            q ^ 4 * ((196884 + R (q ^ 2)) ^ 2 - 196884 - R (q ^ 4)) := by
+            1488 * cuspFunction 1 j (q ^ 2) - 162000)) =ᶠ[puncturedZero]
+        coxPhiTwoCoeffTwoModel := by
+    unfold puncturedZero
     filter_upwards [self_mem_nhdsWithin] with q hqmem
     have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hqmem
     have hq2 : q ^ 2 ≠ 0 := pow_ne_zero 2 hq0
     have hq4 : q ^ 4 ≠ 0 := pow_ne_zero 4 hq0
     have hnq : -q ≠ 0 := neg_ne_zero.mpr hq0
-    simp [R]
+    simp [coxPhiTwoCoeffTwoModel, coxPhiTwoCoeffTwoR]
     field_simp [hq0, hq2, hq4, hnq]
     ring
-  exact hmodel.congr' hEq.symm
+  simpa [puncturedZero] using coxPhiTwoCoeffTwoModel_tendsto_zero.congr' hEq.symm
 
+/-- The five-term Laurent remainder for `j` used in the `Y`-coefficient model. -/
+private def coxPhiTwoCoeffOneR (q : ℂ) : ℂ :=
+  (cuspFunction 1 j q -
+    (q⁻¹ + 744 + 196884 * q + 21493760 * q ^ 2 +
+      864299970 * q ^ 3 + 20245856256 * q ^ 4)) / q ^ 4
+
+/-- The level-`2` `Y`-coefficient Laurent remainder tends to zero. -/
+private theorem coxPhiTwoCoeffOneR_tendsto_zero :
+    Tendsto coxPhiTwoCoeffOneR puncturedZero (nhds 0) := by
+  simpa [coxPhiTwoCoeffOneR, puncturedZero] using j_cuspFunction_five_term_remainder
+
+/-- A coefficient package for one power of `q` in the `Y`-coefficient model. -/
+private def coxPhiTwoCoeffOneB
+    (C A0 An A2 A4 A0n A22 An4 A04 : ℂ) (q : ℂ) : ℂ :=
+  C + A0 * coxPhiTwoCoeffOneR q + An * coxPhiTwoCoeffOneR (-q) +
+    A2 * coxPhiTwoCoeffOneR (q ^ 2) + A4 * coxPhiTwoCoeffOneR (q ^ 4) +
+    A0n * coxPhiTwoCoeffOneR q * coxPhiTwoCoeffOneR (-q) +
+    A22 * (coxPhiTwoCoeffOneR (q ^ 2)) ^ 2 +
+    An4 * coxPhiTwoCoeffOneR (-q) * coxPhiTwoCoeffOneR (q ^ 4) +
+    A04 * coxPhiTwoCoeffOneR q * coxPhiTwoCoeffOneR (q ^ 4)
+
+/-- Each `Y`-coefficient package tends to its constant term. -/
+private theorem coxPhiTwoCoeffOneB_tendsto
+    (C A0 An A2 A4 A0n A22 An4 A04 : ℂ) :
+    Tendsto (coxPhiTwoCoeffOneB C A0 An A2 A4 A0n A22 An4 A04)
+      puncturedZero (nhds C) := by
+  have hR := coxPhiTwoCoeffOneR_tendsto_zero
+  have hRneg : Tendsto (fun q : ℂ => coxPhiTwoCoeffOneR (-q)) puncturedZero
+      (nhds 0) := hR.comp tendsto_neg_puncturedZero
+  have hR2 : Tendsto (fun q : ℂ => coxPhiTwoCoeffOneR (q ^ 2)) puncturedZero
+      (nhds 0) := hR.comp (tendsto_pow_puncturedZero 2 (by norm_num))
+  have hR4 : Tendsto (fun q : ℂ => coxPhiTwoCoeffOneR (q ^ 4)) puncturedZero
+      (nhds 0) := hR.comp (tendsto_pow_puncturedZero 4 (by norm_num))
+  convert ((((((((tendsto_const_nhds (x := C)).add
+    ((tendsto_const_nhds (x := A0)).mul hR)).add
+    ((tendsto_const_nhds (x := An)).mul hRneg)).add
+    ((tendsto_const_nhds (x := A2)).mul hR2)).add
+    ((tendsto_const_nhds (x := A4)).mul hR4)).add
+    ((tendsto_const_nhds (x := A0n)).mul (hR.mul hRneg))).add
+    ((tendsto_const_nhds (x := A22)).mul (hR2.pow 2))).add
+    ((tendsto_const_nhds (x := An4)).mul (hRneg.mul hR4))).add
+    ((tendsto_const_nhds (x := A04)).mul (hR.mul hR4)) using 1
+  · ext q
+    simp [coxPhiTwoCoeffOneB]
+    ring_nf
+  · ring_nf
+
+/-- One `q^n`-weighted coefficient package in the `Y`-coefficient model. -/
+private def coxPhiTwoCoeffOneT
+    (n : ℕ) (C A0 An A2 A4 A0n A22 An4 A04 : ℂ) (q : ℂ) : ℂ :=
+  q ^ n * coxPhiTwoCoeffOneB C A0 An A2 A4 A0n A22 An4 A04 q
+
+/-- A positive `q`-power times a `Y`-coefficient package tends to zero. -/
+private theorem coxPhiTwoCoeffOneT_tendsto
+    (n : ℕ) (hn : n ≠ 0) (C A0 An A2 A4 A0n A22 An4 A04 : ℂ) :
+    Tendsto (coxPhiTwoCoeffOneT n C A0 An A2 A4 A0n A22 An4 A04)
+      puncturedZero (nhds 0) := by
+  simpa [coxPhiTwoCoeffOneT] using tendsto_qpow_mul_puncturedZero hn
+    (coxPhiTwoCoeffOneB_tendsto C A0 An A2 A4 A0n A22 An4 A04)
+
+/-- A `Y`-coefficient `T`-term tends to zero when its constant term vanishes
+or it carries a positive q-power. -/
+private theorem coxPhiTwoCoeffOneT_tendsto_zero_of_const_or_pos
+    {n : ℕ} {C A0 An A2 A4 A0n A22 An4 A04 : ℂ} (h : C = 0 ∨ n ≠ 0) :
+    Tendsto (coxPhiTwoCoeffOneT n C A0 An A2 A4 A0n A22 An4 A04)
+      puncturedZero (nhds 0) := by
+  by_cases hn : n = 0
+  · subst n
+    have hC : C = 0 := by
+      rcases h with hC | hnz
+      · exact hC
+      · contradiction
+    convert coxPhiTwoCoeffOneB_tendsto 0 A0 An A2 A4 A0n A22 An4 A04 using 1
+    ext q
+    rw [hC]
+    simp [coxPhiTwoCoeffOneT]
+  · exact coxPhiTwoCoeffOneT_tendsto n hn C A0 An A2 A4 A0n A22 An4 A04
+
+/-- The terms in the `Y`-coefficient model after substituting the Laurent remainder. -/
+private def coxPhiTwoCoeffOneTerms : List (ℂ → ℂ) := [
+  coxPhiTwoCoeffOneT 0 0 1 1 0 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 2 (-8504046600192) 0 0 0 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 3 0 (-1) 1 0 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 4 (-802315368030800) 1488 1488 0 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 5 0 (-196884) 196884 0 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 6 73505043411651774 21493760 21493760 (-2976) 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 7 0 (-864299970) 864299970 0 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 8 407838503310834650880 20246053140 20246053140 (-42987519)
+    0 1 0 0 0,
+  coxPhiTwoCoeffOneT 10 (-67146984504571592704) 0 0 (-585926784) 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 12 (-2405722059792721637280) 21493760 21493760
+    (-63965429760) 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 14 (-52075477879030647889920) 0 0 (-2572156710720) 0 0 0 0 0,
+  coxPhiTwoCoeffOneT 16 (-609888309945422929920000) 864299970 864299970
+    (-60251668217856) 1488 0 (-1488) 0 0,
+  coxPhiTwoCoeffOneT 18 870319150721925120 0 0 0 42987520 0 0 0 0,
+  coxPhiTwoCoeffOneT 20 819789391077228675072 20245856256 20245856256 0
+    40491712512 0 0 1 1
+]
+
+/-- The model obtained after substituting the five-term Laurent remainder in the
+`Y` coefficient identity. -/
+private def coxPhiTwoCoeffOneModel : ℂ → ℂ :=
+  coxPhiTwoCoeffOneTerms.sum
+
+/-- The `Y`-coefficient model tends to zero term by term. -/
+private theorem coxPhiTwoCoeffOneModel_tendsto_zero :
+    Tendsto coxPhiTwoCoeffOneModel puncturedZero (nhds 0) := by
+  rw [coxPhiTwoCoeffOneModel]
+  apply list_sum_tendsto_zero
+  intro f hf
+  simp [coxPhiTwoCoeffOneTerms] at hf
+  rcases hf with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+    | rfl | rfl
+  all_goals exact coxPhiTwoCoeffOneT_tendsto_zero_of_const_or_pos (by norm_num)
+
+/-- The explicit Laurent model for the `Y` coefficient remainder tends to zero. -/
 private theorem coxPhiTwo_coeff_one_model_tendsto_zero :
     Tendsto
       (fun q : ℂ =>
@@ -1112,196 +1300,15 @@ private theorem coxPhiTwo_coeff_one_model_tendsto_zero :
           40773375 * cuspFunction 1 j (q ^ 2) + 8748000000))
       (nhdsWithin (0 : ℂ) ({0}ᶜ))
       (nhds 0) := by
-  let R : ℂ → ℂ := fun q =>
-    (cuspFunction 1 j q -
-      (q⁻¹ + 744 + 196884 * q + 21493760 * q ^ 2 +
-        864299970 * q ^ 3 + 20245856256 * q ^ 4)) / q ^ 4
-  let l := nhdsWithin (0 : ℂ) ({0}ᶜ)
-  have hR : Tendsto R l (nhds 0) := by
-    simpa [R, l] using j_cuspFunction_five_term_remainder
-  have hq : Tendsto (fun q : ℂ => q) l (nhds 0) :=
-    tendsto_id.mono_right nhdsWithin_le_nhds
-  have hneg : Tendsto (fun q : ℂ => -q) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.neg) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (neg_ne_zero.mpr (Set.mem_compl_singleton_iff.mp hqmem))
-  have hpow2 : Tendsto (fun q : ℂ => q ^ 2) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.pow 2) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (pow_ne_zero 2 (Set.mem_compl_singleton_iff.mp hqmem))
-  have hpow4 : Tendsto (fun q : ℂ => q ^ 4) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.pow 4) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (pow_ne_zero 4 (Set.mem_compl_singleton_iff.mp hqmem))
-  have hRneg : Tendsto (fun q : ℂ => R (-q)) l (nhds 0) := hR.comp hneg
-  have hR2 : Tendsto (fun q : ℂ => R (q ^ 2)) l (nhds 0) := hR.comp hpow2
-  have hR4 : Tendsto (fun q : ℂ => R (q ^ 4)) l (nhds 0) := hR.comp hpow4
-  have hqpow_mul {n : ℕ} (hn : n ≠ 0) {g : ℂ → ℂ} {a : ℂ}
-      (hg : Tendsto g l (nhds a)) :
-      Tendsto (fun q : ℂ => q ^ n * g q) l (nhds 0) := by
-    have hqn : Tendsto (fun q : ℂ => q ^ n) l (nhds 0) := by
-      have hpow := hq.pow n
-      have hzero : (0 : ℂ) ^ n = 0 := zero_pow hn
-      simpa [hzero] using hpow
-    simpa [hn] using hqn.mul hg
-  have hb3 : Tendsto (fun q : ℂ => R (-q) - R q) l (nhds 0) := by
-    simpa using hRneg.sub hR
-  have hb4 :
-      Tendsto (fun q : ℂ => -802315368030800 + 1488 * R (-q) + 1488 * R q)
-        l (nhds (-802315368030800)) := by
-    convert ((tendsto_const_nhds.add (tendsto_const_nhds.mul hRneg)).add
-      (tendsto_const_nhds.mul hR)) using 1
-    ring_nf
-  have hb5 : Tendsto (fun q : ℂ => 196884 * R (-q) - 196884 * R q) l (nhds 0) := by
-    simpa using (tendsto_const_nhds.mul hRneg).sub (tendsto_const_nhds.mul hR)
-  have hb6 :
-      Tendsto
-        (fun q : ℂ =>
-          73505043411651774 - 2976 * R (q ^ 2) +
-            21493760 * R (-q) + 21493760 * R q)
-        l (nhds 73505043411651774) := by
-    convert (((tendsto_const_nhds.sub (tendsto_const_nhds.mul hR2)).add
-      (tendsto_const_nhds.mul hRneg)).add (tendsto_const_nhds.mul hR)) using 1
-    ring_nf
-  have hb7 : Tendsto (fun q : ℂ => 864299970 * R (-q) - 864299970 * R q)
-      l (nhds 0) := by
-    simpa using (tendsto_const_nhds.mul hRneg).sub (tendsto_const_nhds.mul hR)
-  have hb8 :
-      Tendsto
-        (fun q : ℂ =>
-          407838503310834650880 - 42987519 * R (q ^ 2) +
-            20246053140 * R (-q) + 20246053140 * R q + R q * R (-q))
-        l (nhds 407838503310834650880) := by
-    convert ((((tendsto_const_nhds.sub (tendsto_const_nhds.mul hR2)).add
-      (tendsto_const_nhds.mul hRneg)).add (tendsto_const_nhds.mul hR)).add
-      (hR.mul hRneg)) using 1
-    ring_nf
-  have hb10 :
-      Tendsto (fun q : ℂ => -67146984504571592704 - 585926784 * R (q ^ 2))
-        l (nhds (-67146984504571592704)) := by
-    convert tendsto_const_nhds.sub (tendsto_const_nhds.mul hR2) using 1
-    ring_nf
-  have hb12 :
-      Tendsto
-        (fun q : ℂ =>
-          -2405722059792721637280 - 63965429760 * R (q ^ 2) +
-            21493760 * R (-q) + 21493760 * R q)
-        l (nhds (-2405722059792721637280)) := by
-    convert (((tendsto_const_nhds.sub (tendsto_const_nhds.mul hR2)).add
-      (tendsto_const_nhds.mul hRneg)).add (tendsto_const_nhds.mul hR)) using 1
-    ring_nf
-  have hb14 :
-      Tendsto (fun q : ℂ => -52075477879030647889920 - 2572156710720 * R (q ^ 2))
-        l (nhds (-52075477879030647889920)) := by
-    convert tendsto_const_nhds.sub (tendsto_const_nhds.mul hR2) using 1
-    ring_nf
-  have hb16 :
-      Tendsto
-        (fun q : ℂ =>
-          -609888309945422929920000 + 1488 * R (q ^ 4) -
-            60251668217856 * R (q ^ 2) - 1488 * (R (q ^ 2)) ^ 2 +
-            864299970 * R (-q) + 864299970 * R q)
-        l (nhds (-609888309945422929920000)) := by
-    convert (((((tendsto_const_nhds.add (tendsto_const_nhds.mul hR4)).sub
-      (tendsto_const_nhds.mul hR2)).sub (tendsto_const_nhds.mul (hR2.pow 2))).add
-      (tendsto_const_nhds.mul hRneg)).add (tendsto_const_nhds.mul hR)) using 1
-    ring_nf
-  have hb18 :
-      Tendsto (fun q : ℂ => 870319150721925120 + 42987520 * R (q ^ 4))
-        l (nhds 870319150721925120) := by
-    convert tendsto_const_nhds.add (tendsto_const_nhds.mul hR4) using 1
-    ring_nf
-  have hb20 :
-      Tendsto
-        (fun q : ℂ =>
-          819789391077228675072 + 40491712512 * R (q ^ 4) +
-            20245856256 * R (-q) + R (-q) * R (q ^ 4) +
-            20245856256 * R q + R q * R (q ^ 4))
-        l (nhds 819789391077228675072) := by
-    convert (((((tendsto_const_nhds.add (tendsto_const_nhds.mul hR4)).add
-      (tendsto_const_nhds.mul hRneg)).add (hRneg.mul hR4)).add
-      (tendsto_const_nhds.mul hR)).add (hR.mul hR4)) using 1
-    ring_nf
-  let T0 : ℂ → ℂ := fun q => R (-q) + R q
-  let T2 : ℂ → ℂ := fun q => q ^ 2 * (-8504046600192)
-  let T3 : ℂ → ℂ := fun q => q ^ 3 * (R (-q) - R q)
-  let T4 : ℂ → ℂ :=
-    fun q => q ^ 4 * (-802315368030800 + 1488 * R (-q) + 1488 * R q)
-  let T5 : ℂ → ℂ := fun q => q ^ 5 * (196884 * R (-q) - 196884 * R q)
-  let T6 : ℂ → ℂ :=
-    fun q => q ^ 6 * (73505043411651774 - 2976 * R (q ^ 2) +
-      21493760 * R (-q) + 21493760 * R q)
-  let T7 : ℂ → ℂ := fun q => q ^ 7 * (864299970 * R (-q) - 864299970 * R q)
-  let T8 : ℂ → ℂ :=
-    fun q => q ^ 8 * (407838503310834650880 - 42987519 * R (q ^ 2) +
-      20246053140 * R (-q) + 20246053140 * R q + R q * R (-q))
-  let T10 : ℂ → ℂ :=
-    fun q => q ^ 10 * (-67146984504571592704 - 585926784 * R (q ^ 2))
-  let T12 : ℂ → ℂ :=
-    fun q => q ^ 12 * (-2405722059792721637280 - 63965429760 * R (q ^ 2) +
-      21493760 * R (-q) + 21493760 * R q)
-  let T14 : ℂ → ℂ :=
-    fun q => q ^ 14 * (-52075477879030647889920 - 2572156710720 * R (q ^ 2))
-  let T16 : ℂ → ℂ :=
-    fun q => q ^ 16 * (-609888309945422929920000 + 1488 * R (q ^ 4) -
-      60251668217856 * R (q ^ 2) - 1488 * (R (q ^ 2)) ^ 2 +
-      864299970 * R (-q) + 864299970 * R q)
-  let T18 : ℂ → ℂ :=
-    fun q => q ^ 18 * (870319150721925120 + 42987520 * R (q ^ 4))
-  let T20 : ℂ → ℂ :=
-    fun q => q ^ 20 * (819789391077228675072 + 40491712512 * R (q ^ 4) +
-      20245856256 * R (-q) + R (-q) * R (q ^ 4) +
-      20245856256 * R q + R q * R (q ^ 4))
-  let model : ℂ → ℂ := fun q =>
-    T0 q + T2 q + T3 q + T4 q + T5 q + T6 q + T7 q + T8 q + T10 q +
-      T12 q + T14 q + T16 q + T18 q + T20 q
-  have hT0 : Tendsto T0 l (nhds 0) := by
-    simpa [T0] using hRneg.add hR
-  have hT2 : Tendsto T2 l (nhds 0) := by
-    simpa [T2] using hqpow_mul (show (2 : ℕ) ≠ 0 by norm_num)
-      (g := fun _ : ℂ => (-8504046600192 : ℂ)) tendsto_const_nhds
-  have hT3 : Tendsto T3 l (nhds 0) := by
-    simpa [T3] using hqpow_mul (show (3 : ℕ) ≠ 0 by norm_num) hb3
-  have hT4 : Tendsto T4 l (nhds 0) := by
-    simpa [T4] using hqpow_mul (show (4 : ℕ) ≠ 0 by norm_num) hb4
-  have hT5 : Tendsto T5 l (nhds 0) := by
-    simpa [T5] using hqpow_mul (show (5 : ℕ) ≠ 0 by norm_num) hb5
-  have hT6 : Tendsto T6 l (nhds 0) := by
-    simpa [T6] using hqpow_mul (show (6 : ℕ) ≠ 0 by norm_num) hb6
-  have hT7 : Tendsto T7 l (nhds 0) := by
-    simpa [T7] using hqpow_mul (show (7 : ℕ) ≠ 0 by norm_num) hb7
-  have hT8 : Tendsto T8 l (nhds 0) := by
-    simpa [T8] using hqpow_mul (show (8 : ℕ) ≠ 0 by norm_num) hb8
-  have hT10 : Tendsto T10 l (nhds 0) := by
-    simpa [T10] using hqpow_mul (show (10 : ℕ) ≠ 0 by norm_num) hb10
-  have hT12 : Tendsto T12 l (nhds 0) := by
-    simpa [T12] using hqpow_mul (show (12 : ℕ) ≠ 0 by norm_num) hb12
-  have hT14 : Tendsto T14 l (nhds 0) := by
-    simpa [T14] using hqpow_mul (show (14 : ℕ) ≠ 0 by norm_num) hb14
-  have hT16 : Tendsto T16 l (nhds 0) := by
-    simpa [T16] using hqpow_mul (show (16 : ℕ) ≠ 0 by norm_num) hb16
-  have hT18 : Tendsto T18 l (nhds 0) := by
-    simpa [T18] using hqpow_mul (show (18 : ℕ) ≠ 0 by norm_num) hb18
-  have hT20 : Tendsto T20 l (nhds 0) := by
-    simpa [T20] using hqpow_mul (show (20 : ℕ) ≠ 0 by norm_num) hb20
-  have hmodel : Tendsto model l (nhds 0) := by
-    simpa [model] using (((((((((((((hT0.add hT2).add hT3).add hT4).add hT5).add
-      hT6).add hT7).add hT8).add hT10).add hT12).add hT14).add hT16).add hT18).add
-      hT20)
   have hEq :
       (fun q : ℂ =>
         cuspFunction 1 j (q ^ 4) * cuspFunction 1 j q +
         cuspFunction 1 j (q ^ 4) * cuspFunction 1 j (-q) +
         cuspFunction 1 j q * cuspFunction 1 j (-q) -
         (1488 * (cuspFunction 1 j (q ^ 2)) ^ 2 +
-          40773375 * cuspFunction 1 j (q ^ 2) + 8748000000)) =ᶠ[l]
-        model := by
+          40773375 * cuspFunction 1 j (q ^ 2) + 8748000000)) =ᶠ[puncturedZero]
+        coxPhiTwoCoeffOneModel := by
+    unfold puncturedZero
     filter_upwards [self_mem_nhdsWithin] with q hqmem
     have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hqmem
     have hq2 : q ^ 2 ≠ 0 := pow_ne_zero 2 hq0
@@ -1310,95 +1317,104 @@ private theorem coxPhiTwo_coeff_one_model_tendsto_zero :
     have hq16 : q ^ 16 ≠ 0 := pow_ne_zero 16 hq0
     have hnq : -q ≠ 0 := neg_ne_zero.mpr hq0
     have hnq4 : (-q) ^ 4 ≠ 0 := pow_ne_zero 4 hnq
-    simp [model, T0, T2, T3, T4, T5, T6, T7, T8, T10, T12, T14, T16, T18, T20, R]
+    simp [coxPhiTwoCoeffOneModel, coxPhiTwoCoeffOneTerms, coxPhiTwoCoeffOneT,
+      coxPhiTwoCoeffOneB, coxPhiTwoCoeffOneR]
     field_simp [hq0, hq2, hq4, hq8, hq16, hnq, hnq4]
     ring
-  exact hmodel.congr' hEq.symm
+  simpa [puncturedZero] using coxPhiTwoCoeffOneModel_tendsto_zero.congr' hEq.symm
 
-private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
-    Tendsto
-      (fun q : ℂ =>
-        -(cuspFunction 1 j (q ^ 4) * cuspFunction 1 j q *
-          cuspFunction 1 j (-q)) -
-        ((cuspFunction 1 j (q ^ 2)) ^ 3 -
-          162000 * (cuspFunction 1 j (q ^ 2)) ^ 2 +
-          8748000000 * cuspFunction 1 j (q ^ 2) -
-          157464000000000))
-      (nhdsWithin (0 : ℂ) ({0}ᶜ))
-      (nhds 0) := by
-  let R : ℂ → ℂ := fun q =>
-    (cuspFunction 1 j q -
-      (q⁻¹ + 744 + 196884 * q + 21493760 * q ^ 2 +
-        864299970 * q ^ 3 + 20245856256 * q ^ 4 +
-          333202640600 * q ^ 5)) / q ^ 5
-  let l := nhdsWithin (0 : ℂ) ({0}ᶜ)
-  have hR : Tendsto R l (nhds 0) := by
-    simpa [R, l] using j_cuspFunction_six_term_remainder
-  have hq : Tendsto (fun q : ℂ => q) l (nhds 0) :=
-    tendsto_id.mono_right nhdsWithin_le_nhds
-  have hneg : Tendsto (fun q : ℂ => -q) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.neg) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (neg_ne_zero.mpr (Set.mem_compl_singleton_iff.mp hqmem))
-  have hpow2 : Tendsto (fun q : ℂ => q ^ 2) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.pow 2) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (pow_ne_zero 2 (Set.mem_compl_singleton_iff.mp hqmem))
-  have hpow4 : Tendsto (fun q : ℂ => q ^ 4) l l := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      (by simpa using hq.pow 4) ?_
-    filter_upwards [self_mem_nhdsWithin] with q hqmem
-    exact Set.mem_compl_singleton_iff.mpr
-      (pow_ne_zero 4 (Set.mem_compl_singleton_iff.mp hqmem))
-  have hRneg : Tendsto (fun q : ℂ => R (-q)) l (nhds 0) := hR.comp hneg
-  have hR2 : Tendsto (fun q : ℂ => R (q ^ 2)) l (nhds 0) := hR.comp hpow2
-  have hR4 : Tendsto (fun q : ℂ => R (q ^ 4)) l (nhds 0) := hR.comp hpow4
-  have hqpow_mul {n : ℕ} (hn : n ≠ 0) {g : ℂ → ℂ} {a : ℂ}
-      (hg : Tendsto g l (nhds a)) :
-      Tendsto (fun q : ℂ => q ^ n * g q) l (nhds 0) := by
-    have hqn : Tendsto (fun q : ℂ => q ^ n) l (nhds 0) := by
-      have hpow := hq.pow n
-      have hzero : (0 : ℂ) ^ n = 0 := zero_pow hn
-      simpa [hzero] using hpow
-    simpa [hn] using hqn.mul hg
-  let B :=
-    fun C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 q : ℂ =>
-      C + A0 * R q + An * R (-q) + A2 * R (q ^ 2) + A4 * R (q ^ 4) +
-        A0n * R q * R (-q) + A22 * (R (q ^ 2)) ^ 2 +
-        A222 * (R (q ^ 2)) ^ 3 + A04 * R q * R (q ^ 4) +
-        An4 * R (-q) * R (q ^ 4) + A0n4 * R q * R (-q) * R (q ^ 4)
-  have hB (C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 : ℂ) :
-      Tendsto (B C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4) l
-        (nhds C) := by
-    convert ((((((((((tendsto_const_nhds (x := C)).add
-      ((tendsto_const_nhds (x := A0)).mul hR)).add
-      ((tendsto_const_nhds (x := An)).mul hRneg)).add
-      ((tendsto_const_nhds (x := A2)).mul hR2)).add
-      ((tendsto_const_nhds (x := A4)).mul hR4)).add
-      ((tendsto_const_nhds (x := A0n)).mul (hR.mul hRneg))).add
-      ((tendsto_const_nhds (x := A22)).mul (hR2.pow 2))).add
-      ((tendsto_const_nhds (x := A222)).mul (hR2.pow 3))).add
-      ((tendsto_const_nhds (x := A04)).mul (hR.mul hR4))).add
-      ((tendsto_const_nhds (x := An4)).mul (hRneg.mul hR4))).add
-      ((tendsto_const_nhds (x := A0n4)).mul ((hR.mul hRneg).mul hR4)) using 1
-    · ext q
-      simp [B]
-      ring_nf
-    · ring_nf
-  let T :=
-    fun n C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 q : ℂ =>
-      q ^ n * B C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 q
-  have hT (n : ℕ) (hn : n ≠ 0) (C A0 An A2 A4 A0n A22 A222 A04 An4
-      A0n4 : ℂ) :
-      Tendsto (T n C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4) l
-        (nhds 0) := by
-    simpa [T] using hqpow_mul hn (hB C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4)
-  let model : ℂ → ℂ := fun q =>
-    T
+/-- The six-term Laurent remainder for `j` at the cusp. -/
+private def coxPhiTwoCoeffZeroR (q : ℂ) : ℂ :=
+  (cuspFunction 1 j q -
+    (q⁻¹ + 744 + 196884 * q + 21493760 * q ^ 2 +
+      864299970 * q ^ 3 + 20245856256 * q ^ 4 +
+        333202640600 * q ^ 5)) / q ^ 5
+
+/-- The level-`2` constant-term Laurent remainder tends to zero. -/
+private theorem coxPhiTwoCoeffZeroR_tendsto_zero :
+    Tendsto coxPhiTwoCoeffZeroR puncturedZero (nhds 0) := by
+  simpa [coxPhiTwoCoeffZeroR, puncturedZero] using j_cuspFunction_six_term_remainder
+
+/-- A coefficient package for one power of `q` in the constant-term model. -/
+private def coxPhiTwoCoeffZeroB
+    (C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 : ℂ) (q : ℂ) : ℂ :=
+  C + A0 * coxPhiTwoCoeffZeroR q + An * coxPhiTwoCoeffZeroR (-q) +
+    A2 * coxPhiTwoCoeffZeroR (q ^ 2) + A4 * coxPhiTwoCoeffZeroR (q ^ 4) +
+    A0n * coxPhiTwoCoeffZeroR q * coxPhiTwoCoeffZeroR (-q) +
+    A22 * (coxPhiTwoCoeffZeroR (q ^ 2)) ^ 2 +
+    A222 * (coxPhiTwoCoeffZeroR (q ^ 2)) ^ 3 +
+    A04 * coxPhiTwoCoeffZeroR q * coxPhiTwoCoeffZeroR (q ^ 4) +
+    An4 * coxPhiTwoCoeffZeroR (-q) * coxPhiTwoCoeffZeroR (q ^ 4) +
+    A0n4 * coxPhiTwoCoeffZeroR q * coxPhiTwoCoeffZeroR (-q) *
+      coxPhiTwoCoeffZeroR (q ^ 4)
+
+/-- Each coefficient package tends to its constant term. -/
+private theorem coxPhiTwoCoeffZeroB_tendsto
+    (C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 : ℂ) :
+    Tendsto (coxPhiTwoCoeffZeroB C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4)
+      puncturedZero (nhds C) := by
+  have hR := coxPhiTwoCoeffZeroR_tendsto_zero
+  have hneg : Tendsto (fun q : ℂ => -q) puncturedZero puncturedZero := by
+    simpa using tendsto_neg_puncturedZero
+  have hRneg : Tendsto (fun q : ℂ => coxPhiTwoCoeffZeroR (-q)) puncturedZero
+      (nhds 0) := hR.comp hneg
+  have hR2 : Tendsto (fun q : ℂ => coxPhiTwoCoeffZeroR (q ^ 2)) puncturedZero
+      (nhds 0) := hR.comp (tendsto_pow_puncturedZero 2 (by norm_num))
+  have hR4 : Tendsto (fun q : ℂ => coxPhiTwoCoeffZeroR (q ^ 4)) puncturedZero
+      (nhds 0) := hR.comp (tendsto_pow_puncturedZero 4 (by norm_num))
+  convert ((((((((((tendsto_const_nhds (x := C)).add
+    ((tendsto_const_nhds (x := A0)).mul hR)).add
+    ((tendsto_const_nhds (x := An)).mul hRneg)).add
+    ((tendsto_const_nhds (x := A2)).mul hR2)).add
+    ((tendsto_const_nhds (x := A4)).mul hR4)).add
+    ((tendsto_const_nhds (x := A0n)).mul (hR.mul hRneg))).add
+    ((tendsto_const_nhds (x := A22)).mul (hR2.pow 2))).add
+    ((tendsto_const_nhds (x := A222)).mul (hR2.pow 3))).add
+    ((tendsto_const_nhds (x := A04)).mul (hR.mul hR4))).add
+    ((tendsto_const_nhds (x := An4)).mul (hRneg.mul hR4))).add
+    ((tendsto_const_nhds (x := A0n4)).mul ((hR.mul hRneg).mul hR4)) using 1
+  · ext q
+    simp [coxPhiTwoCoeffZeroB]
+    ring_nf
+  · ring_nf
+
+/-- One `q^n`-weighted coefficient package in the constant-term model. -/
+private def coxPhiTwoCoeffZeroT
+    (n : ℕ) (C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 : ℂ) (q : ℂ) : ℂ :=
+  q ^ n * coxPhiTwoCoeffZeroB C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 q
+
+/-- A positive `q`-power times any coefficient package tends to zero. -/
+private theorem coxPhiTwoCoeffZeroT_tendsto
+    (n : ℕ) (hn : n ≠ 0) (C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 : ℂ) :
+    Tendsto (coxPhiTwoCoeffZeroT n C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4)
+      puncturedZero (nhds 0) := by
+  simpa [coxPhiTwoCoeffZeroT] using tendsto_qpow_mul_puncturedZero hn
+    (coxPhiTwoCoeffZeroB_tendsto C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4)
+
+
+/-- A `T`-term in the constant-coefficient model tends to zero if either its
+constant package term is zero or it carries a positive q-power. -/
+private theorem coxPhiTwoCoeffZeroT_tendsto_zero_of_const_or_pos
+    {n : ℕ} {C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4 : ℂ}
+    (h : C = 0 ∨ n ≠ 0) :
+    Tendsto (coxPhiTwoCoeffZeroT n C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4)
+      puncturedZero (nhds 0) := by
+  by_cases hn : n = 0
+  · subst n
+    have hC : C = 0 := by
+      rcases h with hC | hnz
+      · exact hC
+      · contradiction
+    convert coxPhiTwoCoeffZeroB_tendsto 0 A0 An A2 A4 A0n A22 A222 A04 An4 A0n4
+      using 1
+    ext q
+    rw [hC]
+    simp [coxPhiTwoCoeffZeroT]
+  · exact coxPhiTwoCoeffZeroT_tendsto n hn C A0 An A2 A4 A0n A22 A222 A04 An4 A0n4
+
+/-- The 31 terms obtained after substituting the six-term Laurent remainder. -/
+private def coxPhiTwoCoeffZeroTerms : List (ℂ → ℂ) := [
+  coxPhiTwoCoeffZeroT
           0
           0
           1
@@ -1410,9 +1426,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           1
           0
           (-744)
@@ -1424,9 +1439,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           2
           6237696682398978
           196884
@@ -1438,9 +1452,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           3
           0
           (-21493760)
@@ -1452,9 +1465,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           4
           165790506970509660000
           864300714
@@ -1466,9 +1478,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           5
           0
           (-20246409792)
@@ -1480,9 +1491,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           6
           111023873495779700020536
           333349122296
@@ -1494,9 +1504,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           7
           0
           (-15991357440)
@@ -1508,9 +1517,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           8
           123486691818658638327552
           643039374564
@@ -1522,9 +1530,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           9
           0
           (-15063063536160)
@@ -1536,9 +1543,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           10
           82607407331862585457481574
           247941527915856
@@ -1550,9 +1556,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           11
           0
           (-4231777443840)
@@ -1564,9 +1569,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           12
           32940105833913862049000368
           170166856787240
@@ -1578,9 +1582,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           13
           0
           (-3986101154463744)
@@ -1592,9 +1595,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           14
           21864703946595852025938474648
           65606500469334240
@@ -1606,9 +1608,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           15
           0
           (-461981718937600)
@@ -1620,9 +1621,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           16
           3621649930687494100711031040
           18577056987487170
@@ -1634,9 +1634,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           17
           0
           (-435160218400140240)
@@ -1648,9 +1647,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           18
           2384538878979695861939371091224
           7161947755257949480
@@ -1662,9 +1660,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           19
           0
           (-18577056123187200)
@@ -1676,9 +1673,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           20
           44366451755678144297973643392
           747014458387857156
@@ -1690,9 +1686,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           21
           0
           (-17498508017602166784)
@@ -1704,9 +1699,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           22
           93213107619708176158567987936320
           287991018359663888304
@@ -1718,9 +1712,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           23
           0
           (-435159575360962560)
@@ -1732,9 +1725,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           0
           0
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           24
           (-47078534368997040157126510559232)
           17498493287887752920
@@ -1746,9 +1738,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           1
           1
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           25
           0
           (-409894943441378943936)
@@ -1760,9 +1751,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           (-744)
           744
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           26
           1550170467590357686063965005023200
           6746038367975921484000
@@ -1774,9 +1764,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           196884
           196884
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           27
           0
           (-7161777588422656000)
@@ -1788,9 +1777,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           (-21493760)
           21493760
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           28
           (-6687989732544559248607639579641600)
           287987032274500782000
@@ -1802,9 +1790,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           864299970
           864299970
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           29
           0
           (-6745972765707229593600)
@@ -1816,9 +1803,8 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           0
           (-20245856256)
           20245856256
-          0
-          q
-      + T
+          0,
+  coxPhiTwoCoeffZeroT
           30
           0
           111023999702812768360000
@@ -1831,418 +1817,36 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
           333202640600
           333202640600
           1
-          q
-  have hT0 := by
-    simpa [T] using hB
-      0
-      1
-      1
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT1 := by
-    exact hT 1 (show (1 : ℕ) ≠ 0 by norm_num)
-      0
-      (-744)
-      744
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT2 := by
-    exact hT 2 (show (2 : ℕ) ≠ 0 by norm_num)
-      6237696682398978
-      196884
-      196884
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT3 := by
-    exact hT 3 (show (3 : ℕ) ≠ 0 by norm_num)
-      0
-      (-21493760)
-      21493760
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT4 := by
-    exact hT 4 (show (4 : ℕ) ≠ 0 by norm_num)
-      165790506970509660000
-      864300714
-      864300714
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT5 := by
-    exact hT 5 (show (5 : ℕ) ≠ 0 by norm_num)
-      0
-      (-20246409792)
-      20246409792
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT6 := by
-    exact hT 6 (show (6 : ℕ) ≠ 0 by norm_num)
-      111023873495779700020536
-      333349122296
-      333349122296
-      (-3)
-      0
-      1
-      0
-      0
-      0
-      0
-      0
-  have hT7 := by
-    exact hT 7 (show (7 : ℕ) ≠ 0 by norm_num)
-      0
-      (-15991357440)
-      15991357440
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT8 := by
-    exact hT 8 (show (8 : ℕ) ≠ 0 by norm_num)
-      123486691818658638327552
-      643039374564
-      643039374564
-      319536
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT9 := by
-    exact hT 9 (show (9 : ℕ) ≠ 0 by norm_num)
-      0
-      (-15063063536160)
-      15063063536160
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT10 := by
-    exact hT 10 (show (10 : ℕ) ≠ 0 by norm_num)
-      82607407331862585457481574
-      247941527915856
-      247941527915856
-      (-8509785912)
-      0
-      744
-      0
-      0
-      0
-      0
-      0
-  have hT11 := by
-    exact hT 11 (show (11 : ℕ) ≠ 0 by norm_num)
-      0
-      (-4231777443840)
-      4231777443840
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT12 := by
-    exact hT 12 (show (12 : ℕ) ≠ 0 by norm_num)
-      32940105833913862049000368
-      170166856787240
-      170166856787240
-      62782563264
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT13 := by
-    exact hT 13 (show (13 : ℕ) ≠ 0 by norm_num)
-      0
-      (-3986101154463744)
-      3986101154463744
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT14 := by
-    exact hT 14 (show (14 : ℕ) ≠ 0 by norm_num)
-      21864703946595852025938474648
-      65606500469334240
-      65606500469334240
-      6746554367172
-      0
-      196884
-      0
-      0
-      0
-      0
-      0
-  have hT15 := by
-    exact hT 15 (show (15 : ℕ) ≠ 0 by norm_num)
-      0
-      (-461981718937600)
-      461981718937600
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT16 := by
-    exact hT 16 (show (16 : ℕ) ≠ 0 by norm_num)
-      3621649930687494100711031040
-      18577056987487170
-      18577056987487170
-      250662815413344
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT17 := by
-    exact hT 17 (show (17 : ℕ) ≠ 0 by norm_num)
-      0
-      (-435160218400140240)
-      435160218400140240
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT18 := by
-    exact hT 18 (show (18 : ℕ) ≠ 0 by norm_num)
-      2384538878979695861939371091224
-      7161947755257949480
-      7161947755257949480
-      4060334540199936
-      1
-      21493760
-      (-3)
-      0
-      0
-      0
-      0
-  have hT19 := by
-    exact hT 19 (show (19 : ℕ) ≠ 0 by norm_num)
-      0
-      (-18577056123187200)
-      18577056123187200
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT20 := by
-    exact hT 20 (show (20 : ℕ) ≠ 0 by norm_num)
-      44366451755678144297973643392
-      747014458387857156
-      747014458387857156
-      (-28908608750999424)
-      (-159768)
-      0
-      159768
-      0
-      0
-      0
-      0
-  have hT21 := by
-    exact hT 21 (show (21 : ℕ) ≠ 0 by norm_num)
-      0
-      (-17498508017602166784)
-      17498508017602166784
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT22 := by
-    exact hT 22 (show (22 : ℕ) ≠ 0 by norm_num)
-      93213107619708176158567987936320
-      287991018359663888304
-      287991018359663888304
-      (-5245614378743120460)
-      8509194516
-      864299970
-      (-590652)
-      0
-      0
-      0
-      0
-  have hT23 := by
-    exact hT 23 (show (23 : ℕ) ≠ 0 by norm_num)
-      0
-      (-435159575360962560)
-      435159575360962560
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-      0
-  have hT24 := by
-    exact hT 24 (show (24 : ℕ) ≠ 0 by norm_num)
-      (-47078534368997040157126510559232)
-      17498493287887752920
-      17498493287887752920
-      (-147961623258646609920)
-      (-151107477178368)
-      0
-      (-64481280)
-      0
-      1
-      1
-      0
-  have hT25 := by
-    exact hT 25 (show (25 : ℕ) ≠ 0 by norm_num)
-      0
-      (-409894943441378943936)
-      409894943441378943936
-      0
-      0
-      0
-      0
-      0
-      (-744)
-      744
-      0
-  have hT26 := by
-    exact hT 26 (show (26 : ℕ) ≠ 0 by norm_num)
-      1550170467590357686063965005023200
-      6746038367975921484000
-      6746038367975921484000
-      (-2957606280262847704608)
-      7899824803856580
-      20245856256
-      (-2592899910)
-      0
-      196884
-      196884
-      0
-  have hT27 := by
-    exact hT 27 (show (27 : ℕ) ≠ 0 by norm_num)
-      0
-      (-7161777588422656000)
-      7161777588422656000
-      0
-      0
-      0
-      0
-      0
-      (-21493760)
-      21493760
-      0
-  have hT28 := by
-    exact hT 28 (show (28 : ℕ) ≠ 0 by norm_num)
-      (-6687989732544559248607639579641600)
-      287987032274500782000
-      287987032274500782000
-      (-40475836594243377561600)
-      166079369010387226464
-      0
-      (-60737568768)
-      0
-      864299970
-      864299970
-      0
-  have hT29 := by
-    exact hT 29 (show (29 : ℕ) ≠ 0 by norm_num)
-      0
-      (-6745972765707229593600)
-      6745972765707229593600
-      0
-      0
-      0
-      0
-      0
-      (-20245856256)
-      20245856256
-      0
-  have hT30 := by
-    exact hT 30 (show (30 : ℕ) ≠ 0 by norm_num)
-      0
-      111023999702812768360000
-      111023999702812768360000
-      (-333071999108438305080000)
-      111023999702812768360000
-      333202640600
-      (-999607921800)
-      (-1)
-      333202640600
-      333202640600
-      1
-  have hmodel : Tendsto model l (nhds 0) := by
-    simpa [model, T] using
-      ((((((((((((((((((((((((((((((hT0.add hT1).add hT2).add
-        hT3).add hT4).add hT5).add hT6).add hT7).add hT8).add hT9).add
-        hT10).add hT11).add hT12).add hT13).add hT14).add hT15).add
-        hT16).add hT17).add hT18).add hT19).add hT20).add hT21).add
-        hT22).add hT23).add hT24).add hT25).add hT26).add hT27).add
-        hT28).add hT29).add hT30)
+]
+
+/-- The 31-term model obtained after substituting the six-term Laurent remainder. -/
+private def coxPhiTwoCoeffZeroModel : ℂ → ℂ :=
+  coxPhiTwoCoeffZeroTerms.sum
+
+/-- The 31-term constant-coefficient model tends to zero term by term. -/
+private theorem coxPhiTwoCoeffZeroModel_tendsto_zero :
+    Tendsto coxPhiTwoCoeffZeroModel puncturedZero (nhds 0) := by
+  rw [coxPhiTwoCoeffZeroModel]
+  apply list_sum_tendsto_zero
+  intro f hf
+  simp [coxPhiTwoCoeffZeroTerms] at hf
+  rcases hf with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+    | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+    | rfl | rfl | rfl
+  all_goals exact coxPhiTwoCoeffZeroT_tendsto_zero_of_const_or_pos (by norm_num)
+
+/-- The explicit Laurent model for the constant coefficient remainder tends to zero. -/
+private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
+    Tendsto
+      (fun q : ℂ =>
+        -(cuspFunction 1 j (q ^ 4) * cuspFunction 1 j q *
+          cuspFunction 1 j (-q)) -
+        ((cuspFunction 1 j (q ^ 2)) ^ 3 -
+          162000 * (cuspFunction 1 j (q ^ 2)) ^ 2 +
+          8748000000 * cuspFunction 1 j (q ^ 2) -
+          157464000000000))
+      (nhdsWithin (0 : ℂ) ({0}ᶜ))
+      (nhds 0) := by
   have hEq :
       (fun q : ℂ =>
         -(cuspFunction 1 j (q ^ 4) * cuspFunction 1 j q *
@@ -2250,8 +1854,9 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
         ((cuspFunction 1 j (q ^ 2)) ^ 3 -
           162000 * (cuspFunction 1 j (q ^ 2)) ^ 2 +
           8748000000 * cuspFunction 1 j (q ^ 2) -
-          157464000000000)) =ᶠ[l]
-        model := by
+          157464000000000)) =ᶠ[puncturedZero]
+        coxPhiTwoCoeffZeroModel := by
+    unfold puncturedZero
     filter_upwards [self_mem_nhdsWithin] with q hqmem
     have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hqmem
     have hq2 : q ^ 2 ≠ 0 := pow_ne_zero 2 hq0
@@ -2260,12 +1865,13 @@ private theorem coxPhiTwo_coeff_zero_model_tendsto_zero :
     have hq20 : q ^ 20 ≠ 0 := pow_ne_zero 20 hq0
     have hnq : -q ≠ 0 := neg_ne_zero.mpr hq0
     have hnq5 : (-q) ^ 5 ≠ 0 := pow_ne_zero 5 hnq
-    simp [model, T, B, R]
+    simp [coxPhiTwoCoeffZeroModel, coxPhiTwoCoeffZeroTerms, coxPhiTwoCoeffZeroT,
+      coxPhiTwoCoeffZeroB, coxPhiTwoCoeffZeroR]
     field_simp [hq0, hq2, hq4, hq10, hq20, hnq, hnq5]
     ring
-  exact hmodel.congr' hEq.symm
+  simpa [puncturedZero] using coxPhiTwoCoeffZeroModel_tendsto_zero.congr' hEq.symm
 
-
+/-- The width-`2` cusp function of the `Y^2` coefficient remainder tends to zero. -/
 private theorem coxPhiTwo_coeff_two_remainder_cuspFunction_two_tendsto_zero :
     Tendsto
       (cuspFunction (2 : ℝ)
@@ -2276,44 +1882,84 @@ private theorem coxPhiTwo_coeff_two_remainder_cuspFunction_two_tendsto_zero :
   coxPhiTwo_coeff_two_model_tendsto_zero.congr'
     coxPhiTwo_coeff_two_remainder_cuspFunction_two_eventuallyEq.symm
 
-private theorem coxPhiTwo_coeff_two_remainder_IsZeroAtImInfty :
-    IsZeroAtImInfty
-      ((coxPhiFunction (2 : ℕ+)).coeff 2 -
-        polynomialInJ modularEquationTwoCoeffY2) := by
-  let F : ℍ → ℂ :=
-    (coxPhiFunction (2 : ℕ+)).coeff 2 - polynomialInJ modularEquationTwoCoeffY2
+/-- A level-`2` Cox coefficient remainder is invariant under the weight-zero
+`SL₂(ℤ)` slash action. -/
+private theorem coxPhiTwo_coeff_remainder_slashInvariant
+    (n : ℕ) (P : Polynomial ℂ) (γ : SL(2, ℤ)) :
+    (((coxPhiFunction (2 : ℕ+)).coeff n - polynomialInJ P) ∣[(0 : ℤ)] γ) =
+      (coxPhiFunction (2 : ℕ+)).coeff n - polynomialInJ P := by
+  ext z
+  have hcoeff := congrFun (coxPhiFunction_coeff_slashInvariant (2 : ℕ+) n γ) z
+  have hpoly := congrFun (polynomialInJ_slashInvariant P γ) z
+  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hcoeff
+  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hpoly
+  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one, Pi.sub_apply]
+  rw [hcoeff, hpoly]
+
+/-- A level-`2` coefficient remainder is zero at imaginary infinity once its
+width-`2` cusp function tends to zero at the punctured cusp. -/
+private theorem coxPhiTwo_coeff_remainder_IsZeroAtImInfty_of_cusp_tendsto_zero
+    (n : ℕ) (P : Polynomial ℂ)
+    (hcusp :
+      Tendsto
+        (cuspFunction (2 : ℝ)
+          ((coxPhiFunction (2 : ℕ+)).coeff n - polynomialInJ P))
+        puncturedZero (nhds 0)) :
+    IsZeroAtImInfty ((coxPhiFunction (2 : ℕ+)).coeff n - polynomialInJ P) := by
+  let F : ℍ → ℂ := (coxPhiFunction (2 : ℕ+)).coeff n - polynomialInJ P
   change IsZeroAtImInfty F
   have hslashF : ∀ γ : SL(2, ℤ), F ∣[(0 : ℤ)] γ = F := by
     intro γ
-    ext z
-    have hcoeff := congrFun (coxPhiFunction_coeff_slashInvariant (2 : ℕ+) 2 γ) z
-    have hpoly := congrFun (polynomialInJ_slashInvariant modularEquationTwoCoeffY2 γ) z
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hcoeff
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hpoly
-    simp only [F, SL_slash_apply, neg_zero, zpow_zero, mul_one, Pi.sub_apply]
-    rw [hcoeff, hpoly]
+    simpa [F] using coxPhiTwo_coeff_remainder_slashInvariant n P γ
   have hper1 : Periodic (F ∘ UpperHalfPlane.ofComplex) (1 : ℝ) :=
     periodic_comp_of_slashInvariant_one hslashF
   have hper2 : Periodic (F ∘ UpperHalfPlane.ofComplex) (2 : ℝ) := by
     simpa using hper1.nat_mul 2
   have hq :
-      Tendsto (fun τ : ℍ => 𝕢 (2 : ℝ) τ) atImInfty
-        (nhdsWithin (0 : ℂ) ({0}ᶜ)) := by
-    simpa using
+      Tendsto (fun τ : ℍ => 𝕢 (2 : ℝ) τ) atImInfty puncturedZero := by
+    simpa [puncturedZero] using
       (Periodic.qParam_tendsto (h := (2 : ℝ)) (by norm_num)).comp
         tendsto_coe_atImInfty
   have ht :
       Tendsto (fun τ : ℍ => cuspFunction (2 : ℝ) F (𝕢 (2 : ℝ) τ))
         atImInfty (nhds 0) := by
-    have hcusp : Tendsto (cuspFunction (2 : ℝ) F)
-        (nhdsWithin (0 : ℂ) ({0}ᶜ)) (nhds 0) := by
-      simpa [F] using coxPhiTwo_coeff_two_remainder_cuspFunction_two_tendsto_zero
-    exact hcusp.comp hq
+    have hcuspF : Tendsto (cuspFunction (2 : ℝ) F) puncturedZero (nhds 0) := by
+      simpa [F] using hcusp
+    exact hcuspF.comp hq
   have hfun : (fun τ : ℍ => cuspFunction (2 : ℝ) F (𝕢 (2 : ℝ) τ)) = F := by
     funext τ
     exact UpperHalfPlane.eq_cuspFunction (h := (2 : ℝ)) (f := F) τ (by norm_num) hper2
   rw [hfun] at ht
   exact ht
+
+/-- If a level-`2` Cox coefficient remainder is zero at infinity, the
+corresponding coefficient is the prescribed polynomial in `j`. -/
+private theorem coxPhiTwo_coeff_eq_polynomialInJ_of_remainder_zero
+    (n : ℕ) (P : Polynomial ℂ)
+    (hzero :
+      IsZeroAtImInfty ((coxPhiFunction (2 : ℕ+)).coeff n - polynomialInJ P)) :
+    (coxPhiFunction (2 : ℕ+)).coeff n = polynomialInJ P := by
+  let F : ℍ → ℂ := (coxPhiFunction (2 : ℕ+)).coeff n - polynomialInJ P
+  have hslashF : ∀ γ : SL(2, ℤ), F ∣[(0 : ℤ)] γ = F := by
+    intro γ
+    simpa [F] using coxPhiTwo_coeff_remainder_slashInvariant n P γ
+  have hmdiffF : MDiff F :=
+    (coxPhiFunction_coeff_MDifferentiable (2 : ℕ+) n).sub
+      (polynomialInJ_MDifferentiable P)
+  have hFzero : F = 0 :=
+    levelOne_weightZero_eq_zero_of_slash_zero_at_infty hslashF hmdiffF (by
+      simpa [F] using hzero)
+  ext z
+  have hz := congrFun hFzero z
+  simpa [F] using sub_eq_zero.mp hz
+
+/-- The `Y^2` coefficient remainder vanishes at imaginary infinity. -/
+private theorem coxPhiTwo_coeff_two_remainder_IsZeroAtImInfty :
+    IsZeroAtImInfty
+      ((coxPhiFunction (2 : ℕ+)).coeff 2 -
+        polynomialInJ modularEquationTwoCoeffY2) :=
+  coxPhiTwo_coeff_remainder_IsZeroAtImInfty_of_cusp_tendsto_zero
+    2 modularEquationTwoCoeffY2 coxPhiTwo_coeff_two_remainder_cuspFunction_two_tendsto_zero
 
 /-- The `Y^2` coefficient identity for the explicit `Φ₂` in the `N = 2` example. -/
 theorem coxPhiTwo_coeff_two_identity :
@@ -2321,29 +1967,14 @@ theorem coxPhiTwo_coeff_two_identity :
       (fun z : ℍ => j (halfUpper z)) +
       (fun z : ℍ => j (halfTranslateUpper z))) =
       polynomialInJ modularEquationTwoCoeffY2 := by
-  let F : ℍ → ℂ :=
-    (coxPhiFunction (2 : ℕ+)).coeff 2 - polynomialInJ modularEquationTwoCoeffY2
-  have hslashF : ∀ γ : SL(2, ℤ), F ∣[(0 : ℤ)] γ = F := by
-    intro γ
-    ext z
-    have hcoeff := congrFun (coxPhiFunction_coeff_slashInvariant (2 : ℕ+) 2 γ) z
-    have hpoly := congrFun (polynomialInJ_slashInvariant modularEquationTwoCoeffY2 γ) z
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hcoeff
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hpoly
-    simp only [F, SL_slash_apply, neg_zero, zpow_zero, mul_one, Pi.sub_apply]
-    rw [hcoeff, hpoly]
-  have hmdiffF : MDiff F :=
-    (coxPhiFunction_coeff_MDifferentiable (2 : ℕ+) 2).sub
-      (polynomialInJ_MDifferentiable modularEquationTwoCoeffY2)
-  have hzero : IsZeroAtImInfty F := by
-    simpa [F] using coxPhiTwo_coeff_two_remainder_IsZeroAtImInfty
-  have hFzero : F = 0 :=
-    levelOne_weightZero_eq_zero_of_slash_zero_at_infty hslashF hmdiffF hzero
+  have hcoeff :
+      (coxPhiFunction (2 : ℕ+)).coeff 2 = polynomialInJ modularEquationTwoCoeffY2 :=
+    coxPhiTwo_coeff_eq_polynomialInJ_of_remainder_zero
+      2 modularEquationTwoCoeffY2 coxPhiTwo_coeff_two_remainder_IsZeroAtImInfty
   rw [← coxPhiFunction_two_coeff_two]
-  ext z
-  have hz := congrFun hFzero z
-  simpa [F] using sub_eq_zero.mp hz
+  exact hcoeff
 
+/-- The width-`2` cusp function of the `Y` coefficient remainder tends to zero. -/
 private theorem coxPhiTwo_coeff_one_remainder_cuspFunction_two_tendsto_zero :
     Tendsto
       (cuspFunction (2 : ℝ)
@@ -2354,44 +1985,13 @@ private theorem coxPhiTwo_coeff_one_remainder_cuspFunction_two_tendsto_zero :
   coxPhiTwo_coeff_one_model_tendsto_zero.congr'
     coxPhiTwo_coeff_one_remainder_cuspFunction_two_eventuallyEq.symm
 
+/-- The `Y` coefficient remainder vanishes at imaginary infinity. -/
 private theorem coxPhiTwo_coeff_one_remainder_IsZeroAtImInfty :
     IsZeroAtImInfty
       ((coxPhiFunction (2 : ℕ+)).coeff 1 -
-        polynomialInJ modularEquationTwoCoeffY1) := by
-  let F : ℍ → ℂ :=
-    (coxPhiFunction (2 : ℕ+)).coeff 1 - polynomialInJ modularEquationTwoCoeffY1
-  change IsZeroAtImInfty F
-  have hslashF : ∀ γ : SL(2, ℤ), F ∣[(0 : ℤ)] γ = F := by
-    intro γ
-    ext z
-    have hcoeff := congrFun (coxPhiFunction_coeff_slashInvariant (2 : ℕ+) 1 γ) z
-    have hpoly := congrFun (polynomialInJ_slashInvariant modularEquationTwoCoeffY1 γ) z
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hcoeff
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hpoly
-    simp only [F, SL_slash_apply, neg_zero, zpow_zero, mul_one, Pi.sub_apply]
-    rw [hcoeff, hpoly]
-  have hper1 : Periodic (F ∘ UpperHalfPlane.ofComplex) (1 : ℝ) :=
-    periodic_comp_of_slashInvariant_one hslashF
-  have hper2 : Periodic (F ∘ UpperHalfPlane.ofComplex) (2 : ℝ) := by
-    simpa using hper1.nat_mul 2
-  have hq :
-      Tendsto (fun τ : ℍ => 𝕢 (2 : ℝ) τ) atImInfty
-        (nhdsWithin (0 : ℂ) ({0}ᶜ)) := by
-    simpa using
-      (Periodic.qParam_tendsto (h := (2 : ℝ)) (by norm_num)).comp
-        tendsto_coe_atImInfty
-  have ht :
-      Tendsto (fun τ : ℍ => cuspFunction (2 : ℝ) F (𝕢 (2 : ℝ) τ))
-        atImInfty (nhds 0) := by
-    have hcusp : Tendsto (cuspFunction (2 : ℝ) F)
-        (nhdsWithin (0 : ℂ) ({0}ᶜ)) (nhds 0) := by
-      simpa [F] using coxPhiTwo_coeff_one_remainder_cuspFunction_two_tendsto_zero
-    exact hcusp.comp hq
-  have hfun : (fun τ : ℍ => cuspFunction (2 : ℝ) F (𝕢 (2 : ℝ) τ)) = F := by
-    funext τ
-    exact UpperHalfPlane.eq_cuspFunction (h := (2 : ℝ)) (f := F) τ (by norm_num) hper2
-  rw [hfun] at ht
-  exact ht
+        polynomialInJ modularEquationTwoCoeffY1) :=
+  coxPhiTwo_coeff_remainder_IsZeroAtImInfty_of_cusp_tendsto_zero
+    1 modularEquationTwoCoeffY1 coxPhiTwo_coeff_one_remainder_cuspFunction_two_tendsto_zero
 
 /-- The `Y` coefficient identity for the explicit `Φ₂` in the `N = 2` example. -/
 theorem coxPhiTwo_coeff_one_identity :
@@ -2400,29 +2000,14 @@ theorem coxPhiTwo_coeff_one_identity :
     (fun z : ℍ => j (halfUpper z)) *
       (fun z : ℍ => j (halfTranslateUpper z)) =
       polynomialInJ modularEquationTwoCoeffY1 := by
-  let F : ℍ → ℂ :=
-    (coxPhiFunction (2 : ℕ+)).coeff 1 - polynomialInJ modularEquationTwoCoeffY1
-  have hslashF : ∀ γ : SL(2, ℤ), F ∣[(0 : ℤ)] γ = F := by
-    intro γ
-    ext z
-    have hcoeff := congrFun (coxPhiFunction_coeff_slashInvariant (2 : ℕ+) 1 γ) z
-    have hpoly := congrFun (polynomialInJ_slashInvariant modularEquationTwoCoeffY1 γ) z
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hcoeff
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hpoly
-    simp only [F, SL_slash_apply, neg_zero, zpow_zero, mul_one, Pi.sub_apply]
-    rw [hcoeff, hpoly]
-  have hmdiffF : MDiff F :=
-    (coxPhiFunction_coeff_MDifferentiable (2 : ℕ+) 1).sub
-      (polynomialInJ_MDifferentiable modularEquationTwoCoeffY1)
-  have hzero : IsZeroAtImInfty F := by
-    simpa [F] using coxPhiTwo_coeff_one_remainder_IsZeroAtImInfty
-  have hFzero : F = 0 :=
-    levelOne_weightZero_eq_zero_of_slash_zero_at_infty hslashF hmdiffF hzero
+  have hcoeff :
+      (coxPhiFunction (2 : ℕ+)).coeff 1 = polynomialInJ modularEquationTwoCoeffY1 :=
+    coxPhiTwo_coeff_eq_polynomialInJ_of_remainder_zero
+      1 modularEquationTwoCoeffY1 coxPhiTwo_coeff_one_remainder_IsZeroAtImInfty
   rw [← coxPhiFunction_two_coeff_one]
-  ext z
-  have hz := congrFun hFzero z
-  simpa [F] using sub_eq_zero.mp hz
+  exact hcoeff
 
+/-- The width-`2` cusp function of the constant coefficient remainder tends to zero. -/
 private theorem coxPhiTwo_coeff_zero_remainder_cuspFunction_two_tendsto_zero :
     Tendsto
       (cuspFunction (2 : ℝ)
@@ -2433,44 +2018,13 @@ private theorem coxPhiTwo_coeff_zero_remainder_cuspFunction_two_tendsto_zero :
   coxPhiTwo_coeff_zero_model_tendsto_zero.congr'
     coxPhiTwo_coeff_zero_remainder_cuspFunction_two_eventuallyEq.symm
 
+/-- The constant coefficient remainder vanishes at imaginary infinity. -/
 private theorem coxPhiTwo_coeff_zero_remainder_IsZeroAtImInfty :
     IsZeroAtImInfty
       ((coxPhiFunction (2 : ℕ+)).coeff 0 -
-        polynomialInJ modularEquationTwoCoeffY0) := by
-  let F : ℍ → ℂ :=
-    (coxPhiFunction (2 : ℕ+)).coeff 0 - polynomialInJ modularEquationTwoCoeffY0
-  change IsZeroAtImInfty F
-  have hslashF : ∀ γ : SL(2, ℤ), F ∣[(0 : ℤ)] γ = F := by
-    intro γ
-    ext z
-    have hcoeff := congrFun (coxPhiFunction_coeff_slashInvariant (2 : ℕ+) 0 γ) z
-    have hpoly := congrFun (polynomialInJ_slashInvariant modularEquationTwoCoeffY0 γ) z
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hcoeff
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hpoly
-    simp only [F, SL_slash_apply, neg_zero, zpow_zero, mul_one, Pi.sub_apply]
-    rw [hcoeff, hpoly]
-  have hper1 : Periodic (F ∘ UpperHalfPlane.ofComplex) (1 : ℝ) :=
-    periodic_comp_of_slashInvariant_one hslashF
-  have hper2 : Periodic (F ∘ UpperHalfPlane.ofComplex) (2 : ℝ) := by
-    simpa using hper1.nat_mul 2
-  have hq :
-      Tendsto (fun τ : ℍ => 𝕢 (2 : ℝ) τ) atImInfty
-        (nhdsWithin (0 : ℂ) ({0}ᶜ)) := by
-    simpa using
-      (Periodic.qParam_tendsto (h := (2 : ℝ)) (by norm_num)).comp
-        tendsto_coe_atImInfty
-  have ht :
-      Tendsto (fun τ : ℍ => cuspFunction (2 : ℝ) F (𝕢 (2 : ℝ) τ))
-        atImInfty (nhds 0) := by
-    have hcusp : Tendsto (cuspFunction (2 : ℝ) F)
-        (nhdsWithin (0 : ℂ) ({0}ᶜ)) (nhds 0) := by
-      simpa [F] using coxPhiTwo_coeff_zero_remainder_cuspFunction_two_tendsto_zero
-    exact hcusp.comp hq
-  have hfun : (fun τ : ℍ => cuspFunction (2 : ℝ) F (𝕢 (2 : ℝ) τ)) = F := by
-    funext τ
-    exact UpperHalfPlane.eq_cuspFunction (h := (2 : ℝ)) (f := F) τ (by norm_num) hper2
-  rw [hfun] at ht
-  exact ht
+        polynomialInJ modularEquationTwoCoeffY0) :=
+  coxPhiTwo_coeff_remainder_IsZeroAtImInfty_of_cusp_tendsto_zero
+    0 modularEquationTwoCoeffY0 coxPhiTwo_coeff_zero_remainder_cuspFunction_two_tendsto_zero
 
 /-- The constant coefficient identity for the explicit `Φ₂` in the `N = 2` example. -/
 theorem coxPhiTwo_coeff_zero_identity :
@@ -2478,28 +2032,12 @@ theorem coxPhiTwo_coeff_zero_identity :
       (fun z : ℍ => j (halfUpper z)) *
       (fun z : ℍ => j (halfTranslateUpper z))) =
       polynomialInJ modularEquationTwoCoeffY0 := by
-  let F : ℍ → ℂ :=
-    (coxPhiFunction (2 : ℕ+)).coeff 0 - polynomialInJ modularEquationTwoCoeffY0
-  have hslashF : ∀ γ : SL(2, ℤ), F ∣[(0 : ℤ)] γ = F := by
-    intro γ
-    ext z
-    have hcoeff := congrFun (coxPhiFunction_coeff_slashInvariant (2 : ℕ+) 0 γ) z
-    have hpoly := congrFun (polynomialInJ_slashInvariant modularEquationTwoCoeffY0 γ) z
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hcoeff
-    simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hpoly
-    simp only [F, SL_slash_apply, neg_zero, zpow_zero, mul_one, Pi.sub_apply]
-    rw [hcoeff, hpoly]
-  have hmdiffF : MDiff F :=
-    (coxPhiFunction_coeff_MDifferentiable (2 : ℕ+) 0).sub
-      (polynomialInJ_MDifferentiable modularEquationTwoCoeffY0)
-  have hzero : IsZeroAtImInfty F := by
-    simpa [F] using coxPhiTwo_coeff_zero_remainder_IsZeroAtImInfty
-  have hFzero : F = 0 :=
-    levelOne_weightZero_eq_zero_of_slash_zero_at_infty hslashF hmdiffF hzero
+  have hcoeff :
+      (coxPhiFunction (2 : ℕ+)).coeff 0 = polynomialInJ modularEquationTwoCoeffY0 :=
+    coxPhiTwo_coeff_eq_polynomialInJ_of_remainder_zero
+      0 modularEquationTwoCoeffY0 coxPhiTwo_coeff_zero_remainder_IsZeroAtImInfty
   rw [← coxPhiFunction_two_coeff_zero]
-  ext z
-  have hz := congrFun hFzero z
-  simpa [F] using sub_eq_zero.mp hz
+  exact hcoeff
 
 /-- Reduction of the `N = 2` example to the three explicit symmetric coefficient identities. -/
 theorem modularEquationTwo_map_eq_coxPhiFunction_two_of_symmetric_identities
@@ -2562,8 +2100,8 @@ theorem modularEquationTwo_map_eq_coxPhiFunction_two_of_symmetric_identities
   have hcoeff := congrArg (fun P : Polynomial ℂ => P.coeff n) hpoly
   simpa [Polynomial.coeff_map] using hcoeff
 
-/-- The fully formalized level-`2` example: the classical explicit `Φ₂` maps to the
-level-`2` Cox product. -/
+/-- The fully formalised `N = 2` example: the classical explicit `Φ₂` maps to
+the level-`2` Cox product. -/
 theorem modularEquationTwo_map_eq_coxPhiFunction_two :
     modularEquationTwo.map polynomialInJRingHom = coxPhiFunction (2 : ℕ+) :=
   modularEquationTwo_map_eq_coxPhiFunction_two_of_symmetric_identities
@@ -2592,7 +2130,7 @@ theorem modularEquationTwo_eval_j_jN_of_map_eq
   rw [polynomialInJRingHom_eval_apply] at hroot
   simpa using hroot
 
-/-- Displayed scalar form of the conditional level-`2` vanishing statement. -/
+/-- Displayed scalar form of the conditional `N = 2` example vanishing statement. -/
 theorem modularEquationTwo_explicit_eval_j_jN_of_map_eq
     (hmap : modularEquationTwo.map polynomialInJRingHom = coxPhiFunction (2 : ℕ+))
     (z : ℍ) :
@@ -2606,13 +2144,13 @@ theorem modularEquationTwo_explicit_eval_j_jN_of_map_eq
   rw [modularEquationTwo_evalEval] at hroot
   simpa using hroot
 
-/-- The level-`2` example, i.e. the classical equation `Φ₂(j(τ), j(2τ)) = 0`,
+/-- The `N = 2` example, i.e. the classical equation `Φ₂(j(τ), j(2τ)) = 0`,
 in bivariate polynomial-evaluation form. -/
 theorem modularEquationTwo_eval_j_jN (z : ℍ) :
     modularEquationTwo.evalEval (j z) (jN (2 : ℕ+) z) = 0 :=
   modularEquationTwo_eval_j_jN_of_map_eq modularEquationTwo_map_eq_coxPhiFunction_two z
 
-/-- Displayed scalar form of the level-`2` example:
+/-- Displayed scalar form of the `N = 2` example:
 `Φ₂(j(τ), j(2τ)) = 0`. -/
 theorem modularEquationTwo_explicit_eval_j_jN (z : ℍ) :
     (j z) ^ 3 + (jN (2 : ℕ+) z) ^ 3 - (j z) ^ 2 * (jN (2 : ℕ+) z) ^ 2

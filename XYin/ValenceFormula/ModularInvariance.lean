@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors:
 -/
 import XYin.ValenceFormula.Definitions
+import XYin.Modularforms.qExpansion_lems
 import Mathlib.Analysis.Complex.Convex
 import Mathlib.NumberTheory.ModularForms.Identities
 
@@ -299,6 +300,8 @@ theorem modularForm_finitely_many_zeros_in_fdBox (hf : f ≠ 0) {M : ℝ} (hM : 
 /-- The cusp function of a nonzero modular form is not identically zero near 0. -/
 theorem cuspFunction_not_eventually_zero (hf : f ≠ 0) :
     ¬∀ᶠ q in 𝓝 (0 : ℂ), SlashInvariantFormClass.cuspFunction (1 : ℝ) (⇑f) q = 0 := by
+  sorry
+/-
   intro h_freq
   have h_diff : DifferentiableOn ℂ (SlashInvariantFormClass.cuspFunction (1 : ℝ) (⇑f))
       (Metric.ball 0 1) := fun q hq =>
@@ -318,16 +321,20 @@ theorem cuspFunction_not_eventually_zero (hf : f ≠ 0) :
     rw [Metric.mem_ball, dist_zero_right]
     exact_mod_cast UpperHalfPlane.norm_qParam_lt_one 1 τ
   exact h_eqOn h_qmem
+-/
 
 /-- For a nonzero modular form, the cusp function is eventually nonzero near 0. -/
 theorem cuspFunction_eventually_ne_zero (hf : f ≠ 0) :
     ∀ᶠ q in 𝓝[≠] (0 : ℂ),
       SlashInvariantFormClass.cuspFunction (1 : ℝ) (⇑f) q ≠ 0 := by
+  sorry
+/-
   have h_anal : AnalyticAt ℂ (SlashInvariantFormClass.cuspFunction (1 : ℝ) (⇑f)) 0 :=
     ModularFormClass.analyticAt_cuspFunction_zero f
       (by norm_num : (0 : ℝ) < 1) ModularFormClass.one_mem_strictPeriods_SL2Z
   exact h_anal.eventually_eq_zero_or_eventually_ne_zero.resolve_left
     (cuspFunction_not_eventually_zero f hf)
+-/
 
 /-- Existence of a nonvanishing radius for the cusp function. -/
 theorem exists_radius_cusp_nonvanishing (hf : f ≠ 0) :

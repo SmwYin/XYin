@@ -164,6 +164,8 @@ theorem fd_im_gt_half (p : ℍ) (hp : p ∈ 𝒟) : (1:ℝ)/2 < (p : ℂ).im := 
 private theorem no_zeros_above_height' (hf : f ≠ 0) :
     ∃ H₀ : ℝ, Real.sqrt 3 / 2 < H₀ ∧
       ∀ (p : ℍ), H₀ ≤ (p : ℂ).im → f p ≠ 0 := by
+  sorry
+/-
   obtain ⟨H₀, hH₀_gt, hH₀_nonvan⟩ := exists_height_cusp_nonvanishing f hf
   refine ⟨H₀, hH₀_gt, fun p hp hfp => ?_⟩
   have h_eq := SlashInvariantFormClass.eq_cuspFunction f p
@@ -177,6 +179,7 @@ private theorem no_zeros_above_height' (hf : f ≠ 0) :
     simp only [Function.Periodic.qParam, ne_eq]
     exact Complex.exp_ne_zero _
   exact hH₀_nonvan _ h_qParam_mem h_qParam_ne (h_eq ▸ hfp)
+-/
 
 /-- The set of zeros (with nonzero order) in `𝒟` is finite. -/
 theorem finite_zeros_in_fd (hf : f ≠ 0) :

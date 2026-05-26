@@ -11,7 +11,7 @@ open scoped Manifold
 
 This file proves the general Cox modular-equation existence and root relation over `ℂ`
 for arbitrary positive level `N`.  It combines the right-coset product from Cox
-Lemma 11.11 with the polynomial-in-`j` result formalizing Cox Lemma 11.10(ii):
+Lemma 11.11 with the polynomial-in-`j` result formalising Cox Lemma 11.10(ii):
 the coefficients of the function-valued Cox product are level-one modular functions,
 hence polynomials in `j` once their meromorphicity at the cusp is established.
 -/
@@ -25,12 +25,14 @@ section modularEquation
 
 /-! ## Finite q-order at infinity
 
-This section formalizes the finite-growth estimates corresponding to Cox equations
+This section formalises the finite-growth estimates corresponding to Cox equations
 (11.12) and (11.13), using upper-affine representatives.
 -/
 
 section FiniteQOrder
 
+/-- A plain weight-zero `SL₂(ℤ)`-invariant function is periodic with period `1`
+after precomposition with `UpperHalfPlane.ofComplex`. -/
 theorem periodic_comp_of_slashInvariant_one {f : ℍ → ℂ}
     (hslash : ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f) :
     Periodic (f ∘ UpperHalfPlane.ofComplex) (1 : ℝ) := by
@@ -45,6 +47,7 @@ theorem periodic_comp_of_slashInvariant_one {f : ℍ → ℂ}
     SlashInvariantFormClass.periodic_comp_ofComplex F (by simp)
   simpa [F] using hper
 
+/-- The level-one q-parameter is manifold-differentiable on the upper half-plane. -/
 private theorem qParam_one_MDifferentiable :
     MDiff (fun τ : ℍ => 𝕢 (1 : ℝ) τ) := by
   rw [UpperHalfPlane.mdifferentiable_iff]
@@ -59,6 +62,7 @@ private theorem qParam_one_MDifferentiable :
   exact ((Function.Periodic.differentiable_qParam (h := (1 : ℝ)) z).congr_of_eventuallyEq
     hqevent).differentiableWithinAt
 
+/-- The level-one q-parameter, extended by `ofComplex`, has period `1`. -/
 private theorem qParam_one_comp_ofComplex_periodic :
     Periodic ((fun τ : ℍ => 𝕢 (1 : ℝ) τ) ∘ UpperHalfPlane.ofComplex) (1 : ℝ) := by
   intro z
@@ -87,6 +91,8 @@ private theorem qParam_one_comp_ofComplex_periodic :
     exact congrArg (fun τ : ℍ => 𝕢 (1 : ℝ) τ) <|
       UpperHalfPlane.ofComplex_apply_eq_of_im_nonpos (not_lt.mp hz') (not_lt.mp hz)
 
+/-- Multiplying a period-one function by a power of the level-one q-parameter
+preserves period `1`. -/
 private theorem qParam_pow_mul_periodic_one {f : ℍ → ℂ} (M : ℕ)
     (hfper : Periodic (f ∘ UpperHalfPlane.ofComplex) (1 : ℝ)) :
     Periodic
@@ -97,13 +103,17 @@ private theorem qParam_pow_mul_periodic_one {f : ℍ → ℂ} (M : ℕ)
       qParam_one_comp_ofComplex_periodic.comp (fun q : ℂ => q ^ M)
   simpa [Function.comp] using hqpow.mul hfper
 
+/-- A function has finite q-order at infinity if multiplying by a power of
+the level-one q-parameter makes it bounded as `im τ → ∞`. -/
 def HasFiniteQOrderAtInfty (f : ℍ → ℂ) : Prop :=
   ∃ M : ℕ, IsBoundedAtImInfty (fun τ : ℍ => (𝕢 (1 : ℝ) τ) ^ M * f τ)
 
+/-- A fixed power of the level-one q-parameter is bounded at imaginary infinity. -/
 private theorem qParam_one_pow_IsBoundedAtImInfty (M : ℕ) :
     IsBoundedAtImInfty (fun τ : ℍ => (𝕢 (1 : ℝ) τ) ^ M) :=
   ((UpperHalfPlane.qParam_tendsto_atImInfty (h := 1) (by norm_num)).pow M).isBigO_one ℝ
 
+/-- Imaginary part computation for the upper-affine map before packaging it in `ℍ`. -/
 private lemma upperAffine_im_aux (a d : ℕ+) (b : ℤ) (τ : ℍ) :
     Complex.im (((a : ℂ) * (τ : ℂ) + (b : ℂ)) / (d : ℂ)) =
       ((a : ℝ) / (d : ℝ)) * τ.im := by
@@ -122,10 +132,12 @@ noncomputable def upperAffineUpper (a d : ℕ+) (b : ℤ) (τ : ℍ) : ℍ :=
     rw [upperAffine_im_aux a d b τ]
     positivity⟩
 
+/-- Imaginary part formula for the upper-affine representative. -/
 private theorem upperAffineUpper_im (a d : ℕ+) (b : ℤ) (τ : ℍ) :
     (upperAffineUpper a d b τ).im = ((a : ℝ) / (d : ℝ)) * τ.im :=
   upperAffine_im_aux a d b τ
 
+/-- Upper-affine representatives with positive slope tend to imaginary infinity. -/
 private theorem upperAffineUpper_tendsto_atImInfty (a d : ℕ+) (b : ℤ) :
     Tendsto (upperAffineUpper a d b) atImInfty atImInfty := by
   rw [show atImInfty = Filter.comap UpperHalfPlane.im Filter.atTop from rfl,
@@ -138,6 +150,7 @@ private theorem upperAffineUpper_tendsto_atImInfty (a d : ℕ+) (b : ℤ) :
   exact (Filter.Tendsto.const_mul_atTop hscale Filter.tendsto_id).comp
     Filter.tendsto_comap
 
+/-- The q-ratio in an upper-affine change of variable has norm at most `1`. -/
 private lemma upperAffine_qratio_norm_le_one (a d : ℕ+) (y : ℝ) (hy : 0 < y) :
     Real.exp (-2 * Real.pi * y / 1) ^ (a : ℕ) *
         (Real.exp (-2 * Real.pi * (((a : ℝ) / (d : ℝ)) * y) / 1))⁻¹ ≤ 1 := by
@@ -153,6 +166,7 @@ private lemma upperAffine_qratio_norm_le_one (a d : ℕ+) (y : ℝ) (hy : 0 < y)
   have hmul : (a : ℝ) / d * y ≤ (a : ℝ) * y := by gcongr
   nlinarith [Real.pi_pos]
 
+/-- The q-ratio used to rewrite `j` as `qj / q` is bounded at infinity. -/
 private theorem upperAffine_qratio_IsBoundedAtImInfty (a d : ℕ+) (b : ℤ) :
     IsBoundedAtImInfty
       (fun τ : ℍ =>
@@ -186,6 +200,7 @@ theorem upperAffine_j_finiteQOrder (a d : ℕ+) (b : ℤ) :
   rw [← mul_assoc ((𝕢 (1 : ℝ) (w : ℂ))⁻¹)]
   rw [inv_mul_cancel₀ hq, one_mul]
 
+/-- The gcd used to triangularise `N • γ` is positive. -/
 private lemma gcd_pos_of_det (N : ℕ+) (γ : SL(2, ℤ)) :
     0 < Int.gcd ((N : ℤ) * γ 0 0) (γ 1 0) := by
   rw [Nat.pos_iff_ne_zero]
@@ -202,6 +217,7 @@ private lemma gcd_pos_of_det (N : ℕ+) (γ : SL(2, ℤ)) :
   rw [hA, hC] at hdet
   norm_num at hdet
 
+/-- The triangularisation gcd divides `N`, using the determinant-one relation. -/
 private lemma gcd_dvd_N_of_det (N : ℕ+) (γ : SL(2, ℤ)) :
     (Int.gcd ((N : ℤ) * γ 0 0) (γ 1 0) : ℤ) ∣ (N : ℤ) := by
   let g : ℤ := Int.gcd ((N : ℤ) * γ 0 0) (γ 1 0)
@@ -221,11 +237,18 @@ private lemma gcd_dvd_N_of_det (N : ℕ+) (γ : SL(2, ℤ)) :
     _ = (N : ℤ) * γ 0 0 * γ 1 1 - (N : ℤ) * γ 0 1 * γ 1 0 := by
       ring
 
-private theorem exists_upperAffine_for_jN_sl2_smul
-    (N : ℕ+) (γ : SL(2, ℤ)) :
-    ∃ a d : ℕ+, ∃ b : ℤ,
-      (fun τ : ℍ => jN N (γ • τ)) =
-        fun τ : ℍ => j (upperAffineUpper a d b τ) := by
+/-- Integer coefficients which triangularise the determinant-`N` matrix attached to
+`N • (γ • τ)`.  The four displayed identities say that after left multiplication
+by a suitable `δ ∈ SL₂(ℤ)`, the matrix has lower-left entry `0` and diagonal
+entries `a` and `d`. -/
+private theorem exists_upperAffine_integer_coefficients (N : ℕ+) (γ : SL(2, ℤ)) :
+    ∃ a d : ℕ+, ∃ b p q r s A B C D : ℤ, ∃ δ : SL(2, ℤ),
+      A = γ 0 0 ∧ B = γ 0 1 ∧ C = γ 1 0 ∧ D = γ 1 1 ∧
+      δ 0 0 = p ∧ δ 0 1 = q ∧ δ 1 0 = r ∧ δ 1 1 = s ∧
+      p * ((N : ℤ) * A) + q * C = (a : ℤ) ∧
+      p * ((N : ℤ) * B) + q * D = b ∧
+      r * ((N : ℤ) * A) + s * C = 0 ∧
+      r * ((N : ℤ) * B) + s * D = (d : ℤ) := by
   let A : ℤ := γ 0 0
   let B : ℤ := γ 0 1
   let C : ℤ := γ 1 0
@@ -290,7 +313,85 @@ private theorem exists_upperAffine_for_jN_sl2_smul
         rw [hr, hm_eq']
       _ = (N : ℤ) * (A * D - B * C) := by ring
       _ = (N : ℤ) := by rw [hdetγ, mul_one]
-  have htop_right : p * ((N : ℤ) * B) + q * D = b := by rfl
+  have hd_mul_nat : ((N : ℕ) / gNat) * gNat = (N : ℕ) :=
+    Nat.div_mul_cancel hg_dvd_N_nat
+  have hd_mul_int : (d : ℤ) * (gNat : ℤ) = (N : ℤ) := by
+    change (((N : ℕ) / gNat : ℕ) : ℤ) * (gNat : ℤ) = (N : ℤ)
+    exact_mod_cast hd_mul_nat
+  have hlower_right : r * ((N : ℤ) * B) + s * D = (d : ℤ) := by
+    apply mul_right_cancel₀ hg_ne_int
+    calc
+      (r * ((N : ℤ) * B) + s * D) * (gNat : ℤ) = (N : ℤ) :=
+        hlower_right_mul
+      _ = (d : ℤ) * (gNat : ℤ) := hd_mul_int.symm
+  refine ⟨a, d, b, p, q, r, s, A, B, C, D, δ, ?_⟩
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, hδr, hδs, htop_left, rfl,
+    hlower_left, hlower_right⟩
+
+/-- Matrix algebra identifying the triangularised action with `upperAffineUpper`. -/
+private lemma upperAffine_matrix_action_eq
+    (N a d : ℕ+) (p q r s A B C D b : ℤ) (τ : ℍ)
+    (hdenγ : (C : ℂ) * (τ : ℂ) + (D : ℂ) ≠ 0)
+    (htop_left :
+      (p : ℂ) * ((N : ℂ) * (A : ℂ)) + (q : ℂ) * (C : ℂ) = (a : ℂ))
+    (htop_right :
+      (p : ℂ) * ((N : ℂ) * (B : ℂ)) + (q : ℂ) * (D : ℂ) = (b : ℂ))
+    (hlower_left :
+      (r : ℂ) * ((N : ℂ) * (A : ℂ)) + (s : ℂ) * (C : ℂ) = 0)
+    (hlower_right :
+      (r : ℂ) * ((N : ℂ) * (B : ℂ)) + (s : ℂ) * (D : ℂ) = (d : ℂ)) :
+    (((p : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
+          ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (q : ℂ)) /
+      ((r : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
+          ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (s : ℂ))) =
+        (((a : ℂ) * (τ : ℂ) + (b : ℂ)) / (d : ℂ)) := by
+  have hdenγ' : (τ : ℂ) * (C : ℂ) + (D : ℂ) ≠ 0 := by
+    simpa [mul_comm] using hdenγ
+  have hd_ne : (d : ℂ) ≠ 0 := by exact_mod_cast PNat.ne_zero d
+  have hnum :
+      (p : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
+            ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (q : ℂ) =
+        ((a : ℂ) * (τ : ℂ) + (b : ℂ)) / ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
+    calc
+      (p : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
+            ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (q : ℂ)
+          = (((p : ℂ) * ((N : ℂ) * (A : ℂ)) + (q : ℂ) * (C : ℂ)) *
+                (τ : ℂ) +
+              ((p : ℂ) * ((N : ℂ) * (B : ℂ)) + (q : ℂ) * (D : ℂ))) /
+              ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
+            field_simp [hdenγ, hdenγ']
+            ring_nf
+      _ = ((a : ℂ) * (τ : ℂ) + (b : ℂ)) /
+          ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
+            rw [htop_left, htop_right]
+  have hden :
+      (r : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
+            ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (s : ℂ) =
+        (d : ℂ) / ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
+    calc
+      (r : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
+            ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (s : ℂ)
+          = (((r : ℂ) * ((N : ℂ) * (A : ℂ)) + (s : ℂ) * (C : ℂ)) *
+                (τ : ℂ) +
+              ((r : ℂ) * ((N : ℂ) * (B : ℂ)) + (s : ℂ) * (D : ℂ))) /
+              ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
+            field_simp [hdenγ, hdenγ']
+            ring_nf
+      _ = (d : ℂ) / ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
+            rw [hlower_left, hlower_right]
+            ring
+  rw [hnum, hden]
+  field_simp [hdenγ, hdenγ', hd_ne]
+
+/-- Every `SL₂(ℤ)` translate of a `jN` root is a `j` of an upper-affine point. -/
+private theorem exists_upperAffine_for_jN_sl2_smul
+    (N : ℕ+) (γ : SL(2, ℤ)) :
+    ∃ a d : ℕ+, ∃ b : ℤ,
+      (fun τ : ℍ => jN N (γ • τ)) =
+        fun τ : ℍ => j (upperAffineUpper a d b τ) := by
+  obtain ⟨a, d, b, p, q, r, s, A, B, C, D, δ, hA, hB, hC, hD, hδp,
+    hδq, hδr, hδs, htop_left, htop_right, hlower_left, hlower_right⟩ :=
+      exists_upperAffine_integer_coefficients N γ
   refine ⟨a, d, b, ?_⟩
   funext τ
   calc
@@ -301,7 +402,7 @@ private theorem exists_upperAffine_for_jN_sl2_smul
       ext
       simp only [natPosSMul_apply, UpperHalfPlane.coe_specialLinearGroup_apply,
         upperAffineUpper, UpperHalfPlane.coe_mk]
-      simp only [algebraMap_int_eq, hδr, hδs]
+      simp only [algebraMap_int_eq, ← hA, ← hB, ← hC, ← hD, hδp, hδq, hδr, hδs]
       change (((p : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
             ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (q : ℂ)) /
           ((r : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
@@ -309,65 +410,25 @@ private theorem exists_upperAffine_for_jN_sl2_smul
         (((a : ℂ) * (τ : ℂ) + (b : ℂ)) / (d : ℂ))
       have hdenγ : (C : ℂ) * (τ : ℂ) + (D : ℂ) ≠ 0 := by
         have h := UpperHalfPlane.denom_ne_zero (Matrix.SpecialLinearGroup.mapGL ℝ γ) τ
-        simpa [denom, Matrix.SpecialLinearGroup.mapGL, A, C, D, algebraMap_int_eq]
+        simpa [denom, Matrix.SpecialLinearGroup.mapGL, ← hA, ← hC, ← hD,
+          algebraMap_int_eq]
           using h
-      have hdenγ' : (τ : ℂ) * (C : ℂ) + (D : ℂ) ≠ 0 := by
-        simpa [mul_comm] using hdenγ
-      have hd_ne : (d : ℂ) ≠ 0 := by exact_mod_cast PNat.ne_zero d
-      have hg_ne_c : (gNat : ℂ) ≠ 0 := by exact_mod_cast Nat.ne_of_gt hgpos
-      have hd_mul : (d : ℂ) * (gNat : ℂ) = (N : ℂ) := by
-        change (((N : ℕ) / gNat : ℕ) : ℂ) * (gNat : ℂ) = (N : ℂ)
-        rw [← Nat.cast_mul, Nat.div_mul_cancel hg_dvd_N_nat]
       have htop_left_c : (p : ℂ) * ((N : ℂ) * (A : ℂ)) + (q : ℂ) * (C : ℂ) =
           (a : ℂ) := by
-        change (p : ℂ) * ((N : ℂ) * (A : ℂ)) + (q : ℂ) * (C : ℂ) = (gNat : ℂ)
         exact_mod_cast htop_left
       have hlower_left_c : (r : ℂ) * ((N : ℂ) * (A : ℂ)) + (s : ℂ) * (C : ℂ) =
           0 := by
         exact_mod_cast hlower_left
       have hlower_right_c : (r : ℂ) * ((N : ℂ) * (B : ℂ)) + (s : ℂ) * (D : ℂ) =
           (d : ℂ) := by
-        apply mul_right_cancel₀ hg_ne_c
-        calc
-          ((r : ℂ) * ((N : ℂ) * (B : ℂ)) + (s : ℂ) * (D : ℂ)) * (gNat : ℂ)
-              = (N : ℂ) := by exact_mod_cast hlower_right_mul
-          _ = (d : ℂ) * (gNat : ℂ) := hd_mul.symm
+        exact_mod_cast hlower_right
       have htop_right_c : (p : ℂ) * ((N : ℂ) * (B : ℂ)) + (q : ℂ) * (D : ℂ) =
           (b : ℂ) := by
         exact_mod_cast htop_right
-      have hnum : (p : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
-            ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (q : ℂ) =
-          ((a : ℂ) * (τ : ℂ) + (b : ℂ)) / ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
-        calc
-          (p : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
-                ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (q : ℂ)
-              = (((p : ℂ) * ((N : ℂ) * (A : ℂ)) + (q : ℂ) * (C : ℂ)) *
-                    (τ : ℂ) +
-                  ((p : ℂ) * ((N : ℂ) * (B : ℂ)) + (q : ℂ) * (D : ℂ))) /
-                  ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
-                field_simp [hdenγ, hdenγ']
-                ring_nf
-          _ = ((a : ℂ) * (τ : ℂ) + (b : ℂ)) /
-              ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
-                rw [htop_left_c, htop_right_c]
-      have hden : (r : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
-            ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (s : ℂ) =
-          (d : ℂ) / ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
-        calc
-          (r : ℂ) * ((N : ℂ) * (((A : ℂ) * (τ : ℂ) + (B : ℂ)) /
-                ((C : ℂ) * (τ : ℂ) + (D : ℂ)))) + (s : ℂ)
-              = (((r : ℂ) * ((N : ℂ) * (A : ℂ)) + (s : ℂ) * (C : ℂ)) *
-                    (τ : ℂ) +
-                  ((r : ℂ) * ((N : ℂ) * (B : ℂ)) + (s : ℂ) * (D : ℂ))) /
-                  ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
-                field_simp [hdenγ, hdenγ']
-                ring_nf
-          _ = (d : ℂ) / ((C : ℂ) * (τ : ℂ) + (D : ℂ)) := by
-                rw [hlower_left_c, hlower_right_c]
-                ring
-      rw [hnum, hden]
-      field_simp [hdenγ, hdenγ', hd_ne]
+      exact upperAffine_matrix_action_eq N a d p q r s A B C D b τ hdenγ
+        htop_left_c htop_right_c hlower_left_c hlower_right_c
 
+/-- A fixed `SL₂(ℤ)` translate of `jN N` has finite q-order at infinity. -/
 private theorem jN_sl2_smul_finiteQOrderAtInfty
     (N : ℕ+) (γ : SL(2, ℤ)) :
     HasFiniteQOrderAtInfty (fun τ : ℍ => jN N (γ • τ)) := by
@@ -389,21 +450,25 @@ theorem gamma0RightCosetEval_finiteQOrderAtInfty
   intro γ
   simpa [gamma0RightCosetEval] using jN_sl2_smul_finiteQOrderAtInfty N γ
 
+/-- Constant functions have finite q-order at infinity. -/
 private theorem hasFiniteQOrderAtInfty_const (c : ℂ) :
     HasFiniteQOrderAtInfty (fun _ : ℍ => c) := by
   refine ⟨0, ?_⟩
   simpa using (const_boundedAtFilter atImInfty c)
 
+/-- The zero function has finite q-order at infinity. -/
 private theorem hasFiniteQOrderAtInfty_zero :
     HasFiniteQOrderAtInfty (fun _ : ℍ => 0) :=
   hasFiniteQOrderAtInfty_const 0
 
+/-- Finite q-order at infinity is preserved by negation. -/
 private theorem hasFiniteQOrderAtInfty_neg {f : ℍ → ℂ}
     (hf : HasFiniteQOrderAtInfty f) : HasFiniteQOrderAtInfty (-f) := by
   obtain ⟨M, hM⟩ := hf
   refine ⟨M, ?_⟩
   simpa [Pi.neg_apply] using hM.neg
 
+/-- Finite q-order at infinity is preserved by addition. -/
 private theorem hasFiniteQOrderAtInfty_add {f g : ℍ → ℂ}
     (hf : HasFiniteQOrderAtInfty f) (hg : HasFiniteQOrderAtInfty g) :
     HasFiniteQOrderAtInfty (f + g) := by
@@ -421,6 +486,7 @@ private theorem hasFiniteQOrderAtInfty_add {f g : ℍ → ℂ}
   simp [Pi.add_apply, pow_add]
   ring
 
+/-- Finite q-order at infinity is preserved by multiplication. -/
 private theorem hasFiniteQOrderAtInfty_mul {f g : ℍ → ℂ}
     (hf : HasFiniteQOrderAtInfty f) (hg : HasFiniteQOrderAtInfty g) :
     HasFiniteQOrderAtInfty (f * g) := by
@@ -432,6 +498,7 @@ private theorem hasFiniteQOrderAtInfty_mul {f g : ℍ → ℂ}
   simp [Pi.mul_apply, pow_add]
   ring
 
+/-- Finite q-order at infinity is preserved by finite sums. -/
 private theorem hasFiniteQOrderAtInfty_finset_sum {ι : Type*}
     {s : Finset ι} {f : ι → ℍ → ℂ}
     (hf : ∀ i ∈ s, HasFiniteQOrderAtInfty (f i)) :
@@ -446,6 +513,8 @@ private theorem hasFiniteQOrderAtInfty_finset_sum {ι : Type*}
         ih fun i hi => hf i (Finset.mem_insert_of_mem hi)
       simpa [Finset.sum_insert ha] using hasFiniteQOrderAtInfty_add ha_fin hs_fin
 
+/-- An analytic cusp function after multiplying by a q-power gives meromorphicity
+of the original cusp function. -/
 private theorem cuspFunction_meromorphicAt_of_qpow_shift_analytic
     {f : ℍ → ℂ} {M : ℕ}
     (han : AnalyticAt ℂ
@@ -500,6 +569,7 @@ regularity hypotheses needed for the Lemma 11.10(ii) polynomial-in-`j` step.
 
 section CoxCoefficients
 
+/-- Each Cox root `gamma0RightCosetEval N c` is manifold-differentiable on `ℍ`. -/
 theorem gamma0RightCosetEval_MDifferentiable (N : ℕ+) (c : Gamma0RightCosets N) :
     MDiff (gamma0RightCosetEval N c) := by
   refine Quotient.inductionOn c ?_
@@ -507,6 +577,7 @@ theorem gamma0RightCosetEval_MDifferentiable (N : ℕ+) (c : Gamma0RightCosets N
   change MDiff (fun z : ℍ => jN N ((γ : SL(2, ℤ)) • z))
   exact (jN_MDifferentiable N).comp (UpperHalfPlane.mdifferentiable_smul (by simp))
 
+/-- Coefficients of a single Cox linear factor are manifold-differentiable. -/
 private lemma coxLinearFactor_coeff_MDifferentiable (N : ℕ+) (c : Gamma0RightCosets N)
     (n : ℕ) :
     MDiff ((Polynomial.X - Polynomial.C (fun z => gamma0RightCosetEval N c z) :
@@ -523,6 +594,7 @@ private lemma coxLinearFactor_coeff_MDifferentiable (N : ℕ+) (c : Gamma0RightC
           change MDiff (fun _ : ℍ => (0 : ℂ))
           exact mdifferentiable_const
 
+/-- Coefficients of a single Cox linear factor have finite q-order when its root does. -/
 private theorem coxLinearFactor_coeff_finiteQOrder
     (N : ℕ+) (c : Gamma0RightCosets N) (n : ℕ)
     (hc : HasFiniteQOrderAtInfty (gamma0RightCosetEval N c)) :
@@ -542,6 +614,7 @@ private theorem coxLinearFactor_coeff_finiteQOrder
             sub_self]
           exact hasFiniteQOrderAtInfty_zero
 
+/-- Differentiability of coefficients is preserved by finite products of polynomials. -/
 private lemma polynomial_prod_coeff_MDifferentiable {ι : Type*}
     (P : ι → Polynomial (ℍ → ℂ)) :
     ∀ s : Finset ι, (∀ i ∈ s, ∀ n, MDiff ((P i).coeff n)) →
@@ -565,6 +638,7 @@ private lemma polynomial_prod_coeff_MDifferentiable {ι : Type*}
         (hP a (Finset.mem_insert_self a s) x.1).mul
           (ih (fun i hi n => hP i (Finset.mem_insert_of_mem hi) n) x.2)
 
+/-- Finite q-order of coefficients is preserved by finite products of polynomials. -/
 private theorem polynomial_prod_coeff_finiteQOrder {ι : Type*}
     (P : ι → Polynomial (ℍ → ℂ)) :
     ∀ s : Finset ι,
@@ -588,6 +662,7 @@ private theorem polynomial_prod_coeff_finiteQOrder {ι : Type*}
           (hP a (Finset.mem_insert_self a s) x.1)
           (ih (fun i hi n => hP i (Finset.mem_insert_of_mem hi) n) x.2)
 
+/-- Coefficients of the function-valued Cox product are manifold-differentiable. -/
 theorem coxPhiFunction_coeff_MDifferentiable (N : ℕ+) (n : ℕ) :
     MDiff ((coxPhiFunction N).coeff n) := by
   classical
@@ -597,6 +672,7 @@ theorem coxPhiFunction_coeff_MDifferentiable (N : ℕ+) (n : ℕ) :
       Polynomial.X - Polynomial.C (fun z => gamma0RightCosetEval N c z))
     Finset.univ (fun c _ n => coxLinearFactor_coeff_MDifferentiable N c n) n
 
+/-- Finite q-order of all Cox roots implies finite q-order of every Cox coefficient. -/
 private theorem coxPhiFunction_coeff_finiteQOrder_of_roots
     (N : ℕ+) (n : ℕ)
     (hroot : ∀ c : Gamma0RightCosets N,
@@ -631,6 +707,8 @@ theorem coxPhiFunction_coeff_Meromorphic (N : ℕ+) (n : ℕ) :
     (coxPhiFunction_coeff_finiteQOrder_of_roots N n fun c =>
       gamma0RightCosetEval_finiteQOrderAtInfty N c)
 
+/-- If a Cox coefficient has a meromorphic cusp function and its principal part
+can be cancelled by some `P(j)`, then that coefficient is a polynomial in `j`. -/
 theorem coxPhiFunction_coeff_polynomialInJ_of_meromorphic_principal
     (N : ℕ+) (n : ℕ)
     (hmero : MeromorphicAt (cuspFunction 1 ((coxPhiFunction N).coeff n)) 0)
@@ -642,6 +720,7 @@ theorem coxPhiFunction_coeff_polynomialInJ_of_meromorphic_principal
     (coxPhiFunction_coeff_MDifferentiable N n)
     hmero hprincipal
 
+/-- A meromorphic Cox coefficient is a polynomial in `j`, by Cox Lemma 11.10(ii). -/
 theorem coxPhiFunction_coeff_polynomialInJ_of_meromorphic
     (N : ℕ+) (n : ℕ)
     (hmero : MeromorphicAt (cuspFunction 1 ((coxPhiFunction N).coeff n)) 0) :
@@ -710,6 +789,8 @@ theorem cox_modularEquation_exists_of_coeff_polynomialInJ (N : ℕ+)
   rw [coxPhiBivariateOfCoeff_map N P hP]
   exact coxPhiFunction_eval_jN N
 
+/-- Conditional modular-equation assembly assuming meromorphic coefficients and
+explicit principal-part cancellations. -/
 theorem cox_modularEquation_exists_of_coeff_meromorphic_principal (N : ℕ+)
     (hmero : ∀ n, MeromorphicAt (cuspFunction 1 ((coxPhiFunction N).coeff n)) 0)
     (hprincipal : ∀ n, ∃ P : Polynomial ℂ,
@@ -721,6 +802,8 @@ theorem cox_modularEquation_exists_of_coeff_meromorphic_principal (N : ℕ+)
     coxPhiFunction_coeff_polynomialInJ_of_meromorphic_principal N n
       (hmero n) (hprincipal n)
 
+/-- Modular-equation assembly assuming all Cox coefficients are meromorphic at
+the level-one cusp. -/
 theorem cox_modularEquation_exists_of_coeff_meromorphic (N : ℕ+)
     (hmero : ∀ n, MeromorphicAt (cuspFunction 1 ((coxPhiFunction N).coeff n)) 0) :
     ∃ Φ : Polynomial (Polynomial ℂ),
@@ -729,6 +812,7 @@ theorem cox_modularEquation_exists_of_coeff_meromorphic (N : ℕ+)
   cox_modularEquation_exists_of_coeff_polynomialInJ N fun n =>
     coxPhiFunction_coeff_polynomialInJ_of_meromorphic N n (hmero n)
 
+/-- Modular-equation assembly from finite q-order bounds on all Cox coefficients. -/
 theorem cox_modularEquation_exists_of_coeff_qpow_shift_bounded (N : ℕ+)
     (hbounded : ∀ n, ∃ M : ℕ,
       IsBoundedAtImInfty
@@ -739,6 +823,7 @@ theorem cox_modularEquation_exists_of_coeff_qpow_shift_bounded (N : ℕ+)
   cox_modularEquation_exists_of_coeff_meromorphic N fun n =>
     coxPhiFunction_coeff_Meromorphic_of_qpow_shift_bounded N n (hbounded n)
 
+/-- Modular-equation assembly from finite q-order bounds on the Cox roots. -/
 theorem cox_modularEquation_exists_of_roots_qpow_shift_bounded (N : ℕ+)
     (hroot : ∀ c : Gamma0RightCosets N, ∃ M : ℕ,
       IsBoundedAtImInfty
@@ -758,6 +843,8 @@ theorem cox_modularEquation_exists (N : ℕ+) :
   cox_modularEquation_exists_of_roots_qpow_shift_bounded N fun c =>
     gamma0RightCosetEval_finiteQOrderAtInfty N c
 
+/-- Evaluating a mapped bivariate polynomial as a function agrees with
+`evalEval` at `(j z, f z)`. -/
 theorem polynomialInJRingHom_eval_apply
     (Φ : Polynomial (Polynomial ℂ)) (f : ℍ → ℂ) (z : ℍ) :
     Polynomial.eval f (Φ.map polynomialInJRingHom) z = Φ.evalEval (j z) (f z) := by
@@ -793,6 +880,7 @@ theorem cox_modularEquation_exists_bivariate (N : ℕ+) :
     rw [polynomialInJRingHom_eval_apply] at hz
     simpa using hz
 
+/-- The bivariate-to-multivariate polynomial equivalence preserves evaluation. -/
 private theorem bivariate_equivMvPolynomial_eval
     (Φ : Polynomial (Polynomial ℂ)) (x y : ℂ) :
     MvPolynomial.eval ![x, y] (Polynomial.Bivariate.equivMvPolynomial ℂ Φ) =

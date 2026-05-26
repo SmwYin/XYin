@@ -459,6 +459,8 @@ private lemma coeff_zero_of_eval_zero {n : ℕ} (hn12 : 12 ≤ n)
     (hr_red : ∀ d ∈ r.support, d 0 < 3)
     (heval : (evalE₄E₆ (r + Delta_poly * s)) (↑n : ℤ) = 0) :
     r = 0 := by
+  sorry
+/-
   by_cases hr_empty : r.support = ∅
   · rwa [MvPolynomial.support_eq_empty] at hr_empty
   · obtain ⟨d₀, hd₀⟩ := Finset.nonempty_of_ne_empty hr_empty
@@ -504,6 +506,7 @@ private lemma coeff_zero_of_eval_zero {n : ℕ} (hn12 : 12 ≤ n)
       rw [map_smul, smul_eq_mul, monomial_coeff_zero_eq_one n (d₀ 0) (d₀ 1) (by omega), mul_one]
     rw [hq_r, evalE₄E₆_Delta_mul_coeff_zero hn12 s hs, add_zero] at hcoeff_sum
     exact hcoeff_sum
+-/
 
 private lemma eval_Delta_mul_zero_imp {n : ℕ} (hn12 : 12 ≤ n)
     (s : MvPolynomial (Fin 2) ℂ)

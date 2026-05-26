@@ -1,5 +1,5 @@
 import Mathlib.NumberTheory.ModularForms.QExpansion
-import XYin.jFunction.IntegralPowerSeries
+import XYin.Others.IntegralPowerSeries
 
 open Complex ModularFormClass UpperHalfPlane MatrixGroups Real IntegralPowerSeries
 

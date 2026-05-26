@@ -96,8 +96,6 @@ local notation "𝕢" => Periodic.qParam
 
 namespace SlashInvariantFormClass
 
-
-
 variable [hF : SlashInvariantFormClass F Γ k]
 include hF
 

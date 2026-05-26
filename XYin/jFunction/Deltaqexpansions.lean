@@ -1,5 +1,5 @@
 import XYin.Modularforms.DimensionFormulas
-import XYin.jFunction.IntegralPowerSeries
+import XYin.Others.IntegralPowerSeries
 
 open Complex ModularForm ModularFormClass ArithmeticFunction UpperHalfPlane IntegralPowerSeries
 

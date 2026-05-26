@@ -8,7 +8,7 @@ open scoped Manifold
 /-!
 # Cox Lemma 11.10(ii): level-one functions are polynomial in `j`
 
-This file formalizes the Cox Lemma 11.10(ii) route for level-one modular
+This file formalises the Cox Lemma 11.10(ii) route for level-one modular
 functions that are holomorphic on `ℍ` and meromorphic at the cusp: such a
 function is a polynomial in `j`.  The proof includes local q-expansion
 computations used to identify and cancel the principal part of `j` at the cusp.
@@ -136,6 +136,7 @@ principal part at the cusp. -/
 noncomputable def polynomialInJ (P : Polynomial ℂ) : ℍ → ℂ :=
   fun z => P.eval (j z)
 
+/-- The level-one `j`-function is manifold-differentiable on the upper half-plane. -/
 theorem j_MDifferentiable : MDiff j := by
   have hfun : jN (1 : ℕ+) = j := by
     funext z
@@ -146,12 +147,14 @@ theorem j_MDifferentiable : MDiff j := by
   rw [← hfun]
   exact jN_MDifferentiable (1 : ℕ+)
 
+/-- Every polynomial expression `P(j)` is invariant under the weight-zero slash action. -/
 theorem polynomialInJ_slashInvariant (P : Polynomial ℂ) (γ : SL(2, ℤ)) :
     polynomialInJ P ∣[(0 : ℤ)] γ = polynomialInJ P := by
   ext z
   simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one, polynomialInJ]
   rw [j_invariant γ z]
 
+/-- Every polynomial expression `P(j)` is manifold-differentiable on `ℍ`. -/
 theorem polynomialInJ_MDifferentiable (P : Polynomial ℂ) :
     MDiff (polynomialInJ P) := by
   induction P using Polynomial.induction_on' with
@@ -164,6 +167,8 @@ theorem polynomialInJ_MDifferentiable (P : Polynomial ℂ) :
       ext z
       simp [polynomialInJ]
 
+/-- On a punctured cusp neighbourhood, the cusp function of `P(j)` is `P` applied
+to the cusp function of `j`. -/
 private lemma polynomialInJ_cuspFunction_eventuallyEq (P : Polynomial ℂ) :
     (fun q : ℂ => P.eval (cuspFunction 1 j q)) =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)]
       cuspFunction 1 (polynomialInJ P) := by
@@ -184,6 +189,7 @@ private lemma polynomialInJ_cuspFunction_eventuallyEq (P : Polynomial ℂ) :
   rw [hP, hj]
   rfl
 
+/-- Enumerate convolution pairs with total index `2`. -/
 private lemma antidiagonal_two_local :
     Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
   ext p
@@ -191,6 +197,7 @@ private lemma antidiagonal_two_local :
   simp
   omega
 
+/-- Enumerate convolution pairs with total index `3`. -/
 private lemma antidiagonal_three_local :
     Finset.antidiagonal 3 = {(0, 3), (1, 2), (2, 1), (3, 0)} := by
   ext p
@@ -198,6 +205,7 @@ private lemma antidiagonal_three_local :
   simp
   omega
 
+/-- Enumerate convolution pairs with total index `4`. -/
 private lemma antidiagonal_four_local :
     Finset.antidiagonal 4 = {(0, 4), (1, 3), (2, 2), (3, 1), (4, 0)} := by
   ext p
@@ -205,6 +213,7 @@ private lemma antidiagonal_four_local :
   simp
   omega
 
+/-- Enumerate convolution pairs with total index `5`. -/
 private lemma antidiagonal_five :
     Finset.antidiagonal 5 = {(0, 5), (1, 4), (2, 3), (3, 2), (4, 1), (5, 0)} := by
   ext p
@@ -212,6 +221,7 @@ private lemma antidiagonal_five :
   simp
   omega
 
+/-- Enumerate convolution pairs with total index `6`. -/
 private lemma antidiagonal_six_local :
     Finset.antidiagonal 6 =
       {(0, 6), (1, 5), (2, 4), (3, 3), (4, 2), (5, 1), (6, 0)} := by
@@ -220,6 +230,7 @@ private lemma antidiagonal_six_local :
   simp
   omega
 
+/-- Enumerate convolution pairs with total index `7`. -/
 private lemma antidiagonal_seven_local :
     Finset.antidiagonal 7 =
       {(0, 7), (1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1), (7, 0)} := by
@@ -228,26 +239,32 @@ private lemma antidiagonal_seven_local :
   simp
   omega
 
+/-- Coefficient of `E₄` at `q^0` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_zero_local : (qExpansion 1 E4).coeff 0 = 1 := by
   simpa [E4] using congr_fun E4_q_exp 0
 
+/-- Constant coefficient of `E₄` in the local q-expansion computation. -/
 private lemma E4_qExpansion_constantCoeff_local :
     PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
   simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E4_qExpansion_coeff_zero_local
 
+/-- Coefficient of `E₄` at `q^1` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_one_local : (qExpansion 1 E4).coeff 1 = 240 := by
   simpa [E4] using congr_fun E4_q_exp 1
 
+/-- Coefficient of `E₄` at `q^2` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_two_local : (qExpansion 1 E4).coeff 2 = 2160 := by
   have h := congr_fun E4_q_exp 2
   norm_num [ArithmeticFunction.sigma] at h ⊢
   exact h
 
+/-- Coefficient of `E₄` at `q^3` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_three_local : (qExpansion 1 E4).coeff 3 = 6720 := by
   have h := congr_fun E4_q_exp 3
   norm_num [ArithmeticFunction.sigma] at h ⊢
   exact h
 
+/-- Coefficient of `E₄` at `q^4` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_four_local : (qExpansion 1 E4).coeff 4 = 17520 := by
   have h : (qExpansion 1 E4).coeff 4 = (240 : ℂ) * ArithmeticFunction.sigma 3 4 := by
     simpa [E4] using (congr_fun E4_q_exp 4)
@@ -258,6 +275,7 @@ private lemma E4_qExpansion_coeff_four_local : (qExpansion 1 E4).coeff 4 = 17520
     _ = (240 : ℂ) * 73 := by simp [hsigma]
     _ = 17520 := by norm_num
 
+/-- Coefficient of `E₄` at `q^5` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_five_local : (qExpansion 1 E4).coeff 5 = 30240 := by
   have h : (qExpansion 1 E4).coeff 5 = (240 : ℂ) * ArithmeticFunction.sigma 3 5 := by
     simpa [E4] using (congr_fun E4_q_exp 5)
@@ -268,6 +286,7 @@ private lemma E4_qExpansion_coeff_five_local : (qExpansion 1 E4).coeff 5 = 30240
     _ = (240 : ℂ) * 126 := by simp [hsigma]
     _ = 30240 := by norm_num
 
+/-- Coefficient of `E₄` at `q^6` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_six_local : (qExpansion 1 E4).coeff 6 = 60480 := by
   have h : (qExpansion 1 E4).coeff 6 = (240 : ℂ) * ArithmeticFunction.sigma 3 6 := by
     simpa [E4] using (congr_fun E4_q_exp 6)
@@ -278,6 +297,7 @@ private lemma E4_qExpansion_coeff_six_local : (qExpansion 1 E4).coeff 6 = 60480 
     _ = (240 : ℂ) * 252 := by simp [hsigma]
     _ = 60480 := by norm_num
 
+/-- Coefficient of `E₄` at `q^7` used in the local q-expansion computation. -/
 private lemma E4_qExpansion_coeff_seven_local : (qExpansion 1 E4).coeff 7 = 82560 := by
   have h : (qExpansion 1 E4).coeff 7 = (240 : ℂ) * ArithmeticFunction.sigma 3 7 := by
     simpa [E4] using (congr_fun E4_q_exp 7)
@@ -288,26 +308,32 @@ private lemma E4_qExpansion_coeff_seven_local : (qExpansion 1 E4).coeff 7 = 8256
     _ = (240 : ℂ) * 344 := by simp [hsigma]
     _ = 82560 := by norm_num
 
+/-- Coefficient of `E₆` at `q^0` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_zero_local : (qExpansion 1 E6).coeff 0 = 1 := by
   simpa [E6] using congr_fun E6_q_exp 0
 
+/-- Constant coefficient of `E₆` in the local q-expansion computation. -/
 private lemma E6_qExpansion_constantCoeff_local :
     PowerSeries.constantCoeff (qExpansion 1 E6) = 1 := by
   simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E6_qExpansion_coeff_zero_local
 
+/-- Coefficient of `E₆` at `q^1` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_one_local : (qExpansion 1 E6).coeff 1 = -504 := by
   simpa [E6] using congr_fun E6_q_exp 1
 
+/-- Coefficient of `E₆` at `q^2` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_two_local : (qExpansion 1 E6).coeff 2 = -16632 := by
   have h := congr_fun E6_q_exp 2
   norm_num [ArithmeticFunction.sigma] at h ⊢
   exact h
 
+/-- Coefficient of `E₆` at `q^3` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_three_local : (qExpansion 1 E6).coeff 3 = -122976 := by
   have h := congr_fun E6_q_exp 3
   norm_num [ArithmeticFunction.sigma] at h ⊢
   exact h
 
+/-- Coefficient of `E₆` at `q^4` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_four_local : (qExpansion 1 E6).coeff 4 = -532728 := by
   have h : (qExpansion 1 E6).coeff 4 = -(504 : ℂ) * ArithmeticFunction.sigma 5 4 := by
     simpa [E6] using (congr_fun E6_q_exp 4)
@@ -318,6 +344,7 @@ private lemma E6_qExpansion_coeff_four_local : (qExpansion 1 E6).coeff 4 = -5327
     _ = -(504 : ℂ) * 1057 := by simp [hsigma]
     _ = -532728 := by norm_num
 
+/-- Coefficient of `E₆` at `q^5` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_five_local : (qExpansion 1 E6).coeff 5 = -1575504 := by
   have h : (qExpansion 1 E6).coeff 5 = -(504 : ℂ) * ArithmeticFunction.sigma 5 5 := by
     simpa [E6] using (congr_fun E6_q_exp 5)
@@ -328,6 +355,7 @@ private lemma E6_qExpansion_coeff_five_local : (qExpansion 1 E6).coeff 5 = -1575
     _ = -(504 : ℂ) * 3126 := by simp [hsigma]
     _ = -1575504 := by norm_num
 
+/-- Coefficient of `E₆` at `q^6` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_six_local : (qExpansion 1 E6).coeff 6 = -4058208 := by
   have h : (qExpansion 1 E6).coeff 6 = -(504 : ℂ) * ArithmeticFunction.sigma 5 6 := by
     simpa [E6] using (congr_fun E6_q_exp 6)
@@ -338,6 +366,7 @@ private lemma E6_qExpansion_coeff_six_local : (qExpansion 1 E6).coeff 6 = -40582
     _ = -(504 : ℂ) * 8052 := by simp [hsigma]
     _ = -4058208 := by norm_num
 
+/-- Coefficient of `E₆` at `q^7` used in the local q-expansion computation. -/
 private lemma E6_qExpansion_coeff_seven_local :
     (qExpansion 1 E6).coeff 7 = -8471232 := by
   have h : (qExpansion 1 E6).coeff 7 = -(504 : ℂ) * ArithmeticFunction.sigma 5 7 := by
@@ -349,18 +378,21 @@ private lemma E6_qExpansion_coeff_seven_local :
     _ = -(504 : ℂ) * 16808 := by simp [hsigma]
     _ = -8471232 := by norm_num
 
+/-- q-expansion identity identifying `E₄ ^ 3` with the cube of the `E₄` expansion. -/
 private lemma qExpansion_E4_pow_three_eq_local :
     qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
   simpa [DirectSum.ofPow] using
     qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
       (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
 
+/-- q-expansion identity identifying `E₆ ^ 2` with the square of the `E₆` expansion. -/
 private lemma qExpansion_E6_pow_two_eq_local :
     qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
   simpa [DirectSum.ofPow] using
     qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
       (k := (6 : ℤ)) (hh := by norm_num) (hΓ := by simp) E6 2
 
+/-- Coefficient of `E₄ * E₄` at `q^1` used to compute `E₄ ^ 3`. -/
 private lemma E4_mul_self_coeff_one_local :
     (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
   rw [PowerSeries.coeff_mul, antidiagonal_one]
@@ -370,6 +402,7 @@ private lemma E4_mul_self_coeff_one_local :
   rw [E4_qExpansion_constantCoeff_local, E4_qExpansion_coeff_one_local]
   norm_num
 
+/-- Coefficient of `E₄ * E₄` at `q^2` used to compute `E₄ ^ 3`. -/
 private lemma E4_mul_self_coeff_two_local :
     (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
   rw [PowerSeries.coeff_mul, antidiagonal_two_local]
@@ -381,6 +414,7 @@ private lemma E4_mul_self_coeff_two_local :
     E4_qExpansion_coeff_two_local]
   norm_num
 
+/-- Coefficient of `E₄ * E₄` at `q^3` used to compute `E₄ ^ 3`. -/
 private lemma E4_mul_self_coeff_three_local :
     (qExpansion 1 E4 * qExpansion 1 E4).coeff 3 = 1050240 := by
   rw [PowerSeries.coeff_mul, antidiagonal_three_local]
@@ -392,6 +426,7 @@ private lemma E4_mul_self_coeff_three_local :
     E4_qExpansion_coeff_two_local, E4_qExpansion_coeff_three_local]
   norm_num
 
+/-- Coefficient of `E₄ * E₄` at `q^4` used to compute `E₄ ^ 3`. -/
 private lemma E4_mul_self_coeff_four_local :
     (qExpansion 1 E4 * qExpansion 1 E4).coeff 4 = 7926240 := by
   rw [PowerSeries.coeff_mul, antidiagonal_four_local]
@@ -404,6 +439,7 @@ private lemma E4_mul_self_coeff_four_local :
     E4_qExpansion_coeff_four_local]
   norm_num
 
+/-- Coefficient of `E₄ * E₄` at `q^5` used to compute `E₄ ^ 3`. -/
 private lemma E4_mul_self_coeff_five_local :
     (qExpansion 1 E4 * qExpansion 1 E4).coeff 5 = 37500480 := by
   rw [PowerSeries.coeff_mul, antidiagonal_five]
@@ -416,6 +452,7 @@ private lemma E4_mul_self_coeff_five_local :
     E4_qExpansion_coeff_four_local, E4_qExpansion_coeff_five_local]
   norm_num
 
+/-- Coefficient of `E₄ * E₄` at `q^6` used to compute `E₄ ^ 3`. -/
 private lemma E4_mul_self_coeff_six_local :
     (qExpansion 1 E4 * qExpansion 1 E4).coeff 6 = 135480960 := by
   rw [PowerSeries.coeff_mul, antidiagonal_six_local]
@@ -429,6 +466,7 @@ private lemma E4_mul_self_coeff_six_local :
     E4_qExpansion_coeff_six_local]
   norm_num
 
+/-- Coefficient of `E₄ * E₄` at `q^7` used to compute `E₄ ^ 3`. -/
 private lemma E4_mul_self_coeff_seven_local :
     (qExpansion 1 E4 * qExpansion 1 E4).coeff 7 = 395301120 := by
   rw [PowerSeries.coeff_mul, antidiagonal_seven_local]
@@ -442,16 +480,19 @@ private lemma E4_mul_self_coeff_seven_local :
     E4_qExpansion_coeff_six_local, E4_qExpansion_coeff_seven_local]
   norm_num
 
+/-- Coefficient of `E₄ ^ 3` at `q^0` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_zero_local : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
   rw [qExpansion_E4_pow_three_eq_local]
   have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
     simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E4_qExpansion_coeff_zero_local
   simp [PowerSeries.coeff_zero_eq_constantCoeff, hE4const]
 
+/-- Constant coefficient of `E₄ ^ 3` in the local q-expansion computation. -/
 private lemma E4_cubed_constantCoeff_local :
     PowerSeries.constantCoeff (qExpansion 1 (E4 ^ 3)) = 1 := by
   simpa [PowerSeries.coeff_zero_eq_constantCoeff] using E4_cubed_coeff_zero_local
 
+/-- Coefficient of `E₄ ^ 3` at `q^1` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_one_local : (qExpansion 1 (E4 ^ 3)).coeff 1 = 720 := by
   rw [qExpansion_E4_pow_three_eq_local, pow_three, PowerSeries.coeff_mul,
     antidiagonal_one]
@@ -462,6 +503,7 @@ private lemma E4_cubed_coeff_one_local : (qExpansion 1 (E4 ^ 3)).coeff 1 = 720 :
     E4_mul_self_coeff_one_local]
   norm_num
 
+/-- Coefficient of `E₄ ^ 3` at `q^2` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_two_local :
     (qExpansion 1 (E4 ^ 3)).coeff 2 = 179280 := by
   rw [qExpansion_E4_pow_three_eq_local, pow_three, PowerSeries.coeff_mul,
@@ -475,6 +517,7 @@ private lemma E4_cubed_coeff_two_local :
     E4_mul_self_coeff_two_local]
   norm_num
 
+/-- Coefficient of `E₄ ^ 3` at `q^3` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_three_local :
     (qExpansion 1 (E4 ^ 3)).coeff 3 = 16954560 := by
   rw [qExpansion_E4_pow_three_eq_local, pow_three, PowerSeries.coeff_mul,
@@ -489,6 +532,7 @@ private lemma E4_cubed_coeff_three_local :
     E4_mul_self_coeff_three_local]
   norm_num
 
+/-- Coefficient of `E₄ ^ 3` at `q^4` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_four_local :
     (qExpansion 1 (E4 ^ 3)).coeff 4 = 396974160 := by
   rw [qExpansion_E4_pow_three_eq_local, pow_three, PowerSeries.coeff_mul,
@@ -504,6 +548,7 @@ private lemma E4_cubed_coeff_four_local :
     E4_mul_self_coeff_four_local]
   norm_num
 
+/-- Coefficient of `E₄ ^ 3` at `q^5` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_five_local :
     (qExpansion 1 (E4 ^ 3)).coeff 5 = 4632858720 := by
   rw [qExpansion_E4_pow_three_eq_local, pow_three, PowerSeries.coeff_mul, antidiagonal_five]
@@ -519,6 +564,7 @@ private lemma E4_cubed_coeff_five_local :
     E4_mul_self_coeff_five_local]
   norm_num
 
+/-- Coefficient of `E₄ ^ 3` at `q^6` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_six_local :
     (qExpansion 1 (E4 ^ 3)).coeff 6 = 34413301440 := by
   rw [qExpansion_E4_pow_three_eq_local, pow_three, PowerSeries.coeff_mul,
@@ -536,6 +582,7 @@ private lemma E4_cubed_coeff_six_local :
     E4_mul_self_coeff_six_local]
   norm_num
 
+/-- Coefficient of `E₄ ^ 3` at `q^7` in the local q-expansion computation. -/
 private lemma E4_cubed_coeff_seven_local :
     (qExpansion 1 (E4 ^ 3)).coeff 7 = 187477879680 := by
   rw [qExpansion_E4_pow_three_eq_local, pow_three, PowerSeries.coeff_mul,
@@ -554,6 +601,7 @@ private lemma E4_cubed_coeff_seven_local :
     E4_mul_self_coeff_seven_local]
   norm_num
 
+/-- Coefficient of `E₆ ^ 2` at `q^6` used to compute `Delta`. -/
 private lemma E6_squared_coeff_six_local :
     (qExpansion 1 (E6 ^ 2)).coeff 6 = 34423752384 := by
   rw [qExpansion_E6_pow_two_eq_local, pow_two, PowerSeries.coeff_mul,
@@ -568,6 +616,7 @@ private lemma E6_squared_coeff_six_local :
     E6_qExpansion_coeff_six_local]
   norm_num
 
+/-- Coefficient of `E₆ ^ 2` at `q^7` used to compute `Delta`. -/
 private lemma E6_squared_coeff_seven_local :
     (qExpansion 1 (E6 ^ 2)).coeff 7 = 187506813312 := by
   rw [qExpansion_E6_pow_two_eq_local, pow_two, PowerSeries.coeff_mul,
@@ -582,6 +631,7 @@ private lemma E6_squared_coeff_seven_local :
     E6_qExpansion_coeff_six_local, E6_qExpansion_coeff_seven_local]
   norm_num
 
+/-- q-expansion identity for the numerator `E₄ ^ 3 - E₆ ^ 2` of `Delta`. -/
 private lemma qExpansion_E4_E6_sub_local :
     qExpansion 1 (E4 ^ 3 - E6 ^ 2) =
       qExpansion 1 (E4 ^ 3) - qExpansion 1 (E6 ^ 2) := by
@@ -598,6 +648,7 @@ private lemma qExpansion_E4_E6_sub_local :
       have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
       simp [pow_three, pow_two, hf, hg]
 
+/-- Coefficient of `Delta` at `q^6` used to compute `q / Delta`. -/
 private lemma Delta_exp_six_local : (qExpansion 1 Delta).coeff 6 = -6048 := by
   have hDeltaaux6 := congrArg (PowerSeries.coeff 6) Deltaaux
   calc
@@ -614,6 +665,7 @@ private lemma Delta_exp_six_local : (qExpansion 1 Delta).coeff 6 = -6048 := by
       rw [E4_cubed_coeff_six_local, E6_squared_coeff_six_local]
     _ = -6048 := by norm_num
 
+/-- Coefficient of `Delta` at `q^7` used to compute `q / Delta`. -/
 private lemma Delta_exp_seven_local : (qExpansion 1 Delta).coeff 7 = -16744 := by
   have hDeltaaux7 := congrArg (PowerSeries.coeff 7) Deltaaux
   calc
@@ -630,9 +682,11 @@ private lemma Delta_exp_seven_local : (qExpansion 1 Delta).coeff 7 = -16744 := b
       rw [E4_cubed_coeff_seven_local, E6_squared_coeff_seven_local]
     _ = -16744 := by norm_num
 
+/-- Constant coefficient of `Delta / q` in the local inverse computation. -/
 private lemma Deltaoverq_coeff_zero_local : (qExpansion 1 Deltaoverq).coeff 0 = 1 := by
   simp [qExpansion_coeff, cuspFunction_Deltaoverq_zero]
 
+/-- Coefficient of `Delta / q` at `q^1` in the local inverse computation. -/
 private lemma Deltaoverq_coeff_one_local : (qExpansion 1 Deltaoverq).coeff 1 = -24 := by
   have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
     simpa using qExpansion_ext Deltaoverq InfSumDeltashift InfSumDeltashift_eq_Deltaoverq.symm
@@ -641,6 +695,7 @@ private lemma Deltaoverq_coeff_one_local : (qExpansion 1 Deltaoverq).coeff 1 = -
     _ = (qExpansion 1 Delta).coeff 2 := by simpa using InfSumDeltashift_coeff_eq 1
     _ = -24 := Delta_exp_two
 
+/-- Coefficient of `Delta / q` at `q^2` in the local inverse computation. -/
 private lemma Deltaoverq_coeff_two_local : (qExpansion 1 Deltaoverq).coeff 2 = 252 := by
   have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
     simpa using qExpansion_ext Deltaoverq InfSumDeltashift InfSumDeltashift_eq_Deltaoverq.symm
@@ -649,6 +704,7 @@ private lemma Deltaoverq_coeff_two_local : (qExpansion 1 Deltaoverq).coeff 2 = 2
     _ = (qExpansion 1 Delta).coeff 3 := by simpa using InfSumDeltashift_coeff_eq 2
     _ = 252 := Delta_exp_three
 
+/-- Coefficient of `Delta / q` at `q^3` in the local inverse computation. -/
 private lemma Deltaoverq_coeff_three_local :
     (qExpansion 1 Deltaoverq).coeff 3 = -1472 := by
   have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
@@ -658,6 +714,7 @@ private lemma Deltaoverq_coeff_three_local :
     _ = (qExpansion 1 Delta).coeff 4 := by simpa using InfSumDeltashift_coeff_eq 3
     _ = -1472 := Delta_exp_four
 
+/-- Coefficient of `Delta / q` at `q^4` in the local inverse computation. -/
 private lemma Deltaoverq_coeff_four_local : (qExpansion 1 Deltaoverq).coeff 4 = 4830 := by
   have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
     simpa using qExpansion_ext Deltaoverq InfSumDeltashift InfSumDeltashift_eq_Deltaoverq.symm
@@ -666,6 +723,7 @@ private lemma Deltaoverq_coeff_four_local : (qExpansion 1 Deltaoverq).coeff 4 = 
     _ = (qExpansion 1 Delta).coeff 5 := by simpa using InfSumDeltashift_coeff_eq 4
     _ = 4830 := Delta_exp_five
 
+/-- Coefficient of `Delta / q` at `q^5` in the local inverse computation. -/
 private lemma Deltaoverq_coeff_five_local :
     (qExpansion 1 Deltaoverq).coeff 5 = -6048 := by
   have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
@@ -675,6 +733,7 @@ private lemma Deltaoverq_coeff_five_local :
     _ = (qExpansion 1 Delta).coeff 6 := by simpa using InfSumDeltashift_coeff_eq 5
     _ = -6048 := Delta_exp_six_local
 
+/-- Coefficient of `Delta / q` at `q^6` in the local inverse computation. -/
 private lemma Deltaoverq_coeff_six_local :
     (qExpansion 1 Deltaoverq).coeff 6 = -16744 := by
   have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
@@ -684,14 +743,17 @@ private lemma Deltaoverq_coeff_six_local :
     _ = (qExpansion 1 Delta).coeff 7 := by simpa using InfSumDeltashift_coeff_eq 6
     _ = -16744 := Delta_exp_seven_local
 
+/-- Map integral `Delta / q` coefficients to complex coefficients for inversion. -/
 private lemma integralDeltaoverq_map_coeff_local (n : ℕ) :
     (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff n =
       (qExpansion 1 Deltaoverq).coeff n :=
   congrArg (PowerSeries.coeff n) coeTo_of_integralDeltaoverq
 
+/-- Constant coefficient of `q / Delta` in the local inverse computation. -/
 private lemma qoverDelta_coeff_zero_local : (qExpansion 1 qoverDelta).coeff 0 = 1 := by
   simp [qExpansion_coeff, cuspFunction_qoverDelta_zero]
 
+/-- Coefficient of `q / Delta` at `q^1` in the local inverse computation. -/
 private lemma qoverDelta_coeff_one_local : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
   have hcoeff := congrArg (PowerSeries.coeff 1) integralDeltaoverq_mul_qoverDelta_qExpansion
   have hadd' : (-24 : ℂ) + (qExpansion 1 qoverDelta).coeff 1 = 0 := by
@@ -704,6 +766,7 @@ private lemma qoverDelta_coeff_one_local : (qExpansion 1 qoverDelta).coeff 1 = 2
     (eq_neg_iff_add_eq_zero).2 hadd
   simpa using hneg
 
+/-- Coefficient of `q / Delta` at `q^2` in the local inverse computation. -/
 private lemma qoverDelta_coeff_two_local : (qExpansion 1 qoverDelta).coeff 2 = 324 := by
   have hcoeff := congrArg (PowerSeries.coeff 2) integralDeltaoverq_mul_qoverDelta_qExpansion
   have h2eq : (qExpansion 1 qoverDelta).coeff 2
@@ -721,6 +784,7 @@ private lemma qoverDelta_coeff_two_local : (qExpansion 1 qoverDelta).coeff 2 = 3
     (eq_neg_iff_add_eq_zero).2 hadd
   simpa using hneg
 
+/-- Coefficient of `q / Delta` at `q^3` in the local inverse computation. -/
 private lemma qoverDelta_coeff_three_local :
     (qExpansion 1 qoverDelta).coeff 3 = 3200 := by
   have hcoeff := congrArg (PowerSeries.coeff 3) integralDeltaoverq_mul_qoverDelta_qExpansion
@@ -741,6 +805,7 @@ private lemma qoverDelta_coeff_three_local :
     (eq_neg_iff_add_eq_zero).2 hadd
   simpa using hneg
 
+/-- Coefficient of `q / Delta` at `q^4` in the local inverse computation. -/
 private lemma qoverDelta_coeff_four_local :
     (qExpansion 1 qoverDelta).coeff 4 = 25650 := by
   have hcoeff := congrArg (PowerSeries.coeff 4) integralDeltaoverq_mul_qoverDelta_qExpansion
@@ -763,6 +828,7 @@ private lemma qoverDelta_coeff_four_local :
     (eq_neg_iff_add_eq_zero).2 hadd
   simpa using hneg
 
+/-- Coefficient of `q / Delta` at `q^5` in the local inverse computation. -/
 private lemma qoverDelta_coeff_five_local :
     (qExpansion 1 qoverDelta).coeff 5 = 176256 := by
   have hcoeff := congrArg (PowerSeries.coeff 5) integralDeltaoverq_mul_qoverDelta_qExpansion
@@ -786,6 +852,7 @@ private lemma qoverDelta_coeff_five_local :
     (eq_neg_iff_add_eq_zero).2 hadd
   simpa using hneg
 
+/-- Coefficient of `q / Delta` at `q^6` in the local inverse computation. -/
 private lemma qoverDelta_coeff_six_local :
     (qExpansion 1 qoverDelta).coeff 6 = 1073720 := by
   have hcoeff := congrArg (PowerSeries.coeff 6) integralDeltaoverq_mul_qoverDelta_qExpansion
@@ -812,6 +879,7 @@ private lemma qoverDelta_coeff_six_local :
     (eq_neg_iff_add_eq_zero).2 hadd
   simpa using hneg
 
+/-- Local q-expansion coefficient of `qj`, needed for the level-`2` `Y` coefficient. -/
 theorem qj_exp_five_local : (qExpansion 1 qj).coeff 5 = 20245856256 := by
   have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
     simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
@@ -840,6 +908,7 @@ theorem qj_exp_five_local : (qExpansion 1 qj).coeff 5 = 20245856256 := by
         E4_cubed_coeff_four_local, E4_cubed_coeff_five_local]
       norm_num
 
+/-- Local q-expansion coefficient of `qj`, needed for the level-`2` constant term. -/
 theorem qj_exp_six_local : (qExpansion 1 qj).coeff 6 = 333202640600 := by
   have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
     simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
@@ -871,12 +940,18 @@ theorem qj_exp_six_local : (qExpansion 1 qj).coeff 6 = 333202640600 := by
         E4_cubed_coeff_six_local]
       norm_num
 
-private theorem qj_cuspFunction_three_term_remainder :
-    Tendsto
+
+/-- A Taylor remainder principle for the cusp function of `qj`: once the first
+`n` q-expansion terms are identified by a partial sum, the remainder divided by
+`q^k` tends to zero whenever `k < n`. -/
+private theorem qj_cuspFunction_remainder_tendsto_zero_of_partialSum
+    {k n : ℕ} (hkn : k < n) (P : ℂ → ℂ)
+    (hpartial :
       (fun q : ℂ =>
-        (cuspFunction (1 : ℝ) qj q - (1 + 744 * q + 196884 * q ^ 2)) / q ^ 2)
-      (nhdsWithin (0 : ℂ) ({0}ᶜ))
-      (nhds 0) := by
+        (qExpansionFormalMultilinearSeries (h := 1) (f := qj)).partialSum n q) = P)
+    (hP0 : P 0 = cuspFunction 1 qj 0) :
+    Tendsto (fun q : ℂ => (cuspFunction 1 qj q - P q) / q ^ k)
+      (nhdsWithin (0 : ℂ) ({0}ᶜ)) (nhds 0) := by
   let p := qExpansionFormalMultilinearSeries (h := 1) (f := qj)
   have hfps : HasFPowerSeriesAt (cuspFunction 1 qj) p (0 : ℂ) := by
     simpa [p] using
@@ -884,9 +959,49 @@ private theorem qj_cuspFunction_three_term_remainder :
         (c := fun m : ℕ => (qExpansion 1 qj).coeff m) (by norm_num)
         qj_cuspFunction_AnalyticAt
         (fun τ : ℍ => hasSum_qExpansion_qj (τ := τ))).hasFPowerSeriesAt
+  have hOₙ :
+      (fun q : ℂ => cuspFunction 1 qj (0 + q) - p.partialSum n q)
+        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ n :=
+    hfps.isBigO_sub_partialSum_pow n
+  have hO :
+      (fun q : ℂ => cuspFunction 1 qj q - P q)
+        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ n := by
+    exact hOₙ.congr_left fun q => by simp [p, hpartial]
+  have hsmall_norm :
+      (fun q : ℂ => cuspFunction 1 qj q - P q)
+        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ k :=
+    hO.trans_isLittleO (Asymptotics.isLittleO_norm_pow_norm_pow hkn)
+  have hsmall_norm' :
+      (fun q : ℂ => cuspFunction 1 qj q - P q)
+        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q ^ k‖ := by
+    simpa [norm_pow] using hsmall_norm
+  have hsmall :
+      (fun q : ℂ => cuspFunction 1 qj q - P q)
+        =o[nhds (0 : ℂ)] fun q : ℂ => q ^ k :=
+    Asymptotics.isLittleO_norm_right.mp hsmall_norm'
+  have hzero : ∀ q : ℂ, q ^ k = 0 → cuspFunction 1 qj q - P q = 0 := by
+    intro q hq
+    have hq0 : q = 0 := eq_zero_of_pow_eq_zero hq
+    subst q
+    rw [hP0]
+    simp
+  have htendsto :
+      Tendsto (fun q : ℂ => (cuspFunction 1 qj q - P q) / q ^ k)
+        (nhds (0 : ℂ)) (nhds 0) := by
+    rwa [Asymptotics.isLittleO_iff_tendsto hzero] at hsmall
+  exact htendsto.mono_left nhdsWithin_le_nhds
+
+/-- Taylor-remainder estimate for the first three terms of the cusp function of `qj`. -/
+private theorem qj_cuspFunction_three_term_remainder :
+    Tendsto
+      (fun q : ℂ =>
+        (cuspFunction (1 : ℝ) qj q - (1 + 744 * q + 196884 * q ^ 2)) / q ^ 2)
+      (nhdsWithin (0 : ℂ) ({0}ᶜ))
+      (nhds 0) := by
+  let P : ℂ → ℂ := fun q => 1 + 744 * q + 196884 * q ^ 2
   have hpartial :
-      (fun q : ℂ => p.partialSum 3 q) =
-        fun q : ℂ => 1 + 744 * q + 196884 * q ^ 2 := by
+      (fun q : ℂ =>
+        (qExpansionFormalMultilinearSeries (h := 1) (f := qj)).partialSum 3 q) = P := by
     funext q
     have h0 : (coeff 0) (qExpansion 1 ⇑qj) = 1 := by
       simpa using qj_exp_zero
@@ -896,50 +1011,20 @@ private theorem qj_cuspFunction_three_term_remainder :
       simpa using qj_exp_two
     simp only [FormalMultilinearSeries.partialSum, qExpansionFormalMultilinearSeries,
       FormalMultilinearSeries.apply_eq_prod_smul_coeff, Finset.prod_const, Finset.card_univ,
-      Fintype.card_fin, FormalMultilinearSeries.coeff_ofScalars, smul_eq_mul, p]
+      Fintype.card_fin, FormalMultilinearSeries.coeff_ofScalars, smul_eq_mul, P]
     rw [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
       Finset.sum_range_zero]
     rw [h0, h1, h2]
     ring_nf
-  have hO₃ :
-      (fun q : ℂ => cuspFunction 1 qj (0 + q) - p.partialSum 3 q)
-        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 3 :=
-    hfps.isBigO_sub_partialSum_pow 3
-  have hO :
-      (fun q : ℂ => cuspFunction 1 qj q - (1 + 744 * q + 196884 * q ^ 2))
-        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 3 := by
-    exact hO₃.congr_left fun q => by simp [hpartial]
-  have hsmall_norm :
-      (fun q : ℂ => cuspFunction 1 qj q - (1 + 744 * q + 196884 * q ^ 2))
-        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 2 :=
-    hO.trans_isLittleO
-      (Asymptotics.isLittleO_norm_pow_norm_pow (show 2 < 3 by norm_num))
-  have hsmall_norm' :
-      (fun q : ℂ => cuspFunction 1 qj q - (1 + 744 * q + 196884 * q ^ 2))
-        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q ^ 2‖ := by
-    simpa [norm_pow] using hsmall_norm
-  have hsmall :
-      (fun q : ℂ => cuspFunction 1 qj q - (1 + 744 * q + 196884 * q ^ 2))
-        =o[nhds (0 : ℂ)] fun q : ℂ => q ^ 2 :=
-    Asymptotics.isLittleO_norm_right.mp hsmall_norm'
-  have hzero :
-      ∀ q : ℂ, q ^ 2 = 0 →
-        cuspFunction 1 qj q - (1 + 744 * q + 196884 * q ^ 2) = 0 := by
-    intro q hq
-    have hq0 : q = 0 := by
-      exact eq_zero_of_pow_eq_zero hq
-    subst q
+  have hP0 : P 0 = cuspFunction 1 qj 0 := by
     have hqj0 : cuspFunction 1 qj 0 = 1 := by
       simpa [qExpansion_coeff] using qj_exp_zero
-    simp [hqj0]
-  have htendsto :
-      Tendsto
-        (fun q : ℂ =>
-          (cuspFunction 1 qj q - (1 + 744 * q + 196884 * q ^ 2)) / q ^ 2)
-        (nhds (0 : ℂ)) (nhds 0) := by
-    rwa [Asymptotics.isLittleO_iff_tendsto hzero] at hsmall
-  exact htendsto.mono_left nhdsWithin_le_nhds
+    simp [P, hqj0]
+  simpa [P] using
+    qj_cuspFunction_remainder_tendsto_zero_of_partialSum
+      (k := 2) (n := 3) (by norm_num) P hpartial hP0
 
+/-- Laurent-remainder estimate for `j` after keeping terms through `196884 q`. -/
 theorem j_cuspFunction_three_term_remainder :
     Tendsto
       (fun q : ℂ =>
@@ -964,6 +1049,7 @@ theorem j_cuspFunction_three_term_remainder :
     field_simp [hq0]
   exact qj_cuspFunction_three_term_remainder.congr' hEq.symm
 
+/-- Taylor-remainder estimate for `qj` after keeping terms through `q^5`. -/
 private theorem qj_cuspFunction_six_term_remainder :
     Tendsto
       (fun q : ℂ =>
@@ -972,18 +1058,12 @@ private theorem qj_cuspFunction_six_term_remainder :
             864299970 * q ^ 4 + 20245856256 * q ^ 5)) / q ^ 5)
       (nhdsWithin (0 : ℂ) ({0}ᶜ))
       (nhds 0) := by
-  let p := qExpansionFormalMultilinearSeries (h := 1) (f := qj)
-  have hfps : HasFPowerSeriesAt (cuspFunction 1 qj) p (0 : ℂ) := by
-    simpa [p] using
-      (UpperHalfPlane.hasFPowerSeries_cuspFunction (h := 1) (f := qj)
-        (c := fun m : ℕ => (qExpansion 1 qj).coeff m) (by norm_num)
-        qj_cuspFunction_AnalyticAt
-        (fun τ : ℍ => hasSum_qExpansion_qj (τ := τ))).hasFPowerSeriesAt
+  let P : ℂ → ℂ := fun q =>
+    1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
+      864299970 * q ^ 4 + 20245856256 * q ^ 5
   have hpartial :
-      (fun q : ℂ => p.partialSum 6 q) =
-        fun q : ℂ =>
-          1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5 := by
+      (fun q : ℂ =>
+        (qExpansionFormalMultilinearSeries (h := 1) (f := qj)).partialSum 6 q) = P := by
     funext q
     have h0 : (coeff 0) (qExpansion 1 ⇑qj) = 1 := by
       simpa using qj_exp_zero
@@ -999,67 +1079,21 @@ private theorem qj_cuspFunction_six_term_remainder :
       simpa using qj_exp_five_local
     simp only [FormalMultilinearSeries.partialSum, qExpansionFormalMultilinearSeries,
       FormalMultilinearSeries.apply_eq_prod_smul_coeff, Finset.prod_const, Finset.card_univ,
-      Fintype.card_fin, FormalMultilinearSeries.coeff_ofScalars, smul_eq_mul, p]
+      Fintype.card_fin, FormalMultilinearSeries.coeff_ofScalars, smul_eq_mul, P]
     rw [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
       Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
       Finset.sum_range_zero]
     rw [h0, h1, h2, h3, h4, h5]
     ring_nf
-  have hO₆ :
-      (fun q : ℂ => cuspFunction 1 qj (0 + q) - p.partialSum 6 q)
-        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 6 :=
-    hfps.isBigO_sub_partialSum_pow 6
-  have hO :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5))
-        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 6 := by
-    exact hO₆.congr_left fun q => by simp [hpartial]
-  have hsmall_norm :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5))
-        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 5 :=
-    hO.trans_isLittleO
-      (Asymptotics.isLittleO_norm_pow_norm_pow (show 5 < 6 by norm_num))
-  have hsmall_norm' :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5))
-        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q ^ 5‖ := by
-    simpa [norm_pow] using hsmall_norm
-  have hsmall :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5))
-        =o[nhds (0 : ℂ)] fun q : ℂ => q ^ 5 :=
-    Asymptotics.isLittleO_norm_right.mp hsmall_norm'
-  have hzero :
-      ∀ q : ℂ, q ^ 5 = 0 →
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5) = 0 := by
-    intro q hq
-    have hq0 : q = 0 := by
-      exact eq_zero_of_pow_eq_zero hq
-    subst q
+  have hP0 : P 0 = cuspFunction 1 qj 0 := by
     have hqj0 : cuspFunction 1 qj 0 = 1 := by
       simpa [qExpansion_coeff] using qj_exp_zero
-    simp [hqj0]
-  have htendsto :
-      Tendsto
-        (fun q : ℂ =>
-          (cuspFunction 1 qj q -
-            (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-              864299970 * q ^ 4 + 20245856256 * q ^ 5)) / q ^ 5)
-        (nhds (0 : ℂ)) (nhds 0) := by
-    rwa [Asymptotics.isLittleO_iff_tendsto hzero] at hsmall
-  exact htendsto.mono_left nhdsWithin_le_nhds
+    simp [P, hqj0]
+  simpa [P] using
+    qj_cuspFunction_remainder_tendsto_zero_of_partialSum
+      (k := 5) (n := 6) (by norm_num) P hpartial hP0
 
+/-- Laurent-remainder estimate for `j` after keeping terms through the `q^4` term. -/
 theorem j_cuspFunction_five_term_remainder :
     Tendsto
       (fun q : ℂ =>
@@ -1090,6 +1124,7 @@ theorem j_cuspFunction_five_term_remainder :
     field_simp [hq0]
   exact qj_cuspFunction_six_term_remainder.congr' hEq.symm
 
+/-- Taylor-remainder estimate for `qj` after keeping terms through `q^6`. -/
 private theorem qj_cuspFunction_seven_term_remainder :
     Tendsto
       (fun q : ℂ =>
@@ -1099,19 +1134,13 @@ private theorem qj_cuspFunction_seven_term_remainder :
               333202640600 * q ^ 6)) / q ^ 6)
       (nhdsWithin (0 : ℂ) ({0}ᶜ))
       (nhds 0) := by
-  let p := qExpansionFormalMultilinearSeries (h := 1) (f := qj)
-  have hfps : HasFPowerSeriesAt (cuspFunction 1 qj) p (0 : ℂ) := by
-    simpa [p] using
-      (UpperHalfPlane.hasFPowerSeries_cuspFunction (h := 1) (f := qj)
-        (c := fun m : ℕ => (qExpansion 1 qj).coeff m) (by norm_num)
-        qj_cuspFunction_AnalyticAt
-        (fun τ : ℍ => hasSum_qExpansion_qj (τ := τ))).hasFPowerSeriesAt
+  let P : ℂ → ℂ := fun q =>
+    1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
+      864299970 * q ^ 4 + 20245856256 * q ^ 5 +
+        333202640600 * q ^ 6
   have hpartial :
-      (fun q : ℂ => p.partialSum 7 q) =
-        fun q : ℂ =>
-          1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5 +
-              333202640600 * q ^ 6 := by
+      (fun q : ℂ =>
+        (qExpansionFormalMultilinearSeries (h := 1) (f := qj)).partialSum 7 q) = P := by
     funext q
     have h0 : (coeff 0) (qExpansion 1 ⇑qj) = 1 := by
       simpa using qj_exp_zero
@@ -1129,73 +1158,21 @@ private theorem qj_cuspFunction_seven_term_remainder :
       simpa using qj_exp_six_local
     simp only [FormalMultilinearSeries.partialSum, qExpansionFormalMultilinearSeries,
       FormalMultilinearSeries.apply_eq_prod_smul_coeff, Finset.prod_const, Finset.card_univ,
-      Fintype.card_fin, FormalMultilinearSeries.coeff_ofScalars, smul_eq_mul, p]
+      Fintype.card_fin, FormalMultilinearSeries.coeff_ofScalars, smul_eq_mul, P]
     rw [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
       Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
       Finset.sum_range_succ, Finset.sum_range_zero]
     rw [h0, h1, h2, h3, h4, h5, h6]
     ring_nf
-  have hO₇ :
-      (fun q : ℂ => cuspFunction 1 qj (0 + q) - p.partialSum 7 q)
-        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 7 :=
-    hfps.isBigO_sub_partialSum_pow 7
-  have hO :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5 +
-              333202640600 * q ^ 6))
-        =O[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 7 := by
-    exact hO₇.congr_left fun q => by simp [hpartial]
-  have hsmall_norm :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5 +
-              333202640600 * q ^ 6))
-        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q‖ ^ 6 :=
-    hO.trans_isLittleO
-      (Asymptotics.isLittleO_norm_pow_norm_pow (show 6 < 7 by norm_num))
-  have hsmall_norm' :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5 +
-              333202640600 * q ^ 6))
-        =o[nhds (0 : ℂ)] fun q : ℂ => ‖q ^ 6‖ := by
-    simpa [norm_pow] using hsmall_norm
-  have hsmall :
-      (fun q : ℂ =>
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5 +
-              333202640600 * q ^ 6))
-        =o[nhds (0 : ℂ)] fun q : ℂ => q ^ 6 :=
-    Asymptotics.isLittleO_norm_right.mp hsmall_norm'
-  have hzero :
-      ∀ q : ℂ, q ^ 6 = 0 →
-        cuspFunction 1 qj q -
-          (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-            864299970 * q ^ 4 + 20245856256 * q ^ 5 +
-              333202640600 * q ^ 6) = 0 := by
-    intro q hq
-    have hq0 : q = 0 := by
-      exact eq_zero_of_pow_eq_zero hq
-    subst q
+  have hP0 : P 0 = cuspFunction 1 qj 0 := by
     have hqj0 : cuspFunction 1 qj 0 = 1 := by
       simpa [qExpansion_coeff] using qj_exp_zero
-    simp [hqj0]
-  have htendsto :
-      Tendsto
-        (fun q : ℂ =>
-          (cuspFunction 1 qj q -
-            (1 + 744 * q + 196884 * q ^ 2 + 21493760 * q ^ 3 +
-              864299970 * q ^ 4 + 20245856256 * q ^ 5 +
-                333202640600 * q ^ 6)) / q ^ 6)
-        (nhds (0 : ℂ)) (nhds 0) := by
-    rwa [Asymptotics.isLittleO_iff_tendsto hzero] at hsmall
-  exact htendsto.mono_left nhdsWithin_le_nhds
+    simp [P, hqj0]
+  simpa [P] using
+    qj_cuspFunction_remainder_tendsto_zero_of_partialSum
+      (k := 6) (n := 7) (by norm_num) P hpartial hP0
 
+/-- Laurent-remainder estimate for `j` after keeping terms through the `q^5` term. -/
 theorem j_cuspFunction_six_term_remainder :
     Tendsto
       (fun q : ℂ =>
@@ -1229,6 +1206,7 @@ theorem j_cuspFunction_six_term_remainder :
     field_simp [hq0]
   exact qj_cuspFunction_seven_term_remainder.congr' hEq.symm
 
+/-- The leading Laurent coefficient of `j` at the cusp is `1`. -/
 theorem j_cuspFunction_trailingCoeff :
     meromorphicTrailingCoeffAt (cuspFunction 1 j) (0 : ℂ) = 1 := by
   have hEq :
@@ -1253,18 +1231,22 @@ theorem j_cuspFunction_trailingCoeff :
     qj_cuspFunction_AnalyticAt.meromorphicAt
   simpa [Pi.mul_apply, hidInv, hqj] using hmul
 
+/-- The cusp function of `j` has meromorphic order `-1` at the cusp. -/
 private lemma j_cuspFunction_order :
     meromorphicOrderAt (cuspFunction 1 j) (0 : ℂ) = (-1 : ℤ) := by
   have h0 : poleOrder 1 j ≠ 0 := by simp [j_poleOrder]
   simpa [j_poleOrder] using
     (meromorphicOrderAt_cuspFunction_eq_neg_poleOrder (h := 1) (f := j) h0)
 
+/-- On a punctured cusp neighbourhood, `j^r` becomes the `r`-th power of
+the cusp function of `j`. -/
 private lemma polynomialInJ_X_pow_cusp_eventuallyEq (r : ℕ) :
     (cuspFunction 1 j) ^ r =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)]
       cuspFunction 1 (polynomialInJ (Polynomial.X ^ r)) := by
   simpa [Polynomial.eval_pow, polynomialInJ] using
     polynomialInJ_cuspFunction_eventuallyEq (Polynomial.X ^ r)
 
+/-- The leading Laurent coefficient of `j^r` at the cusp is `1`. -/
 theorem polynomialInJ_X_pow_cusp_trailingCoeff (r : ℕ) :
     meromorphicTrailingCoeffAt
       (cuspFunction 1 (polynomialInJ (Polynomial.X ^ r))) (0 : ℂ) = 1 := by
@@ -1273,6 +1255,7 @@ theorem polynomialInJ_X_pow_cusp_trailingCoeff (r : ℕ) :
   rw [j_cuspFunction_Meromorphic.meromorphicTrailingCoeffAt_pow]
   simp [j_cuspFunction_trailingCoeff]
 
+/-- The cusp order of `j^r` is `-r`. -/
 theorem polynomialInJ_X_pow_cusp_order (r : ℕ) :
     meromorphicOrderAt (cuspFunction 1 (polynomialInJ (Polynomial.X ^ r))) (0 : ℂ) =
       (-(r : ℤ) : WithTop ℤ) := by
@@ -1286,6 +1269,8 @@ theorem polynomialInJ_X_pow_cusp_order (r : ℕ) :
   congr
   ring
 
+/-- On a punctured cusp neighbourhood, `a * j^r` becomes `a` times the
+`r`-th power of the cusp function of `j`. -/
 private lemma polynomialInJ_C_mul_X_pow_cusp_eventuallyEq (a : ℂ) (r : ℕ) :
     (fun q : ℂ => a * (cuspFunction 1 j q) ^ r)
       =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)]
@@ -1295,6 +1280,7 @@ private lemma polynomialInJ_C_mul_X_pow_cusp_eventuallyEq (a : ℂ) (r : ℕ) :
   rw [← hq]
   simp [Polynomial.eval_mul, Polynomial.eval_pow]
 
+/-- The leading Laurent coefficient of `a * j^r` at the cusp is `a`. -/
 theorem polynomialInJ_C_mul_X_pow_cusp_trailingCoeff (a : ℂ) (r : ℕ) :
     meromorphicTrailingCoeffAt
       (cuspFunction 1 (polynomialInJ (Polynomial.C a * Polynomial.X ^ r))) (0 : ℂ) =
@@ -1310,6 +1296,7 @@ theorem polynomialInJ_C_mul_X_pow_cusp_trailingCoeff (a : ℂ) (r : ℕ) :
   rw [j_cuspFunction_Meromorphic.meromorphicTrailingCoeffAt_pow]
   simp [meromorphicTrailingCoeffAt_const, j_cuspFunction_trailingCoeff]
 
+/-- If `a ≠ 0`, the cusp order of `a * j^r` is `-r`. -/
 theorem polynomialInJ_C_mul_X_pow_cusp_order {a : ℂ} (ha : a ≠ 0) (r : ℕ) :
     meromorphicOrderAt
       (cuspFunction 1 (polynomialInJ (Polynomial.C a * Polynomial.X ^ r))) (0 : ℂ) =
@@ -1328,6 +1315,7 @@ theorem polynomialInJ_C_mul_X_pow_cusp_order {a : ℂ} (ha : a ≠ 0) (r : ℕ) 
   congr
   ring
 
+/-- The cusp function of evaluating a polynomial in a meromorphic function is meromorphic. -/
 private lemma polynomialInJ_cuspEval_Meromorphic (P : Polynomial ℂ) :
     MeromorphicAt (fun q : ℂ => P.eval (cuspFunction 1 j q)) 0 := by
   induction P using Polynomial.induction_on' with
@@ -1345,6 +1333,8 @@ theorem polynomialInJ_cuspFunction_Meromorphic (P : Polynomial ℂ) :
   (polynomialInJ_cuspEval_Meromorphic P).congr
     (polynomialInJ_cuspFunction_eventuallyEq P)
 
+/-- At the level-one cusp, cusp functions commute with subtraction on a punctured
+neighbourhood. -/
 private lemma cuspFunction_sub_eventuallyEq_one (f g : ℍ → ℂ) :
     (fun q : ℂ => cuspFunction 1 f q - cuspFunction 1 g q)
       =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)] cuspFunction 1 (f - g) := by
@@ -1371,12 +1361,15 @@ private lemma cuspFunction_sub_eventuallyEq_one (f g : ℍ → ℂ) :
   rw [hf, hg, hsub]
   rfl
 
+/-- Meromorphicity at the level-one cusp is closed under subtracting plain functions. -/
 theorem cuspFunction_sub_Meromorphic_one {f g : ℍ → ℂ}
     (hf : MeromorphicAt (cuspFunction 1 f) 0)
     (hg : MeromorphicAt (cuspFunction 1 g) 0) :
     MeromorphicAt (cuspFunction 1 (f - g)) 0 :=
   (hf.sub hg).congr (cuspFunction_sub_eventuallyEq_one f g)
 
+/-- If two meromorphic germs have the same order and leading coefficient, their
+difference has higher order. -/
 private lemma meromorphicOrderAt_sub_gt_of_same_order_trailingCoeff
     {f g : ℂ → ℂ} (hf : MeromorphicAt f (0 : ℂ)) (hg : MeromorphicAt g (0 : ℂ))
     {n : ℤ} (hf_order : meromorphicOrderAt f (0 : ℂ) = (n : WithTop ℤ))
@@ -1427,6 +1420,7 @@ private lemma meromorphicOrderAt_sub_gt_of_same_order_trailingCoeff
       change (n : WithTop ℤ) < ((n + m : ℤ) : WithTop ℤ)
       exact_mod_cast (lt_add_of_pos_right n hmpos)
 
+/-- A strict improvement of meromorphic order past `-M` lowers the pole order below `M`. -/
 private lemma poleOrder_lt_of_meromorphicOrderAt_gt_neg {f : ℍ → ℂ} {M : ℕ}
     (hM : M ≠ 0)
     (hgt : (-(M : ℤ) : WithTop ℤ) <
@@ -1457,6 +1451,7 @@ private lemma poleOrder_lt_of_meromorphicOrderAt_gt_neg {f : ℍ → ℂ} {M : �
           simpa [ho] using this)]
         exact hMpos
 
+/-- A nonzero pole order gives a nonzero trailing coefficient of the cusp function. -/
 private lemma meromorphicTrailingCoeffAt_cuspFunction_ne_zero_of_poleOrder_ne_zero
     {f : ℍ → ℂ} (hmero : MeromorphicAt (cuspFunction 1 f) (0 : ℂ))
     (h0 : poleOrder 1 f ≠ 0) :
@@ -1469,6 +1464,7 @@ private lemma meromorphicTrailingCoeffAt_cuspFunction_ne_zero_of_poleOrder_ne_ze
     rw [horder]
     simp)
 
+/-- Subtracting the matching leading term `a * j^M` strictly lowers the pole order. -/
 private lemma poleOrder_sub_polynomialInJ_leadingTerm_lt {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction 1 f) (0 : ℂ)) (h0 : poleOrder 1 f ≠ 0) :
     poleOrder 1
@@ -1546,6 +1542,8 @@ theorem exists_polynomialInJ_principal_part {f : ℍ → ℂ}
           ring
         simpa [hfun] using hQ
 
+/-- If the principal part can be cancelled by some `P(j)`, then the level-one
+function is a polynomial in `j`. -/
 theorem levelOne_meromorphic_polynomialInJ_of_principal_part {f : ℍ → ℂ}
     (hslash : ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f)
     (hmdiff : MDiff f)

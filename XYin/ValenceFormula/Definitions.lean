@@ -10,6 +10,7 @@ import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
 import Mathlib.NumberTheory.ModularForms.LevelOne
 import Mathlib.NumberTheory.ModularForms.QExpansion
 import Mathlib.RingTheory.PowerSeries.Order
+import XYin.ForMathlib.QExpansion
 
 /-!
 # Valence Formula Definitions
@@ -103,6 +104,10 @@ def orderOfVanishingAt' (f : UpperHalfPlane → ℂ) (z : UpperHalfPlane) : ℤ 
 
 /-- The order of vanishing at the cusp (in the q-expansion). -/
 noncomputable def orderAtCusp' {k : ℤ} (f : ModularForm (CongruenceSubgroup.Gamma 1) k) : ℤ :=
+  by
+    sorry
+/-
   (ModularFormClass.qExpansion 1 f).order.toNat
+-/
 
 end

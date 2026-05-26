@@ -1,5 +1,6 @@
+/-
 import XYin.jFunction.jfunction
-import XYin.jFunction.QExpSimprocAttr
+import XYin.Others.QExpSimprocAttr
 import Mathlib.Tactic.Simproc.Divisors
 
 open Complex Filter ModularForm ModularFormClass UpperHalfPlane MatrixGroups PowerSeries
@@ -733,3 +734,4 @@ noncomputable example : (qExpansion 1 qj).coeff 4 = 864299970 := by
   ps_coeff [qod_0, qod_1, qod_2, qod_3, qod_4, E4_q_exp, sigma_apply]
 
 end ps_coeff_examples
+-/

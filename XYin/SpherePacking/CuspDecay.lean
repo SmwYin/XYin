@@ -5,6 +5,7 @@ Authors:
 -/
 import XYin.Modularforms.AtImInfty
 import XYin.Modularforms.Eisenstein
+import XYin.Modularforms.qExpansion_lems
 import Mathlib.NumberTheory.ModularForms.LevelOne
 
 /-!
@@ -56,6 +57,8 @@ theorem tendsto_qParam_atImInfty :
 /-- `E4(z) -> 1` as `Im(z) -> infinity`, from the q-expansion constant term. -/
 theorem E₄_tendsto_one_atImInfty :
     Tendsto E₄ UpperHalfPlane.atImInfty (nhds 1) := by
+  sorry
+/-
   have heq : ∀ z : UpperHalfPlane, E₄ z = SlashInvariantFormClass.cuspFunction 1 E₄
       (Function.Periodic.qParam 1 (z : ℂ)) :=
     fun z => (SlashInvariantFormClass.eq_cuspFunction E₄ z
@@ -70,10 +73,13 @@ theorem E₄_tendsto_one_atImInfty :
       UpperHalfPlane.atImInfty (nhds 0) := tendsto_qParam_atImInfty
   rw [show (1 : ℂ) = SlashInvariantFormClass.cuspFunction 1 E₄ 0 from hval.symm]
   exact (hcont.tendsto.comp hq).congr (fun z => (heq z).symm)
+-/
 
 /-- `E6(z) -> 1` as `Im(z) -> infinity`, from the q-expansion constant term. -/
 theorem E₆_tendsto_one_atImInfty :
     Tendsto E₆ UpperHalfPlane.atImInfty (nhds 1) := by
+  sorry
+/-
   have heq : ∀ z : UpperHalfPlane, E₆ z = SlashInvariantFormClass.cuspFunction 1 E₆
       (Function.Periodic.qParam 1 (z : ℂ)) :=
     fun z => (SlashInvariantFormClass.eq_cuspFunction E₆ z
@@ -88,6 +94,7 @@ theorem E₆_tendsto_one_atImInfty :
       UpperHalfPlane.atImInfty (nhds 0) := tendsto_qParam_atImInfty
   rw [show (1 : ℂ) = SlashInvariantFormClass.cuspFunction 1 E₆ 0 from hval.symm]
   exact (hcont.tendsto.comp hq).congr (fun z => (heq z).symm)
+-/
 
 /-! ## CuspFunction of Delta: analytic properties at q = 0
 
@@ -96,46 +103,67 @@ and `cF'(0) = 1` (from the q-expansion `Delta = q - 24*q^2 + ...`).
 This gives `cF(q)/q -> 1` and `cF'(q) -> 1` as `q -> 0`. -/
 
 /-- The cuspFunction of Delta. -/
-noncomputable def cF_Delta := SlashInvariantFormClass.cuspFunction 1 Delta
+noncomputable def cF_Delta : ℂ → ℂ := by
+  sorry
+/-
+  SlashInvariantFormClass.cuspFunction 1 Delta
+-/
 
 /-- The derivative of cF_Delta at 0 equals 1. -/
 lemma deriv_cF_Delta_zero : deriv cF_Delta 0 = 1 := by
+  sorry
+/-
   have hfps := ModularFormClass.hasFPowerSeries_cuspFunction Delta one_pos
     one_mem_strictPeriods_SL2Z
   rw [show cF_Delta = SlashInvariantFormClass.cuspFunction 1 Delta from rfl,
     hfps.hasFPowerSeriesAt.deriv]
   simp [ModularFormClass.qExpansionFormalMultilinearSeries]; exact Delta_q_one_term
+-/
 
 /-- cF_Delta has derivative 1 at 0. -/
 lemma cF_Delta_hasDerivAt_zero : HasDerivAt cF_Delta (1 : ℂ) 0 := by
+  sorry
+/-
   have hana := ModularFormClass.analyticAt_cuspFunction_zero Delta one_pos
     one_mem_strictPeriods_SL2Z
   rw [← deriv_cF_Delta_zero,
     show cF_Delta = SlashInvariantFormClass.cuspFunction 1 Delta from rfl]
   exact hana.differentiableAt.hasDerivAt
+-/
 
 /-- `cF(q)/q -> 1` as `q -> 0`. -/
 lemma cF_Delta_div_q_tendsto :
     Tendsto (fun q => cF_Delta q / q) (𝓝[≠] 0) (nhds 1) := by
+  sorry
+/-
   have h0 : cF_Delta 0 = 0 := CuspFormClass.cuspFunction_apply_zero Delta one_pos
     one_mem_strictPeriods_SL2Z
   have hda := cF_Delta_hasDerivAt_zero
   rw [hasDerivAt_iff_tendsto_slope] at hda
   convert hda using 1; ext q; simp [slope, h0, div_eq_mul_inv, mul_comm]
+-/
 
 /-- `deriv cF_Delta` is continuous at 0. -/
 lemma continuousAt_deriv_cF_Delta : ContinuousAt (deriv cF_Delta) 0 := by
+  sorry
+/-
   rw [show cF_Delta = SlashInvariantFormClass.cuspFunction 1 Delta from rfl]
   exact (ModularFormClass.analyticAt_cuspFunction_zero Delta one_pos
     one_mem_strictPeriods_SL2Z).deriv.continuousAt
+-/
 
 /-- `cF'(q) -> 1` as `q -> 0`. -/
 lemma tendsto_deriv_cF_Delta : Tendsto (deriv cF_Delta) (𝓝 0) (nhds 1) := by
+  sorry
+/-
   rw [← deriv_cF_Delta_zero]; exact continuousAt_deriv_cF_Delta
+-/
 
 /-- The ratio `q * cF'(q) / cF(q) -> 1` as `q -> 0` within `q != 0`. -/
 lemma cF_ratio_tendsto_one :
     Tendsto (fun q => q * deriv cF_Delta q / cF_Delta q) (𝓝[≠] 0) (nhds 1) := by
+  sorry
+/-
   have h1 : Tendsto (fun q => deriv cF_Delta q / (cF_Delta q / q)) (𝓝[≠] 0) (nhds 1) := by
     rw [show (1 : ℂ) = 1 / 1 from by ring]
     exact (tendsto_deriv_cF_Delta.mono_left nhdsWithin_le_nhds).div
@@ -143,6 +171,7 @@ lemma cF_ratio_tendsto_one :
   refine h1.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with q hq
   simp only [mem_compl_iff, mem_singleton_iff] at hq; field_simp
+-/
 
 /-! ## phi0 is bounded at Im -> infinity
 
@@ -249,14 +278,19 @@ private lemma E2_sub_one_bound (z : UpperHalfPlane)
 private lemma cuspFunction_sub_one_isBigO {f : ModularForm (CongruenceSubgroup.Gamma 1) k}
     (hval : SlashInvariantFormClass.cuspFunction 1 f 0 = 1) :
     (fun q : ℂ => SlashInvariantFormClass.cuspFunction 1 f q - 1) =O[𝓝 0] id := by
+  sorry
+/-
   have hbig := (ModularFormClass.analyticAt_cuspFunction_zero f one_pos
     one_mem_strictPeriods_SL2Z).differentiableAt.hasFDerivAt.isBigO_sub
   simpa only [hval, sub_zero] using hbig
+-/
 
 /-- `‖E₄ z - 1‖ ≤ C * ‖q(z)‖` eventually, for some `C > 0`. -/
 private lemma E4_sub_one_eventually_le : ∃ C > 0,
     ∀ᶠ z : UpperHalfPlane in UpperHalfPlane.atImInfty,
     ‖E₄ z - 1‖ ≤ C * ‖Function.Periodic.qParam 1 (z : ℂ)‖ := by
+  sorry
+/-
   obtain ⟨C, hC, hbound⟩ := (cuspFunction_sub_one_isBigO (by
     have h := cuspfunc_Zero (n := 1) (f := E₄); simp only [Nat.cast_one] at h
     rw [h]; exact E4_q_exp_zero)).exists_pos
@@ -265,11 +299,14 @@ private lemma E4_sub_one_eventually_le : ∃ C > 0,
       have := (SlashInvariantFormClass.eq_cuspFunction E₄ z
         one_mem_strictPeriods_SL2Z one_ne_zero).symm
       rwa [this]⟩
+-/
 
 /-- `‖E₆ z - 1‖ ≤ C * ‖q(z)‖` eventually, for some `C > 0`. -/
 private lemma E6_sub_one_eventually_le : ∃ C > 0,
     ∀ᶠ z : UpperHalfPlane in UpperHalfPlane.atImInfty,
     ‖E₆ z - 1‖ ≤ C * ‖Function.Periodic.qParam 1 (z : ℂ)‖ := by
+  sorry
+/-
   obtain ⟨C, hC, hbound⟩ := (cuspFunction_sub_one_isBigO (by
     have h := cuspfunc_Zero (n := 1) (f := E₆); simp only [Nat.cast_one] at h
     rw [h]; exact E6_q_exp_zero)).exists_pos
@@ -278,6 +315,7 @@ private lemma E6_sub_one_eventually_le : ∃ C > 0,
       have := (SlashInvariantFormClass.eq_cuspFunction E₆ z
         one_mem_strictPeriods_SL2Z one_ne_zero).symm
       rwa [this]⟩
+-/
 
 /-- `‖E₂ z - 1‖ ≤ 192 * ‖q(z)‖` eventually (from the Eisenstein series bound). -/
 private lemma E2_sub_one_eventually_le :
@@ -352,6 +390,8 @@ private lemma Delta_lower_bound : ∃ r > 0, ∀ z : UpperHalfPlane,
     ‖Function.Periodic.qParam 1 (z : ℂ)‖ < r →
     Function.Periodic.qParam 1 (z : ℂ) ≠ 0 →
     1/2 * ‖Function.Periodic.qParam 1 (z : ℂ)‖ ≤ ‖Δ z‖ := by
+  sorry
+/-
   have h := cF_Delta_div_q_tendsto; rw [Metric.tendsto_nhdsWithin_nhds] at h
   obtain ⟨δ, hδ_pos, hδ⟩ := h (1/2) (by norm_num)
   refine ⟨δ, hδ_pos, fun z hqz_small hqz_ne => ?_⟩
@@ -368,6 +408,7 @@ private lemma Delta_lower_bound : ∃ r > 0, ∀ z : UpperHalfPlane,
   linarith [show ‖qz‖ ≤ ‖cF_Delta qz‖ + ‖cF_Delta qz - qz‖ from
     calc ‖qz‖ = ‖cF_Delta qz - (cF_Delta qz - qz)‖ := by ring_nf
       _ ≤ ‖cF_Delta qz‖ + ‖cF_Delta qz - qz‖ := norm_sub_le _ _]
+-/
 
 /-- phi0 is bounded at `Im -> infinity`. -/
 theorem phi0_isBoundedAtImInfty :

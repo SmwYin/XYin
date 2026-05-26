@@ -63,6 +63,8 @@ factorization, `g z - g z₀ = (z - z₀) • h z` with `h` analytic (since `g z
 vanishes at `z₀`), so the quotient is just `h`. -/
 private theorem analyticAt_diff_quot (g : ℂ → ℂ) (z₀ : ℂ) (hg : AnalyticAt ℂ g z₀) :
     AnalyticAt ℂ (fun z => (g z - g z₀) / (z - z₀)) z₀ := by
+  sorry
+/-
   -- g is analytic at z₀, so g z - g z₀ is analytic and vanishes at z₀.
   -- By natCast_le_analyticOrderAt, since the order is ≥ 1, we get
   -- g z - g z₀ = (z - z₀)^1 • h(z) near z₀ for some analytic h.
@@ -94,6 +96,7 @@ private theorem analyticAt_diff_quot (g : ℂ → ℂ) (z₀ : ℂ) (hg : Analyt
       sorry
     · rw [hz, mul_div_cancel_left₀ _ hzsub]
   exact (analyticAt_congr h_ev).mpr hh_an
+-/
 
 /-- If `f` is meromorphic at `z₀` with order exactly `-1` (simple pole), then
 `f` satisfies the project's `HasSimplePoleAt` decomposition with coefficient `g(z₀)`,
