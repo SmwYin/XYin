@@ -1,4 +1,4 @@
-import XYin.jFunction.LaurentQExpansion
+import XYin.LaurentQExpansion.LaurentQExpansion
 
 open UpperHalfPlane
 

@@ -1,6 +1,6 @@
 import Mathlib.NumberTheory.ModularForms.LevelOne
 import Mathlib.NumberTheory.ModularForms.QExpansion
-import XYin.jFunction.HasIntegralQExpansion
+import XYin.IntegralPowerSeries.HasIntegralQExpansion
 import XYin.jFunction.Deltaqexpansions
 import XYin.Test.LaurentQExpansion
 
@@ -213,7 +213,7 @@ lemma DeltaoverqIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 Delt
 def integralDeltaoverq : PowerSeries ℤ := toIntegralPowerSeries DeltaoverqIsIntegralPowerSeries
 
 lemma coeTo_of_integralDeltaoverq :
-    coeToComplexPowerSeries.ringHom integralDeltaoverq = qExpansion 1 Deltaoverq := by
+    (coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq = qExpansion 1 Deltaoverq := by
   exact coeTo_of_toIntegralPowerSeries DeltaoverqIsIntegralPowerSeries
 
 lemma integralDeltaoverq_constantCoeff_isUnit : IsUnit (constantCoeff integralDeltaoverq : ℤ) := by
@@ -228,8 +228,13 @@ lemma integralDeltaoverq_constantCoeff_isUnit : IsUnit (constantCoeff integralDe
   have hcoeff0C : (qExpansion 1 Deltaoverq).coeff 0 = 1 := by simp [qExpansion_coeff, hcusp0]
   have hcast : ((constantCoeff integralDeltaoverq : ℤ) : ℂ) = 1 := by
     have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
-    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map,
-      PowerSeries.coeff_zero_eq_constantCoeff, hcoeff0C] using h0
+    have hmap : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq) =
+        ((PowerSeries.coeff 0 integralDeltaoverq : ℤ) : ℂ) := by
+      simp [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom,
+        PowerSeries.coeff_zero_eq_constantCoeff]
+    have hcoeff0 : ((PowerSeries.coeff 0 integralDeltaoverq : ℤ) : ℂ) = 1 :=
+      hmap.symm.trans (by simpa [hcoeff0C] using h0)
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hcoeff0
   have hZ : (constantCoeff integralDeltaoverq : ℤ) = 1 := by
     norm_num at hcast ⊢
     exact_mod_cast hcast
@@ -311,7 +316,7 @@ lemma E4cubed_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 (E4 ^ 3)) 0 := by
     (ModularFormClass.analyticAt_cuspFunction_zero f (by norm_num) (by simp))
 
 lemma integralDeltaoverq_mul_qoverDelta_qExpansion :
-    coeToComplexPowerSeries.ringHom integralDeltaoverq * qExpansion 1 qoverDelta = 1 := by
+    (coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq * qExpansion 1 qoverDelta = 1 := by
   rw [coeTo_of_integralDeltaoverq]
   have h :
       qExpansion 1 (Deltaoverq * qoverDelta) = qExpansion 1 Deltaoverq * qExpansion 1 qoverDelta
@@ -349,26 +354,30 @@ lemma qoverDeltaIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 qove
   rw [IsIntegralPowerSeries]
   obtain ⟨u, hu⟩ := integralDeltaoverq_isUnit
   refine ⟨(↑(u⁻¹) : PowerSeries ℤ), ?_⟩
-  have h : coeToComplexPowerSeries.ringHom integralDeltaoverq
-      * coeToComplexPowerSeries.ringHom (↑(u⁻¹) : PowerSeries ℤ) = 1 := by
+  have h : (coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq
+      * (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ) = 1 := by
     calc
-    _ = coeToComplexPowerSeries.ringHom (↑u)
-        * coeToComplexPowerSeries.ringHom (↑(u⁻¹) : PowerSeries ℤ) := by simp [hu]
-    _ = coeToComplexPowerSeries.ringHom ((↑u) * (↑(u⁻¹) : PowerSeries ℤ)) := by
+    _ = (coeToComplexPowerSeries.ringHom ℤ) (↑u)
+        * (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ) := by simp [hu]
+    _ = (coeToComplexPowerSeries.ringHom ℤ) ((↑u) * (↑(u⁻¹) : PowerSeries ℤ)) := by
       rw [← map_mul]
     _ = _ := by simp
   symm
   calc
   _ = 1 * qExpansion 1 qoverDelta := by simp
-  _ = (coeToComplexPowerSeries.ringHom integralDeltaoverq * coeToComplexPowerSeries.ringHom
-      (↑(u⁻¹) : PowerSeries ℤ)) * qExpansion 1 qoverDelta := by simp [h]
-  _ = coeToComplexPowerSeries.ringHom (↑(u⁻¹) : PowerSeries ℤ) * (coeToComplexPowerSeries.ringHom
-      integralDeltaoverq * qExpansion 1 qoverDelta) := by ring
-  _ = _ := by simp [integralDeltaoverq_mul_qoverDelta_qExpansion]
+  _ = ((coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq *
+        (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ)) *
+      qExpansion 1 qoverDelta := by rw [← h]
+  _ = (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ) *
+      ((coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq *
+        qExpansion 1 qoverDelta) := by ring
+  _ = _ := by
+    rw [integralDeltaoverq_mul_qoverDelta_qExpansion]
+    simp
 
 lemma qjauxIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 (E4 ^ 3 * qoverDelta)) := by
-  simp [qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt, IsIntegralPowerSeries,
-    IntegralPowerSeriesSubring.mul_mem E4CubedIsIntegralPowerSeries qoverDeltaIsIntegralPowerSeries]
+  rw [qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt]
+  exact hasCoeffsIn_mul ℤ ℂ E4CubedIsIntegralPowerSeries qoverDeltaIsIntegralPowerSeries
 
 theorem qjIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 qj) := by
   simpa using qjIdentity ▸ qjauxIsIntegralPowerSeries
@@ -1075,10 +1084,10 @@ lemma qj_exp_one : (qExpansion 1 qj).coeff 1 = 744 := by
       _ = (qExpansion 1 InfSumDeltashift).coeff 1 := by simp [hq]
       _ = (qExpansion 1 Delta).coeff 2 := by simpa using InfSumDeltashift_coeff_eq 1
       _ = -24 := Delta_exp_two
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
+  have hmap0 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 0 = 1 := by
     have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
     simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
+  have hmap1 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 1 = -24 := by
     have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq1] using h1
   have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
@@ -1176,13 +1185,13 @@ lemma qj_exp_two : (qExpansion 1 qj).coeff 2 = 196884 := by
       _ = (qExpansion 1 InfSumDeltashift).coeff 2 := by simp [hq]
       _ = (qExpansion 1 Delta).coeff 3 := by simpa using InfSumDeltashift_coeff_eq 2
       _ = 252 := Delta_exp_three
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
+  have hmap0 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 0 = 1 := by
     have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
     simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
+  have hmap1 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 1 = -24 := by
     have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq1] using h1
-  have hmap2 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 2 = 252 := by
+  have hmap2 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 2 = 252 := by
     have h2 := congrArg (PowerSeries.coeff 2) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq2] using h2
   have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
@@ -1335,16 +1344,16 @@ lemma qj_exp_three : (qExpansion 1 qj).coeff 3 = 21493760 := by
       _ = (qExpansion 1 InfSumDeltashift).coeff 3 := by simp [hq]
       _ = (qExpansion 1 Delta).coeff 4 := by simpa using InfSumDeltashift_coeff_eq 3
       _ = -1472 := Delta_exp_four
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
+  have hmap0 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 0 = 1 := by
     have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
     simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
+  have hmap1 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 1 = -24 := by
     have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq1] using h1
-  have hmap2 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 2 = 252 := by
+  have hmap2 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 2 = 252 := by
     have h2 := congrArg (PowerSeries.coeff 2) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq2] using h2
-  have hmap3 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 3 = -1472 := by
+  have hmap3 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 3 = -1472 := by
     have h3 := congrArg (PowerSeries.coeff 3) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq3] using h3
   have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
@@ -1565,19 +1574,19 @@ lemma qj_exp_four : (qExpansion 1 qj).coeff 4 = 864299970 := by
       _ = (qExpansion 1 InfSumDeltashift).coeff 4 := by simp [hq]
       _ = (qExpansion 1 Delta).coeff 5 := by simpa using InfSumDeltashift_coeff_eq 4
       _ = 4830 := Delta_exp_five
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
+  have hmap0 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 0 = 1 := by
     have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
     simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
+  have hmap1 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 1 = -24 := by
     have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq1] using h1
-  have hmap2 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 2 = 252 := by
+  have hmap2 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 2 = 252 := by
     have h2 := congrArg (PowerSeries.coeff 2) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq2] using h2
-  have hmap3 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 3 = -1472 := by
+  have hmap3 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 3 = -1472 := by
     have h3 := congrArg (PowerSeries.coeff 3) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq3] using h3
-  have hmap4 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 4 = 4830 := by
+  have hmap4 : ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff 4 = 4830 := by
     have h4 := congrArg (PowerSeries.coeff 4) coeTo_of_integralDeltaoverq
     simpa [hDeltaoverq4] using h4
   have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by

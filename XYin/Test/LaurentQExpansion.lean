@@ -1,8 +1,6 @@
 import Mathlib
 import XYin.Modularforms.Eisenstein
-import XYin.ForMathlib.QExpansion
-import XYin.jFunction.HasIntegralQExpansion
-import XYin.jFunction.generalised
+import XYin.IntegralPowerSeries.HasIntegralQExpansion
 
 open ModularForm Complex Function Matrix.SpecialLinearGroup Metric
   ModularFormClass SlashInvariantFormClass Real Set Filter LaurentSeries

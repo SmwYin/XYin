@@ -1,5 +1,5 @@
 import XYin.Modularforms.DimensionFormulas
-import XYin.Others.IntegralPowerSeries
+import XYin.IntegralPowerSeries.IntegralPowerSeries
 
 open Complex ModularForm ModularFormClass ArithmeticFunction UpperHalfPlane IntegralPowerSeries
 
@@ -71,7 +71,8 @@ lemma E4coeffmod240 (n : ℕ) (hn : n ≥ 1) : 240 ∣ integralE4.coeff n := by
   have hE4 := coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
   have hcoeff : ((integralE4.coeff n : ℤ) : ℂ) = (240 : ℂ) * sigma 3 n := by
     have h := congrArg (PowerSeries.coeff n) hE4
-    simpa [coeToComplexPowerSeries.ringHom, E4, hn0] using h.trans (congr_fun E4_q_exp n)
+    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E4, hn0] using
+      h.trans (congr_fun E4_q_exp n)
   have hcoeff' : integralE4.coeff n = (240 : ℤ) * sigma 3 n := by exact_mod_cast hcoeff
   exact ⟨sigma 3 n, hcoeff'⟩
 
@@ -80,7 +81,8 @@ lemma E6coeffmod504 (n : ℕ) (hn : n ≥ 1) : 504 ∣ integralE6.coeff n := by
   have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
   have hcoeff : ((integralE6.coeff n : ℤ) : ℂ) = -(504 : ℂ) * sigma 5 n := by
     have h := congrArg (PowerSeries.coeff n) hE6
-    simpa [coeToComplexPowerSeries.ringHom, E6, hn0] using h.trans (congr_fun E6_q_exp n)
+    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E6, hn0] using
+      h.trans (congr_fun E6_q_exp n)
   have hcoeff' : integralE6.coeff n = -((504 : ℤ) * sigma 5 n) := by exact_mod_cast hcoeff
   refine ⟨-(sigma 5 n : ℤ), ?_⟩
   calc
@@ -91,14 +93,24 @@ lemma integralE4_coeff_zero : integralE4.coeff 0 = 1 := by
   have hE4 := coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
   have hcoeff : ((integralE4.coeff 0 : ℤ) : ℂ) = 1 := by
     have h := congrArg (PowerSeries.coeff 0) hE4
-    simpa [coeToComplexPowerSeries.ringHom, E4] using h.trans (congr_fun E4_q_exp 0)
+    have h' : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE4) = 1 := by
+      simpa [integralE4, E4] using h.trans (congr_fun E4_q_exp 0)
+    have hmap : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE4) =
+        (integralE4.coeff 0 : ℂ) := by
+      simp [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom]
+    exact hmap.symm.trans h'
   exact_mod_cast hcoeff
 
 lemma integralE6_coeff_zero : integralE6.coeff 0 = 1 := by
   have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
   have hcoeff : ((integralE6.coeff 0 : ℤ) : ℂ) = 1 := by
     have h := congrArg (PowerSeries.coeff 0) hE6
-    simpa [coeToComplexPowerSeries.ringHom, E6] using h.trans (congr_fun E6_q_exp 0)
+    have h' : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE6) = 1 := by
+      simpa [integralE6, E6] using h.trans (congr_fun E6_q_exp 0)
+    have hmap : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE6) =
+        (integralE6.coeff 0 : ℂ) := by
+      simp [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom]
+    exact hmap.symm.trans h'
   exact_mod_cast hcoeff
 
 lemma integralE4_constantCoeff : PowerSeries.constantCoeff integralE4 = 1 := by
@@ -112,7 +124,8 @@ lemma integralE4_coeff_pos (n : ℕ) (hn : n ≥ 1) : integralE4.coeff n = (240 
   have hE4 := coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
   have hcoeff : ((integralE4.coeff n : ℤ) : ℂ) = (240 : ℂ) * sigma 3 n := by
     have h := congrArg (PowerSeries.coeff n) hE4
-    simpa [coeToComplexPowerSeries.ringHom, E4, hn0] using h.trans (congr_fun E4_q_exp n)
+    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E4, hn0] using
+      h.trans (congr_fun E4_q_exp n)
   exact_mod_cast hcoeff
 
 lemma integralE6_coeff_pos (n : ℕ) (hn : n ≥ 1) :
@@ -121,7 +134,8 @@ lemma integralE6_coeff_pos (n : ℕ) (hn : n ≥ 1) :
   have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
   have hcoeff : ((integralE6.coeff n : ℤ) : ℂ) = -(504 : ℂ) * sigma 5 n := by
     have h := congrArg (PowerSeries.coeff n) hE6
-    simpa [coeToComplexPowerSeries.ringHom, E6, hn0] using h.trans (congr_fun E6_q_exp n)
+    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E6, hn0] using
+      h.trans (congr_fun E6_q_exp n)
   exact_mod_cast hcoeff
 
 def E4bar : PowerSeries ℤ := integralE4 - 1
@@ -251,7 +265,7 @@ lemma mod1728 (n : ℕ) : 1728 ∣ (integralE4 ^ 3 - integralE6 ^ 2).coeff n := 
   have hfinal : Int.ModEq 1728 ((integralE4 ^ 3 - integralE6 ^ 2).coeff n) 0 := hmod.trans hmod0
   exact (Int.modEq_zero_iff_dvd).1 hfinal
 
-lemma aux1 : coeToComplexPowerSeries.ringHom (integralE4 ^ 3 - integralE6 ^ 2)
+lemma aux1 : (coeToComplexPowerSeries.ringHom ℤ) (integralE4 ^ 3 - integralE6 ^ 2)
     = qExpansion 1 (E4 ^ 3 - E6 ^ 2) := by
   have hE4 := coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
   have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
@@ -262,12 +276,13 @@ lemma aux1 : coeToComplexPowerSeries.ringHom (integralE4 ^ 3 - integralE6 ^ 2)
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
       (k := (6 : ℤ)) (hh := by norm_num) (hΓ := by simp) E6 2
   calc
-  _ = coeToComplexPowerSeries.ringHom (integralE4 ^ 3)
-      - coeToComplexPowerSeries.ringHom (integralE6 ^ 2) := by
+  _ = (coeToComplexPowerSeries.ringHom ℤ) (integralE4 ^ 3)
+      - (coeToComplexPowerSeries.ringHom ℤ) (integralE6 ^ 2) := by
     simp [map_sub]
-  _ = (coeToComplexPowerSeries.ringHom integralE4) ^ 3
-      - (coeToComplexPowerSeries.ringHom integralE6) ^ 2 := by simp [map_pow]
-  _ = (qExpansion 1 E4) ^ 3 - (qExpansion 1 E6) ^ 2 := by simp [integralE4, hE4, integralE6, hE6]
+  _ = ((coeToComplexPowerSeries.ringHom ℤ) integralE4) ^ 3
+      - ((coeToComplexPowerSeries.ringHom ℤ) integralE6) ^ 2 := by simp [map_pow]
+  _ = (qExpansion 1 E4) ^ 3 - (qExpansion 1 E6) ^ 2 := by
+    rw [integralE4, integralE6, hE4, hE6]
   _ = qExpansion 1 (E4 ^ 3) - qExpansion 1 (E6 ^ 2) := by rw [← hpow4, ← hpow6]
   _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
     have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
@@ -287,9 +302,9 @@ lemma E4E6IsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 (E4 ^ 3 - 
 
 lemma aux1' :
     toIntegralPowerSeries E4E6IsIntegralPowerSeries = integralE4 ^ 3 - integralE6 ^ 2 := by
-  apply (PowerSeries.map_injective hom Int.cast_injective)
-  change coeToComplexPowerSeries.ringHom (toIntegralPowerSeries E4E6IsIntegralPowerSeries)
-    = coeToComplexPowerSeries.ringHom (integralE4 ^ 3 - integralE6 ^ 2)
+  apply (PowerSeries.map_injective (algebraMap ℤ ℂ) Int.cast_injective)
+  change (coeToComplexPowerSeries.ringHom ℤ) (toIntegralPowerSeries E4E6IsIntegralPowerSeries)
+    = (coeToComplexPowerSeries.ringHom ℤ) (integralE4 ^ 3 - integralE6 ^ 2)
   rw [coeTo_of_toIntegralPowerSeries]
   exact aux1.symm
 

@@ -745,9 +745,10 @@ private lemma Deltaoverq_coeff_six_local :
 
 /-- Map integral `Delta / q` coefficients to complex coefficients for inversion. -/
 private lemma integralDeltaoverq_map_coeff_local (n : ℕ) :
-    (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff n =
-      (qExpansion 1 Deltaoverq).coeff n :=
-  congrArg (PowerSeries.coeff n) coeTo_of_integralDeltaoverq
+    ((powerSeriesMapAlgHom ℤ ℂ) integralDeltaoverq).coeff n =
+      (qExpansion 1 Deltaoverq).coeff n := by
+  simpa [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom] using
+    congrArg (PowerSeries.coeff n) coeTo_of_integralDeltaoverq
 
 /-- Constant coefficient of `q / Delta` in the local inverse computation. -/
 private lemma qoverDelta_coeff_zero_local : (qExpansion 1 qoverDelta).coeff 0 = 1 := by
