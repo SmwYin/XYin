@@ -1,11 +1,25 @@
 import XYin.qExpansion_tactic.link
 
+set_option linter.style.header false
+
 open Complex Filter ModularForm ModularFormClass UpperHalfPlane MatrixGroups PowerSeries
   SlashInvariantFormClass Real Function IntegralPowerSeries
 open XYin.qExpansion_tactic
 open scoped Manifold
 
 noncomputable section
+
+lemma Ramanujan_tau_one : Ramanujan_tau 1 = 1 := by
+  rw [Ramanujan_tau_link]
+  exact qexp_coeff Delta 1 1
+
+lemma Ramanujan_tau_two : Ramanujan_tau 2 = -24 := by
+  rw [Ramanujan_tau_link]
+  exact qexp_coeff Delta 2 -24
+
+lemma Ramanujan_tau_three : Ramanujan_tau 3 = 252 := by
+  rw [Ramanujan_tau_link]
+  exact qexp_coeff Delta 3 252
 
 private lemma qj_coeffs_eq_qj_qexpansion_coeff (n : ℕ) :
     qj_coeffs n = qj_qexpansion.coeff n := by

@@ -1,8 +1,10 @@
-import Mathlib.NumberTheory.ModularForms.LevelOne
+import Mathlib.NumberTheory.ModularForms.LevelOne.Basic
 import Mathlib.NumberTheory.ModularForms.QExpansion
 import XYin.IntegralPowerSeries.HasIntegralQExpansion
 import XYin.jFunction.Deltaqexpansions
 import XYin.LaurentQExpansion.LaurentQExpansion
+
+set_option linter.style.header false
 
 open Complex Filter ModularForm ModularFormClass UpperHalfPlane MatrixGroups PowerSeries
   SlashInvariantFormClass Real Function IntegralPowerSeries
@@ -26,12 +28,12 @@ lemma j_slashInvariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
       (Subgroup.mem_map_iff_mem (Matrix.SpecialLinearGroup.mapGL_injective)).mpr (by apply
       CongruenceSubgroup.mem_Gamma_one ))) z
   rw [← ModularForm.SL_slash] at h1 h2
-  simp only [ModularForm.slash_action_eq'_iff, Nat.cast_ofNat, SlashInvariantForm.toFun_eq_coe,
+  simp only [ModularForm.slash_action_eq'_iff, SlashInvariantForm.toFun_eq_coe,
     toSlashInvariantForm_coe, Fin.isValue] at h1
   rw [ModularForm.slash_action_eq'_iff, CuspForm_apply, CuspForm_apply] at h2
   rw [h1, h2]
   ring_nf
-  have h3 := pow_ne_zero  12 (denom_ne_zero γ z)
+  have h3 := pow_ne_zero 12 (denom_ne_zero γ z)
   rw [ModularGroup.denom_apply] at h3
   rw [← zpow_natCast, ← zpow_mul]
   ring_nf
@@ -44,8 +46,8 @@ lemma j_slashInvariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
 
 def Deltaoverq : ℍ → ℂ := fun z ↦ ∏' (n : ℕ), (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
-lemma DeltaoverqIdentity : Deltaoverq = (fun z ↦ 1 / cexp (2 * π * Complex.I * z) : ℍ → ℂ) * Delta
-    := by
+lemma DeltaoverqIdentity :
+    Deltaoverq = (fun z ↦ 1 / cexp (2 * π * Complex.I * z) : ℍ → ℂ) * Delta := by
   ext z
   simp [Deltaoverq, Delta_apply, Δ, Pi.mul_apply, mul_assoc]
 

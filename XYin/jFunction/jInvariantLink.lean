@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.AlgebraicGeometry.EllipticCurve.ModelsWithJ
 import XYin.jFunction.jfunction
 
 open UpperHalfPlane

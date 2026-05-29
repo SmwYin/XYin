@@ -1,12 +1,16 @@
 import XYin.Modularforms.DimensionFormulas
 import XYin.IntegralPowerSeries.IntegralPowerSeries
 
-open Complex ModularForm ModularFormClass ArithmeticFunction UpperHalfPlane IntegralPowerSeries
+set_option linter.style.header false
+
+open Complex
+open ModularForm hiding E₄ E₆
+open ModularFormClass ArithmeticFunction UpperHalfPlane IntegralPowerSeries
 
 noncomputable section
 
-abbrev E4 := (ModularForm.E (by norm_num : 3 ≤ 4))
-abbrev E6 := (ModularForm.E (by norm_num : 3 ≤ 6))
+abbrev E4 := _root_.E₄
+abbrev E6 := _root_.E₆
 
 lemma E4IsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 E4) := by
   rw [int_iff]
@@ -369,11 +373,9 @@ lemma DeltaIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 Delta) :=
   · decide
   · intro n
     exact mod1728' n
--- Question: Where's the third?
 
-def tau : ℕ → ℤ :=
-  fun n => (toIntegralPowerSeries DeltaIsIntegralPowerSeries).coeff n
+def IntegralDelta : PowerSeries ℤ := toIntegralPowerSeries DeltaIsIntegralPowerSeries
+
+def Ramanujan_tau : ℕ → ℤ := fun n => IntegralDelta.coeff n
 
 end
-
-#min_imports

@@ -2,6 +2,8 @@ import XYin.Modularforms.Eisenstein
 import XYin.IntegralPowerSeries.HasIntegralQExpansion
 import Mathlib.RingTheory.LaurentSeries
 
+set_option linter.style.header false
+
 open ModularForm Complex Function Matrix.SpecialLinearGroup Metric
   ModularFormClass SlashInvariantFormClass Real Set Filter LaurentSeries
   IntegralPowerSeries
@@ -133,28 +135,21 @@ def UpperHalfPlane.laurentqExpansion (h : ℝ) (f : ℍ → ℂ) : LaurentSeries
 lemma cuspFunction_qpow_mul_eq {h : ℝ} (hh : 0 < h) (f : ℍ → ℂ)
     {n : ℕ} {q : ℂ} (hq0 : q ≠ 0) (hqnorm : ‖q‖ < 1) :
     cuspFunction h (fun τ ↦ (𝕢 h τ) ^ n * f τ) q = q ^ n * cuspFunction h f q := by
-  have him : 0 < Complex.im (Periodic.invQParam h q) :=
-    Periodic.im_invQParam_pos_of_norm_lt_one hh hqnorm hq0
-  have hleft :
-      cuspFunction h (fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ) q =
-        (fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ)
-          (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := by
-    simpa [cuspFunction] using
-      (Periodic.cuspFunction_eq_of_nonzero h
-        (((fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ) ∘ UpperHalfPlane.ofComplex)) hq0)
-  have hright :
-      cuspFunction h f q = f (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := by
+  have him := Periodic.im_invQParam_pos_of_norm_lt_one hh hqnorm hq0
+  have hleft : cuspFunction h (fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ) q =
+      (fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ) (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := by
+    simpa [cuspFunction] using (Periodic.cuspFunction_eq_of_nonzero h
+      (((fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ) ∘ UpperHalfPlane.ofComplex)) hq0)
+  have hright : cuspFunction h f q = f (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := by
     simpa [cuspFunction] using
       (Periodic.cuspFunction_eq_of_nonzero h (f ∘ UpperHalfPlane.ofComplex) hq0)
   have hqparam : 𝕢 h (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) = q := by
     simpa [UpperHalfPlane.ofComplex_apply_of_im_pos him] using
       (Periodic.qParam_right_inv hh.ne' hq0)
   calc
-    cuspFunction h (fun τ ↦ (𝕢 h τ) ^ n * f τ) q
-        = (fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ)
-            (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := hleft
-    _ = q ^ n * f (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := by simp [hqparam]
-    _ = q ^ n * cuspFunction h f q := by simp [hright]
+  _ = (fun τ : ℍ ↦ (𝕢 h τ) ^ n * f τ) (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := hleft
+  _ = q ^ n * f (UpperHalfPlane.ofComplex (Periodic.invQParam h q)) := by simp [hqparam]
+  _ = _ := by simp [hright]
 
 lemma analyticAt_cuspFunction_poleRemoved {h : ℝ} {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
@@ -166,8 +161,7 @@ lemma analyticAt_cuspFunction_poleRemoved {h : ℝ} {f : ℍ → ℂ}
       simpa [Metric.ball, dist_eq_norm] using (Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
     have hnorm : {q : ℂ | ‖q‖ < 1} ∈ nhdsWithin (0 : ℂ) ({0}ᶜ) :=
       nhdsWithin_le_nhds hnorm0
-    have hEq_shift :
-        F =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)] fun q ↦ q ^ M * cuspFunction h f q := by
+    have hEq_shift : F =ᶠ[nhdsWithin (0 : ℂ) ({0}ᶜ)] fun q ↦ q ^ M * cuspFunction h f q := by
       filter_upwards [hnorm, self_mem_nhdsWithin] with q hqnorm hq
       have hq0 : q ≠ 0 := Set.mem_compl_singleton_iff.mp hq
       simpa [F, M, UpperHalfPlane.poleRemoved] using

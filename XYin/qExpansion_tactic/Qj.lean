@@ -41,13 +41,6 @@ def convArrayUpTo (a b : Array Int) (n : Nat) : Array Int :=
     (fun acc i => acc.push (convArrayCoeff a b i))
     #[]
 
-/-- Convolution coefficient `(a * b)_n = Σ_{i=0..n} a_i b_{n-i}` for coefficient
-functions. This is the proof-friendly version of `convArrayCoeff`. -/
-def convCoeff (a b : Nat → Int) (n : Nat) : Int :=
-  (List.range (n + 1)).foldl
-    (fun acc i => acc + a i * b (n - i))
-    0
-
 /-- Coefficients of `(1 + a₁q + a₂q² + ...)⁻¹` up to index `n` (inclusive). -/
 def inverseOnePlusCoeffsUpTo (a : Array Int) (n : Nat) : Array Int :=
   (List.range (n + 1)).foldl
@@ -62,37 +55,61 @@ def inverseOnePlusCoeffsUpTo (a : Array Int) (n : Nat) : Array Int :=
           acc.push next)
     #[]
 
-def e4SqCoeffInt (n : Nat) : Int := convCoeff e4CoeffInt e4CoeffInt n
-
-def e4CubeCoeffInt (n : Nat) : Int := convCoeff e4SqCoeffInt e4CoeffInt n
-
-def e6SqCoeffInt (n : Nat) : Int := convCoeff e6CoeffInt e6CoeffInt n
-
 def deltaCoeffsArrayUpTo (n : Nat) : Array Int :=
-  coeffArray (fun i => (e4CubeCoeffInt i - e6SqCoeffInt i) / 1728) n
+  let e4 := coeffArray e4CoeffInt n
+  let e6 := coeffArray e6CoeffInt n
+  let e4Sq := convArrayUpTo e4 e4 n
+  let e4Cube := convArrayUpTo e4Sq e4 n
+  let e6Sq := convArrayUpTo e6 e6 n
+  (List.range (n + 1)).foldl
+    (fun acc i => acc.push ((e4Cube.getD i 0 - e6Sq.getD i 0) / 1728))
+    #[]
 
-def deltaCoeffInt (n : Nat) : Int := (e4CubeCoeffInt n - e6SqCoeffInt n) / 1728
+def deltaCoeffInt (n : Nat) : Int := (deltaCoeffsArrayUpTo n).getD n 0
 
 def deltaCoeffsUpTo (n : Nat) : List Int := (deltaCoeffsArrayUpTo n).toList
 
 def deltaOverQCoeffInt (n : Nat) : Int := deltaCoeffInt (n + 1)
 
-def qoverDeltaCoeffInt : Nat → Int
-  | 0 => 1
-  | n + 1 =>
-      -((List.range (n + 1)).foldl
-        (fun acc i => acc + deltaOverQCoeffInt (i + 1) * qoverDeltaCoeffInt (n - i))
-        0)
-termination_by n => n
-decreasing_by omega
-
 def qoverDeltaCoeffsArrayUpTo (n : Nat) : Array Int :=
-  coeffArray qoverDeltaCoeffInt n
+  let top := n + 1
+  let e4 := coeffArray e4CoeffInt top
+  let e6 := coeffArray e6CoeffInt top
+  let e4Sq := convArrayUpTo e4 e4 top
+  let e4Cube := convArrayUpTo e4Sq e4 top
+  let e6Sq := convArrayUpTo e6 e6 top
+  let delta :=
+    (List.range (top + 1)).foldl
+      (fun acc i => acc.push ((e4Cube.getD i 0 - e6Sq.getD i 0) / 1728))
+      #[]
+  let deltaOverQ :=
+    (List.range (n + 1)).foldl
+      (fun acc i => acc.push (delta.getD (i + 1) 0))
+      #[]
+  inverseOnePlusCoeffsUpTo deltaOverQ n
 
-def qjCoeffInt (n : Nat) : Int := convCoeff e4CubeCoeffInt qoverDeltaCoeffInt n
+def qoverDeltaCoeffInt (n : Nat) : Int :=
+  (qoverDeltaCoeffsArrayUpTo n).getD n 0
 
 def qjCoeffsArrayUpTo (n : Nat) : Array Int :=
-  coeffArray qjCoeffInt n
+  let top := n + 1
+  let e4 := coeffArray e4CoeffInt top
+  let e6 := coeffArray e6CoeffInt top
+  let e4Sq := convArrayUpTo e4 e4 top
+  let e4Cube := convArrayUpTo e4Sq e4 top
+  let e6Sq := convArrayUpTo e6 e6 top
+  let delta :=
+    (List.range (top + 1)).foldl
+      (fun acc i => acc.push ((e4Cube.getD i 0 - e6Sq.getD i 0) / 1728))
+      #[]
+  let deltaOverQ :=
+    (List.range (n + 1)).foldl
+      (fun acc i => acc.push (delta.getD (i + 1) 0))
+      #[]
+  let qoverDelta := inverseOnePlusCoeffsUpTo deltaOverQ n
+  convArrayUpTo e4Cube qoverDelta n
+
+def qjCoeffInt (n : Nat) : Int := (qjCoeffsArrayUpTo n).getD n 0
 
 def qjCoeffsUpTo (n : Nat) : List Int := (qjCoeffsArrayUpTo n).toList
 
