@@ -823,7 +823,7 @@ theorem sqrtTwo_torsion_eq_one_or_neg_one
         rw [sqrtTwo_nrRealPlaces]
         norm_num]
   · interval_cases hi : orderOf (x : O2ˣ)
-    · linarith [orderOf_pos_iff.2 ((CommGroup.mem_torsion _ x.1).1 x.2)]
+    · linarith [orderOf_pos_iff.2 ((CommGroup.mem_torsion x.1).1 x.2)]
     · exact Or.inl (orderOf_eq_one_iff.1 hi)
     · rw [← orderOf_units, CharP.orderOf_eq_two_iff 0 (by decide)] at hi
       simp [← Units.val_inj, Units.val_neg, Units.val_one, hi]

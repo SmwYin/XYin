@@ -766,19 +766,13 @@ theorem jLaurentqExpansion_isIntegral {n : ℤ} :
   · refine ⟨qj_coeffs (Int.toNat (n + 1)), ?_⟩
     have hge : -(poleOrder 1 j : ℤ) ≤ n := by
       simpa [j_poleOrder] using le_of_not_gt hn
-    have hcoeff :
-        (((qj_coeffs (Int.toNat (n + 1)) : ℤ) : ℂ)) =
-          (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by
+    have hcoeff : (((qj_coeffs (Int.toNat (n + 1)) : ℤ) : ℂ)) =
+        (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by
       simpa [qj_coeffs] using congrArg (PowerSeries.coeff (Int.toNat (n + 1)))
         (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
     calc
-      (laurentqExpansion 1 j).coeff n
-          = (to_qExpansion 1 j).coeff (Int.toNat (n + poleOrder 1 j)) := by
-              simpa using
-                (laurentqExpansion.coeff_of_geq (h := 1) (f := j) (n := n) (hn := hge))
-      _ = (qExpansion 1 qj).coeff (Int.toNat (n + poleOrder 1 j)) := by
-            rw [j_to_qExpansion]
-      _ = (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by
-            simp [j_poleOrder]
-      _ = qj_coeffs (Int.toNat (n + 1)) := by
-            simpa using hcoeff.symm
+    _ = (to_qExpansion 1 j).coeff (Int.toNat (n + poleOrder 1 j)) := by
+            simpa using (laurentqExpansion.coeff_of_geq hge)
+    _ = (qExpansion 1 qj).coeff (Int.toNat (n + poleOrder 1 j)) := by rw [j_to_qExpansion]
+    _ = (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by simp [j_poleOrder]
+    _ = _ := by simpa using hcoeff.symm

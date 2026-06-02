@@ -1,6 +1,6 @@
-import Mathlib.Analysis.Complex.Basic
 import Mathlib.NumberTheory.ModularForms.QExpansion
-import Mathlib.RingTheory.PowerSeries.Basic
+
+set_option linter.style.header false
 
 def powerSeriesMapAlgHom (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A] :
     PowerSeries R →ₐ[R] PowerSeries A :=
@@ -185,7 +185,7 @@ lemma qExpansion_smul_algebra (R : Type*) [CommSemiring R] [Algebra R ℂ]
     {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} [Γ.HasDetOne] {h : ℝ} (hh : 0 < h)
     (hΓ : h ∈ Γ.strictPeriods) (r : R) (f : ModularForm Γ k) :
     qExpansion h (r • f) = (algebraMap R ℂ r) • qExpansion h f := by
-  simpa using ModularFormClass.qExpansion_smul (F := ModularForm Γ k) hh hΓ (algebraMap R ℂ r) f
+  simpa using ModularForm.qExpansion_smul (F := ModularForm Γ k) hh hΓ (algebraMap R ℂ r) f
 
 def modularFormQExpansionSubmodule (R : Type*) [CommRing R] [Algebra R ℂ]
     {Γ : Subgroup (GL (Fin 2) ℝ)} [Γ.HasDetOne] (k : ℤ) (h : ℝ) (hh : 0 < h)
@@ -198,7 +198,7 @@ def modularFormQExpansionSubmodule (R : Type*) [CommRing R] [Algebra R ℂ]
   add_mem' := by
     intro f g hf hg
     change HasCoeffsIn R ℂ (qExpansion h (f + g))
-    rw [ModularFormClass.qExpansion_add hh hΓ]
+    rw [ModularForm.qExpansion_add hh hΓ]
     simpa [ModularForm.coe_add] using hasCoeffsIn_add R ℂ hf hg
   smul_mem' := by
     intro r f hf
@@ -225,7 +225,7 @@ noncomputable def modularFormQExpansionLinearMap (R : Type*) [CommRing R] [Algeb
     apply Subtype.ext
     change qExpansion h (f + g) = qExpansion h f + qExpansion h g
     simpa [ModularForm.coe_add] using
-      (ModularFormClass.qExpansion_add hh hΓ (f : ModularForm Γ k) (g : ModularForm Γ k))
+      (ModularForm.qExpansion_add hh hΓ (f : ModularForm Γ k) (g : ModularForm Γ k))
   map_smul' r f := by
     apply Subtype.ext
     change qExpansion h (r • f) = r • qExpansion h f

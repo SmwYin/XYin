@@ -293,7 +293,7 @@ lemma aux1 : (coeToComplexPowerSeries.ringHom ℤ) (integralE4 ^ 3 - integralE6 
     have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
     simp [pow_three, pow_two, hf, hg]
   _ = qExpansion 1 ((E4.mul (E4.mul E4)) - (E6.mul E6)) := by
-    rw [ModularFormClass.qExpansion_sub (hh := by norm_num)
+    rw [ModularForm.qExpansion_sub (hh := by norm_num)
       (hΓ := by simp)]
   _ = _ := by
     have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
