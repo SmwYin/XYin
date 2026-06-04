@@ -118,7 +118,7 @@ def fundamentalUnitSystem : Set OKˣ := {fundamentalUnit}
 /-- A system of fundamental units for `𝓞 Kˣ` is the singleton `{θ² - 2}`. -/
 theorem fundamentalUnitSystem_eq :
     fundamentalUnitSystem = ({fundamentalUnit} : Set OKˣ) := by
-  sorry
+  rfl
 
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
@@ -148,27 +148,81 @@ theorem classGroupRepresentative (C : ClassGroup OK) :
 /-- The identity automorphism of `ℚ(∛3)`. -/
 noncomputable def idAut : K ≃ₐ[ℚ] K := AlgEquiv.refl
 
+/-- The generator `θ = ∛3` satisfies `θ³ = 3`. -/
+theorem cubeRootThree_cube : cubeRootThree ^ 3 = 3 := by
+  have h : (AdjoinRoot.mk cubePolynomial) (X ^ 3 - C 3) = 0 := AdjoinRoot.mk_self
+  simp only [map_sub, map_pow, AdjoinRoot.mk_X, map_ofNat] at h
+  linear_combination h
+
+/-- `K = ℚ(∛3)` contains no primitive cube root of unity, since `ℚ(ζ₃)` has degree `2 ∤ 3`. -/
+theorem no_primitive_cube_root (z : K) : z ^ 2 + z + 1 ≠ 0 := by
+  intro hz
+  have hz_int : IsIntegral ℚ z := Algebra.IsIntegral.isIntegral z
+  have hirr : Irreducible (X ^ 2 + X + 1 : ℚ[X]) := by
+    have h3 : (cyclotomic 3 ℚ) = X ^ 2 + X + 1 := by
+      rw [cyclotomic_prime]; simp [Finset.sum_range_succ]; ring
+    rw [← h3]; exact cyclotomic.irreducible_rat (by norm_num)
+  have hroot : (aeval z) (X ^ 2 + X + 1 : ℚ[X]) = 0 := by
+    simp only [map_add, map_pow, aeval_X, map_one]; exact hz
+  have heq : (X ^ 2 + X + 1 : ℚ[X]) = minpoly ℚ z :=
+    minpoly.eq_of_irreducible_of_monic hirr hroot (by monicity!)
+  have hdvd : (minpoly ℚ z).natDegree ∣ Module.finrank ℚ K := minpoly.degree_dvd hz_int
+  rw [← heq, degree_eq_three] at hdvd
+  have h2 : (X ^ 2 + X + 1 : ℚ[X]).natDegree = 2 := by compute_degree!
+  rw [h2] at hdvd; omega
+
+/-- The only cube root of `1` in `K` is `1`. -/
+theorem cube_root_one (w : K) (hw : w ^ 3 = 1) : w = 1 := by
+  have hfac : (w - 1) * (w ^ 2 + w + 1) = 0 := by linear_combination hw
+  rcases mul_eq_zero.mp hfac with h | h
+  · exact sub_eq_zero.mp h
+  · exact absurd h (no_primitive_cube_root w)
+
+/-- Every `ℚ`-automorphism of `K` fixes `θ`, hence equals the identity. -/
+theorem aut_eq_id (σ : K ≃ₐ[ℚ] K) : σ = idAut := by
+  have hθ3 : cubeRootThree ^ 3 = 3 := cubeRootThree_cube
+  have hθ0 : cubeRootThree ≠ 0 := by intro h; rw [h] at hθ3; norm_num at hθ3
+  have hσθ3 : (σ cubeRootThree) ^ 3 = 3 := by rw [← map_pow, hθ3, map_ofNat]
+  have hw3 : (σ cubeRootThree / cubeRootThree) ^ 3 = 1 := by rw [div_pow, hσθ3, hθ3]; field_simp
+  have hw1 : σ cubeRootThree / cubeRootThree = 1 := cube_root_one _ hw3
+  have key : σ cubeRootThree = cubeRootThree := by rw [div_eq_one_iff_eq hθ0] at hw1; exact hw1
+  have hAlg : σ.toAlgHom = idAut.toAlgHom := by
+    apply AdjoinRoot.algHom_ext
+    change σ cubeRootThree = idAut cubeRootThree
+    rw [key]; rfl
+  ext x
+  exact AlgHom.congr_fun hAlg x
+
 /-- The extension `ℚ(∛3)/ℚ` is not Galois. -/
 theorem not_isGalois : ¬ IsGalois ℚ K := by
-  sorry
+  intro h
+  have hcard : Nat.card (K ≃ₐ[ℚ] K) = Module.finrank ℚ K := IsGalois.card_aut_eq_finrank ℚ K
+  rw [degree_eq_three] at hcard
+  have huniq : Subsingleton (K ≃ₐ[ℚ] K) :=
+    ⟨fun a b => by rw [aut_eq_id a, aut_eq_id b]⟩
+  have h1 : Nat.card (K ≃ₐ[ℚ] K) = 1 := by
+    rw [Nat.card_eq_one_iff_unique]; exact ⟨huniq, ⟨idAut⟩⟩
+  omega
 
 /-- The `ℚ`-automorphism group of `ℚ(∛3)` is trivial. -/
 theorem galoisGroupStructure : Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (ZMod 1)) := by
-  sorry
+  haveI : Unique (K ≃ₐ[ℚ] K) := ⟨⟨idAut⟩, fun a => aut_eq_id a⟩
+  exact ⟨MulEquiv.ofUnique⟩
 
 /-- The identity automorphism sends `θ = ∛3` to itself. -/
 theorem idAut_apply_cubeRootThree : idAut cubeRootThree = cubeRootThree := by
   rfl
 
 /-- Every `ℚ`-automorphism of `ℚ(∛3)` is the identity. -/
-theorem automorphism_eq_id (σ : K ≃ₐ[ℚ] K) : σ = idAut := by
-  sorry
+theorem automorphism_eq_id (σ : K ≃ₐ[ℚ] K) : σ = idAut := aut_eq_id σ
 
 /-- The identity automorphism is the unique element of the automorphism group. -/
 def galoisGroupElements : Set (K ≃ₐ[ℚ] K) := {idAut}
 
 /-- The automorphism group consists exactly of the identity. -/
 theorem galoisGroupElements_eq_univ : Set.univ = galoisGroupElements := by
-  sorry
+  ext σ
+  simp only [Set.mem_univ, galoisGroupElements, Set.mem_singleton_iff, true_iff]
+  exact automorphism_eq_id σ
 
 end XYin.NumberField.New.CubeRootThree
