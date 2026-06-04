@@ -98,11 +98,24 @@ def torsionUnits : Set OKˣ := {u | ∃ k : Fin 2, u = torsionGenerator ^ k.val}
 
 /-- The torsion subgroup of `𝓞 Kˣ` is exactly `{1, -1}`. -/
 theorem torsionUnits_eq : {u : OKˣ | IsOfFinOrder u} = torsionUnits := by
-  sorry
+  have hodd : Odd (Module.finrank ℚ K) := by rw [degree_eq_three]; decide
+  ext u
+  simp only [Set.mem_setOf_eq, torsionUnits]
+  constructor
+  · intro hu
+    have hmem : u ∈ NumberField.Units.torsion K := (CommGroup.mem_torsion _).mpr hu
+    rcases NumberField.Units.torsion_eq_one_or_neg_one_of_odd_finrank hodd ⟨u, hmem⟩ with h | h
+    · exact ⟨0, by simpa using h⟩
+    · exact ⟨1, by simpa using h⟩
+  · rintro ⟨k, rfl⟩
+    have hgen : IsOfFinOrder (torsionGenerator) := by
+      rw [isOfFinOrder_iff_pow_eq_one]; exact ⟨2, by norm_num, by rw [neg_one_sq]⟩
+    exact hgen.pow
 
 /-- The torsion subgroup of `𝓞 Kˣ` has order `2`. -/
 theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2 := by
-  sorry
+  apply NumberField.Units.torsionOrder_eq_two_of_odd_finrank
+  rw [degree_eq_three]; decide
 
 /-- The Dirichlet unit rank of `ℚ(∛3)` is `1`. -/
 theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
