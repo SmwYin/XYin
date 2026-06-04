@@ -53,7 +53,10 @@ abbrev OK : Type := 𝓞 K
 
 /-- The extension degree of `K = ℚ(∛3)` over `ℚ` is `3`. -/
 theorem degree_eq_three : Module.finrank ℚ K = 3 := by
-  sorry
+  have hf : cubePolynomial ≠ 0 := by
+    intro h; simpa using congrArg natDegree h
+  rw [(AdjoinRoot.powerBasis hf).finrank, AdjoinRoot.powerBasis_dim hf]
+  exact natDegree_X_pow_sub_C
 
 /-! ## 2. Integral Basis -/
 
@@ -155,7 +158,7 @@ theorem galoisGroupStructure : Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (
 
 /-- The identity automorphism sends `θ = ∛3` to itself. -/
 theorem idAut_apply_cubeRootThree : idAut cubeRootThree = cubeRootThree := by
-  sorry
+  rfl
 
 /-- Every `ℚ`-automorphism of `ℚ(∛3)` is the identity. -/
 theorem automorphism_eq_id (σ : K ≃ₐ[ℚ] K) : σ = idAut := by
