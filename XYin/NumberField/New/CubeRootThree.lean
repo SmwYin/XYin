@@ -58,6 +58,12 @@ theorem degree_eq_three : Module.finrank ℚ K = 3 := by
   rw [(AdjoinRoot.powerBasis hf).finrank, AdjoinRoot.powerBasis_dim hf]
   exact natDegree_X_pow_sub_C
 
+/-- The generator `θ = ∛3` satisfies `θ³ = 3`. -/
+theorem cubeRootThree_cube : cubeRootThree ^ 3 = 3 := by
+  have h : (AdjoinRoot.mk cubePolynomial) (X ^ 3 - C 3) = 0 := AdjoinRoot.mk_self
+  simp only [map_sub, map_pow, AdjoinRoot.mk_X, map_ofNat] at h
+  linear_combination h
+
 /-! ## 2. Integral Basis -/
 
 /-- The concrete integral-basis vectors `1, θ, θ²`, where `θ = ∛3`. -/
@@ -121,9 +127,31 @@ theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2 := by
 theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
   sorry
 
-/-- A fundamental unit of `𝓞 K`, mathematically `θ² - 2`. -/
-noncomputable def fundamentalUnit : OKˣ := by
-  sorry
+/-- The generator `θ = ∛3` is integral over `ℤ`, hence lies in `𝓞 K`. -/
+theorem cubeRootThree_integral : cubeRootThree ∈ integralClosure ℤ K := by
+  have h : IsIntegral ℤ cubeRootThree := by
+    refine ⟨X ^ 3 - C 3, by monicity!, ?_⟩
+    simp only [eval₂_sub, eval₂_pow, eval₂_X, eval₂_C]
+    rw [cubeRootThree_cube]; simp
+  exact h
+
+/-- `θ = ∛3` as an element of the ring of integers `𝓞 K`. -/
+noncomputable def thetaInt : OK := ⟨cubeRootThree, cubeRootThree_integral⟩
+
+/-- The integral generator also satisfies `θ³ = 3` in `𝓞 K`. -/
+theorem thetaInt_cube : thetaInt ^ 3 = 3 := by
+  have ht : (algebraMap OK K) thetaInt = cubeRootThree :=
+    NumberField.RingOfIntegers.map_mk cubeRootThree cubeRootThree_integral
+  have : (algebraMap OK K) (thetaInt ^ 3) = (algebraMap OK K) 3 := by
+    rw [map_pow, map_ofNat, ht, cubeRootThree_cube]
+  exact FaithfulSMul.algebraMap_injective OK K this
+
+/-- A fundamental unit of `𝓞 K`, mathematically `θ² - 2`, with inverse `2θ² + 3θ + 4`. -/
+noncomputable def fundamentalUnit : OKˣ where
+  val := thetaInt ^ 2 - 2
+  inv := 2 * thetaInt ^ 2 + 3 * thetaInt + 4
+  val_inv := by have h := thetaInt_cube; linear_combination (2 * thetaInt + 3) * h
+  inv_val := by have h := thetaInt_cube; linear_combination (2 * thetaInt + 3) * h
 
 /-- The displayed singleton `{θ² - 2}` is a system of fundamental units. -/
 def fundamentalUnitSystem : Set OKˣ := {fundamentalUnit}
@@ -160,12 +188,6 @@ theorem classGroupRepresentative (C : ClassGroup OK) :
 
 /-- The identity automorphism of `ℚ(∛3)`. -/
 noncomputable def idAut : K ≃ₐ[ℚ] K := AlgEquiv.refl
-
-/-- The generator `θ = ∛3` satisfies `θ³ = 3`. -/
-theorem cubeRootThree_cube : cubeRootThree ^ 3 = 3 := by
-  have h : (AdjoinRoot.mk cubePolynomial) (X ^ 3 - C 3) = 0 := AdjoinRoot.mk_self
-  simp only [map_sub, map_pow, AdjoinRoot.mk_X, map_ofNat] at h
-  linear_combination h
 
 /-- `K = ℚ(∛3)` contains no primitive cube root of unity, since `ℚ(ζ₃)` has degree `2 ∤ 3`. -/
 theorem no_primitive_cube_root (z : K) : z ^ 2 + z + 1 ≠ 0 := by
