@@ -123,9 +123,54 @@ theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2 := by
   apply NumberField.Units.torsionOrder_eq_two_of_odd_finrank
   rw [degree_eq_three]; decide
 
+/-- `ℚ(∛3)` is not totally real: `θ = ∛3` has a non-real conjugate (`∛3 · ζ₃`), giving a
+non-real complex embedding. -/
+theorem not_totallyReal : ¬ NumberField.IsTotallyReal K := by
+  intro h
+  obtain ⟨c, hc3, hcim⟩ : ∃ c : ℂ, c ^ 3 = 3 ∧ c.im ≠ 0 := by
+    obtain ⟨ζ, hζ⟩ : ∃ ζ : ℂ, IsPrimitiveRoot ζ 3 :=
+      ⟨_, Complex.isPrimitiveRoot_exp 3 (by norm_num)⟩
+    have hζ3 : ζ ^ 3 = 1 := hζ.pow_eq_one
+    have hζ1 : ζ ≠ 1 := hζ.ne_one (by norm_num)
+    have hquad : ζ ^ 2 + ζ + 1 = 0 := by
+      have hfac : (ζ - 1) * (ζ ^ 2 + ζ + 1) = 0 := by linear_combination hζ3
+      rcases mul_eq_zero.mp hfac with hh | hh
+      · exact absurd (sub_eq_zero.mp hh) hζ1
+      · exact hh
+    have hζim : ζ.im ≠ 0 := by
+      intro him
+      have hre : (ζ ^ 2 + ζ + 1).re = 0 := by rw [hquad]; simp
+      rw [sq] at hre
+      simp only [Complex.add_re, Complex.mul_re, Complex.one_re, him, mul_zero, sub_zero] at hre
+      nlinarith [hre, sq_nonneg ζ.re]
+    obtain ⟨c0, hc0⟩ := IsAlgClosed.exists_pow_nat_eq (3 : ℂ) (n := 3) (by norm_num)
+    have hc0ne : c0 ≠ 0 := by intro hh; rw [hh] at hc0; norm_num at hc0
+    by_cases hc0im : c0.im = 0
+    · refine ⟨c0 * ζ, by rw [mul_pow, hc0, hζ3]; ring, ?_⟩
+      rw [Complex.mul_im, hc0im, zero_mul, add_zero]
+      exact mul_ne_zero (fun hh => hc0ne (Complex.ext hh hc0im)) hζim
+    · exact ⟨c0, hc0, hc0im⟩
+  have hroot : eval₂ (algebraMap ℚ ℂ) c cubePolynomial = 0 := by
+    simp only [cubePolynomial, eval₂_sub, eval₂_pow, eval₂_X, map_ofNat]
+    rw [hc3]; norm_num
+  let φ : K →+* ℂ := AdjoinRoot.lift (algebraMap ℚ ℂ) c hroot
+  have hφ : φ cubeRootThree = c := AdjoinRoot.lift_root hroot
+  have hreal : NumberField.ComplexEmbedding.IsReal φ := h.complexEmbedding_isReal φ
+  rw [NumberField.ComplexEmbedding.isReal_iff] at hreal
+  have hpt := RingHom.congr_fun hreal cubeRootThree
+  rw [NumberField.ComplexEmbedding.conjugate_coe_eq, hφ] at hpt
+  exact hcim (Complex.conj_eq_iff_im.mp hpt)
+
 /-- The Dirichlet unit rank of `ℚ(∛3)` is `1`. -/
 theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
-  sorry
+  have hsig : NumberField.InfinitePlace.nrRealPlaces K +
+      2 * NumberField.InfinitePlace.nrComplexPlaces K = 3 := by
+    rw [← degree_eq_three]; exact NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
+  have hcomplex : NumberField.InfinitePlace.nrComplexPlaces K ≠ 0 := by
+    rw [Ne, NumberField.nrComplexPlaces_eq_zero_iff]; exact not_totallyReal
+  have hcard : Fintype.card (NumberField.InfinitePlace K) = 2 := by
+    rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces]; omega
+  rw [NumberField.Units.rank, hcard]
 
 /-- The generator `θ = ∛3` is integral over `ℤ`, hence lies in `𝓞 K`. -/
 theorem cubeRootThree_integral : cubeRootThree ∈ integralClosure ℤ K := by
