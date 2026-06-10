@@ -1040,10 +1040,6 @@ theorem galoisGroupStructure : Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (
 `ℚ(∛3, ζ₃)`. -/
 abbrev galoisClosure : Type := cubePolynomial.SplittingField
 
-/-- The Galois closure `ℚ(∛3, ζ₃)` has degree `6 = [ℚ(∛3) : ℚ] · [ℚ(ζ₃) : ℚ]` over `ℚ`. -/
-theorem finrank_galoisClosure : Module.finrank ℚ galoisClosure = 6 := by
-  sorry
-
 /-- The splitting field of `X³ - 3` is Galois over `ℚ` (normal, and separable in
 characteristic zero). -/
 theorem isGalois_galoisClosure : IsGalois ℚ galoisClosure := by
@@ -1064,9 +1060,50 @@ theorem nonempty_algHom_galoisClosure : Nonempty (K →ₐ[ℚ] galoisClosure) :
   exact hx
 
 /-- The Galois group of the closure `ℚ(∛3, ζ₃)/ℚ` is the full symmetric group `S₃`, acting by
-permuting the three cube roots of `3`. -/
+permuting the three cube roots of `3`: `X³ - 3` is irreducible of prime degree with exactly
+two non-real roots. -/
 theorem galoisClosureGroupStructure :
     Nonempty ((galoisClosure ≃ₐ[ℚ] galoisClosure) ≃* Equiv.Perm (Fin 3)) := by
-  sorry
+  have hf : cubePolynomial ≠ 0 := by intro h; simpa using congrArg natDegree h
+  have p_irr : Irreducible cubePolynomial := Fact.out
+  have p_deg : cubePolynomial.natDegree.Prime := by
+    rw [natDegree_X_pow_sub_C]
+    exact Nat.prime_three
+  have hC : Fintype.card (cubePolynomial.rootSet ℂ) = 3 := by
+    rw [Polynomial.card_rootSet_eq_natDegree p_irr.separable (IsAlgClosed.splits _)]
+    exact natDegree_X_pow_sub_C
+  have hr3 : ((3 : ℝ) ^ ((1 : ℝ) / 3)) ^ (3 : ℕ) = 3 := by
+    rw [← Real.rpow_natCast ((3 : ℝ) ^ ((1 : ℝ) / 3)) 3,
+      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 3)]
+    norm_num
+  have haev : ∀ x : ℝ, (Polynomial.aeval x) cubePolynomial = x ^ 3 - 3 := by
+    intro x; simp [cubePolynomial]
+  have hR : Fintype.card (cubePolynomial.rootSet ℝ) = 1 := by
+    rw [Fintype.card_eq_one_iff]
+    refine ⟨⟨(3 : ℝ) ^ ((1 : ℝ) / 3), ?_⟩, ?_⟩
+    · rw [Polynomial.mem_rootSet]
+      exact ⟨hf, by rw [haev, hr3]; ring⟩
+    · rintro ⟨y, hy⟩
+      rw [Polynomial.mem_rootSet, haev] at hy
+      have hy3 : y ^ (3 : ℕ) = ((3 : ℝ) ^ ((1 : ℝ) / 3)) ^ (3 : ℕ) := by
+        rw [hr3]
+        have := hy.2
+        nlinarith [hy.2]
+      have hinj := (Odd.strictMono_pow (R := ℝ) (by norm_num : Odd 3)).injective
+      exact Subtype.ext (hinj hy3)
+  have hroots : Fintype.card (cubePolynomial.rootSet ℂ) =
+      Fintype.card (cubePolynomial.rootSet ℝ) + 2 := by rw [hC, hR]
+  have hbij := Polynomial.Gal.galActionHom_bijective_of_prime_degree p_irr p_deg hroots
+  exact ⟨(MulEquiv.ofBijective _ hbij).trans (Fintype.equivFinOfCardEq hC).permCongrHom⟩
+
+/-- The Galois closure `ℚ(∛3, ζ₃)` has degree `6 = |S₃| = [ℚ(∛3) : ℚ] · [ℚ(ζ₃) : ℚ]` over
+`ℚ`: the closure is Galois, so its degree is the order of its Galois group. -/
+theorem finrank_galoisClosure : Module.finrank ℚ galoisClosure = 6 := by
+  haveI : IsGalois ℚ galoisClosure := isGalois_galoisClosure
+  obtain ⟨e⟩ := galoisClosureGroupStructure
+  have hcard := IsGalois.card_aut_eq_finrank ℚ galoisClosure
+  rw [← hcard, Nat.card_congr e.toEquiv, Nat.card_eq_fintype_card]
+  simp [Fintype.card_perm]
+  rfl
 
 end XYin.NumberField.New.CubeRootThree
