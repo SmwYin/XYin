@@ -552,6 +552,19 @@ theorem isPrime_span_theta : (Ideal.span {thetaInt}).IsPrime := by
   rw [absNorm_span_theta]
   exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
 
+/-- Any prime of `𝓞 K` containing `3` equals `(θ)`: the prime above `3` is unique. -/
+theorem eq_span_theta_of_three_mem (P : Ideal (𝓞 K)) (hP : P.IsPrime) (h3 : (3 : 𝓞 K) ∈ P) :
+    P = Ideal.span {thetaInt} := by
+  have hθ : thetaInt ∈ P := hP.mem_of_pow_mem 3 (by rw [thetaInt_cube]; exact h3)
+  have hle : Ideal.span {thetaInt} ≤ P := by
+    rw [Ideal.span_le, Set.singleton_subset_iff]; exact hθ
+  have hbot : Ideal.span {thetaInt} ≠ ⊥ := by
+    intro h
+    have h3' := absNorm_span_theta
+    rw [h, Ideal.absNorm_bot] at h3'
+    norm_num at h3'
+  exact ((isPrime_span_theta.isMaximal hbot).eq_of_le hP.ne_top hle).symm
+
 /-- The elementary identity `2 = (θ - 1)(θ² + θ + 1)` in `ℤ[θ]`, from `θ³ = 3`. -/
 theorem two_eq_mul : (2 : 𝓞 K) = (thetaInt - 1) * (thetaInt ^ 2 + thetaInt + 1) := by
   linear_combination -thetaInt_cube
@@ -707,6 +720,15 @@ theorem not_totallyReal : ¬ NumberField.IsTotallyReal K := by
   have hpt := RingHom.congr_fun hreal cubeRootThree
   rw [NumberField.ComplexEmbedding.conjugate_coe_eq, hφ] at hpt
   exact hcim (Complex.conj_eq_iff_im.mp hpt)
+
+/-- `ℚ(∛3)` has exactly one complex place: the signature is `(r₁, r₂) = (1, 1)`. -/
+theorem nrComplexPlaces_eq_one : NumberField.InfinitePlace.nrComplexPlaces K = 1 := by
+  have hsig : NumberField.InfinitePlace.nrRealPlaces K +
+      2 * NumberField.InfinitePlace.nrComplexPlaces K = 3 := by
+    rw [← degree_eq_three]; exact NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
+  have hcomplex : NumberField.InfinitePlace.nrComplexPlaces K ≠ 0 := by
+    rw [Ne, NumberField.nrComplexPlaces_eq_zero_iff]; exact not_totallyReal
+  omega
 
 /-- The Dirichlet unit rank of `ℚ(∛3)` is `1`: the signature is `(r₁, r₂) = (1, 1)`, so the
 rank is `r₁ + r₂ - 1 = 1`. -/
