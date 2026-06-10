@@ -122,8 +122,7 @@ noncomputable def concreteIntegralBasis : Basis (Fin 4) ℤ (𝓞 K) :=
 theorem concreteIntegralBasis_apply (i : Fin 4) :
     (algebraMap (𝓞 K) K) (concreteIntegralBasis i) = integralBasisVectors i := by
   fin_cases i <;>
-    simp [concreteIntegralBasis, integralBasisVectors, PowerBasis.basis_eq_pow,
-      zeta_isPrimitiveRoot.integralPowerBasis_gen, IsPrimitiveRoot.toInteger]
+    simp [concreteIntegralBasis, integralBasisVectors, IsPrimitiveRoot.toInteger]
 
 /-- The displayed integral basis spans the same `ℤ`-lattice in `K` as mathlib's
 `NumberField.integralBasis K` (the correct form of "the two integral bases agree": equality
@@ -254,7 +253,7 @@ private theorem prod_aut_apply (x : K) :
     rcases autEq' σ with h | h | h | h <;> simp [h]
   rw [huniv, Finset.prod_insert (by simp [h1, h2, h3]), Finset.prod_insert (by simp [h4, h5]),
     Finset.prod_pair h6]
-  show x * (sig3 x * (sig5 x * sig7 x)) = _
+  change x * (sig3 x * (sig5 x * sig7 x)) = _
   ring
 
 /-- Computing integral norms via the four Galois conjugates. -/
@@ -540,7 +539,7 @@ private theorem absNorm_span_g2 :
   have hn : Algebra.norm ℤ (zetaInt ^ 2 - zetaInt - 1) = 9 := by
     apply intNorm_eq
     have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 - zetaInt - 1) = ζ ^ 2 - ζ - 1 := by
-      simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+      simp [map_sub, map_pow, map_one, coe_zetaInt]
     rw [e0]
     have e3 : sig3 (ζ ^ 2 - ζ - 1) = -ζ ^ 3 - ζ ^ 2 - 1 := by
       rw [map_sub, map_sub, map_pow, map_one, sig3_zeta]
@@ -712,7 +711,7 @@ theorem no_inert_prime (p : ℕ) (hp : p.Prime) :
       · exfalso
         have h10 : ((1 : ℕ) : (𝓞 K) ⧸ P) = 0 :=
           (ringChar.spec ((𝓞 K) ⧸ P) 1).mpr (h1 ▸ dvd_refl _)
-        simpa using h10
+        simp at h10
       · rw [← h1]
         exact ringChar.charP _
     have hz8 : (Ideal.Quotient.mk P zetaInt) ^ 8 = 1 := by
@@ -755,7 +754,7 @@ theorem no_inert_prime (p : ℕ) (hp : p.Prime) :
     have hsub : (Finset.univ : Finset ((𝓞 K) ⧸ P)) ⊆ g.roots.toFinset := by
       intro x _
       rw [Multiset.mem_toFinset, Polynomial.mem_roots hgne]
-      show g.eval x = 0
+      change g.eval x = 0
       rw [hgdef]
       simp [hfrob x]
     have hcontr : p ^ 4 ≤ p ^ 2 := by
@@ -1346,7 +1345,8 @@ theorem galoisGroup_klein :
         Monoid.exponent_dvd_of_forall_pow_eq_one (by decide)
       have h2 :
           (2 : ℕ) ∣ Monoid.exponent (Multiplicative (ZMod 2) × Multiplicative (ZMod 2)) := by
-        have ho : orderOf ((Multiplicative.ofAdd (1 : ZMod 2)), (1 : Multiplicative (ZMod 2))) = 2 :=
+        have ho :
+            orderOf ((Multiplicative.ofAdd (1 : ZMod 2)), (1 : Multiplicative (ZMod 2))) = 2 :=
           orderOf_eq_prime (by decide) (by decide)
         have hd := Monoid.order_dvd_exponent
           ((Multiplicative.ofAdd (1 : ZMod 2)), (1 : Multiplicative (ZMod 2)))
