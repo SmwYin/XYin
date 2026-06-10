@@ -218,7 +218,16 @@ theorem isUnit_iff_normForm (x y z : ℤ) :
     IsUnit (x • (1 : 𝓞 K) + y • thetaInt + z • thetaInt ^ 2) ↔
       x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z = 1 ∨
         x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z = -1 := by
-  sorry
+  rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm,
+    ← Algebra.coe_norm_int, intNorm_eq_normForm]
+  constructor
+  · intro h
+    have h' : |x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z| = 1 := by exact_mod_cast h
+    exact (abs_eq (by norm_num)).mp h'
+  · intro h
+    have h' : |x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z| = 1 :=
+      (abs_eq (by norm_num)).mpr h
+    exact_mod_cast h'
 
 /-! ## 5. Splitting of primes -/
 
@@ -227,13 +236,18 @@ Together with `isPrime_span_theta` this gives ramification index `e = 3`. -/
 theorem span_three_eq : Ideal.span {(3 : 𝓞 K)} = Ideal.span {thetaInt} ^ 3 := by
   rw [Ideal.span_singleton_pow, thetaInt_cube]
 
-/-- `(θ)` is a prime ideal — the unique prime of `𝓞 K` above `3`. -/
-theorem isPrime_span_theta : (Ideal.span {thetaInt}).IsPrime := by
-  sorry
-
 /-- The prime `(θ)` above `3` has norm `3` (residue degree `f = 1`). -/
 theorem absNorm_span_theta : Ideal.absNorm (Ideal.span {thetaInt}) = 3 := by
-  sorry
+  have h := intNorm_eq_normForm 0 1 0
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- `(θ)` is a prime ideal — the unique prime of `𝓞 K` above `3`. -/
+theorem isPrime_span_theta : (Ideal.span {thetaInt}).IsPrime := by
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_span_theta]
+  exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
 
 /-- The elementary identity `2 = (θ - 1)(θ² + θ + 1)` in `ℤ[θ]`, from `θ³ = 3`. -/
 theorem two_eq_mul : (2 : 𝓞 K) = (thetaInt - 1) * (thetaInt ^ 2 + thetaInt + 1) := by
@@ -246,13 +260,21 @@ theorem span_two_eq :
       Ideal.span {thetaInt - 1} * Ideal.span {thetaInt ^ 2 + thetaInt + 1} := by
   rw [Ideal.span_singleton_mul_span_singleton, ← two_eq_mul]
 
-/-- `(θ - 1)` is a prime ideal — the degree-`1` prime of `𝓞 K` above `2`. -/
-theorem isPrime_span_theta_sub_one : (Ideal.span {thetaInt - 1}).IsPrime := by
-  sorry
-
 /-- The prime `(θ - 1)` above `2` has norm `2` (residue degree `f = 1`). -/
 theorem absNorm_span_theta_sub_one : Ideal.absNorm (Ideal.span {thetaInt - 1}) = 2 := by
-  sorry
+  have h := intNorm_eq_normForm (-1) 1 0
+  have he : (-1 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • thetaInt + (0 : ℤ) • thetaInt ^ 2 =
+      thetaInt - 1 := by ring
+  rw [he] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- `(θ - 1)` is a prime ideal — the degree-`1` prime of `𝓞 K` above `2`. -/
+theorem isPrime_span_theta_sub_one : (Ideal.span {thetaInt - 1}).IsPrime := by
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_span_theta_sub_one]
+  exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
 
 /-- `(θ² + θ + 1)` is a prime ideal — the degree-`2` prime of `𝓞 K` above `2`. -/
 theorem isPrime_span_theta_sq_add_theta_add_one :
@@ -262,7 +284,13 @@ theorem isPrime_span_theta_sq_add_theta_add_one :
 /-- The prime `(θ² + θ + 1)` above `2` has norm `4` (residue degree `f = 2`). -/
 theorem absNorm_span_theta_sq_add_theta_add_one :
     Ideal.absNorm (Ideal.span {thetaInt ^ 2 + thetaInt + 1}) = 4 := by
-  sorry
+  have h := intNorm_eq_normForm 1 1 1
+  have he : (1 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • thetaInt + (1 : ℤ) • thetaInt ^ 2 =
+      thetaInt ^ 2 + thetaInt + 1 := by ring
+  rw [he] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
 
 /-- `7` is inert in `ℚ(∛3)`: `X³ - 3` is irreducible mod `7`, since the nonzero cubes mod `7`
 are `{1, 6}` and `3` is not among them. -/
@@ -271,7 +299,13 @@ theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime := by
 
 /-- The prime `(7)` is inert with norm `7³` (residue degree `f = 3`). -/
 theorem absNorm_span_seven : Ideal.absNorm (Ideal.span {(7 : 𝓞 K)}) = 343 := by
-  sorry
+  have h := intNorm_eq_normForm 7 0 0
+  have he : (7 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt + (0 : ℤ) • thetaInt ^ 2 =
+      (7 : 𝓞 K) := by ring
+  rw [he] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
 
 /-- The prime `(61, θ - r)` of `𝓞 K` above `61`, for `r` a cube root of `3` mod `61`. The
 roots of `X³ - 3` mod `61` are `4`, `5` and `52`. -/
