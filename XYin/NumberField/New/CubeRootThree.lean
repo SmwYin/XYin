@@ -1190,7 +1190,70 @@ theorem eq_one_or_neg_one_of_mem_torsion {ζ : (𝓞 K)ˣ}
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
     Nonempty ((𝓞 K)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))) := by
-  sorry
+  set i₀ : Fin (NumberField.Units.rank K) :=
+    ⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩ with hi₀
+  set η : (𝓞 K)ˣ := NumberField.Units.fundSystem K i₀ with hη
+  have hpow : ∀ k : ℕ, ((-1 : (𝓞 K)ˣ)) ^ k = (-1) ^ (k % 2) := by
+    intro k
+    conv_lhs => rw [← Nat.div_add_mod k 2]
+    rw [pow_add, pow_mul, neg_one_sq, one_pow, one_mul]
+  have hsign : ∀ a b : ZMod 2,
+      ((-1 : (𝓞 K)ˣ) ^ (a + b).val) = (-1) ^ a.val * (-1) ^ b.val := by
+    intro a b
+    calc ((-1 : (𝓞 K)ˣ) ^ (a + b).val) = (-1) ^ ((a + b).val % 2) := hpow _
+      _ = (-1) ^ ((a.val + b.val) % 2) := by
+          rw [ZMod.val_add, Nat.mod_mod_of_dvd _ (dvd_refl 2)]
+      _ = (-1) ^ (a.val + b.val) := (hpow _).symm
+      _ = (-1) ^ a.val * (-1) ^ b.val := pow_add _ _ _
+  let ψ₁ : Multiplicative (ZMod 2) →* (𝓞 K)ˣ :=
+    MonoidHom.mk' (fun a => (-1 : (𝓞 K)ˣ) ^ (Multiplicative.toAdd a).val)
+      (fun a b => hsign (Multiplicative.toAdd a) (Multiplicative.toAdd b))
+  let ψ₂ : Multiplicative (Fin 1 → ℤ) →* (𝓞 K)ˣ :=
+    MonoidHom.mk' (fun f => η ^ (Multiplicative.toAdd f 0))
+      (fun f g => by
+        show η ^ ((Multiplicative.toAdd f + Multiplicative.toAdd g) 0) = _
+        rw [Pi.add_apply, zpow_add])
+  let ψ : Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ) →* (𝓞 K)ˣ := ψ₁.coprod ψ₂
+  have hneg_tor : (-1 : (𝓞 K)ˣ) ∈ NumberField.Units.torsion K :=
+    (CommGroup.mem_torsion _).mpr (by
+      rw [isOfFinOrder_iff_pow_eq_one]; exact ⟨2, by norm_num, by rw [neg_one_sq]⟩)
+  have hbij : Function.Bijective ψ := by
+    constructor
+    · rw [injective_iff_map_eq_one]
+      rintro ⟨a, f⟩ h
+      have h' : (-1 : (𝓞 K)ˣ) ^ ((Multiplicative.toAdd a).val) *
+          η ^ (Multiplicative.toAdd f 0) = 1 := h
+      have htor : η ^ (Multiplicative.toAdd f 0) ∈ NumberField.Units.torsion K := by
+        have heq : η ^ (Multiplicative.toAdd f 0) =
+            ((-1 : (𝓞 K)ˣ) ^ ((Multiplicative.toAdd a).val))⁻¹ :=
+          (mul_eq_one_iff_inv_eq.mp h').symm
+        rw [heq]
+        exact Subgroup.inv_mem _ (Subgroup.pow_mem _ hneg_tor _)
+      have hn0 : Multiplicative.toAdd f 0 = 0 := fundSystem_zpow_mem_torsion i₀ _ htor
+      rw [hn0, zpow_zero, mul_one] at h'
+      have ha : Multiplicative.toAdd a = 0 := by
+        rcases (show ∀ x : ZMod 2, x = 0 ∨ x = 1 by decide) (Multiplicative.toAdd a) with
+          hx | hx
+        · exact hx
+        · exfalso
+          rw [hx, show ((1 : ZMod 2)).val = 1 from rfl, pow_one] at h'
+          have hcoe : (-1 : 𝓞 K) = 1 := congrArg Units.val h'
+          norm_num at hcoe
+      refine Prod.ext ?_ ?_
+      · exact Multiplicative.toAdd.injective ha
+      · refine Multiplicative.toAdd.injective (funext fun i => ?_)
+        rw [Subsingleton.elim i 0]
+        exact hn0
+    · intro u
+      obtain ⟨ζ, hζ, n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
+      rcases eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
+      · refine ⟨(Multiplicative.ofAdd (0 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+        show (-1 : (𝓞 K)ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
+        rw [show ((0 : ZMod 2)).val = 0 from rfl, pow_zero, hu, one_mul]
+      · refine ⟨(Multiplicative.ofAdd (1 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+        show (-1 : (𝓞 K)ˣ) ^ ((1 : ZMod 2)).val * η ^ n = u
+        rw [show ((1 : ZMod 2)).val = 1 from rfl, pow_one, hu]
+  exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
 /-- The regulator of `ℚ(∛3)` is `|log(∛9 - 2)| = log(2∛9 + 3∛3 + 4) ≈ 2.5246`, the covolume
 of the unit lattice. This is the analytic restatement that `θ² - 2` is a fundamental unit:
