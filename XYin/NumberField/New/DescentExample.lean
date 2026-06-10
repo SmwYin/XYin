@@ -29,13 +29,9 @@ theorem DiophantineEquationExample (x y : ℤ) (h : x ^ 3 = y ^ 2 + 1) : x = 1 �
     have a4 : a ≤ 1 := by nlinarith [sq_nonneg (a - 1), sq_nonneg b]
     have b3 : -1 ≤ b := by nlinarith [sq_nonneg (b + 1), sq_nonneg a]
     have b4 : b ≤ 1 := by nlinarith [sq_nonneg (b - 1), sq_nonneg a]
-    interval_cases a <;> interval_cases b <;>
-      first
-        | (exfalso; revert h1; decide)
-        | exact ⟨1, by decide⟩
-        | exact ⟨-1, by decide⟩
-        | exact ⟨⟨0, -1⟩, by decide⟩
-        | exact ⟨⟨0, 1⟩, by decide⟩
+    -- `u⁴ = 1` for every unit `u`, so `u³` is always a cube root of `u`.
+    refine ⟨⟨a, b⟩ ^ 3, ?_⟩
+    interval_cases a <;> interval_cases b <;> revert h1 <;> decide
   -- Work in `ℤ[i]`, writing `i = ⟨0, 1⟩` and coercing `x`, `y`.
   set i : GaussianInt := ⟨0, 1⟩ with hi
   set X : GaussianInt := (x : GaussianInt) with hX
@@ -47,19 +43,13 @@ theorem DiophantineEquationExample (x y : ℤ) (h : x ^ 3 = y ^ 2 + 1) : x = 1 �
     rw [e1, hX, hY]; exact_mod_cast h.symm
   -- `x` is odd: otherwise `y² ≡ -1 (mod 4)`, impossible.
   have hxodd : Odd x := by
-    rcases Int.even_or_odd x with hev | hod
+    rcases Int.even_or_odd x with ⟨k, hk⟩ | hod
     · exfalso
-      obtain ⟨k, hk⟩ := hev
       have hc : ((x : ZMod 4)) ^ 3 = ((y : ZMod 4)) ^ 2 + 1 := by
         exact_mod_cast congrArg (fun z : ℤ => (z : ZMod 4)) h
-      have hx0 : ((x : ZMod 4)) ^ 3 = 0 := by
-        rw [hk]; push_cast
-        have e8 : ((k : ZMod 4) + k) ^ 3 = 8 * (k : ZMod 4) ^ 3 := by ring
-        rw [e8, show (8 : ZMod 4) = 0 from by decide, zero_mul]
-      rw [hx0] at hc
-      have hy2 : ((y : ZMod 4)) ^ 2 = -1 := by linear_combination -hc
-      have hz : ∀ z : ZMod 4, z ^ 2 ≠ -1 := by decide
-      exact hz _ hy2
+      rw [hk] at hc
+      push_cast at hc
+      exact (by decide : ∀ u v : ZMod 4, (u + u) ^ 3 ≠ v ^ 2 + 1) _ _ hc
     · exact hod
   -- Hence `2` and `x³` are coprime in `ℤ`.
   have hcop2 : IsCoprime (2 : ℤ) (x ^ 3) := by
@@ -86,18 +76,12 @@ theorem DiophantineEquationExample (x y : ℤ) (h : x ^ 3 = y ^ 2 + 1) : x = 1 �
       ∃ a b : ℤ, y = a ^ 3 - 3 * a * b ^ 2 ∧ 1 = 3 * a ^ 2 * b - b ^ 3 := by
     set e' := d * e with he'
     refine ⟨e'.re, e'.im, ?_, ?_⟩
-    · have hre : (Y + i).re = y := by rw [hY, hi]; simp
-      rw [he] at hre
-      have hcube : (e' ^ 3).re = e'.re ^ 3 - 3 * e'.re * e'.im ^ 2 := by
-        have h3 : e' ^ 3 = e' * e' * e' := by ring
-        rw [h3]; simp; ring
-      rw [hcube] at hre; linarith [hre]
-    · have him : (Y + i).im = 1 := by rw [hY, hi]; simp
-      rw [he] at him
-      have hcube : (e' ^ 3).im = 3 * e'.re ^ 2 * e'.im - e'.im ^ 3 := by
-        have h3 : e' ^ 3 = e' * e' * e' := by ring
-        rw [h3]; simp; ring
-      rw [hcube] at him; linarith [him]
+    · have hre := congrArg Zsqrtd.re he
+      simp [hY, hi, pow_three] at hre
+      linear_combination hre
+    · have him := congrArg Zsqrtd.im he
+      simp [hY, hi, pow_three] at him
+      linear_combination him
   -- From `1 = b(3a² - b²)` we get `b = ±1`; `b = 1` is impossible, `b = -1` forces
   -- `a = 0`, hence `y = 0` and `x³ = 1`, i.e. `x = 1`.
   have hbu : IsUnit b := isUnit_of_dvd_one ⟨3 * a ^ 2 - b ^ 2, by linear_combination hb⟩
@@ -111,7 +95,4 @@ theorem DiophantineEquationExample (x y : ℤ) (h : x ^ 3 = y ^ 2 + 1) : x = 1 �
     have hy0 : y = 0 := by rw [ha]; ring
     refine ⟨?_, hy0⟩
     have hx3 : x ^ 3 = 1 := by rw [h, hy0]; ring
-    have hfac : (x - 1) * (x ^ 2 + x + 1) = 0 := by linear_combination hx3
-    rcases mul_eq_zero.mp hfac with h1 | h2
-    · linarith
-    · nlinarith [sq_nonneg (2 * x + 1)]
+    exact (Odd.strictMono_pow (by norm_num)).injective hx3
