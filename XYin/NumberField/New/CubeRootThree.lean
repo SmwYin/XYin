@@ -704,11 +704,6 @@ theorem eq_of_two_mem (P : Ideal (𝓞 K)) (hP : P.IsPrime) (h2 : (2 : 𝓞 K) �
   · right
     exact eq_span_quadFactor_of_mem P hP h
 
-/-- `7` is inert in `ℚ(∛3)`: `X³ - 3` is irreducible mod `7`, since the nonzero cubes mod `7`
-are `{1, 6}` and `3` is not among them. -/
-theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime := by
-  sorry
-
 /-- The prime `(7)` is inert with norm `7³` (residue degree `f = 3`). -/
 theorem absNorm_span_seven : Ideal.absNorm (Ideal.span {(7 : 𝓞 K)}) = 343 := by
   have h := intNorm_eq_normForm 7 0 0
@@ -718,6 +713,69 @@ theorem absNorm_span_seven : Ideal.absNorm (Ideal.span {(7 : 𝓞 K)}) = 343 := 
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
   rfl
+
+/-- There is no prime of `𝓞 K` with residue field `𝔽₇`: `3` is not a cube mod `7`. -/
+theorem absNorm_ne_seven (P : Ideal (𝓞 K)) (_hP : P.IsMaximal) : Ideal.absNorm P ≠ 7 := by
+  intro hcard
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
+  haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+  haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 K) ⧸ P) = 7 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact hcard
+  let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) (by norm_num) hcard'
+  obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P thetaInt)
+  have hs3 : s ^ 3 = (3 : ZMod 7) := by
+    apply e.injective
+    rw [map_pow, hs, map_ofNat, ← map_pow (Ideal.Quotient.mk P), thetaInt_cube, map_ofNat]
+  clear hs
+  revert s
+  decide
+
+/-- `7` is inert in `ℚ(∛3)`: `X³ - 3` is irreducible mod `7`, since `3` is not a cube mod `7`.
+Every maximal ideal containing `(7)` has norm dividing `7³` but not `1`, `7` (no norm-`7`
+prime exists) or `49` (a norm-`49` factor would force a norm-`7` prime), hence norm `7³` and
+equals `(7)`. -/
+theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime := by
+  set I : Ideal (𝓞 K) := Ideal.span {(7 : 𝓞 K)} with hI
+  have habs : Ideal.absNorm I = 343 := absNorm_span_seven
+  have htop : I ≠ ⊤ := by intro h; rw [h, Ideal.absNorm_top] at habs; norm_num at habs
+  obtain ⟨P, hPmax, hle⟩ := Ideal.exists_le_maximal I htop
+  obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
+  have habsP : Ideal.absNorm P ∣ 343 := habs ▸ Ideal.absNorm_dvd_absNorm_of_le hle
+  have hP1 : Ideal.absNorm P ≠ 1 := by rw [Ne, Ideal.absNorm_eq_one_iff]; exact hPmax.ne_top
+  have hP7 : Ideal.absNorm P ≠ 7 := absNorm_ne_seven P hPmax
+  have hP49 : Ideal.absNorm P ≠ 49 := by
+    intro h49
+    have habsC : Ideal.absNorm C = 7 := by
+      have h := habs
+      rw [hC, map_mul, h49] at h
+      omega
+    have hCtop : C ≠ ⊤ := by
+      intro h; rw [h, Ideal.absNorm_top] at habsC; norm_num at habsC
+    obtain ⟨P', hP'max, hle'⟩ := Ideal.exists_le_maximal C hCtop
+    have habsP' : Ideal.absNorm P' ∣ 7 := habsC ▸ Ideal.absNorm_dvd_absNorm_of_le hle'
+    rcases (Nat.dvd_prime (by norm_num)).mp habsP' with h | h
+    · rw [Ideal.absNorm_eq_one_iff] at h
+      exact hP'max.ne_top h
+    · exact absNorm_ne_seven P' hP'max h
+  have hP343 : Ideal.absNorm P = 343 := by
+    have h343 : (343 : ℕ) = 7 ^ 3 := by norm_num
+    rw [h343] at habsP
+    obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow (by norm_num : Nat.Prime 7)).mp habsP
+    interval_cases k
+    · rw [pow_zero] at hkeq; omega
+    · rw [pow_one] at hkeq; omega
+    · rw [show (7 : ℕ) ^ 2 = 49 by norm_num] at hkeq; omega
+    · rw [show (7 : ℕ) ^ 3 = 343 by norm_num] at hkeq; omega
+  have habsC1 : Ideal.absNorm C = 1 := by
+    have h := habs
+    rw [hC, map_mul, hP343] at h
+    omega
+  have hCtop : C = ⊤ := Ideal.absNorm_eq_one_iff.mp habsC1
+  have hIP : I = P := by rw [hC, hCtop, Ideal.mul_top]
+  rw [hIP]
+  exact hPmax.isPrime
 
 /-- The prime `(61, θ - r)` of `𝓞 K` above `61`, for `r` a cube root of `3` mod `61`. The
 roots of `X³ - 3` mod `61` are `4`, `5` and `52`. -/
