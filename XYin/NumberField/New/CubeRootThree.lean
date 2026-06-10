@@ -608,6 +608,44 @@ theorem absNorm_span_theta_sq_add_theta_add_one :
   rw [Ideal.absNorm_span_singleton, h]
   rfl
 
+/-- No prime of norm `2` contains `θ² + θ + 1`: in the residue field with two elements,
+`t² + t + 1` has no root. This is the formal content of "`X² + X + 1` is irreducible mod `2`". -/
+theorem absNorm_ne_two_of_quadFactor_mem (P : Ideal (𝓞 K)) (hP : P.IsMaximal)
+    (hmem : thetaInt ^ 2 + thetaInt + 1 ∈ P) : Ideal.absNorm P ≠ 2 := by
+  intro hcard
+  haveI : P.IsMaximal := hP
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
+  haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+  have h01 : ∀ x : (𝓞 K) ⧸ P, x = 0 ∨ x = 1 := by
+    intro x
+    by_contra hx
+    push Not at hx
+    obtain ⟨hx0, hx1⟩ := hx
+    have hinj : Function.Injective (![0, 1, x] : Fin 3 → (𝓞 K) ⧸ P) := by
+      intro i j hij
+      fin_cases i <;> fin_cases j <;> simp_all
+    have hle := Nat.card_le_card_of_injective _ hinj
+    simp only [Nat.card_eq_fintype_card, Fintype.card_fin, hcard] at hle
+    omega
+  have h2zero : (1 : (𝓞 K) ⧸ P) + 1 = 0 := by
+    rcases h01 (1 + 1) with h | h
+    · exact h
+    · have h10 : (1 : (𝓞 K) ⧸ P) = 0 := by
+        have := add_right_cancel (b := (1 : (𝓞 K) ⧸ P)) (a := (1 : (𝓞 K) ⧸ P)) (c := 0)
+        rw [zero_add] at this
+        exact this h
+      exact absurd h10 one_ne_zero
+  set t := Ideal.Quotient.mk P thetaInt with ht
+  have htroot : t ^ 2 + t + 1 = 0 := by
+    rw [ht, ← map_pow, ← map_add, ← map_one (Ideal.Quotient.mk P), ← map_add]
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr hmem
+  rcases h01 t with h | h
+  · rw [h] at htroot
+    simp at htroot
+  · rw [h, one_pow] at htroot
+    rw [h2zero, zero_add] at htroot
+    exact one_ne_zero htroot
+
 /-- `7` is inert in `ℚ(∛3)`: `X³ - 3` is irreducible mod `7`, since the nonzero cubes mod `7`
 are `{1, 6}` and `3` is not among them. -/
 theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime := by
