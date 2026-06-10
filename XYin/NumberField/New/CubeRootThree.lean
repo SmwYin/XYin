@@ -1211,7 +1211,7 @@ theorem unitGroupStructure :
   let ψ₂ : Multiplicative (Fin 1 → ℤ) →* (𝓞 K)ˣ :=
     MonoidHom.mk' (fun f => η ^ (Multiplicative.toAdd f 0))
       (fun f g => by
-        show η ^ ((Multiplicative.toAdd f + Multiplicative.toAdd g) 0) = _
+        change η ^ ((Multiplicative.toAdd f + Multiplicative.toAdd g) 0) = _
         rw [Pi.add_apply, zpow_add])
   let ψ : Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ) →* (𝓞 K)ˣ := ψ₁.coprod ψ₂
   have hneg_tor : (-1 : (𝓞 K)ˣ) ∈ NumberField.Units.torsion K :=
@@ -1248,10 +1248,10 @@ theorem unitGroupStructure :
       obtain ⟨ζ, hζ, n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
       rcases eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
       · refine ⟨(Multiplicative.ofAdd (0 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
-        show (-1 : (𝓞 K)ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
+        change (-1 : (𝓞 K)ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
         rw [show ((0 : ZMod 2)).val = 0 from rfl, pow_zero, hu, one_mul]
       · refine ⟨(Multiplicative.ofAdd (1 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
-        show (-1 : (𝓞 K)ˣ) ^ ((1 : ZMod 2)).val * η ^ n = u
+        change (-1 : (𝓞 K)ˣ) ^ ((1 : ZMod 2)).val * η ^ n = u
         rw [show ((1 : ZMod 2)).val = 1 from rfl, pow_one, hu]
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
