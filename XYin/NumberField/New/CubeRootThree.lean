@@ -685,6 +685,25 @@ theorem isPrime_span_theta_sq_add_theta_add_one :
   rw [← eq_span_quadFactor_of_mem P hPmax.isPrime hmem]
   exact hPmax.isPrime
 
+/-- Any prime of `𝓞 K` containing `2` equals `(θ - 1)` or `(θ² + θ + 1)`: the two primes
+above `2` are the only ones, and both are principal. -/
+theorem eq_of_two_mem (P : Ideal (𝓞 K)) (hP : P.IsPrime) (h2 : (2 : 𝓞 K) ∈ P) :
+    P = Ideal.span {thetaInt - 1} ∨ P = Ideal.span {thetaInt ^ 2 + thetaInt + 1} := by
+  have hprod : (thetaInt - 1) * (thetaInt ^ 2 + thetaInt + 1) ∈ P := by
+    rw [← two_eq_mul]; exact h2
+  rcases hP.mem_or_mem hprod with h | h
+  · left
+    have hle : Ideal.span {thetaInt - 1} ≤ P := by
+      rw [Ideal.span_le, Set.singleton_subset_iff]; exact h
+    have hbot : Ideal.span {thetaInt - 1} ≠ ⊥ := by
+      intro hb
+      have habs := absNorm_span_theta_sub_one
+      rw [hb, Ideal.absNorm_bot] at habs
+      norm_num at habs
+    exact ((isPrime_span_theta_sub_one.isMaximal hbot).eq_of_le hP.ne_top hle).symm
+  · right
+    exact eq_span_quadFactor_of_mem P hP h
+
 /-- `7` is inert in `ℚ(∛3)`: `X³ - 3` is irreducible mod `7`, since the nonzero cubes mod `7`
 are `{1, 6}` and `3` is not among them. -/
 theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime := by
@@ -869,6 +888,14 @@ theorem regulator_eq :
   sorry
 
 /-! ## 7. Class group -/
+
+/-- Numerical bounds for `√243 = 9√3 ≈ 15.588`, used in the Minkowski-bound computation. -/
+theorem sqrt_243_bounds : (15.58 : ℝ) < Real.sqrt 243 ∧ Real.sqrt 243 < 15.59 := by
+  have hsq := Real.sq_sqrt (show (0 : ℝ) ≤ 243 by norm_num)
+  have hnn := Real.sqrt_nonneg 243
+  constructor
+  · nlinarith [hsq, hnn]
+  · nlinarith [hsq, hnn]
 
 /-- The class number of `ℚ(∛3)` is `1`. The Minkowski bound is
 `(4/π) · (3!/3³) · √243 ≈ 4.41`, and the primes `2` and `3` below it are products of principal
