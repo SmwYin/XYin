@@ -53,10 +53,8 @@ theorem DiophantineEquationExample (x y : ℤ) (h : x ^ 3 = y ^ 2 + 1) : x = 1 �
     · exact hod
   -- Hence `2` and `x³` are coprime in `ℤ`.
   have hcop2 : IsCoprime (2 : ℤ) (x ^ 3) := by
-    apply IsCoprime.pow_right
-    rw [Int.prime_two.coprime_iff_not_dvd]
     rw [Int.odd_iff] at hxodd
-    omega
+    exact (Int.prime_two.coprime_iff_not_dvd.mpr (by omega)).pow_right
   -- The factors `y + i` and `y - i` are coprime in `ℤ[i]` (a Bézout combination):
   -- `2 = (-i)(y+i) + i(y-i)` and `x³ = (y+i)(y-i)`, and `gcd(2, x³) = 1`.
   have hcop : IsCoprime (Y + i) (Y - i) := by
@@ -86,11 +84,8 @@ theorem DiophantineEquationExample (x y : ℤ) (h : x ^ 3 = y ^ 2 + 1) : x = 1 �
   -- `a = 0`, hence `y = 0` and `x³ = 1`, i.e. `x = 1`.
   have hbu : IsUnit b := isUnit_of_dvd_one ⟨3 * a ^ 2 - b ^ 2, by linear_combination hb⟩
   rcases Int.isUnit_iff.mp hbu with rfl | rfl
-  · exfalso
-    have h3 : (3 : ℤ) ∣ 2 := ⟨a ^ 2, by linarith [hb]⟩
-    norm_num at h3
-  · have ha2 : a ^ 2 = 0 := by linarith [hb]
-    have ha0 : a = 0 := pow_eq_zero_iff (n := 2) (by norm_num) |>.mp ha2
+  · exact absurd (⟨a ^ 2, by linarith [hb]⟩ : (3 : ℤ) ∣ 2) (by omega)
+  · have ha0 : a = 0 := sq_eq_zero_iff.mp (by linarith [hb])
     subst ha0
     have hy0 : y = 0 := by rw [ha]; ring
     refine ⟨?_, hy0⟩
