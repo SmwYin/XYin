@@ -866,19 +866,62 @@ theorem primeAbove61_fiftytwo_eq :
 `61`. This is the generic split case of the cubic splitting law. -/
 theorem span_sixtyOne_eq :
     Ideal.span {(61 : 𝓞 K)} = primeAbove61 4 * primeAbove61 5 * primeAbove61 52 := by
-  sorry
+  rw [primeAbove61_four_eq, primeAbove61_five_eq, primeAbove61_fiftytwo_eq,
+    Ideal.span_singleton_mul_span_singleton, Ideal.span_singleton_mul_span_singleton]
+  have hprod : (61 : 𝓞 K) = (thetaInt - 4) * (1 + 2 * thetaInt + 2 * thetaInt ^ 2) *
+      (2 - 2 * thetaInt - thetaInt ^ 2) := by
+    linear_combination (2 * thetaInt ^ 2 - 2 * thetaInt - 23) * thetaInt_cube
+  rw [← hprod]
 
 /-- Each ideal `(61, θ - r)` for `r ∈ {4, 5, 52}` is prime. -/
 theorem isPrime_primeAbove61 (r : ℤ) (hr : r = 4 ∨ r = 5 ∨ r = 52) :
     (primeAbove61 r).IsPrime := by
-  sorry
+  have h61 : Irreducible (61 : ℕ) := (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
+  rcases hr with rfl | rfl | rfl
+  · rw [primeAbove61_four_eq]
+    exact Ideal.isPrime_of_irreducible_absNorm (absNorm_span_theta_sub_four ▸ h61)
+  · rw [primeAbove61_five_eq]
+    exact Ideal.isPrime_of_irreducible_absNorm (absNorm_span_gen_five ▸ h61)
+  · rw [primeAbove61_fiftytwo_eq]
+    exact Ideal.isPrime_of_irreducible_absNorm (absNorm_span_gen_fiftytwo ▸ h61)
 
 /-- The three primes above `61` are pairwise distinct, so `61` is unramified and splits
 completely. -/
 theorem primeAbove61_pairwise_ne :
     primeAbove61 4 ≠ primeAbove61 5 ∧ primeAbove61 4 ≠ primeAbove61 52 ∧
       primeAbove61 5 ≠ primeAbove61 52 := by
-  sorry
+  have hmem : ∀ r : ℤ, thetaInt - (r : 𝓞 K) ∈ primeAbove61 r := fun r =>
+    Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+  have h61 : ∀ r : ℤ, (61 : 𝓞 K) ∈ primeAbove61 r := fun r =>
+    Ideal.subset_span (Set.mem_insert _ _)
+  have key : ∀ r s : ℤ, r = 4 ∨ r = 5 ∨ r = 52 → primeAbove61 r = primeAbove61 s →
+      (1 : 𝓞 K) ∈ primeAbove61 r → False := fun r s hr h h1 =>
+    (isPrime_primeAbove61 r hr).ne_top (Ideal.eq_top_of_isUnit_mem _ h1 isUnit_one)
+  refine ⟨fun h => ?_, fun h => ?_, fun h => ?_⟩
+  · refine key 4 5 (Or.inl rfl) h ?_
+    have hb : thetaInt - ((5 : ℤ) : 𝓞 K) ∈ primeAbove61 4 := by rw [h]; exact hmem 5
+    have hsub := Ideal.sub_mem _ (hmem 4) hb
+    have heq : (thetaInt - ((4 : ℤ) : 𝓞 K)) - (thetaInt - ((5 : ℤ) : 𝓞 K)) = (1 : 𝓞 K) := by
+      push_cast; ring
+    rwa [heq] at hsub
+  · refine key 4 52 (Or.inl rfl) h ?_
+    have hb : thetaInt - ((52 : ℤ) : 𝓞 K) ∈ primeAbove61 4 := by rw [h]; exact hmem 52
+    have hsub := Ideal.sub_mem _ hb (hmem 4)
+    have heq : (thetaInt - ((52 : ℤ) : 𝓞 K)) - (thetaInt - ((4 : ℤ) : 𝓞 K)) =
+        (-48 : 𝓞 K) := by push_cast; ring
+    rw [heq] at hsub
+    have hone : (1 : 𝓞 K) = (-14 : 𝓞 K) * (-48) - 11 * 61 := by norm_num
+    rw [hone]
+    exact Ideal.sub_mem _ (Ideal.mul_mem_left _ _ hsub) (Ideal.mul_mem_left _ _ (h61 4))
+  · refine key 5 52 (Or.inr (Or.inl rfl)) h ?_
+    have hb : thetaInt - ((52 : ℤ) : 𝓞 K) ∈ primeAbove61 5 := by rw [h]; exact hmem 52
+    have hsub := Ideal.sub_mem _ hb (hmem 5)
+    have heq : (thetaInt - ((52 : ℤ) : 𝓞 K)) - (thetaInt - ((5 : ℤ) : 𝓞 K)) =
+        (-47 : 𝓞 K) := by push_cast; ring
+    rw [heq] at hsub
+    have hone : (1 : 𝓞 K) = (-13 : 𝓞 K) * (-47) - 10 * 61 := by norm_num
+    rw [hone]
+    exact Ideal.sub_mem _ (Ideal.mul_mem_left _ _ hsub) (Ideal.mul_mem_left _ _ (h61 5))
 
 /-- The splitting law at ramified primes: a rational prime `p` ramifies in `ℚ(∛3)` (some prime
 of `𝓞 K` divides `(p)` at least twice) iff `p = 3`, i.e. iff `p` divides the discriminant
