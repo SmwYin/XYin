@@ -1135,6 +1135,58 @@ theorem unit_eq_torsion_mul_fundamentalUnit_zpow (u : (𝓞 K)ˣ) :
   obtain ⟨n, hn⟩ := hx
   exact ⟨y, hy, n, by rw [hn, ← hxy]; exact mul_comm x y⟩
 
+/-- Mathlib's abstract fundamental unit `fundSystem K i₀`, together with the torsion, generates
+the whole unit group (rank-one specialization of `closure_fundSystem_sup_torsion_eq_top`). -/
+theorem exists_eq_torsion_mul_fundSystem_zpow (i₀ : Fin (NumberField.Units.rank K))
+    (u : (𝓞 K)ˣ) :
+    ∃ ζ ∈ NumberField.Units.torsion K, ∃ n : ℤ,
+      u = ζ * NumberField.Units.fundSystem K i₀ ^ n := by
+  haveI hsub : Subsingleton (Fin (NumberField.Units.rank K)) :=
+    Fin.subsingleton_iff_le_one.mpr (by rw [unitRank_eq_one])
+  have hu : u ∈ Subgroup.closure (Set.range (NumberField.Units.fundSystem K)) ⊔
+      NumberField.Units.torsion K := by
+    rw [NumberField.Units.closure_fundSystem_sup_torsion_eq_top]; trivial
+  rw [Subgroup.mem_sup] at hu
+  obtain ⟨x, hx, y, hy, hxy⟩ := hu
+  have hrange : Set.range (NumberField.Units.fundSystem K) =
+      {NumberField.Units.fundSystem K i₀} := by
+    ext v
+    constructor
+    · rintro ⟨i, rfl⟩
+      rw [Subsingleton.elim i i₀]
+      rfl
+    · rintro rfl
+      exact ⟨i₀, rfl⟩
+  rw [hrange, Subgroup.mem_closure_singleton] at hx
+  obtain ⟨n, hn⟩ := hx
+  exact ⟨y, hy, n, by rw [hn, ← hxy]; exact mul_comm x y⟩
+
+/-- A power of the abstract fundamental unit is torsion only for exponent zero: its image in
+the (free) quotient modulo torsion is a basis vector. -/
+theorem fundSystem_zpow_mem_torsion (i₀ : Fin (NumberField.Units.rank K)) (n : ℤ)
+    (hn : NumberField.Units.fundSystem K i₀ ^ n ∈ NumberField.Units.torsion K) : n = 0 := by
+  have h1 : ((NumberField.Units.fundSystem K i₀ ^ n : (𝓞 K)ˣ) :
+      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K) = 1 := (QuotientGroup.eq_one_iff _).mpr hn
+  rw [QuotientGroup.mk_zpow] at h1
+  have h0 : Additive.ofMul ((NumberField.Units.fundSystem K i₀ :
+      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K) ^ n) = (0 :
+      Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K)) := by
+    rw [h1]; rfl
+  rw [ofMul_zpow, NumberField.Units.fundSystem_mk] at h0
+  have hco := congrArg (fun v => ((NumberField.Units.basisModTorsion K).repr v) i₀) h0
+  simpa using hco
+
+/-- Pointwise classification of the torsion: a torsion unit is `1` or `-1`. -/
+theorem eq_one_or_neg_one_of_mem_torsion {ζ : (𝓞 K)ˣ}
+    (hζ : ζ ∈ NumberField.Units.torsion K) : ζ = 1 ∨ ζ = -1 := by
+  have hfin : IsOfFinOrder ζ := (CommGroup.mem_torsion _).mp hζ
+  have hmem : ζ ∈ {u : (𝓞 K)ˣ | IsOfFinOrder u} := hfin
+  rw [torsionUnits_eq] at hmem
+  obtain ⟨k, hk⟩ := hmem
+  fin_cases k
+  · exact Or.inl (by simpa using hk)
+  · exact Or.inr (by simpa using hk)
+
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
     Nonempty ((𝓞 K)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))) := by
