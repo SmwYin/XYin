@@ -781,6 +781,86 @@ theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime := by
 roots of `X³ - 3` mod `61` are `4`, `5` and `52`. -/
 def primeAbove61 (r : ℤ) : Ideal (𝓞 K) := Ideal.span {(61 : 𝓞 K), thetaInt - (r : 𝓞 K)}
 
+/-- The element `θ - 4` has norm `-61`. -/
+theorem absNorm_span_theta_sub_four : Ideal.absNorm (Ideal.span {thetaInt - 4}) = 61 := by
+  have h := intNorm_eq_normForm (-4) 1 0
+  have he : (-4 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • thetaInt + (0 : ℤ) • thetaInt ^ 2 =
+      thetaInt - 4 := by ring
+  rw [he] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- The element `1 + 2θ + 2θ²` has norm `61`. -/
+theorem absNorm_span_gen_five :
+    Ideal.absNorm (Ideal.span {1 + 2 * thetaInt + 2 * thetaInt ^ 2}) = 61 := by
+  have h := intNorm_eq_normForm 1 2 2
+  have he : (1 : ℤ) • (1 : 𝓞 K) + (2 : ℤ) • thetaInt + (2 : ℤ) • thetaInt ^ 2 =
+      1 + 2 * thetaInt + 2 * thetaInt ^ 2 := by ring
+  rw [he] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- The element `2 - 2θ - θ²` has norm `-61`. -/
+theorem absNorm_span_gen_fiftytwo :
+    Ideal.absNorm (Ideal.span {2 - 2 * thetaInt - thetaInt ^ 2}) = 61 := by
+  have h := intNorm_eq_normForm 2 (-2) (-1)
+  have he : (2 : ℤ) • (1 : 𝓞 K) + (-2 : ℤ) • thetaInt + (-1 : ℤ) • thetaInt ^ 2 =
+      2 - 2 * thetaInt - thetaInt ^ 2 := by ring
+  rw [he] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- `(61, θ - 4)` is principal with generator `θ - 4` (its norm `-61` puts `61` in `(θ - 4)`). -/
+theorem primeAbove61_four_eq : primeAbove61 4 = Ideal.span {thetaInt - 4} := by
+  have hcast : ((4 : ℤ) : 𝓞 K) = (4 : 𝓞 K) := by norm_num
+  rw [primeAbove61, hcast]
+  apply le_antisymm
+  · rw [Ideal.span_le, Set.insert_subset_iff, Set.singleton_subset_iff]
+    refine ⟨?_, Ideal.mem_span_singleton_self _⟩
+    have hmem := Ideal.absNorm_mem (Ideal.span {thetaInt - 4})
+    rw [absNorm_span_theta_sub_four] at hmem
+    exact_mod_cast hmem
+  · rw [Ideal.span_le, Set.singleton_subset_iff]
+    exact Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+
+/-- `(61, θ - 5)` is principal with generator `1 + 2θ + 2θ²`: one has
+`θ - 5 = (1 + 2θ + 2θ²)(1 - θ)` and `1 + 2θ + 2θ² = 61 + (2θ + 12)(θ - 5)`. -/
+theorem primeAbove61_five_eq :
+    primeAbove61 5 = Ideal.span {1 + 2 * thetaInt + 2 * thetaInt ^ 2} := by
+  have hcast : ((5 : ℤ) : 𝓞 K) = (5 : 𝓞 K) := by norm_num
+  rw [primeAbove61, hcast]
+  apply le_antisymm
+  · rw [Ideal.span_le, Set.insert_subset_iff, Set.singleton_subset_iff]
+    constructor
+    · have hmem := Ideal.absNorm_mem (Ideal.span {1 + 2 * thetaInt + 2 * thetaInt ^ 2})
+      rw [absNorm_span_gen_five] at hmem
+      exact_mod_cast hmem
+    · rw [SetLike.mem_coe, Ideal.mem_span_singleton]
+      exact ⟨1 - thetaInt, by linear_combination (2 : 𝓞 K) * thetaInt_cube⟩
+  · rw [Ideal.span_le, Set.singleton_subset_iff, SetLike.mem_coe, Ideal.mem_span_pair]
+    exact ⟨1, 2 * thetaInt + 12, by ring⟩
+
+/-- `(61, θ - 52)` is principal with generator `2 - 2θ - θ²`: one has
+`θ - 52 = (2 - 2θ - θ²)(-2 + 6θ + 5θ²)` and `2 - 2θ - θ² = -46·61 - (θ + 54)(θ - 52)`. -/
+theorem primeAbove61_fiftytwo_eq :
+    primeAbove61 52 = Ideal.span {2 - 2 * thetaInt - thetaInt ^ 2} := by
+  have hcast : ((52 : ℤ) : 𝓞 K) = (52 : 𝓞 K) := by norm_num
+  rw [primeAbove61, hcast]
+  apply le_antisymm
+  · rw [Ideal.span_le, Set.insert_subset_iff, Set.singleton_subset_iff]
+    constructor
+    · have hmem := Ideal.absNorm_mem (Ideal.span {2 - 2 * thetaInt - thetaInt ^ 2})
+      rw [absNorm_span_gen_fiftytwo] at hmem
+      exact_mod_cast hmem
+    · rw [SetLike.mem_coe, Ideal.mem_span_singleton]
+      exact ⟨-2 + 6 * thetaInt + 5 * thetaInt ^ 2,
+        by linear_combination (5 * thetaInt + 16) * thetaInt_cube⟩
+  · rw [Ideal.span_le, Set.singleton_subset_iff, SetLike.mem_coe, Ideal.mem_span_pair]
+    exact ⟨-46, -(thetaInt + 54), by ring⟩
+
 /-- `61` splits completely: `61 ≡ 1 (mod 3)` and `3 ≡ 4³ (mod 61)` is a cubic residue, so
 `X³ - 3 ≡ (X - 4)(X - 5)(X - 52) (mod 61)` and `(61)` is a product of three primes of norm
 `61`. This is the generic split case of the cubic splitting law. -/
