@@ -358,14 +358,76 @@ theorem span_integralBasisVectors_eq :
       Subalgebra.toSubmodule (integralClosure ℤ K) := by
   rw [integralClosure_eq_adjoin, ← span_adjoin_eq]
 
+/-- The integral generators `1, θ, θ²` as elements of `𝓞 K`. -/
+noncomputable def integralBasisVectorsInt : Fin 3 → 𝓞 K := ![1, thetaInt, thetaInt ^ 2]
+
+/-- The `ℤ`-linear embedding `𝓞 K ↪ K`. -/
+noncomputable def ringOfIntegersLinearMap : 𝓞 K →ₗ[ℤ] K :=
+  (Algebra.linearMap (𝓞 K) K).restrictScalars ℤ
+
+theorem ringOfIntegersLinearMap_apply (u : 𝓞 K) :
+    ringOfIntegersLinearMap u = (algebraMap (𝓞 K) K) u := rfl
+
+theorem ringOfIntegersLinearMap_injective :
+    Function.Injective ringOfIntegersLinearMap :=
+  FaithfulSMul.algebraMap_injective (𝓞 K) K
+
+/-- The embedding sends the integral generators in `𝓞 K` to the displayed vectors `1, θ, θ²`. -/
+theorem algebraMap_integralBasisVectorsInt :
+    (fun i => (algebraMap (𝓞 K) K) (integralBasisVectorsInt i)) = integralBasisVectors := by
+  funext i
+  have ht : (algebraMap (𝓞 K) K) thetaInt = cubeRootThree :=
+    NumberField.RingOfIntegers.map_mk cubeRootThree cubeRootThree_integral
+  fin_cases i <;> simp [integralBasisVectorsInt, integralBasisVectors, ht]
+
+/-- `1, θ, θ²` are `ℤ`-linearly independent in `𝓞 K`. -/
+theorem linearIndependent_integralBasisVectorsInt :
+    LinearIndependent ℤ integralBasisVectorsInt := by
+  -- the displayed family `1, θ, θ²` is `ℚ`-linearly independent in `K`, via the power basis
+  have hf : cubePolynomial ≠ 0 := by intro h; simpa using congrArg natDegree h
+  have hdim : (AdjoinRoot.powerBasis hf).dim = 3 := by
+    rw [AdjoinRoot.powerBasis_dim hf]; exact natDegree_X_pow_sub_C
+  set pb := AdjoinRoot.powerBasis hf with hpb
+  set b : Basis (Fin 3) ℚ K := pb.basis.reindex (finCongr hdim) with hb
+  have hbpow : ∀ i : Fin 3, b i = cubeRootThree ^ (i : ℕ) := by
+    intro i
+    rw [hb, Basis.reindex_apply, PowerBasis.basis_eq_pow, AdjoinRoot.powerBasis_gen]; simp
+  have hbeq : integralBasisVectors = ⇑b := by
+    funext i
+    fin_cases i <;> simp [integralBasisVectors, hbpow]
+  have hQ : LinearIndependent ℚ integralBasisVectors := by
+    rw [hbeq]; exact b.linearIndependent
+  -- restrict scalars `ℚ → ℤ`, then pull back through the injective embedding `𝓞 K ↪ K`
+  have hZ : LinearIndependent ℤ integralBasisVectors := hQ.restrict_scalars' ℤ
+  rw [← algebraMap_integralBasisVectorsInt] at hZ
+  exact hZ.of_comp ringOfIntegersLinearMap
+
+/-- The `ℤ`-span of `1, θ, θ²` in `𝓞 K` is everything. -/
+theorem span_integralBasisVectorsInt_eq_top :
+    Submodule.span ℤ (Set.range integralBasisVectorsInt) = ⊤ := by
+  apply Submodule.map_injective_of_injective ringOfIntegersLinearMap_injective
+  rw [Submodule.map_span, ← Set.range_comp]
+  have hcomp : ringOfIntegersLinearMap ∘ integralBasisVectorsInt = integralBasisVectors := by
+    funext i; rw [Function.comp_apply, ringOfIntegersLinearMap_apply,
+      ← algebraMap_integralBasisVectorsInt]
+  rw [hcomp, span_integralBasisVectors_eq, Submodule.map_top]
+  -- the image of `⊤` under the embedding is exactly `toSubmodule (integralClosure ℤ K)`
+  ext x
+  rw [Subalgebra.mem_toSubmodule]
+  constructor
+  · intro hx; exact ⟨⟨x, hx⟩, rfl⟩
+  · rintro ⟨u, rfl⟩; exact u.2
+
 /-- The integral basis `1, θ, θ²` packaged as a genuine `ℤ`-basis of the ring of integers `𝓞 K`. -/
-noncomputable def concreteIntegralBasis : Basis (Fin 3) ℤ (𝓞 K) := by
-  sorry
+noncomputable def concreteIntegralBasis : Basis (Fin 3) ℤ (𝓞 K) :=
+  Basis.mk linearIndependent_integralBasisVectorsInt
+    (span_integralBasisVectorsInt_eq_top).ge
 
 /-- The packaged integral basis is, vector by vector, the displayed family `1, θ, θ²`. -/
 theorem concreteIntegralBasis_apply (i : Fin 3) :
     (algebraMap (𝓞 K) K) (concreteIntegralBasis i) = integralBasisVectors i := by
-  sorry
+  rw [concreteIntegralBasis, Basis.mk_apply]
+  exact congrFun algebraMap_integralBasisVectorsInt i
 
 /-- The displayed integral basis `1, θ, θ²` spans the same `ℤ`-lattice in `K` as mathlib's
 `NumberField.integralBasis K`. This is the correct form of "the two integral bases agree":
