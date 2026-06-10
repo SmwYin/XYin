@@ -180,17 +180,269 @@ theorem numberField_discr_eq : NumberField.discr K = (125 : ℤ) := by
   rw [IsCyclotomicExtension.Rat.discr_prime 5 K]
   norm_num
 
+section PrivateMachinery
+
+private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
+
+private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
+  rw [zeta_isPrimitiveRoot.integralPowerBasis_gen]; rfl
+
+/-- Private forward copy of `sigmaTwo` (the public definition appears in section 9). -/
+private noncomputable def sig2 : K ≃ₐ[ℚ] K :=
+  IsCyclotomicExtension.fromZetaAut (zeta_isPrimitiveRoot.pow_of_coprime 2 (by norm_num))
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
+
+private noncomputable def sig3 : K ≃ₐ[ℚ] K :=
+  IsCyclotomicExtension.fromZetaAut (zeta_isPrimitiveRoot.pow_of_coprime 3 (by norm_num))
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
+
+private noncomputable def sig4 : K ≃ₐ[ℚ] K :=
+  IsCyclotomicExtension.fromZetaAut (zeta_isPrimitiveRoot.pow_of_coprime 4 (by norm_num))
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
+
+private theorem sig2_zeta : sig2 ζ = ζ ^ 2 :=
+  IsCyclotomicExtension.fromZetaAut_spec (zeta_isPrimitiveRoot.pow_of_coprime 2 (by norm_num))
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
+
+private theorem sig3_zeta : sig3 ζ = ζ ^ 3 :=
+  IsCyclotomicExtension.fromZetaAut_spec (zeta_isPrimitiveRoot.pow_of_coprime 3 (by norm_num))
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
+
+private theorem sig4_zeta : sig4 ζ = ζ ^ 4 :=
+  IsCyclotomicExtension.fromZetaAut_spec (zeta_isPrimitiveRoot.pow_of_coprime 4 (by norm_num))
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
+
+private theorem autEq' (σ : K ≃ₐ[ℚ] K) : σ = 1 ∨ σ = sig2 ∨ σ = sig3 ∨ σ = sig4 := by
+  have hval : ∀ t : (ZMod 5)ˣ, (t : ZMod 5).val = 1 ∨ (t : ZMod 5).val = 2 ∨
+      (t : ZMod 5).val = 3 ∨ (t : ZMod 5).val = 4 := by decide
+  have hspec := IsPrimitiveRoot.autToPow_spec ℚ zeta_isPrimitiveRoot σ
+  have hext : ∀ τ : K ≃ₐ[ℚ] K, σ ζ = τ ζ → σ = τ := by
+    intro τ h
+    have hgen := (zeta_isPrimitiveRoot.powerBasis ℚ).algHom_ext
+      (f := (σ : K →ₐ[ℚ] K)) (g := (τ : K →ₐ[ℚ] K))
+      (by rwa [IsPrimitiveRoot.powerBasis_gen])
+    exact AlgEquiv.ext fun x => AlgHom.congr_fun hgen x
+  rcases hval (IsPrimitiveRoot.autToPow ℚ zeta_isPrimitiveRoot σ) with h | h | h | h <;>
+    rw [h] at hspec
+  · exact Or.inl (hext 1 (by rw [← hspec, pow_one]; rfl))
+  · exact Or.inr (Or.inl (hext sig2 (by rw [← hspec, sig2_zeta])))
+  · exact Or.inr (Or.inr (Or.inl (hext sig3 (by rw [← hspec, sig3_zeta]))))
+  · exact Or.inr (Or.inr (Or.inr (hext sig4 (by rw [← hspec, sig4_zeta]))))
+
+/-- The product of the four Galois conjugates computes the field norm. -/
+private theorem prod_aut_apply (x : K) :
+    ∏ σ : K ≃ₐ[ℚ] K, σ x = x * sig2 x * sig3 x * sig4 x := by
+  classical
+  have hne : ∀ (i j : ℕ) (σ τ : K ≃ₐ[ℚ] K), i < 5 → j < 5 → i ≠ j →
+      σ ζ = ζ ^ i → τ ζ = ζ ^ j → σ ≠ τ := fun i j σ τ hi hj hij hσ hτ hστ =>
+    hij (zeta_isPrimitiveRoot.pow_inj hi hj (by rw [← hσ, ← hτ, hστ]))
+  have hid : (1 : K ≃ₐ[ℚ] K) ζ = ζ ^ 1 := by rw [pow_one]; rfl
+  have h1 : (1 : K ≃ₐ[ℚ] K) ≠ sig2 :=
+    hne 1 2 _ _ (by norm_num) (by norm_num) (by norm_num) hid sig2_zeta
+  have h2 : (1 : K ≃ₐ[ℚ] K) ≠ sig3 :=
+    hne 1 3 _ _ (by norm_num) (by norm_num) (by norm_num) hid sig3_zeta
+  have h3 : (1 : K ≃ₐ[ℚ] K) ≠ sig4 :=
+    hne 1 4 _ _ (by norm_num) (by norm_num) (by norm_num) hid sig4_zeta
+  have h4 : sig2 ≠ sig3 := hne 2 3 _ _ (by norm_num) (by norm_num) (by norm_num)
+    sig2_zeta sig3_zeta
+  have h5 : sig2 ≠ sig4 := hne 2 4 _ _ (by norm_num) (by norm_num) (by norm_num)
+    sig2_zeta sig4_zeta
+  have h6 : sig3 ≠ sig4 := hne 3 4 _ _ (by norm_num) (by norm_num) (by norm_num)
+    sig3_zeta sig4_zeta
+  have huniv : (Finset.univ : Finset (K ≃ₐ[ℚ] K)) = {1, sig2, sig3, sig4} := by
+    refine (Finset.eq_univ_iff_forall.mpr fun σ => ?_).symm
+    rcases autEq' σ with h | h | h | h <;> simp [h]
+  rw [huniv, Finset.prod_insert (by simp [h1, h2, h3]), Finset.prod_insert (by simp [h4, h5]),
+    Finset.prod_pair h6]
+  change x * (sig2 x * (sig3 x * sig4 x)) = _
+  ring
+
+/-- Computing integral norms via the four Galois conjugates. -/
+private theorem intNorm_eq (x : 𝓞 K) (n : ℤ)
+    (h : algebraMap (𝓞 K) K x * sig2 (algebraMap (𝓞 K) K x) *
+      sig3 (algebraMap (𝓞 K) K x) * sig4 (algebraMap (𝓞 K) K x) = (n : K)) :
+    Algebra.norm ℤ x = n := by
+  haveI := IsCyclotomicExtension.isGalois {5} ℚ K
+  have h1 : algebraMap ℚ K (Algebra.norm ℚ (algebraMap (𝓞 K) K x)) = ((n : ℚ) : K) := by
+    rw [Algebra.norm_eq_prod_automorphisms, prod_aut_apply, h]
+    push_cast
+    ring
+  have h2 : Algebra.norm ℚ (algebraMap (𝓞 K) K x) = (n : ℚ) := by
+    apply (algebraMap ℚ K).injective
+    rw [h1, eq_ratCast (algebraMap ℚ K) (n : ℚ)]
+  have h3 : ((Algebra.norm ℤ x : ℤ) : ℚ) = Algebra.norm ℚ (algebraMap (𝓞 K) K x) :=
+    Algebra.coe_norm_int x
+  rw [h2] at h3
+  exact_mod_cast h3
+
+private theorem minpoly_gen_eq :
+    minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen =
+      Polynomial.X ^ 4 + Polynomial.X ^ 3 + Polynomial.X ^ 2 + Polynomial.X +
+        Polynomial.C 1 := by
+  set q : Polynomial ℤ := Polynomial.X ^ 4 + Polynomial.X ^ 3 + Polynomial.X ^ 2 +
+    Polynomial.X + Polynomial.C 1 with hq
+  have hint : IsIntegral ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen :=
+    zeta_isPrimitiveRoot.integralPowerBasis.isIntegral_gen
+  have hdvd : minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen ∣ q := by
+    refine minpoly.isIntegrallyClosed_dvd hint ?_
+    rw [gen_eq_zetaInt, hq]
+    simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
+    linear_combination zetaInt_sum
+  have hmonic := minpoly.monic hint
+  have hdeg : (minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen).natDegree = 4 := by
+    rw [zeta_isPrimitiveRoot.integralPowerBasis.natDegree_minpoly,
+      zeta_isPrimitiveRoot.integralPowerBasis_dim]
+    rfl
+  have hXmonic : q.Monic := by
+    rw [hq]
+    monicity!
+  obtain ⟨c, hc⟩ := hdvd
+  have hcmonic : c.Monic := hmonic.of_mul_monic_left (hc ▸ hXmonic)
+  have hdegc : c.natDegree = 0 := by
+    have h4 : q.natDegree = 4 := by
+      rw [hq]
+      compute_degree!
+    have hcong := congrArg Polynomial.natDegree hc
+    rw [h4, Polynomial.natDegree_mul (minpoly.ne_zero hint) hcmonic.ne_zero, hdeg] at hcong
+    omega
+  rw [hc, Polynomial.eq_one_of_monic_natDegree_zero hcmonic hdegc, mul_one]
+
+/-- Reduction `𝓞 K → 𝔽_p` sending `ζ ↦ r`, for `r` a root of `Φ₅` mod `p`. -/
+private noncomputable def residueHom (p : ℕ) (r : ℤ)
+    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
+    𝓞 K →ₐ[ℤ] ZMod p :=
+  zeta_isPrimitiveRoot.integralPowerBasis.lift ((r : ℤ) : ZMod p)
+    (by
+      rw [minpoly_gen_eq]
+      simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
+      linear_combination hr)
+
+private theorem residueHom_zetaInt (p : ℕ) (r : ℤ)
+    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
+    residueHom p r hr zetaInt = (r : ZMod p) := by
+  rw [← gen_eq_zetaInt]
+  exact zeta_isPrimitiveRoot.integralPowerBasis.lift_gen ((r : ℤ) : ZMod p) _
+
+private theorem ker_residueHom (p : ℕ) (r : ℤ)
+    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
+    RingHom.ker (residueHom p r hr).toRingHom =
+      Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)} := by
+  refine le_antisymm (fun x hx => ?_) ?_
+  · rw [RingHom.mem_ker] at hx
+    obtain ⟨q, -, hq⟩ := zeta_isPrimitiveRoot.integralPowerBasis.exists_eq_aeval x
+    rw [gen_eq_zetaInt] at hq
+    have key : x - ((q.eval r : ℤ) : 𝓞 K) ∈ Ideal.span {zetaInt - (r : 𝓞 K)} := by
+      rw [Ideal.mem_span_singleton, hq]
+      have hdvd := Polynomial.sub_dvd_eval_sub zetaInt ((r : ℤ) : 𝓞 K)
+        (q.map (algebraMap ℤ (𝓞 K)))
+      have e1 : (q.map (algebraMap ℤ (𝓞 K))).eval zetaInt = Polynomial.aeval zetaInt q := by
+        rw [Polynomial.eval_map, ← Polynomial.aeval_def]
+      have e2 : (q.map (algebraMap ℤ (𝓞 K))).eval ((r : ℤ) : 𝓞 K) = ((q.eval r : ℤ) : 𝓞 K) := by
+        have hcast : ((r : ℤ) : 𝓞 K) = algebraMap ℤ (𝓞 K) r := by
+          simp [algebraMap_int_eq]
+        rw [Polynomial.eval_map, hcast, Polynomial.eval₂_at_apply]
+        simp [algebraMap_int_eq]
+      rw [e1, e2] at hdvd
+      exact hdvd
+    obtain ⟨d, hd⟩ := Ideal.mem_span_singleton.mp key
+    have hphi : ((q.eval r : ℤ) : ZMod p) = 0 := by
+      have h1 : residueHom p r hr (x - ((q.eval r : ℤ) : 𝓞 K)) = 0 := by
+        rw [hd, map_mul, map_sub, residueHom_zetaInt, map_intCast, sub_self, zero_mul]
+      rw [map_sub, map_intCast, show residueHom p r hr x = 0 from hx, zero_sub,
+        neg_eq_zero] at h1
+      exact h1
+    obtain ⟨m, hm⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hphi
+    have hx_eq : x = (zetaInt - (r : 𝓞 K)) * d + (p : 𝓞 K) * ((m : ℤ) : 𝓞 K) := by
+      have h2 : x = (zetaInt - (r : 𝓞 K)) * d + ((q.eval r : ℤ) : 𝓞 K) := by
+        rw [← hd]; ring
+      rw [h2, hm]
+      push_cast
+      ring
+    rw [hx_eq]
+    refine Ideal.add_mem _ (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
+      (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
+    · simp
+    · simp
+  · rw [Ideal.span_le]
+    rintro y (rfl | rfl)
+    · rw [SetLike.mem_coe, RingHom.mem_ker]
+      simp
+    · rw [SetLike.mem_coe, RingHom.mem_ker]
+      have h0 : (residueHom p r hr) (zetaInt - (r : 𝓞 K)) = 0 := by
+        rw [map_sub, residueHom_zetaInt, map_intCast, sub_self]
+      exact h0
+
+private theorem residueHom_surjective (p : ℕ) (r : ℤ)
+    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
+    Function.Surjective (residueHom p r hr) := by
+  intro z
+  obtain ⟨m, hm⟩ := ZMod.intCast_surjective z
+  exact ⟨((m : ℤ) : 𝓞 K), by rw [map_intCast]; exact hm⟩
+
+private theorem isMaximal_span_pair (p : ℕ) [Fact p.Prime] (r : ℤ)
+    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
+    (Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)}).IsMaximal := by
+  rw [← ker_residueHom p r hr]
+  exact RingHom.ker_isMaximal_of_surjective _ (residueHom_surjective p r hr)
+
+private theorem absNorm_span_pair (p : ℕ) (r : ℤ)
+    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
+    Ideal.absNorm (Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)}) = p := by
+  rw [← ker_residueHom p r hr, Ideal.absNorm_apply, Submodule.cardQuot_apply]
+  rw [Nat.card_congr (RingHom.quotientKerEquivOfSurjective
+    (residueHom_surjective p r hr)).toEquiv]
+  exact Nat.card_zmod p
+
+/-- Nonzero ideals with equal absolute norms and one inclusion are equal. -/
+private theorem eq_of_le_of_absNorm_eq {I J : Ideal (𝓞 K)} (hle : I ≤ J) {n : ℕ}
+    (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J := by
+  obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
+  have hmul := _root_.map_mul Ideal.absNorm J C
+  rw [← hC, hI, hJ] at hmul
+  have hC1 : Ideal.absNorm C = 1 :=
+    (Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hn)
+      (by rw [mul_one]; exact hmul)).symm
+  rw [hC, Ideal.absNorm_eq_one_iff.mp hC1, Ideal.mul_top]
+
+end PrivateMachinery
+
 /-! ## 4. Norms of distinguished elements -/
 
 /-- The norm of `1 - ζ` is `Φ₅(1) = 5`: the standard generator of the unique prime above
 `5`. -/
 theorem norm_one_sub_zeta : Algebra.norm ℚ (1 - ζ) = 5 := by
-  sorry
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  have h := zeta_isPrimitiveRoot.sub_one_norm_isPrimePow
+    ((by norm_num : Nat.Prime 5).isPrimePow)
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num)) (by norm_num)
+  have hneg : (1 : K) - ζ = -(ζ - 1) := by ring
+  have hnormneg : Algebra.norm ℚ (-(ζ - 1)) = Algebra.norm ℚ (ζ - 1) := by
+    rw [show -(ζ - 1) = (-1 : K) * (ζ - 1) by ring, map_mul,
+      show (-1 : K) = algebraMap ℚ K (-1) by norm_num, Algebra.norm_algebraMap,
+      degree_eq_four]
+    norm_num
+  rw [hneg, hnormneg, h, show Nat.minFac 5 = 5 by norm_num]
+  norm_num
 
 /-- The norm of `1 + ζ` is `Φ₅(-1) = 1`: hence `1 + ζ` is a unit of `ℤ[ζ]` (a *cyclotomic
 unit*). -/
 theorem norm_one_add_zeta : Algebra.norm ℚ (1 + ζ) = 1 := by
-  sorry
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  have h2 : IsPrimitiveRoot (ζ ^ 2) 5 := zeta_isPrimitiveRoot.pow_of_coprime 2 (by norm_num)
+  have hn2 : Algebra.norm ℚ (1 - ζ ^ 2) = 5 := by
+    have h := h2.sub_one_norm_isPrimePow ((by norm_num : Nat.Prime 5).isPrimePow)
+      (Polynomial.cyclotomic.irreducible_rat (by norm_num)) (by norm_num)
+    have hneg : (1 : K) - ζ ^ 2 = -(ζ ^ 2 - 1) := by ring
+    have hnormneg : Algebra.norm ℚ (-(ζ ^ 2 - 1)) = Algebra.norm ℚ (ζ ^ 2 - 1) := by
+      rw [show -(ζ ^ 2 - 1) = (-1 : K) * (ζ ^ 2 - 1) by ring, map_mul,
+        show (-1 : K) = algebraMap ℚ K (-1) by norm_num, Algebra.norm_algebraMap,
+        degree_eq_four]
+      norm_num
+    rw [hneg, hnormneg, h, show Nat.minFac 5 = 5 by norm_num]
+    norm_num
+  have hfact : (1 : K) - ζ ^ 2 = (1 - ζ) * (1 + ζ) := by ring
+  rw [hfact, map_mul, norm_one_sub_zeta] at hn2
+  linarith
 
 /-! ## 5. Splitting of primes -/
 
