@@ -124,7 +124,14 @@ they generate the same lattice (a unimodular change of basis), not a mere reinde
 theorem span_integralBasisVectors_eq_integralBasis :
     Submodule.span ℤ (Set.range integralBasisVectors) =
       Submodule.span ℤ (Set.range (NumberField.integralBasis K)) := by
-  sorry
+  rw [span_integralBasisVectors_eq]
+  ext x
+  constructor
+  · intro hx
+    exact (NumberField.mem_span_integralBasis K).mpr ⟨⟨x, hx⟩, rfl⟩
+  · intro hx
+    obtain ⟨y, rfl⟩ := RingHom.mem_range.mp ((NumberField.mem_span_integralBasis K).mp hx)
+    exact y.2
 
 /-- The concrete order `ℤ[θ]` inside `K`, where `θ = ∛3`. -/
 abbrev concreteRingOfIntegers : Subalgebra ℤ K := Algebra.adjoin ℤ ({cubeRootThree} : Set K)
@@ -501,7 +508,13 @@ theorem isGalois_galoisClosure : IsGalois ℚ galoisClosure := by
 /-- `K = ℚ(∛3)` embeds into its Galois closure, as any one of three conjugate (non-normal)
 cubic subfields. -/
 theorem nonempty_algHom_galoisClosure : Nonempty (K →ₐ[ℚ] galoisClosure) := by
-  sorry
+  have hdeg : (cubePolynomial.map (algebraMap ℚ galoisClosure)).degree ≠ 0 := by
+    rw [Polynomial.degree_map, degree_X_pow_sub_C (by norm_num : 0 < 3)]
+    norm_num
+  obtain ⟨x, hx⟩ := (Polynomial.SplittingField.splits cubePolynomial).exists_eval_eq_zero hdeg
+  refine ⟨AdjoinRoot.liftAlgHom cubePolynomial (Algebra.ofId ℚ galoisClosure) x ?_⟩
+  rw [Polynomial.eval₂_eq_eval_map]
+  exact hx
 
 /-- The Galois group of the closure `ℚ(∛3, ζ₃)/ℚ` is the full symmetric group `S₃`, acting by
 permuting the three cube roots of `3`. -/
