@@ -592,11 +592,6 @@ theorem isPrime_span_theta_sub_one : (Ideal.span {thetaInt - 1}).IsPrime := by
   rw [absNorm_span_theta_sub_one]
   exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
 
-/-- `(θ² + θ + 1)` is a prime ideal — the degree-`2` prime of `𝓞 K` above `2`. -/
-theorem isPrime_span_theta_sq_add_theta_add_one :
-    (Ideal.span {thetaInt ^ 2 + thetaInt + 1}).IsPrime := by
-  sorry
-
 /-- The prime `(θ² + θ + 1)` above `2` has norm `4` (residue degree `f = 2`). -/
 theorem absNorm_span_theta_sq_add_theta_add_one :
     Ideal.absNorm (Ideal.span {thetaInt ^ 2 + thetaInt + 1}) = 4 := by
@@ -645,6 +640,50 @@ theorem absNorm_ne_two_of_quadFactor_mem (P : Ideal (𝓞 K)) (hP : P.IsMaximal)
   · rw [h, one_pow] at htroot
     rw [h2zero, zero_add] at htroot
     exact one_ne_zero htroot
+
+/-- Any prime of `𝓞 K` containing `θ² + θ + 1` equals `(θ² + θ + 1)`: its norm divides `4`,
+cannot be `1` or `2`, hence is `4`, forcing equality. -/
+theorem eq_span_quadFactor_of_mem (P : Ideal (𝓞 K)) (hP : P.IsPrime)
+    (hmem : thetaInt ^ 2 + thetaInt + 1 ∈ P) :
+    P = Ideal.span {thetaInt ^ 2 + thetaInt + 1} := by
+  set Q : Ideal (𝓞 K) := Ideal.span {thetaInt ^ 2 + thetaInt + 1} with hQ
+  have habsQ : Ideal.absNorm Q = 4 := absNorm_span_theta_sq_add_theta_add_one
+  have hle : Q ≤ P := by rw [hQ, Ideal.span_le, Set.singleton_subset_iff]; exact hmem
+  have hQbot : Q ≠ ⊥ := by
+    intro h
+    rw [h, Ideal.absNorm_bot] at habsQ
+    norm_num at habsQ
+  have hPbot : P ≠ ⊥ := fun h => hQbot (le_bot_iff.mp (h ▸ hle))
+  have hPmax : P.IsMaximal := hP.isMaximal hPbot
+  have hdvd : Ideal.absNorm P ∣ 4 := habsQ ▸ Ideal.absNorm_dvd_absNorm_of_le hle
+  have hne1 : Ideal.absNorm P ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hPmax.ne_top
+  have hne2 : Ideal.absNorm P ≠ 2 := absNorm_ne_two_of_quadFactor_mem P hPmax hmem
+  have h4 : Ideal.absNorm P = 4 := by
+    have hle4 : Ideal.absNorm P ≤ 4 := Nat.le_of_dvd (by norm_num) hdvd
+    set n := Ideal.absNorm P with hn
+    clear_value n
+    interval_cases n <;> omega
+  obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
+  have habs : Ideal.absNorm Q = Ideal.absNorm P * Ideal.absNorm C := by
+    rw [hC, map_mul]
+  rw [habsQ, h4] at habs
+  have hCtop : C = ⊤ := Ideal.absNorm_eq_one_iff.mp (by omega)
+  rw [hC, hCtop, Ideal.mul_top]
+
+/-- `(θ² + θ + 1)` is a prime ideal — the degree-`2` prime of `𝓞 K` above `2`. -/
+theorem isPrime_span_theta_sq_add_theta_add_one :
+    (Ideal.span {thetaInt ^ 2 + thetaInt + 1}).IsPrime := by
+  have hQtop : Ideal.span {thetaInt ^ 2 + thetaInt + 1} ≠ ⊤ := by
+    intro h
+    have h4 := absNorm_span_theta_sq_add_theta_add_one
+    rw [h, Ideal.absNorm_top] at h4
+    norm_num at h4
+  obtain ⟨P, hPmax, hle⟩ := Ideal.exists_le_maximal _ hQtop
+  have hmem : thetaInt ^ 2 + thetaInt + 1 ∈ P := hle (Ideal.mem_span_singleton_self _)
+  rw [← eq_span_quadFactor_of_mem P hPmax.isPrime hmem]
+  exact hPmax.isPrime
 
 /-- `7` is inert in `ℚ(∛3)`: `X³ - 3` is irreducible mod `7`, since the nonzero cubes mod `7`
 are `{1, 6}` and `3` is not among them. -/
