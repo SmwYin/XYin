@@ -77,16 +77,53 @@ ring of integers `𝓞 K`. -/
 theorem span_integralBasisVectors_eq :
     Submodule.span ℤ (Set.range integralBasisVectors) =
       Subalgebra.toSubmodule (integralClosure ℤ K) := by
-  sorry
+  have hmonic : (Polynomial.X ^ 4 + Polynomial.C (1 : ℤ)).Monic :=
+    Polynomial.monic_X_pow_add_C 1 (by norm_num)
+  refine le_antisymm (Submodule.span_le.mpr ?_) (fun x hx => ?_)
+  · rintro y ⟨i, rfl⟩
+    fin_cases i
+    · exact Subalgebra.one_mem _
+    · exact zeta_integral
+    · exact Subalgebra.pow_mem _ zeta_integral 2
+    · exact Subalgebra.pow_mem _ zeta_integral 3
+  · have hx' : x ∈ Algebra.adjoin ℤ ({ζ} : Set K) := by
+      obtain ⟨y, hy⟩ := (IsIntegralClosure.isIntegral_iff (self :=
+        IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton zeta_isPrimitiveRoot)).mp hx
+      exact hy ▸ y.2
+    rw [Algebra.adjoin_singleton_eq_range_aeval] at hx'
+    obtain ⟨p, hp⟩ := hx'
+    have hkey : x = Polynomial.aeval ζ (p %ₘ (Polynomial.X ^ 4 + Polynomial.C 1)) := by
+      conv_lhs => rw [← hp,
+        ← Polynomial.modByMonic_add_div p (Polynomial.X ^ 4 + Polynomial.C 1)]
+      simp [zeta_pow_four]
+    have hdeg : (p %ₘ (Polynomial.X ^ 4 + Polynomial.C 1)).natDegree < 4 := by
+      rcases eq_or_ne (p %ₘ (Polynomial.X ^ 4 + Polynomial.C 1)) 0 with h0 | h0
+      · rw [h0]
+        norm_num
+      · refine (Polynomial.natDegree_lt_iff_degree_lt h0).mpr ?_
+        have h := Polynomial.degree_modByMonic_lt p hmonic
+        rwa [Polynomial.degree_X_pow_add_C (by norm_num : 0 < 4) (1 : ℤ)] at h
+    rw [hkey, Polynomial.aeval_eq_sum_range' hdeg]
+    refine Submodule.sum_mem _ fun i hi => ?_
+    rw [Finset.mem_range] at hi
+    refine Submodule.smul_mem _ _ (Submodule.subset_span ?_)
+    interval_cases i
+    · exact ⟨0, by simp [integralBasisVectors]⟩
+    · exact ⟨1, by simp [integralBasisVectors]⟩
+    · exact ⟨2, by simp [integralBasisVectors]⟩
+    · exact ⟨3, by simp [integralBasisVectors]⟩
 
 /-- The integral basis `1, ζ, ζ², ζ³` packaged as a genuine `ℤ`-basis of `𝓞 K`. -/
-noncomputable def concreteIntegralBasis : Basis (Fin 4) ℤ (𝓞 K) := by
-  sorry
+noncomputable def concreteIntegralBasis : Basis (Fin 4) ℤ (𝓞 K) :=
+  zeta_isPrimitiveRoot.integralPowerBasis.basis.reindex
+    (finCongr (zeta_isPrimitiveRoot.integralPowerBasis_dim.trans rfl))
 
 /-- The packaged integral basis is, vector by vector, the displayed family `1, ζ, ζ², ζ³`. -/
 theorem concreteIntegralBasis_apply (i : Fin 4) :
     (algebraMap (𝓞 K) K) (concreteIntegralBasis i) = integralBasisVectors i := by
-  sorry
+  fin_cases i <;>
+    simp [concreteIntegralBasis, integralBasisVectors, PowerBasis.basis_eq_pow,
+      zeta_isPrimitiveRoot.integralPowerBasis_gen, IsPrimitiveRoot.toInteger]
 
 /-- The displayed integral basis spans the same `ℤ`-lattice in `K` as mathlib's
 `NumberField.integralBasis K` (the correct form of "the two integral bases agree": equality
@@ -94,21 +131,38 @@ of lattices, not a mere reindexing). -/
 theorem span_integralBasisVectors_eq_integralBasis :
     Submodule.span ℤ (Set.range integralBasisVectors) =
       Submodule.span ℤ (Set.range (NumberField.integralBasis K)) := by
-  sorry
+  rw [span_integralBasisVectors_eq]
+  ext x
+  rw [Subalgebra.mem_toSubmodule]
+  constructor
+  · intro hx
+    exact (NumberField.mem_span_integralBasis K).mpr (RingHom.mem_range.mpr ⟨⟨x, hx⟩, rfl⟩)
+  · intro hx
+    obtain ⟨y, hy⟩ := RingHom.mem_range.mp ((NumberField.mem_span_integralBasis K).mp hx)
+    exact hy ▸ y.2
 
 /-- The concrete order `ℤ[ζ]` inside `K`. -/
 abbrev concreteRingOfIntegers : Subalgebra ℤ K := Algebra.adjoin ℤ ({ζ} : Set K)
 
 /-- The full ring of integers of `ℚ(ζ₈)` is `ℤ[ζ]`: cyclotomic fields are monogenic. -/
 theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers := by
-  sorry
+  refine le_antisymm (fun x hx => ?_)
+    (Algebra.adjoin_le (Set.singleton_subset_iff.mpr zeta_integral))
+  obtain ⟨y, hy⟩ := (IsIntegralClosure.isIntegral_iff (self :=
+    IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton zeta_isPrimitiveRoot)).mp hx
+  exact hy ▸ y.2
 
 /-! ## 3. Discriminant -/
 
 /-- The number-field discriminant of `ℚ(ζ₈)` is `256 = 2⁸`. In particular `2` is the only
 ramified prime, cf. `ramified_iff_eq_two`. -/
 theorem numberField_discr_eq : NumberField.discr K = (256 : ℤ) := by
-  sorry
+  have : IsCyclotomicExtension {2 ^ 3} ℚ K := by
+    rw [show (2 : ℕ) ^ 3 = 8 by norm_num]
+    infer_instance
+  rw [IsCyclotomicExtension.Rat.discr_prime_pow 2 3 K,
+    show ((2 : ℕ) ^ 3).totient = 4 from rfl]
+  norm_num
 
 /-! ## 4. The three quadratic subfields -/
 
