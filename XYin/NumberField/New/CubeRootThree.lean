@@ -351,7 +351,20 @@ theorem fundamentalUnitSystem_isFundamental :
 /-- Equivalently, every unit is a root of unity times a power of `θ² - 2`. -/
 theorem unit_eq_torsion_mul_fundamentalUnit_zpow (u : (𝓞 K)ˣ) :
     ∃ ζ : (𝓞 K)ˣ, ζ ∈ NumberField.Units.torsion K ∧ ∃ n : ℤ, u = ζ * fundamentalUnit ^ n := by
-  sorry
+  have hu : u ∈ Subgroup.closure (Set.range fundamentalUnitSystem) ⊔
+      NumberField.Units.torsion K := by
+    rw [fundamentalUnitSystem_isFundamental]; trivial
+  rw [Subgroup.mem_sup] at hu
+  obtain ⟨x, hx, y, hy, hxy⟩ := hu
+  have hrange : Set.range fundamentalUnitSystem = {fundamentalUnit} := by
+    ext v
+    constructor
+    · rintro ⟨i, rfl⟩; rfl
+    · rintro rfl
+      exact ⟨⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩, rfl⟩
+  rw [hrange, Subgroup.mem_closure_singleton] at hx
+  obtain ⟨n, hn⟩ := hx
+  exact ⟨y, hy, n, by rw [hn, ← hxy]; exact mul_comm x y⟩
 
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
@@ -480,7 +493,10 @@ theorem finrank_galoisClosure : Module.finrank ℚ galoisClosure = 6 := by
 /-- The splitting field of `X³ - 3` is Galois over `ℚ` (normal, and separable in
 characteristic zero). -/
 theorem isGalois_galoisClosure : IsGalois ℚ galoisClosure := by
-  sorry
+  haveI : IsSplittingField ℚ galoisClosure cubePolynomial :=
+    Polynomial.IsSplittingField.splittingField cubePolynomial
+  exact IsGalois.of_separable_splitting_field
+    ((Fact.out : Irreducible cubePolynomial).separable)
 
 /-- `K = ℚ(∛3)` embeds into its Galois closure, as any one of three conjugate (non-normal)
 cubic subfields. -/
