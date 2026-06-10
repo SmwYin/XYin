@@ -40,33 +40,34 @@ instance : IsCyclotomicExtension {8} ℚ K :=
 abbrev ζ : K := IsCyclotomicExtension.zeta 8 ℚ K
 
 /-- `ζ` is a primitive eighth root of unity. -/
-theorem zeta_isPrimitiveRoot : IsPrimitiveRoot ζ 8 := by
-  sorry
+theorem zeta_isPrimitiveRoot : IsPrimitiveRoot ζ 8 :=
+  IsCyclotomicExtension.zeta_spec 8 ℚ K
 
 /-- `ζ⁸ = 1`. -/
-theorem zeta_pow_eight : ζ ^ 8 = 1 := by
-  sorry
+theorem zeta_pow_eight : ζ ^ 8 = 1 :=
+  zeta_isPrimitiveRoot.pow_eq_one
 
 /-- The vanishing of the eighth cyclotomic polynomial at `ζ`: `ζ⁴ = -1`. -/
-theorem zeta_pow_four : ζ ^ 4 = -1 := by
-  sorry
+theorem zeta_pow_four : ζ ^ 4 = -1 :=
+  (zeta_isPrimitiveRoot.pow (by norm_num) (rfl : 8 = 4 * 2)).eq_neg_one_of_two_right
 
 /-- The extension degree of `K = ℚ(ζ₈)` over `ℚ` is `φ(8) = 4`. -/
-theorem degree_eq_four : Module.finrank ℚ K = 4 := by
-  sorry
+theorem degree_eq_four : Module.finrank ℚ K = 4 :=
+  (IsCyclotomicExtension.finrank (n := 8) K
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num))).trans rfl
 
 /-! ## 2. Integral basis and ring of integers -/
 
 /-- `ζ` is integral over `ℤ` (a root of the monic `X⁸ - 1`), hence lies in `𝓞 K`. -/
-theorem zeta_integral : ζ ∈ integralClosure ℤ K := by
-  sorry
+theorem zeta_integral : ζ ∈ integralClosure ℤ K :=
+  zeta_isPrimitiveRoot.isIntegral (by norm_num)
 
 /-- `ζ` as an element of the ring of integers `𝓞 K`. -/
 noncomputable def zetaInt : 𝓞 K := ⟨ζ, zeta_integral⟩
 
 /-- The integral generator also satisfies `ζ⁴ = -1` in `𝓞 K`. -/
-theorem zetaInt_pow_four : zetaInt ^ 4 = -1 := by
-  sorry
+theorem zetaInt_pow_four : zetaInt ^ 4 = -1 :=
+  Subtype.ext (by push_cast [zetaInt]; exact zeta_pow_four)
 
 /-- The displayed integral-basis vectors `1, ζ, ζ², ζ³` (as elements of `K`). -/
 def integralBasisVectors : Fin 4 → K := ![1, ζ, ζ ^ 2, ζ ^ 3]
@@ -113,17 +114,17 @@ theorem numberField_discr_eq : NumberField.discr K = (256 : ℤ) := by
 
 /-- `√2 = ζ + ζ⁻¹` inside `ℚ(ζ₈)`: one has `(ζ + ζ⁷)² = 2`, since `ζ² + ζ⁻² = 0`. -/
 theorem sqrt_two_sq : (ζ + ζ ^ 7) ^ 2 = 2 := by
-  sorry
+  linear_combination (ζ ^ 10 - ζ ^ 6 + 2 * ζ ^ 4 + ζ ^ 2 - 2) * zeta_pow_four
 
 /-- `i = ζ²` inside `ℚ(ζ₈)`: one has `(ζ²)² = -1`. -/
 theorem i_sq : (ζ ^ 2) ^ 2 = -1 := by
-  sorry
+  linear_combination zeta_pow_four
 
 /-- `√-2 = ζ - ζ⁻¹` inside `ℚ(ζ₈)`: one has `(ζ - ζ⁷)² = -2`. Together with `sqrt_two_sq`
 and `i_sq` this exhibits the three quadratic subfields `ℚ(√2), ℚ(i), ℚ(√-2)` — matching the
 three index-`2` subgroups of the Klein-four Galois group. -/
 theorem sqrt_neg_two_sq : (ζ - ζ ^ 7) ^ 2 = -2 := by
-  sorry
+  linear_combination (ζ ^ 10 - ζ ^ 6 - 2 * ζ ^ 4 + ζ ^ 2 + 2) * zeta_pow_four
 
 /-! ## 5. Splitting of primes -/
 
@@ -193,8 +194,8 @@ inverse `ζ⁷`. -/
 noncomputable def torsionGenerator : (𝓞 K)ˣ where
   val := zetaInt
   inv := zetaInt ^ 7
-  val_inv := by sorry
-  inv_val := by sorry
+  val_inv := by linear_combination (zetaInt ^ 4 - 1) * zetaInt_pow_four
+  inv_val := by linear_combination (zetaInt ^ 4 - 1) * zetaInt_pow_four
 
 /-- The concrete torsion units: the eight roots of unity `ζ^k`. -/
 def torsionUnits : Set ((𝓞 K)ˣ) := {u | ∃ k : Fin 8, u = torsionGenerator ^ k.val}
@@ -222,8 +223,12 @@ theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
 noncomputable def fundamentalUnit : (𝓞 K)ˣ where
   val := 1 + zetaInt + zetaInt ^ 7
   inv := zetaInt + zetaInt ^ 7 - 1
-  val_inv := by sorry
-  inv_val := by sorry
+  val_inv := by
+    linear_combination (zetaInt ^ 10 - zetaInt ^ 6 + 2 * zetaInt ^ 4 + zetaInt ^ 2 - 2) *
+      zetaInt_pow_four
+  inv_val := by
+    linear_combination (zetaInt ^ 10 - zetaInt ^ 6 + 2 * zetaInt ^ 4 + zetaInt ^ 2 - 2) *
+      zetaInt_pow_four
 
 /-- The system of fundamental units for the rank-`1` unit group: the single unit `1 + √2`. -/
 noncomputable def fundamentalUnitSystem : Fin (NumberField.Units.rank K) → (𝓞 K)ˣ :=
