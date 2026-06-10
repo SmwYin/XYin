@@ -785,16 +785,70 @@ theorem regulator_eq :
 
 /-- The class number of `ℚ(ζ₈)` is `1` (the Minkowski bound is `(4/π)² · 4!/4⁴ · √256 ≈ 2.4`,
 and the only prime below it, `2`, is principal: `(2) = (1 - ζ)⁴` with `(1 - ζ)` principal). -/
+private theorem eq_span_one_sub_of_two_mem (P : Ideal (𝓞 K)) (hP : P.IsPrime)
+    (h2 : (2 : 𝓞 K) ∈ P) : P = Ideal.span {1 - zetaInt} := by
+  have hle : Ideal.span {(2 : 𝓞 K)} ≤ P := (Ideal.span_singleton_le_iff_mem _).mpr h2
+  have h4 : (1 - zetaInt) ^ 4 ∈ P := by
+    apply hle
+    rw [span_two_eq, Ideal.span_singleton_pow]
+    exact Ideal.mem_span_singleton_self _
+  have h1 : 1 - zetaInt ∈ P := hP.mem_of_pow_mem 4 h4
+  have hmax : (Ideal.span {1 - zetaInt}).IsMaximal := by
+    rw [span_one_sub_zetaInt_eq_pair]
+    exact isMaximal_span_pair 2 1 (by decide)
+  exact (hmax.eq_of_le hP.ne_top ((Ideal.span_singleton_le_iff_mem _).mpr h1)).symm
+
 theorem classNumber_eq_one : NumberField.classNumber K = 1 := by
-  sorry
+  rw [NumberField.classNumber_eq_one_iff]
+  apply RingOfIntegers.isPrincipalIdealRing_of_isPrincipal_of_pow_le_of_mem_primesOver_of_mem_Icc
+  intro p hp hprime P hPmem _
+  have hPprime : P.IsPrime := hPmem.1
+  have hpmem : ((p : ℕ) : 𝓞 K) ∈ P := by
+    have hover := hPmem.2.over
+    have hmem : ((p : ℕ) : ℤ) ∈ Ideal.under ℤ P := by
+      rw [← hover]
+      exact Ideal.mem_span_singleton_self _
+    rw [Ideal.under, Ideal.mem_comap] at hmem
+    simpa [algebraMap_int_eq] using hmem
+  have hple : p ≤ 2 := by
+    have h2 := (Finset.mem_Icc.mp hp).2
+    have h5 : ⌊(4 / Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *
+        (((Module.finrank ℚ K).factorial : ℝ) /
+          ((Module.finrank ℚ K : ℝ)) ^ (Module.finrank ℚ K) *
+            Real.sqrt (|NumberField.discr K| : ℝ))⌋₊ < 3 := by
+      rw [Nat.floor_lt (by positivity)]
+      rw [nrComplexPlaces_eq_two, degree_eq_four, numberField_discr_eq]
+      have h16 : Real.sqrt |((256 : ℤ) : ℝ)| = 16 := by
+        rw [show |((256 : ℤ) : ℝ)| = (16 : ℝ) ^ 2 by norm_num]
+        exact Real.sqrt_sq (by norm_num)
+      rw [h16]
+      have hx : (4 / Real.pi) ^ 2 * (((Nat.factorial 4 : ℕ) : ℝ) / ((4 : ℕ) : ℝ) ^ (4 : ℕ) * 16) =
+          24 / Real.pi ^ 2 := by
+        norm_num [Nat.factorial]
+        ring
+      rw [hx, div_lt_iff₀ (by positivity)]
+      have hπ : (3.14 : ℝ) < Real.pi := Real.pi_gt_d2
+      push_cast
+      nlinarith [sq_nonneg (Real.pi - 3.14)]
+    omega
+  have hpge := (Finset.mem_Icc.mp hp).1
+  interval_cases p
+  · exact absurd hprime (by norm_num)
+  · rw [eq_span_one_sub_of_two_mem P hPprime (by exact_mod_cast hpmem)]
+    exact ⟨⟨1 - zetaInt, rfl⟩⟩
 
 /-- The ring of integers `ℤ[ζ₈]` is a principal ideal domain. -/
 theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 K) := by
-  sorry
+  rw [← NumberField.classNumber_eq_one_iff]
+  exact classNumber_eq_one
 
 /-- The class group of `𝓞 K` is trivial. -/
 theorem classGroupStructure : Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1)) := by
-  sorry
+  have h1 : Nat.card (ClassGroup (𝓞 K)) = 1 := by
+    simpa [NumberField.classNumber] using classNumber_eq_one
+  haveI : Subsingleton (ClassGroup (𝓞 K)) := (Nat.card_eq_one_iff_unique.mp h1).1
+  haveI : Unique (ClassGroup (𝓞 K)) := uniqueOfSubsingleton 1
+  exact ⟨MulEquiv.ofUnique⟩
 
 /-- The unit ideal as the concrete representative of the unique ideal class. -/
 abbrev unitIdealRepresentative : (Ideal (𝓞 K))⁰ := ⟨(⊤ : Ideal (𝓞 K)), by simp⟩
@@ -802,7 +856,10 @@ abbrev unitIdealRepresentative : (Ideal (𝓞 K))⁰ := ⟨(⊤ : Ideal (𝓞 K)
 /-- Every ideal class is represented by the unit ideal. -/
 theorem classGroupRepresentative (C : ClassGroup (𝓞 K)) :
     C = ClassGroup.mk0 unitIdealRepresentative := by
-  sorry
+  have h1 : Nat.card (ClassGroup (𝓞 K)) = 1 := by
+    simpa [NumberField.classNumber] using classNumber_eq_one
+  haveI : Subsingleton (ClassGroup (𝓞 K)) := (Nat.card_eq_one_iff_unique.mp h1).1
+  exact Subsingleton.elim _ _
 
 /-! ## 8. Galois group -/
 
