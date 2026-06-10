@@ -667,13 +667,211 @@ so every Frobenius has order at most `2` and every residue degree is `≤ 2 < 4`
 hallmark of non-cyclic abelian extensions. -/
 theorem no_inert_prime (p : ℕ) (hp : p.Prime) :
     ¬ (Ideal.span {(p : 𝓞 K)}).IsPrime := by
-  sorry
+  intro hpr
+  by_cases hp2 : p = 2
+  · subst hp2
+    rw [show ((2 : ℕ) : 𝓞 K) = (2 : 𝓞 K) by norm_num, span_two_eq] at hpr
+    have hmem : (1 - zetaInt) ^ 4 ∈ Ideal.span {1 - zetaInt} ^ 4 := by
+      rw [Ideal.span_singleton_pow]
+      exact Ideal.mem_span_singleton_self _
+    have h1 : 1 - zetaInt ∈ Ideal.span {1 - zetaInt} ^ 4 := hpr.mem_of_pow_mem 4 hmem
+    have hle : Ideal.span {1 - zetaInt} ≤ Ideal.span {1 - zetaInt} ^ 4 :=
+      (Ideal.span_singleton_le_iff_mem _).mpr h1
+    have hd := Ideal.absNorm_dvd_absNorm_of_le hle
+    rw [map_pow, absNorm_span_one_sub_zeta] at hd
+    norm_num at hd
+  · classical
+    haveI : Fact p.Prime := ⟨hp⟩
+    set P : Ideal (𝓞 K) := Ideal.span {((p : ℕ) : 𝓞 K)} with hPdef
+    haveI hPp : P.IsPrime := hpr
+    have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
+      rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+    have habs : Ideal.absNorm P = p ^ 4 := by
+      rw [hPdef, Ideal.absNorm_span_singleton]
+      have hcast : ((p : ℕ) : 𝓞 K) = algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) := by push_cast; rfl
+      rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
+    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
+    haveI : Finite ((𝓞 K) ⧸ P) :=
+      Nat.finite_of_card_ne_zero (by rw [habs]; exact pow_ne_zero 4 hp.ne_zero)
+    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+    have hcardF : Fintype.card ((𝓞 K) ⧸ P) = p ^ 4 := by
+      rw [← Nat.card_eq_fintype_card]
+      exact habs
+    have hPbot : P ≠ ⊥ := by
+      rw [hPdef, Ne, Ideal.span_singleton_eq_bot]
+      exact_mod_cast hp.ne_zero
+    haveI hmax : P.IsMaximal := hPp.isMaximal hPbot
+    haveI : Field ((𝓞 K) ⧸ P) := Ideal.Quotient.field P
+    have hp0 : ((p : ℕ) : (𝓞 K) ⧸ P) = 0 := by
+      rw [show ((p : ℕ) : (𝓞 K) ⧸ P) = Ideal.Quotient.mk P ((p : ℕ) : 𝓞 K) from
+        (map_natCast (Ideal.Quotient.mk P) p).symm, Ideal.Quotient.eq_zero_iff_mem]
+      exact Ideal.mem_span_singleton_self _
+    haveI : CharP ((𝓞 K) ⧸ P) p := by
+      have hd := (ringChar.spec ((𝓞 K) ⧸ P) p).mp hp0
+      rcases (Nat.dvd_prime hp).mp hd with h1 | h1
+      · exfalso
+        have h10 : ((1 : ℕ) : (𝓞 K) ⧸ P) = 0 :=
+          (ringChar.spec ((𝓞 K) ⧸ P) 1).mpr (h1 ▸ dvd_refl _)
+        simpa using h10
+      · rw [← h1]
+        exact ringChar.charP _
+    have hz8 : (Ideal.Quotient.mk P zetaInt) ^ 8 = 1 := by
+      rw [← map_pow, show zetaInt ^ 8 = 1 from by
+        linear_combination (zetaInt ^ 4 - 1) * zetaInt_pow_four, map_one]
+    have hp81 : p ^ 2 % 8 = 1 := by
+      obtain ⟨t, ht⟩ := hp.odd_of_ne_two hp2
+      rcases Nat.even_or_odd t with ⟨u, hu⟩ | ⟨u, hu⟩ <;> subst hu <;> subst ht <;>
+        ring_nf <;> omega
+    have hzp : (Ideal.Quotient.mk P zetaInt) ^ p ^ 2 = Ideal.Quotient.mk P zetaInt := by
+      obtain ⟨k, hk⟩ : ∃ k, p ^ 2 = 8 * k + 1 := ⟨p ^ 2 / 8, by omega⟩
+      rw [hk, pow_add, pow_mul, hz8, one_pow, one_mul, pow_one]
+    have hψeq : ∀ w : (𝓞 K) ⧸ P,
+        (((frobenius ((𝓞 K) ⧸ P) p).comp (frobenius ((𝓞 K) ⧸ P) p)).toIntAlgHom) w =
+          w ^ p ^ 2 := by
+      intro w
+      change frobenius _ p (frobenius _ p w) = w ^ p ^ 2
+      rw [frobenius_def, frobenius_def, ← pow_mul, ← pow_two]
+    have hfrob : ∀ x : (𝓞 K) ⧸ P, x ^ p ^ 2 = x := by
+      intro x
+      obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective x
+      obtain ⟨q, -, hq⟩ := zeta_isPrimitiveRoot.integralPowerBasis.exists_eq_aeval y
+      rw [gen_eq_zetaInt] at hq
+      rw [hq]
+      have hcomm := Polynomial.aeval_algHom_apply (Ideal.Quotient.mkₐ ℤ P) zetaInt q
+      rw [Ideal.Quotient.mkₐ_eq_mk] at hcomm
+      rw [← hcomm, ← hψeq, ← Polynomial.aeval_algHom_apply, hψeq, hzp]
+    set g : Polynomial ((𝓞 K) ⧸ P) := Polynomial.X ^ p ^ 2 - Polynomial.X with hgdef
+    have hdeg : g.natDegree = p ^ 2 := by
+      rw [hgdef]
+      rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
+      · exact Polynomial.natDegree_X_pow _
+      · rw [Polynomial.natDegree_X_pow, Polynomial.natDegree_X]
+        exact Nat.one_lt_pow (by norm_num) hp.one_lt
+    have hgne : g ≠ 0 := by
+      intro h0
+      rw [h0, Polynomial.natDegree_zero] at hdeg
+      have := Nat.one_lt_pow (n := 2) (by norm_num : (2 : ℕ) ≠ 0) hp.one_lt
+      omega
+    have hsub : (Finset.univ : Finset ((𝓞 K) ⧸ P)) ⊆ g.roots.toFinset := by
+      intro x _
+      rw [Multiset.mem_toFinset, Polynomial.mem_roots hgne]
+      show g.eval x = 0
+      rw [hgdef]
+      simp [hfrob x]
+    have hcontr : p ^ 4 ≤ p ^ 2 := by
+      calc p ^ 4 = Fintype.card ((𝓞 K) ⧸ P) := hcardF.symm
+        _ = (Finset.univ : Finset ((𝓞 K) ⧸ P)).card := Finset.card_univ.symm
+        _ ≤ g.roots.toFinset.card := Finset.card_le_card hsub
+        _ ≤ Multiset.card g.roots := g.roots.toFinset_card_le
+        _ ≤ g.natDegree := Polynomial.card_roots' g
+        _ = p ^ 2 := hdeg
+    have hlt : p ^ 2 < p ^ 4 := Nat.pow_lt_pow_right hp.one_lt (by norm_num)
+    omega
 
 /-- The splitting law for `ℚ(ζ₈)`: a prime `p` splits completely iff `p ≡ 1 (mod 8)`. -/
 theorem splits_completely_iff (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p) ↔
       p % 8 = 1 := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  constructor
+  · rintro ⟨P, hPprime, hle, habs⟩
+    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
+    haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [habs]; exact hp.ne_zero)
+    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+    have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by rw [← Nat.card_eq_fintype_card]; exact habs
+    let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
+    obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P zetaInt)
+    have hs4 : s ^ 4 = (-1 : ZMod p) := by
+      apply e.injective
+      rw [map_pow, hs, ← map_pow (Ideal.Quotient.mk P), zetaInt_pow_four, map_neg, map_one,
+        map_neg, map_one]
+    have hne1 : (-1 : ZMod p) ≠ 1 := by
+      intro h
+      have h2 : ((2 : ℕ) : ZMod p) = 0 := by push_cast; linear_combination -h
+      have hdvd := (CharP.cast_eq_zero_iff (ZMod p) p 2).mp h2
+      exact hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hdvd)
+    have hs0 : s ≠ 0 := by
+      intro h0
+      rw [h0] at hs4
+      exact one_ne_zero (by linear_combination hs4)
+    have hu8 : (Units.mk0 s hs0) ^ 8 = 1 := by
+      ext
+      change s ^ 8 = 1
+      rw [show (8 : ℕ) = 4 * 2 from rfl, pow_mul, hs4]
+      ring
+    have hu4 : (Units.mk0 s hs0) ^ 4 ≠ 1 := by
+      intro h
+      have hval : s ^ 4 = 1 := by
+        have hc := congrArg Units.val h
+        simpa using hc
+      rw [hs4] at hval
+      exact hne1 hval
+    have horder : orderOf (Units.mk0 s hs0) = 8 := by
+      have hdvd : orderOf (Units.mk0 s hs0) ∣ 8 := orderOf_dvd_of_pow_eq_one hu8
+      have hnd4 : ¬ orderOf (Units.mk0 s hs0) ∣ 4 := fun h =>
+        hu4 (orderOf_dvd_iff_pow_eq_one.mp h)
+      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
+        (show orderOf (Units.mk0 s hs0) ∣ 2 ^ 3 from hdvd)
+      have hk3 : k = 3 := by
+        by_contra hne
+        exact hnd4 (hkeq ▸ (pow_dvd_pow 2 (by omega) : (2 : ℕ) ^ k ∣ 2 ^ 2))
+      rw [hkeq, hk3]
+      norm_num
+    have hdvd_card : (8 : ℕ) ∣ p - 1 := by
+      have h := orderOf_dvd_natCard (Units.mk0 s hs0)
+      rw [horder, Nat.card_eq_fintype_card, ZMod.card_units_eq_totient,
+        Nat.totient_prime hp] at h
+      exact h
+    have h2le := hp.two_le
+    obtain ⟨m, hm⟩ := hdvd_card
+    omega
+  · intro hmod
+    have hcard : Nat.card (ZMod p)ˣ = p - 1 := by
+      rw [Nat.card_eq_fintype_card, ZMod.card_units_eq_totient, Nat.totient_prime hp]
+    obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := (ZMod p)ˣ)
+    have hog : orderOf g = p - 1 := by
+      rw [orderOf_eq_card_of_forall_mem_zpowers hg, hcard]
+    have h2le := hp.two_le
+    obtain ⟨m, hm⟩ : (8 : ℕ) ∣ p - 1 := ⟨(p - 1) / 8, by omega⟩
+    have hm0 : m ≠ 0 := by omega
+    have hou : orderOf (g ^ m) = 8 := by
+      rw [orderOf_pow, hog, hm]
+      have hgcd : Nat.gcd (8 * m) m = m := Nat.gcd_eq_right ⟨8, by ring⟩
+      rw [hgcd, Nat.mul_div_assoc 8 (dvd_refl m), Nat.div_self (show 0 < m by omega), mul_one]
+    have hu8 : (g ^ m) ^ 8 = 1 := by
+      rw [← hou]
+      exact pow_orderOf_eq_one _
+    have hu4ne : (g ^ m) ^ 4 ≠ 1 := by
+      intro h
+      have hd := orderOf_dvd_of_pow_eq_one h
+      rw [hou] at hd
+      norm_num at hd
+    have hval4 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 4 = -1 := by
+      have hv8 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 8 = 1 := by
+        have hc := congrArg Units.val hu8
+        simpa using hc
+      have hsq : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 4 *
+          ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 4 = 1 := by
+        rw [← pow_add]
+        exact hv8
+      rcases mul_self_eq_one_iff.mp hsq with h | h
+      · exfalso
+        apply hu4ne
+        ext
+        simpa using h
+      · exact h
+    set r : ℤ := (((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ) with hr_def
+    have hr : ((r : ZMod p)) ^ 4 = -1 := by
+      have hcast : ((r : ℤ) : ZMod p) = ((g ^ m : (ZMod p)ˣ) : ZMod p) := by
+        rw [hr_def]
+        push_cast
+        exact ZMod.natCast_rightInverse _
+      rw [hcast]
+      exact hval4
+    refine ⟨Ideal.span {((p : ℕ) : 𝓞 K), zetaInt - (r : 𝓞 K)},
+      (isMaximal_span_pair p r hr).isPrime, ?_, absNorm_span_pair p r hr⟩
+    rw [Ideal.span_le, Set.singleton_subset_iff]
+    exact Ideal.subset_span (by simp)
 
 /-- A rational prime `p` ramifies in `ℚ(ζ₈)` iff `p = 2`, i.e. iff `p` divides the
 discriminant `256`. -/
