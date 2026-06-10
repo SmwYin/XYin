@@ -696,21 +696,52 @@ def torsionUnits : Set ((𝓞 K)ˣ) := {u | ∃ k : Fin 8, u = torsionGenerator 
 
 /-- The torsion subgroup of `𝓞 Kˣ` is exactly `μ₈ = {ζ^k}` (note `-1 = ζ⁴` is already a
 power of `ζ`, unlike in `ℚ(ζ₅)`). -/
+private theorem torsionOrder_eq' : NumberField.Units.torsionOrder K = 8 := by
+  rw [IsCyclotomicExtension.Rat.torsionOrder_eq (n := 8)]
+  norm_num
+
 theorem torsionUnits_eq : {u : (𝓞 K)ˣ | IsOfFinOrder u} = torsionUnits := by
-  sorry
+  have htg8 : torsionGenerator ^ 8 = 1 := by
+    ext
+    exact zeta_pow_eight
+  ext u
+  constructor
+  · intro hu
+    have humem : u ∈ NumberField.Units.torsion K := hu
+    rw [← NumberField.Units.rootsOfUnity_eq_torsion K, torsionOrder_eq'] at humem
+    have h8 : u ^ 8 = 1 := humem
+    have hK : (algebraMap (𝓞 K) K ((u : (𝓞 K)ˣ) : 𝓞 K)) ^ 8 = 1 := by
+      have hval : ((u ^ 8 : (𝓞 K)ˣ) : 𝓞 K) = ((1 : (𝓞 K)ˣ) : 𝓞 K) := by rw [h8]
+      rw [Units.val_pow_eq_pow_val, Units.val_one] at hval
+      rw [← map_pow, hval, map_one]
+    obtain ⟨i, hi, hieq⟩ := zeta_isPrimitiveRoot.eq_pow_of_pow_eq_one hK
+    refine ⟨⟨i, hi⟩, Units.ext (IsFractionRing.injective (𝓞 K) K ?_)⟩
+    rw [← hieq]
+    change ζ ^ i = algebraMap (𝓞 K) K ((torsionGenerator ^ i : (𝓞 K)ˣ) : 𝓞 K)
+    rw [Units.val_pow_eq_pow_val, map_pow]
+    rfl
+  · rintro ⟨k, rfl⟩
+    refine isOfFinOrder_iff_pow_eq_one.mpr ⟨8, by norm_num, ?_⟩
+    rw [← pow_mul, mul_comm, pow_mul, htg8, one_pow]
 
 /-- The torsion subgroup of `𝓞 Kˣ` has order `8`. -/
-theorem torsionOrder_eq_eight : NumberField.Units.torsionOrder K = 8 := by
-  sorry
+theorem torsionOrder_eq_eight : NumberField.Units.torsionOrder K = 8 :=
+  torsionOrder_eq'
 
 /-- `ℚ(ζ₈)` is totally complex: the signature is `(0, 2)`. -/
-theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 := by
-  sorry
+theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 :=
+  IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 8) K (by norm_num)
+
+private theorem nrComplexPlaces_eq_two : NumberField.InfinitePlace.nrComplexPlaces K = 2 := by
+  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
+  rw [nrRealPlaces_eq_zero, degree_eq_four] at h
+  omega
 
 /-- The Dirichlet unit rank of `ℚ(ζ₈)` is `1`: the signature is `(0, 2)`, so the rank is
 `r₁ + r₂ - 1 = 1`. -/
 theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
-  sorry
+  rw [NumberField.Units.rank, NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    nrRealPlaces_eq_zero, nrComplexPlaces_eq_two]
 
 /-- The fundamental unit of `𝓞 K`: `1 + √2 = 1 + ζ + ζ⁷`, with explicit inverse
 `√2 - 1 = ζ + ζ⁷ - 1` (the fundamental unit of the real quadratic subfield `ℚ(√2)`). -/
