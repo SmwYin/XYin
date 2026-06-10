@@ -155,14 +155,61 @@ cubic form `x³ + 3y³ + 9z³ - 9xyz`. -/
 theorem norm_eq_normForm (x y z : ℚ) :
     Algebra.norm ℚ (x • (1 : K) + y • cubeRootThree + z • cubeRootThree ^ 2) =
       x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z := by
-  sorry
+  have hf : cubePolynomial ≠ 0 := by intro h; simpa using congrArg natDegree h
+  have hdim : (AdjoinRoot.powerBasis hf).dim = 3 := by
+    rw [AdjoinRoot.powerBasis_dim hf]; exact natDegree_X_pow_sub_C
+  set pb := AdjoinRoot.powerBasis hf with hpb
+  -- the integral basis `1, θ, θ²` as a genuine `Basis (Fin 3) ℚ K`
+  set b : Basis (Fin 3) ℚ K := pb.basis.reindex (finCongr hdim) with hb
+  have hbpow : ∀ i : Fin 3, b i = cubeRootThree ^ (i : ℕ) := by
+    intro i
+    rw [hb, Basis.reindex_apply, PowerBasis.basis_eq_pow, AdjoinRoot.powerBasis_gen]; simp
+  have hb0 : b 0 = 1 := by rw [hbpow]; simp
+  have hb1 : b 1 = cubeRootThree := by rw [hbpow]; simp
+  have hb2 : b 2 = cubeRootThree ^ 2 := by rw [hbpow]; simp
+  -- the action of `θ` on the basis: `θ·1 = θ`, `θ·θ = θ²`, `θ·θ² = θ³ = 3·1`
+  have hm0 : cubeRootThree * b 0 = b 1 := by rw [hb0, hb1, mul_one]
+  have hm1 : cubeRootThree * b 1 = b 2 := by rw [hb1, hb2, sq]
+  have hm2 : cubeRootThree * b 2 = (3 : ℚ) • b 0 := by
+    rw [hb0, hb2, Algebra.smul_def, mul_one, ← pow_succ', cubeRootThree_cube]; norm_num
+  -- the companion matrix of left-multiplication by `θ`
+  have hM : Algebra.leftMulMatrix b cubeRootThree = !![0, 0, 3; 1, 0, 0; 0, 1, 0] := by
+    ext i j
+    rw [Algebra.leftMulMatrix_eq_repr_mul]
+    fin_cases j <;>
+      simp only [Fin.isValue, Fin.zero_eta, Fin.mk_one,
+        show (⟨2, by norm_num⟩ : Fin 3) = 2 from rfl]
+    · rw [hm0, Basis.repr_self]; fin_cases i <;> simp
+    · rw [hm1, Basis.repr_self]; fin_cases i <;> simp
+    · rw [hm2, map_smul, Basis.repr_self]; fin_cases i <;> simp
+  rw [Algebra.norm_eq_matrix_det b, map_add, map_add, map_smul, map_smul, map_smul,
+    map_one, map_pow, hM]
+  have hsum : x • (1 : Matrix (Fin 3) (Fin 3) ℚ) + y • !![0, 0, 3; 1, 0, 0; 0, 1, 0]
+      + z • (!![0, 0, 3; 1, 0, 0; 0, 1, 0]) ^ 2 = !![x, 3 * z, 3 * y; y, x, 3 * z; z, y, x] := by
+    rw [show (!![0, 0, 3; 1, 0, 0; 0, 1, 0] : Matrix (Fin 3) (Fin 3) ℚ) ^ 2
+          = !![0, 3, 0; 0, 0, 3; 1, 0, 0] by
+      rw [pow_two]; ext i j; fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_three]]
+    ext i j; fin_cases i <;> fin_cases j <;>
+      simp [Matrix.add_apply, Matrix.smul_apply] <;> ring
+  rw [hsum]
+  simp [Matrix.det_fin_three]; ring
 
 /-- The integral norm form: on `𝓞 K = ℤ[θ]` the norm of `x + yθ + zθ²` (with `x, y, z ∈ ℤ`)
 is `x³ + 3y³ + 9z³ - 9xyz`. -/
 theorem intNorm_eq_normForm (x y z : ℤ) :
     Algebra.norm ℤ (x • (1 : 𝓞 K) + y • thetaInt + z • thetaInt ^ 2) =
       x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z := by
-  sorry
+  have ht : ((thetaInt : 𝓞 K) : K) = cubeRootThree :=
+    NumberField.RingOfIntegers.map_mk cubeRootThree cubeRootThree_integral
+  -- prove the identity after the injective cast `ℤ ↪ ℚ`, reducing to `norm_eq_normForm`
+  have key : (Algebra.norm ℤ (x • (1 : 𝓞 K) + y • thetaInt + z • thetaInt ^ 2) : ℚ)
+      = ((x : ℚ) ^ 3 + 3 * (y : ℚ) ^ 3 + 9 * (z : ℚ) ^ 3 - 9 * x * y * z) := by
+    rw [Algebra.coe_norm_int]
+    push_cast [ht]
+    rw [← Int.cast_smul_eq_zsmul ℚ x, ← Int.cast_smul_eq_zsmul ℚ y, ← Int.cast_smul_eq_zsmul ℚ z,
+      norm_eq_normForm]
+  exact_mod_cast key
 
 /-- The "cubic Pell equation" for `ℚ(∛3)`: `x + yθ + zθ²` is a unit of `ℤ[θ]` iff
 `x³ + 3y³ + 9z³ - 9xyz = ±1`. Combined with `unit_eq_torsion_mul_fundamentalUnit_zpow`, all
