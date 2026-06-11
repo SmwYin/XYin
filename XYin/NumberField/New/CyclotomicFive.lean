@@ -449,23 +449,121 @@ theorem norm_one_add_zeta : Algebra.norm ℚ (1 + ζ) = 1 := by
 /-- `5` is totally ramified: `(5) = (1 - ζ)⁴` as ideals of `𝓞 K` — ramification index
 `e = 4` equals the full degree. -/
 theorem span_five_eq : Ideal.span {(5 : 𝓞 K)} = Ideal.span {1 - zetaInt} ^ 4 := by
-  sorry
+  rw [Ideal.span_singleton_pow, Ideal.span_singleton_eq_span_singleton]
+  refine ⟨⟨-zetaInt ^ 3 + zetaInt ^ 2 - zetaInt, zetaInt ^ 4 + 2 * zetaInt ^ 3 + zetaInt ^ 2,
+    by linear_combination (-zetaInt ^ 3) * zetaInt_sum + zetaInt_pow_five,
+    by linear_combination (-zetaInt ^ 3) * zetaInt_sum + zetaInt_pow_five⟩, ?_⟩
+  change (5 : 𝓞 K) * (-zetaInt ^ 3 + zetaInt ^ 2 - zetaInt) = (1 - zetaInt) ^ 4
+  linear_combination -zetaInt_sum
+
+private theorem span_one_sub_zetaInt_eq_pair :
+    Ideal.span {1 - zetaInt} = Ideal.span {((5 : ℕ) : 𝓞 K), zetaInt - ((1 : ℤ) : 𝓞 K)} := by
+  refine le_antisymm ((Ideal.span_singleton_le_iff_mem _).mpr ?_) (Ideal.span_le.mpr ?_)
+  · refine Ideal.mem_span_pair.mpr ⟨0, -1, ?_⟩
+    push_cast
+    ring
+  · rintro y (rfl | rfl)
+    · have h5 : ((5 : ℕ) : 𝓞 K) ∈ Ideal.span {(5 : 𝓞 K)} := by
+        rw [Ideal.mem_span_singleton]
+        exact ⟨1, by push_cast; ring⟩
+      rw [span_five_eq] at h5
+      exact Ideal.pow_le_self (by norm_num) h5
+    · rw [SetLike.mem_coe, Ideal.mem_span_singleton]
+      exact ⟨-1, by push_cast; ring⟩
 
 /-- `(1 - ζ)` is a prime ideal — the unique prime of `𝓞 K` above `5`. -/
 theorem isPrime_span_one_sub_zeta : (Ideal.span {1 - zetaInt}).IsPrime := by
-  sorry
+  have hr : ((1 : ℤ) : ZMod 5) ^ 4 + ((1 : ℤ) : ZMod 5) ^ 3 + ((1 : ℤ) : ZMod 5) ^ 2 +
+      ((1 : ℤ) : ZMod 5) + 1 = 0 := by decide
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  rw [span_one_sub_zetaInt_eq_pair]
+  exact (isMaximal_span_pair 5 1 hr).isPrime
 
 /-- The prime `(1 - ζ)` above `5` has norm `5` (residue degree `f = 1`). -/
 theorem absNorm_span_one_sub_zeta : Ideal.absNorm (Ideal.span {1 - zetaInt}) = 5 := by
-  sorry
+  rw [span_one_sub_zetaInt_eq_pair]
+  exact absNorm_span_pair 5 1 (by decide)
+
+/-- The inert prime `(2)` has norm `2⁴ = 16` (residue degree `f = 4`). -/
+private theorem absNorm_span_two' : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16 := by
+  have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
+    rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+  rw [Ideal.absNorm_span_singleton,
+    show (2 : 𝓞 K) = algebraMap ℤ (𝓞 K) 2 from (map_ofNat _ 2).symm,
+    Algebra.norm_algebraMap, hfin]
+  rfl
 
 /-- `2` is inert in `ℚ(ζ₅)`: `2` has order `4` in `(ℤ/5)ˣ`, so `Φ₅` is irreducible mod `2`. -/
 theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 K)}).IsPrime := by
-  sorry
+  have htop : Ideal.span {(2 : 𝓞 K)} ≠ ⊤ := by
+    intro h
+    have h16 := absNorm_span_two'
+    rw [h, Ideal.absNorm_top] at h16
+    norm_num at h16
+  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+  haveI := hMmax
+  letI : Field ((𝓞 K) ⧸ M) := Ideal.Quotient.field M
+  have hdvd : Ideal.absNorm M ∣ 16 :=
+    absNorm_span_two' ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+  have h2mem : (2 : 𝓞 K) ∈ M := hMle (Ideal.mem_span_singleton_self _)
+  set ω : (𝓞 K) ⧸ M := Ideal.Quotient.mk M zetaInt with hω
+  have hω5 : ω ^ 5 = 1 := by
+    rw [hω, ← map_pow, zetaInt_pow_five, map_one]
+  have hω1 : ω ≠ 1 := by
+    intro h1
+    have hs := congrArg (Ideal.Quotient.mk M) zetaInt_sum
+    rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow, map_zero,
+      show Ideal.Quotient.mk M zetaInt = ω from rfl, h1] at hs
+    have h2q : (2 : (𝓞 K) ⧸ M) = 0 := by
+      rw [show (2 : (𝓞 K) ⧸ M) = Ideal.Quotient.mk M 2 from (map_ofNat _ 2).symm,
+        Ideal.Quotient.eq_zero_iff_mem]
+      exact h2mem
+    have h1q : (1 : (𝓞 K) ⧸ M) = 0 := by linear_combination hs - 2 * h2q
+    exact one_ne_zero h1q
+  classical
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  have habs : Ideal.absNorm M = Nat.card ((𝓞 K) ⧸ M) := by
+    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply]
+  haveI : Finite ((𝓞 K) ⧸ M) := by
+    refine Nat.finite_of_card_ne_zero fun h0 => ?_
+    rw [habs, h0] at hdvd
+    norm_num at hdvd
+  haveI : Fintype ((𝓞 K) ⧸ M) := Fintype.ofFinite _
+  have hM1 : Ideal.absNorm M ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hMmax.ne_top
+  obtain ⟨k, hk4, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
+    (show Ideal.absNorm M ∣ 2 ^ 4 from hdvd)
+  have hcard_eq : Fintype.card ((𝓞 K) ⧸ M) = 2 ^ k := by
+    rw [← Nat.card_eq_fintype_card, ← habs, hkeq]
+  have hpc := FiniteField.pow_card ω
+  rw [hcard_eq] at hpc
+  have hω0 : ω ≠ 0 := by
+    intro h0
+    rw [h0] at hω5
+    simp at hω5
+  have hpow1 : ω ^ (2 ^ k - 1) = 1 := by
+    refine mul_right_cancel₀ hω0 ?_
+    rw [one_mul, ← pow_succ, Nat.sub_add_cancel Nat.one_le_two_pow]
+    exact hpc
+  have h5dvd : (5 : ℕ) ∣ 2 ^ k - 1 := by
+    have horderω : orderOf ω = 5 := orderOf_eq_prime hω5 hω1
+    exact horderω ▸ orderOf_dvd_of_pow_eq_one hpow1
+  have hM16 : Ideal.absNorm M = 16 := by
+    rw [hkeq]
+    interval_cases k
+    · rw [hkeq] at hM1
+      norm_num at hM1
+    · norm_num at h5dvd
+    · norm_num at h5dvd
+    · norm_num at h5dvd
+    · norm_num
+  have heq := eq_of_le_of_absNorm_eq hMle absNorm_span_two' hM16 (by norm_num)
+  rw [heq]
+  exact hMmax.isPrime
 
-/-- The inert prime `(2)` has norm `2⁴ = 16` (residue degree `f = 4`). -/
-theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16 := by
-  sorry
+theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16 :=
+  absNorm_span_two'
 
 /-- `19` splits into two primes of degree `2`: `19 ≡ -1 (mod 5)` has order `2` in `(ℤ/5)ˣ`,
 and `Φ₅ ≡ (X² + 5X + 1)(X² + 15X + 1) (mod 19)`. -/
