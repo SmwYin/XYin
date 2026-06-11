@@ -3,10 +3,19 @@ import Mathlib
 /-!
 # The cyclotomic quadratic field `ℚ(ζ₃)`
 
-This file is the cyclotomic half of `Experiment.lean`.  It focuses on
-`K = CyclotomicField 3 ℚ`, i.e. `ℚ(ζ₃) ≃ ℚ(√-3)`, and demonstrates mathlib's
-specialised cyclotomic-field API: primitive roots of unity, cyclotomic integral
-bases, discriminants, units, PID/class-number-one results, and Galois groups.
+The imaginary quadratic field `K = CyclotomicField 3 ℚ`, i.e. `ℚ(ζ₃) ≃ ℚ(√-3)`, and its main
+arithmetic invariants:
+
+* degree `2`, generator `ζ₃`, alternative `AdjoinRoot` presentations (section 1);
+* integral basis `1, ζ`, ring of integers `ℤ[ζ]` — the Eisenstein integers (section 2);
+* discriminant `-3` (section 3);
+* the norm form `x² - xy + y²` and its unit equation (section 4);
+* splitting of rational primes: `3` ramifies as `(ζ - 1)²`, `2` is inert, `7` splits, and the
+  splitting law: `p ≠ 3` splits iff `p ≡ 1 (mod 3)` (section 5);
+* unit group `μ₆ = {±1, ±ζ, ±ζ²}` of rank `0`, regulator `1` (section 6);
+* class number one (section 7);
+* the norm-Euclidean property (section 8);
+* Galois group `(ℤ/3)ˣ ≅ ℤ/2` (section 9).
 -/
 
 noncomputable section
@@ -17,9 +26,7 @@ open Module NumberField Polynomial
 
 namespace XYin.NumberField.CyclotomicThree
 
-/-! ## I. The cyclotomic field `ℚ(ζ₃)` -/
-
-/-! ### 1. Basic field construction and generator -/
+/-! ## 1. Basics -/
 
 /-- Our running example: the third cyclotomic field, i.e. `ℚ(√-3)`. -/
 abbrev K : Type := CyclotomicField 3 ℚ
@@ -57,7 +64,7 @@ instance : Algebra.IsQuadraticExtension ℚ K where
     rw [IsCyclotomicExtension.Rat.finrank 3 K]
     rw [Nat.totient_prime Nat.prime_three]
 
-/-! ### 2. Alternative `AdjoinRoot` presentations -/
+/-! ### Alternative `AdjoinRoot` presentations -/
 
 /--
 The same quadratic field built directly by adjoining a root of `X^2 + X + 1`.
@@ -242,7 +249,7 @@ theorem sqrtNegThreeEquivCyclotomic_root :
   rw [sqrtNegThreeEquivZetaThree_root]
   simp only [map_add, map_mul, map_one, map_ofNat, adjoinRootEquivCyclotomic_root]
 
-/-! ### 3. Ring of integers and integral bases -/
+/-! ## 2. Integral basis and ring of integers -/
 
 /-- The ring of integers of `K`. -/
 abbrev OK : Type := 𝓞 K
@@ -256,6 +263,9 @@ example : Algebra OK K := by infer_instance
 /-- Elements of `𝓞 K` are, by definition, integral over `ℤ`. -/
 example (x : OK) : IsIntegral ℤ (x : K) :=
   x.2
+
+/-- `ζ` as an element of the ring of integers `𝓞 K`. -/
+noncomputable def zetaInt : OK := zeta_isPrimitiveRoot.toInteger
 
 /--
 For cyclotomic fields, a primitive root of unity gives an explicit integral power basis
@@ -319,10 +329,12 @@ As a consequence, the ring of integers is generated over `ℤ` by the primitive 
 example : Algebra.adjoin ℤ ({integralPowerBasis.gen} : Set (𝓞 K)) = ⊤ :=
   integralPowerBasis.adjoin_gen_eq_top
 
-/-! ### 4. Discriminants and change-of-basis formulas -/
+/-! ## 3. Discriminant -/
 
-/-- The absolute discriminant of `ℚ(ζ₃) = ℚ(√-3)` is `-3`. -/
-example : NumberField.discr K = -3 := by
+/-- The number-field discriminant of `ℚ(ζ₃) = ℚ(√-3)` is `-3`: the quadratic field of
+smallest absolute discriminant. In particular `3` is the only ramified prime, cf.
+`ramified_iff_eq_three`. -/
+theorem numberField_discr_eq : NumberField.discr K = -3 := by
   rw [IsCyclotomicExtension.Rat.discr_prime 3 K]
   norm_num
 
@@ -371,6 +383,29 @@ example (P : Matrix (Free.ChooseBasisIndex ℤ (𝓞 K)) (Free.ChooseBasisIndex 
   rw [discr_matrix_mulVec_K, hdiscr]
   rcases hdet with h | h <;> simp [h]
 
+/-! ## 4. Norm form -/
+
+/-- The norm form of `ℚ(ζ₃)` in the basis `1, ζ`: the field norm of `x + yζ` is the binary
+quadratic form `x² - xy + y²`, the principal form of discriminant `-3`. -/
+theorem norm_eq_normForm (x y : ℚ) :
+    Algebra.norm ℚ (x • (1 : K) + y • ζ) = x ^ 2 - x * y + y ^ 2 := by
+  sorry
+
+/-- The integral norm form: on `𝓞 K = ℤ[ζ]` the norm of `x + yζ` (with `x, y ∈ ℤ`) is
+`x² - xy + y²`. -/
+theorem intNorm_eq_normForm (x y : ℤ) :
+    Algebra.norm ℤ (x • (1 : OK) + y • zetaInt) = x ^ 2 - x * y + y ^ 2 := by
+  sorry
+
+/-- The unit equation of `ℚ(ζ₃)`: `x + yζ` is a unit of `ℤ[ζ]` iff `x² - xy + y² = 1`. The
+form is positive definite (this is the imaginary quadratic case), so only the value `+1`
+occurs, and the six integer solutions correspond to the six roots of unity `±1, ±ζ, ±ζ²`. -/
+theorem isUnit_iff_normForm (x y : ℤ) :
+    IsUnit (x • (1 : OK) + y • zetaInt) ↔ x ^ 2 - x * y + y ^ 2 = 1 := by
+  sorry
+
+/-! ## 5. Splitting of primes -/
+
 /-- The element `ζ - 1` is a prime element of the ring of integers. -/
 example : Prime (zeta_isPrimitiveRoot.toInteger - 1 : OK) :=
   zeta_isPrimitiveRoot.zeta_sub_one_prime'
@@ -379,7 +414,59 @@ example : Prime (zeta_isPrimitiveRoot.toInteger - 1 : OK) :=
 example : (zeta_isPrimitiveRoot.toInteger - 1 : OK) ∣ (3 : OK) :=
   zeta_isPrimitiveRoot.toInteger_sub_one_dvd_prime'
 
-/-! ### 5. Units -/
+/-- `3` is (totally) ramified: `(3) = (ζ - 1)²` as ideals of `𝓞 K`. It is the unique
+ramified prime, matching the discriminant `-3`. -/
+theorem span_three_eq :
+    Ideal.span {(3 : OK)} = Ideal.span {zetaInt - 1} ^ 2 := by
+  sorry
+
+/-- The prime `(ζ - 1)` above `3` has norm `3` (residue degree `f = 1`). -/
+theorem absNorm_span_zetaInt_sub_one :
+    Ideal.absNorm (Ideal.span {zetaInt - 1}) = 3 := by
+  sorry
+
+/-- `(ζ - 1)` is a prime ideal — the unique prime of `𝓞 K` above `3`. -/
+theorem isPrime_span_zetaInt_sub_one : (Ideal.span {zetaInt - 1}).IsPrime := by
+  sorry
+
+/-- `2` is inert in `ℚ(ζ₃)`: `2 ≡ 2 (mod 3)`, equivalently `X² + X + 1` is irreducible
+mod `2`, so `(2)` is itself prime. -/
+theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime := by
+  sorry
+
+/-- The inert prime `(2)` has norm `4` (residue degree `f = 2`). -/
+theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : OK)}) = 4 := by
+  sorry
+
+/-- `7 ≡ 1 (mod 3)` splits completely: `7 = (3 + ζ)(3 + ζ²)` and
+`(7) = (3 + ζ) · (3 + ζ²)` is a product of two distinct primes of norm `7`. -/
+theorem span_seven_eq :
+    Ideal.span {(7 : OK)} = Ideal.span {3 + zetaInt} * Ideal.span {3 + zetaInt ^ 2} := by
+  sorry
+
+/-- The prime `(3 + ζ)` above `7` has norm `7` (residue degree `f = 1`). -/
+theorem absNorm_span_seven_factor : Ideal.absNorm (Ideal.span {3 + zetaInt}) = 7 := by
+  sorry
+
+/-- `(3 + ζ)` is a prime ideal — one of the two primes of `𝓞 K` above `7`. -/
+theorem isPrime_span_seven_factor : (Ideal.span {3 + zetaInt}).IsPrime := by
+  sorry
+
+/-- The splitting law at ramified primes: a rational prime `p` ramifies in `ℚ(ζ₃)` iff
+`p = 3`, i.e. iff `p` divides the discriminant `-3`. -/
+theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(p : OK)} ≤ P ^ 2) ↔ p = 3 := by
+  sorry
+
+/-- The quadratic (cyclotomic) splitting law for `ℚ(ζ₃)`: an unramified rational prime `p`
+splits into two distinct primes iff `p ≡ 1 (mod 3)`, and is inert otherwise. This is the
+simplest instance of splitting governed by congruence conditions (class field theory). -/
+theorem splits_iff_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    (∃ P Q : Ideal OK, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : OK)} = P * Q) ↔ p % 3 = 1 := by
+  sorry
+
+/-! ## 6. Ring of units -/
 
 /-- The unit corresponding to `ζ`. -/
 abbrev etaUnit : OKˣ :=
@@ -393,19 +480,30 @@ example (u : OKˣ) : u ∈ ([1, -1, etaUnit, -etaUnit, etaUnit ^ 2, -etaUnit ^ 2
   simpa [etaUnit] using IsCyclotomicExtension.Rat.Three.Units.mem zeta_isPrimitiveRoot u
 
 /-- The torsion subgroup of the unit group has order `6`. -/
-example : Units.torsionOrder K = 6 := by
+theorem torsionOrder_eq_six : Units.torsionOrder K = 6 := by
   rw [IsCyclotomicExtension.Rat.torsionOrder_eq (n := 3) (K := K)]
   norm_num
 
-/-- Dirichlet's unit rank is `0` for this imaginary quadratic field. -/
-example : Units.rank K = 0 := by
+/-- Dirichlet's unit rank is `0` for this imaginary quadratic field: the signature is
+`(r₁, r₂) = (0, 1)`, so the rank is `r₁ + r₂ - 1 = 0`. -/
+theorem unitRank_eq_zero : Units.rank K = 0 := by
   dsimp [Units.rank]
   rw [InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
     IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 3) K (by norm_num),
     IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := 3) K]
   rw [Nat.totient_prime Nat.prime_three]
 
-/-! ### 6. Minkowski bounds and class groups -/
+/-- The unit group is the finite cyclic group `μ₆` as an abstract abelian group: in rank `0`
+the units are exactly the roots of unity, generated by `-ζ`. -/
+theorem unitGroupStructure : Nonempty (OKˣ ≃* Multiplicative (ZMod 6)) := by
+  sorry
+
+/-- The regulator of `ℚ(ζ₃)` is `1`: the unit lattice is the zero lattice in rank `0`, with
+covolume `1`. -/
+theorem regulator_eq_one : Units.regulator K = 1 := by
+  sorry
+
+/-! ## 7. Class group -/
 
 /--
 The convex-body version of the Minkowski bound in mathlib is attached to a fractional
@@ -429,14 +527,30 @@ example : Fintype (ClassGroup OK) := by infer_instance
 example (C : ClassGroup OK) : ∃ I : (Ideal OK)⁰, ClassGroup.mk0 I = C :=
   ClassGroup.mk0_surjective C
 
-/-- The ring of integers is a PID, hence the class number is `1`. -/
-example : IsPrincipalIdealRing OK :=
+/-- The ring of integers `ℤ[ζ]` is a principal ideal domain — the ring-theoretic content of
+class number one. -/
+theorem isPrincipalIdealRing : IsPrincipalIdealRing OK :=
   IsCyclotomicExtension.Rat.three_pid K
 
-example : NumberField.classNumber K = 1 :=
+/-- The class number of `ℚ(ζ₃)` is `1`. -/
+theorem classNumber_eq_one : NumberField.classNumber K = 1 :=
   NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.three_pid K)
 
-/-! ### 7. Galois theory and conjugation -/
+/-- The class group of `𝓞 K` is trivial. -/
+theorem classGroupStructure : Nonempty (ClassGroup OK ≃* Multiplicative (ZMod 1)) := by
+  sorry
+
+/-! ## 8. Euclidean structure -/
+
+/-- `ℤ[ζ₃]`, the ring of Eisenstein integers, is norm-Euclidean: division with remainder
+with respect to the absolute value of the field norm. This strengthens
+`isPrincipalIdealRing`. -/
+theorem normEuclidean (a b : OK) (hb : b ≠ 0) :
+    ∃ q r : OK, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs := by
+  sorry
+
+/-! ## 9. Galois group -/
 
 example : IsGalois ℚ K :=
   IsCyclotomicExtension.isGalois {3} ℚ K
@@ -452,5 +566,9 @@ example (σ : Gal(K/ℚ)) :
     σ ζ = ζ ^ (galEquivZMod σ).val.val :=
   IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq 3 K σ zeta_isPrimitiveRoot.pow_eq_one
 
+/-- The Galois group of `ℚ(ζ₃)/ℚ` is cyclic of order `2`: `(ℤ/3)ˣ ≅ ℤ/2`, generated by
+complex conjugation `ζ ↦ ζ² = ζ̄`. -/
+theorem galoisGroupStructure : Nonempty (Gal(K/ℚ) ≃* Multiplicative (ZMod 2)) := by
+  sorry
 
 end XYin.NumberField.CyclotomicThree

@@ -315,7 +315,7 @@ private theorem li_one_golden : LinearIndependent ℤ ![(1 : 𝓞 K), goldenInt]
   rw [Fintype.linearIndependent_iff]
   intro g hg
   rw [Fin.sum_univ_two] at hg
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] at hg
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one] at hg
   have hgK : algebraMap (𝓞 K) K (g 0 • (1 : 𝓞 K) + g 1 • goldenInt) = 0 := by
     rw [hg, map_zero]
   rw [map_add, map_zsmul, map_zsmul, map_one, coe_goldenInt] at hgK
@@ -522,7 +522,7 @@ private theorem li_one_golden_K : LinearIndependent ℚ ![(1 : K), goldenInteger
   rw [Fintype.linearIndependent_iff]
   intro g hg
   rw [Fin.sum_univ_two] at hg
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] at hg
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one] at hg
   have hform : g 0 • (1 : K) + g 1 • goldenInteger =
       algebraMap ℚ K (g 0 + g 1 / 2) + algebraMap ℚ K (g 1 / 2) * sqrtFive := by
     rw [Algebra.smul_def, Algebra.smul_def, mul_one,
@@ -662,8 +662,7 @@ private theorem concreteIntegralBasis_discr :
     · rw [show ((⟨1, by norm_num⟩ : Fin 2)) = (1 : Fin 2) from rfl]
       simp only [bLoc, bInt, Module.Basis.localizationLocalization_apply]
       rw [concreteIntegralBasis_apply 1]
-      simp only [integralBasisVectors, goldenPowerBasis, goldenBasisK, Matrix.cons_val_one,
-        Matrix.head_cons]
+      simp only [integralBasisVectors, goldenPowerBasis, goldenBasisK, Matrix.cons_val_one]
       exact (Module.Basis.mk_apply li_one_golden_K span_one_golden_K 1).symm
   rw [hfun]
   exact goldenPowerBasis_discr
@@ -899,9 +898,7 @@ theorem primesAboveEleven_ne :
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
   have h := intNorm_eq_normForm (p : ℤ) 0
-  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • goldenInt = ((p : ℕ) : 𝓞 K) := by
-    push_cast
-    simp
+  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • goldenInt = ((p : ℕ) : 𝓞 K) := by simp
   rw [hps] at h
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
@@ -926,12 +923,11 @@ private theorem unit_golden_coeff_not_mem (p : ℕ) (hp : 2 ≤ p) (A B : ℤ)
   have hsum : ∑ i : Fin 2,
       (![A - p * A', B - p * m] i) • (![(1 : 𝓞 K), goldenInt] i) = 0 := by
     rw [Fin.sum_univ_two]
-    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, zsmul_eq_mul,
-      smul_eq_mul] at hz ⊢
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, zsmul_eq_mul] at hz ⊢
     push_cast at hz ⊢
     linear_combination hz
   have hcoeff := Fintype.linearIndependent_iff.mp li_one_golden _ hsum 1
-  simp only [Matrix.cons_val_one, Matrix.head_cons, Matrix.cons_val_zero] at hcoeff
+  simp only [Matrix.cons_val_one, Matrix.cons_val_zero] at hcoeff
   rcases hB with rfl | rfl
   · have h1 : (p : ℤ) ∣ 1 := ⟨m, by linarith [hcoeff]⟩
     have := Int.le_of_dvd one_pos h1
@@ -1396,7 +1392,7 @@ theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2 := by
     refine ⟨⟨1, hmem1⟩, ⟨-1, hmemn⟩, ?_, ?_⟩
     · intro h
       have hval := congrArg (fun z => ((z : (𝓞 K)ˣ) : 𝓞 K)) (Subtype.ext_iff.mp h)
-      simp at hval
+      simp only [Units.val_one, Units.val_neg] at hval
       have h2 := congrArg (algebraMap (𝓞 K) K) hval
       simp only [map_one, map_neg] at h2
       exact two_ne_zero (by linear_combination h2 : (2 : K) = 0)
