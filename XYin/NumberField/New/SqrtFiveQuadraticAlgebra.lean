@@ -448,50 +448,182 @@ theorem isUnit_iff_normForm (x y : ℤ) :
 /-! ## 5. Splitting of primes -/
 
 /-- `5` is totally ramified: `(5) = (√5)²` as ideals of `𝓞 K`, from `(2φ - 1)² = 5`. -/
+private theorem sqrtFiveInt_eq_smul : sqrtFiveInt = (-1 : ℤ) • (1 : 𝓞 K) + (2 : ℤ) • goldenInt := by
+  simp only [sqrtFiveInt, zsmul_eq_mul]
+  push_cast
+  ring
+
 theorem span_five_eq : Ideal.span {(5 : 𝓞 K)} = Ideal.span {sqrtFiveInt} ^ 2 := by
-  sorry
+  rw [Ideal.span_singleton_pow,
+    show sqrtFiveInt ^ 2 = (5 : 𝓞 K) from by
+      simp only [sqrtFiveInt]
+      linear_combination 4 * goldenInt_sq]
 
 /-- `(√5)` is a prime ideal — the unique prime of `𝓞 K` above `5`. -/
+private theorem absNorm_span_sqrtFive' : Ideal.absNorm (Ideal.span {sqrtFiveInt}) = 5 := by
+  have h := intNorm_eq_normForm (-1) 2
+  rw [← sqrtFiveInt_eq_smul] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
 theorem isPrime_span_sqrtFive : (Ideal.span {sqrtFiveInt}).IsPrime := by
-  sorry
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_span_sqrtFive']
+  exact (by norm_num : Nat.Prime 5)
 
 /-- The prime `(√5)` above `5` has norm `5` (residue degree `f = 1`). -/
-theorem absNorm_span_sqrtFive : Ideal.absNorm (Ideal.span {sqrtFiveInt}) = 5 := by
-  sorry
+theorem absNorm_span_sqrtFive : Ideal.absNorm (Ideal.span {sqrtFiveInt}) = 5 :=
+  absNorm_span_sqrtFive'
+
+/-- Nonzero ideals with equal absolute norms and one inclusion are equal. -/
+private theorem eq_of_le_of_absNorm_eq {I J : Ideal (𝓞 K)} (hle : I ≤ J) {n : ℕ}
+    (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J := by
+  obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
+  have hmul := _root_.map_mul Ideal.absNorm J C
+  rw [← hC, hI, hJ] at hmul
+  have hC1 : Ideal.absNorm C = 1 :=
+    (Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hn)
+      (by rw [mul_one]; exact hmul)).symm
+  rw [hC, Ideal.absNorm_eq_one_iff.mp hC1, Ideal.mul_top]
+
+/-- There is no prime of `𝓞 K` with residue field `𝔽₂`: `X² - X - 1` has no root mod `2`. -/
+private theorem absNorm_ne_two (P : Ideal (𝓞 K)) : Ideal.absNorm P ≠ 2 := by
+  intro hcard
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
+  haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+  haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 K) ⧸ P) = 2 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact hcard
+  let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) (by norm_num) hcard'
+  obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P goldenInt)
+  have ht2 : t ^ 2 = t + 1 := by
+    apply e.injective
+    rw [map_pow, ht, map_add, ht, map_one, ← map_pow (Ideal.Quotient.mk P), goldenInt_sq,
+      map_add, map_one]
+  clear ht
+  revert t
+  decide
 
 /-- `2` is inert in `ℚ(√5)`: `X² - X - 1` is irreducible mod `2`, equivalently `5` is not a
 square mod `8`. -/
 theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 K)}).IsPrime := by
-  sorry
+  have habs4 : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 4 := by
+    have h := intNorm_eq_normForm 2 0
+    have h2 : (2 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • goldenInt = 2 := by
+      simp
+    rw [h2] at h
+    norm_num at h
+    rw [Ideal.absNorm_span_singleton, h]
+    rfl
+  have htop : Ideal.span {(2 : 𝓞 K)} ≠ ⊤ := by
+    intro h
+    rw [h, Ideal.absNorm_top] at habs4
+    norm_num at habs4
+  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+  have hdvd : Ideal.absNorm M ∣ 4 := habs4 ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+  have hM1 : Ideal.absNorm M ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hMmax.ne_top
+  have hM2 : Ideal.absNorm M ≠ 2 := absNorm_ne_two M
+  have hM4 : Ideal.absNorm M = 4 := by
+    obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
+      (show Ideal.absNorm M ∣ 2 ^ 2 from hdvd)
+    interval_cases k
+    · rw [pow_zero] at hkeq
+      exact absurd hkeq hM1
+    · rw [pow_one] at hkeq
+      exact absurd hkeq hM2
+    · rw [hkeq]
+      norm_num
+  have heq := eq_of_le_of_absNorm_eq hMle habs4 hM4 (by norm_num)
+  rw [heq]
+  exact hMmax.isPrime
 
 /-- The inert prime `(2)` has norm `4` (residue degree `f = 2`). -/
 theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 4 := by
-  sorry
+  have h := intNorm_eq_normForm 2 0
+  have h2 : (2 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • goldenInt = 2 := by simp
+  rw [h2] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
 
 /-- The elementary identity `11 = (3 + φ)(4 - φ)` in `ℤ[φ]`, the two factors being conjugate
 elements of norm `11`. -/
 theorem eleven_eq_mul : (11 : 𝓞 K) = (3 + goldenInt) * (4 - goldenInt) := by
-  sorry
+  linear_combination goldenInt_sq
 
 /-- `11` splits: `(11) = (3 + φ) · (4 - φ)` is a product of two distinct principal primes of
 norm `11`, matching `11 ≡ 1 (mod 5)`. -/
 theorem span_eleven_eq :
     Ideal.span {(11 : 𝓞 K)} =
       Ideal.span {3 + goldenInt} * Ideal.span {4 - goldenInt} := by
-  sorry
+  rw [Ideal.span_singleton_mul_span_singleton, ← eleven_eq_mul]
 
 /-- `(3 + φ)` is a prime ideal of norm `11`. -/
+private theorem absNorm_three_add_golden :
+    Ideal.absNorm (Ideal.span {3 + goldenInt}) = 11 := by
+  have h := intNorm_eq_normForm 3 1
+  have h3 : (3 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • goldenInt = 3 + goldenInt := by
+    simp
+  rw [h3] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+private theorem absNorm_four_sub_golden :
+    Ideal.absNorm (Ideal.span {4 - goldenInt}) = 11 := by
+  have h := intNorm_eq_normForm 4 (-1)
+  have h4 : (4 : ℤ) • (1 : 𝓞 K) + (-1 : ℤ) • goldenInt = 4 - goldenInt := by
+    simp only [zsmul_eq_mul]
+    push_cast
+    ring
+  rw [h4] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
 theorem isPrime_span_three_add_golden : (Ideal.span {3 + goldenInt}).IsPrime := by
-  sorry
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_three_add_golden]
+  exact (by norm_num : Nat.Prime 11)
 
 /-- `(4 - φ)` is a prime ideal of norm `11`, distinct from `(3 + φ)`. -/
 theorem isPrime_span_four_sub_golden : (Ideal.span {4 - goldenInt}).IsPrime := by
-  sorry
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_four_sub_golden]
+  exact (by norm_num : Nat.Prime 11)
 
 /-- The two primes above `11` are distinct, so `11` splits (is not ramified). -/
 theorem primesAboveEleven_ne :
     Ideal.span ({3 + goldenInt} : Set (𝓞 K)) ≠ Ideal.span {4 - goldenInt} := by
-  sorry
+  intro h
+  have h4 : (4 : 𝓞 K) - goldenInt ∈ Ideal.span ({3 + goldenInt} : Set (𝓞 K)) := by
+    rw [h]
+    exact Ideal.mem_span_singleton_self _
+  have hs : sqrtFiveInt ∈ Ideal.span ({3 + goldenInt} : Set (𝓞 K)) := by
+    have heq : sqrtFiveInt = (3 + goldenInt) - (4 - goldenInt) + (goldenInt - goldenInt) := by
+      simp only [sqrtFiveInt]
+      ring
+    rw [show sqrtFiveInt = (3 + goldenInt) - ((4 : 𝓞 K) - goldenInt) from by
+      simp only [sqrtFiveInt]; ring]
+    exact Ideal.sub_mem _ (Ideal.mem_span_singleton_self _) h4
+  have h5 : (5 : 𝓞 K) ∈ Ideal.span ({3 + goldenInt} : Set (𝓞 K)) := by
+    rw [show (5 : 𝓞 K) = sqrtFiveInt * sqrtFiveInt from by
+      simp only [sqrtFiveInt]; linear_combination -4 * goldenInt_sq]
+    exact Ideal.mul_mem_right _ _ hs
+  have h11 : (11 : 𝓞 K) ∈ Ideal.span ({3 + goldenInt} : Set (𝓞 K)) := by
+    rw [eleven_eq_mul]
+    exact Ideal.mul_mem_right _ _ (Ideal.mem_span_singleton_self _)
+  have h1 : (1 : 𝓞 K) ∈ Ideal.span ({3 + goldenInt} : Set (𝓞 K)) := by
+    rw [show (1 : 𝓞 K) = 11 - 2 * 5 from by norm_num]
+    exact Ideal.sub_mem _ h11 (Ideal.mul_mem_left _ _ h5)
+  have htop : Ideal.span ({3 + goldenInt} : Set (𝓞 K)) = ⊤ := (Ideal.eq_top_iff_one _).mpr h1
+  have habs := absNorm_three_add_golden
+  rw [htop, Ideal.absNorm_top] at habs
+  norm_num at habs
 
 /-- The splitting law for `ℚ(√5)` (a case of quadratic reciprocity): a prime `p ≠ 5` splits
 into two distinct primes iff `p ≡ ±1 (mod 5)`, and is inert otherwise. -/
