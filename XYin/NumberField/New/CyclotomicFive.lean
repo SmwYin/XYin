@@ -913,13 +913,191 @@ theorem isPrime_primeAboveEleven (r : ℤ) (hr : r = 3 ∨ r = 4 ∨ r = 5 ∨ r
 theorem splits_completely_iff (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p) ↔
       p % 5 = 1 := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  constructor
+  · rintro ⟨P, hPprime, hle, habs⟩
+    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
+    haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [habs]; exact hp.ne_zero)
+    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+    have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by
+      rw [← Nat.card_eq_fintype_card]
+      exact habs
+    let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
+    obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P zetaInt)
+    have hs5 : s ^ 5 = (1 : ZMod p) := by
+      apply e.injective
+      rw [map_pow, hs, ← map_pow (Ideal.Quotient.mk P), zetaInt_pow_five, map_one, map_one]
+    have hssum : 1 + s + s ^ 2 + s ^ 3 + s ^ 4 = (0 : ZMod p) := by
+      apply e.injective
+      rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow, hs, map_zero]
+      have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_sum
+      rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow,
+        map_zero] at hmk
+      exact hmk
+    have hs1 : s ≠ 1 := by
+      intro h1
+      rw [h1] at hssum
+      have h5 : ((5 : ℕ) : ZMod p) = 0 := by
+        push_cast
+        linear_combination hssum
+      have hdvd := (CharP.cast_eq_zero_iff (ZMod p) p 5).mp h5
+      exact hp5 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num : Nat.Prime 5)).mp hdvd)
+    have hs0 : s ≠ 0 := by
+      intro h0
+      rw [h0] at hs5
+      simp at hs5
+    set u : (ZMod p)ˣ := Units.mkOfMulEqOne s (s ^ 4)
+      (by rw [← pow_succ']; exact hs5) with hudef
+    have hu : (u : ZMod p) = s := rfl
+    have horder : orderOf u = 5 := by
+      refine orderOf_eq_prime ?_ ?_
+      · ext
+        rw [Units.val_pow_eq_pow_val, hu]
+        exact hs5
+      · intro h1
+        apply hs1
+        rw [← hu, h1, Units.val_one]
+    have hdvd_card : (5 : ℕ) ∣ p - 1 := by
+      have h := orderOf_dvd_natCard u
+      rw [horder, Nat.card_eq_fintype_card, ZMod.card_units_eq_totient,
+        Nat.totient_prime hp] at h
+      exact h
+    have h2le := hp.two_le
+    obtain ⟨m, hm⟩ := hdvd_card
+    omega
+  · intro hmod
+    have hcard : Nat.card (ZMod p)ˣ = p - 1 := by
+      rw [Nat.card_eq_fintype_card, ZMod.card_units_eq_totient, Nat.totient_prime hp]
+    obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := (ZMod p)ˣ)
+    have hog : orderOf g = p - 1 := by
+      rw [orderOf_eq_card_of_forall_mem_zpowers hg, hcard]
+    have h2le := hp.two_le
+    obtain ⟨m, hm⟩ : (5 : ℕ) ∣ p - 1 := ⟨(p - 1) / 5, by omega⟩
+    have hm0 : m ≠ 0 := by omega
+    have hou : orderOf (g ^ m) = 5 := by
+      rw [orderOf_pow, hog, hm]
+      have hgcd : Nat.gcd (5 * m) m = m := Nat.gcd_eq_right ⟨5, by ring⟩
+      rw [hgcd, Nat.mul_div_assoc 5 (dvd_refl m), Nat.div_self (show 0 < m by omega), mul_one]
+    have hu5 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 5 = 1 := by
+      have h := pow_orderOf_eq_one (g ^ m)
+      rw [hou] at h
+      have hc := congrArg Units.val h
+      simpa using hc
+    have hu1 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ≠ 1 := by
+      intro h1
+      have : (g ^ m) = 1 := Units.ext (by simpa using h1)
+      rw [this, orderOf_one] at hou
+      norm_num at hou
+    have hr : (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) ^ 4 +
+        (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) ^ 3 +
+        (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) ^ 2 +
+        (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) + 1 = 0 := by
+      have hcast : (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) =
+          ((g ^ m : (ZMod p)ˣ) : ZMod p) := by
+        push_cast
+        exact ZMod.natCast_rightInverse _
+      rw [hcast]
+      set v : ZMod p := ((g ^ m : (ZMod p)ˣ) : ZMod p)
+      have hfactor : (v - 1) * (v ^ 4 + v ^ 3 + v ^ 2 + v + 1) = 0 := by
+        linear_combination hu5
+      rcases mul_eq_zero.mp hfactor with h | h
+      · exact absurd (by linear_combination h) hu1
+      · linear_combination h
+    refine ⟨Ideal.span {((p : ℕ) : 𝓞 K),
+      zetaInt - ((((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : 𝓞 K))},
+      (isMaximal_span_pair p _ hr).isPrime, ?_, absNorm_span_pair p _ hr⟩
+    rw [Ideal.span_le, Set.singleton_subset_iff]
+    exact Ideal.subset_span (by simp)
 
 /-- A rational prime `p` ramifies in `ℚ(ζ₅)` iff `p = 5`, i.e. iff `p` divides the
 discriminant `125`. -/
 theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
-  sorry
+  constructor
+  · rintro ⟨P, hP, hle2⟩
+    haveI : P.IsPrime := hP
+    have hple : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ P :=
+      hle2.trans (Ideal.pow_le_self (by norm_num))
+    have hpmemP : ((p : ℕ) : 𝓞 K) ∈ P := hple (Ideal.mem_span_singleton_self _)
+    have hpne : ((p : ℕ) : 𝓞 K) ≠ 0 := Nat.cast_ne_zero.mpr hp.ne_zero
+    have hPbot : P ≠ ⊥ := by
+      intro h
+      rw [h] at hpmemP
+      exact hpne (Ideal.mem_bot.mp hpmemP)
+    have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
+      rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+    have habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 4 := by
+      rw [Ideal.absNorm_span_singleton]
+      have hcast : ((p : ℕ) : 𝓞 K) = algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) := by push_cast; rfl
+      rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
+    have habsPp4 : Ideal.absNorm P ∣ p ^ 4 :=
+      habsp ▸ Ideal.absNorm_dvd_absNorm_of_le hple
+    obtain ⟨k, hk4, hkeq⟩ := (Nat.dvd_prime_pow hp).mp habsPp4
+    have hk0 : k ≠ 0 := by
+      intro h0
+      rw [h0, pow_zero] at hkeq
+      exact hP.ne_top (Ideal.absNorm_eq_one_iff.mp hkeq)
+    have hmap : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) =
+        Ideal.span {((p : ℕ) : 𝓞 K)} := by
+      rw [Ideal.map_span, Set.image_singleton]
+      norm_num
+    have hle2' : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
+      rw [hmap]
+      exact hle2
+    have hno5 : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 5 := by
+      intro h5
+      rw [hmap] at h5
+      have hd := Ideal.absNorm_dvd_absNorm_of_le h5
+      rw [map_pow, habsp, hkeq, ← pow_mul] at hd
+      rw [Nat.pow_dvd_pow_iff_le_right hp.one_lt] at hd
+      omega
+    have hidx : Ideal.ramificationIdx (Ideal.span {((p : ℕ) : ℤ)}) P ≠ 1 := by
+      by_cases h3 : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3
+      · by_cases h4 : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 4
+        · rw [Ideal.ramificationIdx_spec h4 hno5]
+          norm_num
+        · rw [Ideal.ramificationIdx_spec h3 h4]
+          norm_num
+      · rw [Ideal.ramificationIdx_spec hle2' h3]
+        norm_num
+    have hund : Ideal.under ℤ P = Ideal.span {((p : ℕ) : ℤ)} := by
+      have hmem : ((p : ℕ) : ℤ) ∈ Ideal.under ℤ P := by
+        rw [Ideal.under, Ideal.mem_comap]
+        have hcast2 : algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) = ((p : ℕ) : 𝓞 K) := by push_cast; rfl
+        rw [hcast2]
+        exact hpmemP
+      have hle : Ideal.span {((p : ℕ) : ℤ)} ≤ Ideal.under ℤ P := by
+        rw [Ideal.span_le, Set.singleton_subset_iff]
+        exact hmem
+      have hprime : (Ideal.span {((p : ℕ) : ℤ)}).IsPrime :=
+        (Ideal.span_singleton_prime (by exact_mod_cast hp.ne_zero)).mpr
+          (Nat.prime_iff_prime_int.mp hp)
+      have hbot : Ideal.span {((p : ℕ) : ℤ)} ≠ ⊥ := by
+        rw [Ne, Ideal.span_singleton_eq_bot]
+        exact_mod_cast hp.ne_zero
+      have hnetop : Ideal.under ℤ P ≠ ⊤ := by
+        intro h
+        have h1 : (1 : ℤ) ∈ Ideal.under ℤ P := h ▸ Submodule.mem_top
+        rw [Ideal.under, Ideal.mem_comap, map_one] at h1
+        exact hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h1 isUnit_one)
+      exact ((hprime.isMaximal hbot).eq_of_le hnetop hle).symm
+    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P := by
+      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hPbot, hund]
+      exact hidx
+    have hPdiff : P ∣ differentIdeal ℤ (𝓞 K) := dvd_differentIdeal_iff.mpr hunram
+    have habsP125 : Ideal.absNorm P ∣ 125 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
+      rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq] at h
+      simpa using h
+    have hpdvd : p ∣ 125 := (hkeq ▸ dvd_pow_self p hk0).trans habsP125
+    have hp5 : p ∣ 5 := hp.dvd_of_dvd_pow (show p ∣ 5 ^ 3 by norm_num; exact hpdvd)
+    exact (Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp hp5
+  · rintro rfl
+    refine ⟨Ideal.span {1 - zetaInt}, isPrime_span_one_sub_zeta, ?_⟩
+    have hcast : ((5 : ℕ) : 𝓞 K) = (5 : 𝓞 K) := by norm_num
+    rw [hcast, span_five_eq]
+    exact Ideal.pow_le_pow_right (by norm_num)
 
 /-! ## 6. Ring of units -/
 
