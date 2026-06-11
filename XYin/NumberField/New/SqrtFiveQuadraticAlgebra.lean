@@ -119,6 +119,17 @@ private noncomputable def conj' : K ≃ₐ[ℚ] K :=
 
 private theorem conj'_omega : conj' sqrtFive = -sqrtFive := conjHom_omega
 
+/-- The golden ratio in components. -/
+private theorem goldenInteger_eq_mk : goldenInteger = (⟨1/2, 1/2⟩ : K) := by
+  have h2 : (2 : K) ≠ 0 := two_ne_zero
+  refine mul_left_cancel₀ h2 ?_
+  have hl : (2 : K) * goldenInteger = 1 + sqrtFive := by
+    rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
+    field_simp
+  rw [hl, show (2 : K) * (⟨1/2, 1/2⟩ : K) = (⟨1, 1⟩ : K) from by ext <;> simp <;> norm_num,
+    QuadraticAlgebra.mk_eq_add_smul_omega]
+  simp
+
 private theorem conj'_golden : conj' goldenInteger = 1 - goldenInteger := by
   rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
   rw [show conj' ((1 + sqrtFive) / 2) = (conj' (1 + sqrtFive)) / (conj' 2) from map_div₀ _ _ _,
@@ -131,10 +142,128 @@ def integralBasisVectors : Fin 2 → K := ![1, goldenInteger]
 
 /-- `1, φ` is an integral basis of `ℚ(√5)`: their `ℤ`-span in `K` is exactly the ring of
 integers `𝓞 K`. -/
+private theorem conj'_eq_star (z : K) : conj' z = star z := by
+  change z.re • (1 : K) + z.im • (-QuadraticAlgebra.omega) = star z
+  ext <;> simp
+
+private theorem aM_re (r : ℚ) : (algebraMap ℚ K r).re = r := rfl
+
+private theorem aM_im (r : ℚ) : (algebraMap ℚ K r).im = 0 := rfl
+
+/-- Components of an algebraic integer: if `⟨p, q⟩` is integral then `2p`, `p + 5q` and
+`p² - 5q²` are integers. -/
+private theorem exists_int_coords {x : K} (hx : IsIntegral ℤ x) :
+    ∃ A m : ℤ, x = (A : ℚ) • (1 : K) + (m : ℚ) • goldenInteger := by
+  obtain ⟨p, q⟩ := x
+  have hconj : IsIntegral ℤ (conj' (⟨p, q⟩ : K)) :=
+    (hx.map (conj'.toAlgHom.restrictScalars ℤ))
+  have hstar : IsIntegral ℤ (star (⟨p, q⟩ : K)) := by rwa [conj'_eq_star] at hconj
+  -- trace: x + star x = algebraMap (2p)
+  have htr : IsIntegral ℤ (algebraMap ℚ K (2 * p)) := by
+    have h : (⟨p, q⟩ : K) + star (⟨p, q⟩ : K) = algebraMap ℚ K (2 * p) := by
+      ext <;> simp [aM_re, aM_im] <;> ring
+    rw [← h]
+    exact hx.add hstar
+  have hS : ∃ S : ℤ, (S : ℚ) = 2 * p := by
+    have := (isIntegral_algebraMap_iff
+      (FaithfulSMul.algebraMap_injective ℚ K)).mp htr
+    obtain ⟨S, hS⟩ := IsIntegrallyClosed.isIntegral_iff.mp this
+    exact ⟨S, by exact_mod_cast hS⟩
+  -- norm: x * star x = algebraMap (p² - 5q²)
+  have hnm : IsIntegral ℤ (algebraMap ℚ K (p ^ 2 - 5 * q ^ 2)) := by
+    have h : (⟨p, q⟩ : K) * star (⟨p, q⟩ : K) = algebraMap ℚ K (p ^ 2 - 5 * q ^ 2) := by
+      ext
+      · simp only [QuadraticAlgebra.re_mul, QuadraticAlgebra.re_star, QuadraticAlgebra.im_star,
+          aM_re]
+        ring
+      · simp only [QuadraticAlgebra.im_mul, QuadraticAlgebra.re_star, QuadraticAlgebra.im_star,
+          aM_im]
+        ring
+    rw [← h]
+    exact hx.mul hstar
+  have hN : ∃ N : ℤ, (N : ℚ) = p ^ 2 - 5 * q ^ 2 := by
+    have := (isIntegral_algebraMap_iff
+      (FaithfulSMul.algebraMap_injective ℚ K)).mp hnm
+    obtain ⟨N, hN⟩ := IsIntegrallyClosed.isIntegral_iff.mp this
+    exact ⟨N, by exact_mod_cast hN⟩
+  -- trace of x·φ : p + 5q
+  have hxphi : IsIntegral ℤ ((⟨p, q⟩ : K) * goldenInteger) :=
+    hx.mul goldenInteger_integral
+  have hstarphi : IsIntegral ℤ (star ((⟨p, q⟩ : K) * goldenInteger)) := by
+    have h : IsIntegral ℤ (conj' ((⟨p, q⟩ : K) * goldenInteger)) :=
+      hxphi.map (conj'.toAlgHom.restrictScalars ℤ)
+    rwa [conj'_eq_star] at h
+  have htr2 : IsIntegral ℤ (algebraMap ℚ K (p + 5 * q)) := by
+    have h : (⟨p, q⟩ : K) * goldenInteger + star ((⟨p, q⟩ : K) * goldenInteger) =
+        algebraMap ℚ K (p + 5 * q) := by
+      rw [goldenInteger_eq_mk]
+      ext <;> simp [aM_re, aM_im] <;> ring
+    rw [← h]
+    exact hxphi.add hstarphi
+  have hU : ∃ U : ℤ, (U : ℚ) = p + 5 * q := by
+    have := (isIntegral_algebraMap_iff
+      (FaithfulSMul.algebraMap_injective ℚ K)).mp htr2
+    obtain ⟨U, hU⟩ := IsIntegrallyClosed.isIntegral_iff.mp this
+    exact ⟨U, by exact_mod_cast hU⟩
+  obtain ⟨S, hSv⟩ := hS
+  obtain ⟨N, hNv⟩ := hN
+  obtain ⟨U, hUv⟩ := hU
+  -- k := 2U - S has (k : ℚ) = 10q and k² = 5(S² - 4N), so 5 ∣ k and m := k/5 has (m:ℚ) = 2q
+  set k : ℤ := 2 * U - S with hk
+  have hkv : (k : ℚ) = 10 * q := by push_cast [hk]; linarith [hSv, hUv]
+  have hk2 : k ^ 2 = 5 * (S ^ 2 - 4 * N) := by
+    have hcast : ((k ^ 2 : ℤ) : ℚ) = ((5 * (S ^ 2 - 4 * N) : ℤ) : ℚ) := by
+      push_cast
+      rw [hkv]
+      have hS2 : (S : ℚ) ^ 2 = 4 * p ^ 2 := by rw [hSv]; ring
+      rw [hS2, hNv]
+      ring
+    exact_mod_cast hcast
+  have h5k : (5 : ℤ) ∣ k := by
+    have hprime : Prime (5 : ℤ) := by norm_num
+    refine hprime.dvd_of_dvd_pow (n := 2) ⟨S ^ 2 - 4 * N, hk2⟩
+  obtain ⟨m, hm⟩ := h5k
+  have hmv : (m : ℚ) = 2 * q := by
+    have h10 : ((10 : ℚ)) * q = 5 * (m : ℚ) := by
+      rw [← hkv, hm]
+      push_cast
+      ring
+    linarith
+  -- A := the rational p - q is integral
+  have hA : IsIntegral ℤ (algebraMap ℚ K (p - q)) := by
+    have h : algebraMap ℚ K (p - q) = (⟨p, q⟩ : K) - (m : ℚ) • goldenInteger := by
+      rw [goldenInteger_eq_mk]
+      ext <;> simp [aM_re, aM_im, hmv] <;> ring
+    rw [h]
+    have hsm : IsIntegral ℤ ((m : ℚ) • goldenInteger) := by
+      rw [show ((m : ℚ)) • goldenInteger = (m : ℤ) • goldenInteger from
+        (Int.cast_smul_eq_zsmul ℚ m goldenInteger)]
+      exact goldenInteger_integral.smul m
+    exact hx.sub hsm
+  obtain ⟨A, hAv⟩ : ∃ A : ℤ, (A : ℚ) = p - q := by
+    have := (isIntegral_algebraMap_iff
+      (FaithfulSMul.algebraMap_injective ℚ K)).mp hA
+    obtain ⟨A, hA2⟩ := IsIntegrallyClosed.isIntegral_iff.mp this
+    exact ⟨A, by exact_mod_cast hA2⟩
+  refine ⟨A, m, ?_⟩
+  rw [goldenInteger_eq_mk]
+  ext <;> simp [hAv, hmv] <;> ring
+
 theorem span_integralBasisVectors_eq :
     Submodule.span ℤ (Set.range integralBasisVectors) =
       Subalgebra.toSubmodule (integralClosure ℤ K) := by
-  sorry
+  refine le_antisymm (Submodule.span_le.mpr ?_) (fun x hx => ?_)
+  · rintro y ⟨i, rfl⟩
+    fin_cases i
+    · exact Subalgebra.one_mem _
+    · exact goldenInteger_integral
+  · obtain ⟨A, m, hAm⟩ := exists_int_coords hx
+    have h1 : x = A • (1 : K) + m • goldenInteger := by
+      rw [hAm, Int.cast_smul_eq_zsmul, Int.cast_smul_eq_zsmul]
+    rw [h1]
+    refine Submodule.add_mem _ ?_ ?_
+    · exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨0, rfl⟩)
+    · exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨1, rfl⟩)
 
 /-- The integral basis `1, φ` packaged as a genuine `ℤ`-basis of the ring of integers `𝓞 K`. -/
 noncomputable def concreteIntegralBasis : Basis (Fin 2) ℤ (𝓞 K) := by
@@ -181,17 +310,6 @@ theorem numberField_discr_eq : NumberField.discr K = (5 : ℤ) := by
 private theorem algebraNorm_eq_norm (z : K) : Algebra.norm ℚ z = QuadraticAlgebra.norm z := by
   rw [Algebra.norm_apply, ← QuadraticAlgebra.det_toLinearMap_eq_norm]
   congr 1
-
-/-- The golden ratio in components. -/
-private theorem goldenInteger_eq_mk : goldenInteger = (⟨1/2, 1/2⟩ : K) := by
-  have h2 : (2 : K) ≠ 0 := two_ne_zero
-  refine mul_left_cancel₀ h2 ?_
-  have hl : (2 : K) * goldenInteger = 1 + sqrtFive := by
-    rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
-    field_simp
-  rw [hl, show (2 : K) * (⟨1/2, 1/2⟩ : K) = (⟨1, 1⟩ : K) from by ext <;> simp <;> norm_num,
-    QuadraticAlgebra.mk_eq_add_smul_omega]
-  simp
 
 /-- The norm form of `ℚ(√5)` in the basis `1, φ`: the field norm of `x + yφ` is the binary
 quadratic form `x² + xy - y²` (the "Fibonacci form"). -/
