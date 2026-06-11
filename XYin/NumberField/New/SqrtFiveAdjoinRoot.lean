@@ -33,7 +33,21 @@ abbrev sqrtFivePolynomial : ℚ[X] := X ^ 2 - C (5 : ℚ)
 
 /-- The polynomial `X^2 - 5` is irreducible over `ℚ`: `5` is not a rational square. -/
 instance : Fact (Irreducible sqrtFivePolynomial) := by
-  sorry
+  refine ⟨?_⟩
+  apply Polynomial.irreducible_of_degree_le_three_of_not_isRoot
+  · rw [sqrtFivePolynomial, Finset.mem_Icc]
+    change 1 ≤ (X ^ 2 - C (5 : ℚ)).natDegree ∧ (X ^ 2 - C (5 : ℚ)).natDegree ≤ 3
+    rw [natDegree_X_pow_sub_C]
+    norm_num
+  · intro x hx
+    have hx2 : x ^ 2 = 5 := by
+      have hzero : x ^ 2 - 5 = 0 := by
+        simpa [sqrtFivePolynomial, IsRoot] using hx
+      nlinarith
+    have hsquare : IsSquare (5 : ℚ) := by
+      rw [isSquare_iff_exists_sq]
+      exact ⟨x, hx2.symm⟩
+    norm_num at hsquare
 
 /-- The number field `ℚ(√5)` as an `AdjoinRoot`. -/
 abbrev K : Type := AdjoinRoot sqrtFivePolynomial
@@ -52,17 +66,35 @@ instance : Field K := by
 instance : NumberField K := by
   infer_instance
 
+/-- The power basis `1, √5` of `K` over `ℚ`. -/
+private noncomputable abbrev sqrtFivePB : PowerBasis ℚ K :=
+  AdjoinRoot.powerBasis (f := sqrtFivePolynomial)
+    ((Fact.out : Irreducible sqrtFivePolynomial).ne_zero)
+
+private theorem sqrtFivePB_dim : sqrtFivePB.dim = 2 := by
+  change sqrtFivePolynomial.natDegree = 2
+  rw [sqrtFivePolynomial, natDegree_X_pow_sub_C]
+
+private theorem sqrtFivePB_gen : sqrtFivePB.gen = sqrtFive := by
+  simp [sqrtFivePB, sqrtFive]
+
 /-- The extension degree of `K = ℚ(√5)` over `ℚ` is `2`. -/
 theorem degree_eq_two : Module.finrank ℚ K = 2 := by
-  sorry
+  rw [PowerBasis.finrank sqrtFivePB]
+  exact sqrtFivePB_dim
 
 /-- The generator satisfies `(√5)² = 5`. -/
 theorem sqrtFive_sq : sqrtFive ^ 2 = 5 := by
-  sorry
+  have hroot : sqrtFive ^ 2 - 5 = 0 := by
+    simpa [sqrtFive, sqrtFivePolynomial] using (AdjoinRoot.eval₂_root sqrtFivePolynomial)
+  linear_combination hroot
 
 /-- The golden ratio satisfies its defining equation `φ² = φ + 1`. -/
 theorem goldenInteger_sq : goldenInteger ^ 2 = goldenInteger + 1 := by
-  sorry
+  have h := sqrtFive_sq
+  rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
+  field_simp
+  linear_combination h
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -70,17 +102,80 @@ theorem goldenInteger_sq : goldenInteger ^ 2 = goldenInteger + 1 := by
 `𝓞 K`. This is where `5 ≡ 1 (mod 4)` enters: for `d ≡ 1 (mod 4)` the integers of `ℚ(√d)`
 are `ℤ[(1 + √d)/2]`, not `ℤ[√d]`. -/
 theorem goldenInteger_integral : goldenInteger ∈ integralClosure ℤ K := by
-  sorry
+  refine ⟨Polynomial.X ^ 2 - Polynomial.X - 1, ?_, ?_⟩
+  · monicity!
+  · simp only [Polynomial.eval₂_sub, Polynomial.eval₂_X_pow, Polynomial.eval₂_X,
+      Polynomial.eval₂_one]
+    linear_combination goldenInteger_sq
 
 /-- `φ` as an element of the ring of integers `𝓞 K`. -/
 noncomputable def goldenInt : 𝓞 K := ⟨goldenInteger, goldenInteger_integral⟩
 
 /-- The integral golden ratio also satisfies `φ² = φ + 1` in `𝓞 K`. -/
-theorem goldenInt_sq : goldenInt ^ 2 = goldenInt + 1 := by
-  sorry
+theorem goldenInt_sq : goldenInt ^ 2 = goldenInt + 1 :=
+  Subtype.ext (by push_cast [goldenInt]; exact goldenInteger_sq)
 
 /-- `√5 = 2φ - 1` as an element of `𝓞 K`. -/
 noncomputable def sqrtFiveInt : 𝓞 K := 2 * goldenInt - 1
+
+/-- The conjugation `√5 ↦ -√5` as an algebra map, via the universal property. -/
+private noncomputable def conjHom : K →ₐ[ℚ] K :=
+  AdjoinRoot.liftAlgHom sqrtFivePolynomial (Algebra.ofId ℚ K) (-sqrtFive) (by
+    calc sqrtFivePolynomial.eval₂ (Algebra.ofId ℚ K) (-sqrtFive)
+        = (-sqrtFive) ^ 2 - 5 := by simp [sqrtFivePolynomial]
+      _ = sqrtFive ^ 2 - 5 := by ring
+      _ = 0 := by rw [sqrtFive_sq]; ring)
+
+private theorem conjHom_root : conjHom sqrtFive = -sqrtFive := by
+  change conjHom (AdjoinRoot.root sqrtFivePolynomial) = -sqrtFive
+  rw [conjHom]
+  exact AdjoinRoot.liftAlgHom_root sqrtFivePolynomial (Algebra.ofId ℚ K) (-sqrtFive) _
+
+private theorem conjHom_conjHom : conjHom.comp conjHom = AlgHom.id ℚ K := by
+  apply AdjoinRoot.algHom_ext
+  change conjHom (conjHom sqrtFive) = sqrtFive
+  rw [conjHom_root, map_neg, conjHom_root, neg_neg]
+
+private noncomputable def conj' : K ≃ₐ[ℚ] K :=
+  AlgEquiv.ofAlgHom conjHom conjHom conjHom_conjHom conjHom_conjHom
+
+private theorem conj'_root : conj' sqrtFive = -sqrtFive := conjHom_root
+
+/-- Every element of `K` has rational coordinates in the basis `1, √5`. -/
+private theorem exists_coords (x : K) :
+    ∃ a b : ℚ, x = algebraMap ℚ K a + algebraMap ℚ K b * sqrtFive := by
+  obtain ⟨f, hf, hx⟩ := sqrtFivePB.exists_eq_aeval x
+  refine ⟨f.coeff 0, f.coeff 1, ?_⟩
+  have hdeg : f.natDegree ≤ 1 := by
+    have := sqrtFivePB_dim ▸ hf
+    omega
+  conv_lhs => rw [hx, Polynomial.eq_X_add_C_of_natDegree_le_one hdeg]
+  rw [map_add, map_mul, Polynomial.aeval_C, Polynomial.aeval_C, Polynomial.aeval_X,
+    sqrtFivePB_gen]
+  ring
+
+private theorem coords_eq_zero {a b : ℚ}
+    (h : algebraMap ℚ K a + algebraMap ℚ K b * sqrtFive = 0) : a = 0 ∧ b = 0 := by
+  by_cases hb : b = 0
+  · subst hb
+    rw [map_zero, zero_mul, add_zero] at h
+    exact ⟨FaithfulSMul.algebraMap_injective ℚ K (by rw [h, map_zero]), rfl⟩
+  · exfalso
+    have hbK : algebraMap ℚ K b ≠ 0 := fun h0 =>
+      hb (FaithfulSMul.algebraMap_injective ℚ K (by rw [h0, map_zero]))
+    have hs : sqrtFive = algebraMap ℚ K (-a / b) := by
+      rw [map_div₀, map_neg, eq_div_iff hbK]
+      linear_combination h
+    have h5 : ((-a / b) : ℚ) ^ 2 = 5 := by
+      have h2 := sqrtFive_sq
+      rw [hs, ← map_pow] at h2
+      have h5' : algebraMap ℚ K ((-a / b) ^ 2) = algebraMap ℚ K 5 := by
+        rw [h2, map_ofNat]
+      exact FaithfulSMul.algebraMap_injective ℚ K h5'
+    have hsq : IsSquare (5 : ℚ) := by
+      rw [isSquare_iff_exists_sq]
+      exact ⟨_, h5.symm⟩
+    norm_num at hsq
 
 /-- The displayed integral-basis vectors `1, φ` (as elements of `K`). -/
 def integralBasisVectors : Fin 2 → K := ![1, goldenInteger]
