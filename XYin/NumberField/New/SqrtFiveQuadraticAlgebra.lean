@@ -126,7 +126,7 @@ private theorem goldenInteger_eq_mk : goldenInteger = (⟨1/2, 1/2⟩ : K) := by
   have hl : (2 : K) * goldenInteger = 1 + sqrtFive := by
     rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
     field_simp
-  rw [hl, show (2 : K) * (⟨1/2, 1/2⟩ : K) = (⟨1, 1⟩ : K) from by ext <;> simp <;> norm_num,
+  rw [hl, show (2 : K) * (⟨1/2, 1/2⟩ : K) = (⟨1, 1⟩ : K) from by ext <;> simp,
     QuadraticAlgebra.mk_eq_add_smul_omega]
   simp
 
@@ -161,7 +161,7 @@ private theorem exists_int_coords {x : K} (hx : IsIntegral ℤ x) :
   -- trace: x + star x = algebraMap (2p)
   have htr : IsIntegral ℤ (algebraMap ℚ K (2 * p)) := by
     have h : (⟨p, q⟩ : K) + star (⟨p, q⟩ : K) = algebraMap ℚ K (2 * p) := by
-      ext <;> simp [aM_re, aM_im] <;> ring
+      ext <;> simp <;> ring
     rw [← h]
     exact hx.add hstar
   have hS : ∃ S : ℤ, (S : ℚ) = 2 * p := by
@@ -197,7 +197,7 @@ private theorem exists_int_coords {x : K} (hx : IsIntegral ℤ x) :
     have h : (⟨p, q⟩ : K) * goldenInteger + star ((⟨p, q⟩ : K) * goldenInteger) =
         algebraMap ℚ K (p + 5 * q) := by
       rw [goldenInteger_eq_mk]
-      ext <;> simp [aM_re, aM_im] <;> ring
+      ext <;> simp <;> ring
     rw [← h]
     exact hxphi.add hstarphi
   have hU : ∃ U : ℤ, (U : ℚ) = p + 5 * q := by
@@ -233,7 +233,7 @@ private theorem exists_int_coords {x : K} (hx : IsIntegral ℤ x) :
   have hA : IsIntegral ℤ (algebraMap ℚ K (p - q)) := by
     have h : algebraMap ℚ K (p - q) = (⟨p, q⟩ : K) - (m : ℚ) • goldenInteger := by
       rw [goldenInteger_eq_mk]
-      ext <;> simp [aM_re, aM_im, hmv] <;> ring
+      ext <;> simp [hmv] <;> ring
     rw [h]
     have hsm : IsIntegral ℤ ((m : ℚ) • goldenInteger) := by
       rw [show ((m : ℚ)) • goldenInteger = (m : ℤ) • goldenInteger from
@@ -1624,7 +1624,7 @@ theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
     abs_pos.mpr (Algebra.norm_ne_zero_iff.mpr hbK0)
   have hlt : |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
     rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-    show |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| < |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
+    change |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| < |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
     rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
     calc |Algebra.norm ℚ bK| *
         |(u - ((round u : ℤ) : ℚ)) ^ 2 +
