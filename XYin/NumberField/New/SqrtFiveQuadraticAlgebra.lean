@@ -32,7 +32,12 @@ namespace XYin.NumberField.New.SqrtFiveQuadraticAlgebra
 /-- The nonsquare condition making `QuadraticAlgebra ℚ 5 0` a field: `5` is not a rational
 square. -/
 instance : Fact (∀ r : ℚ, r ^ 2 ≠ (5 : ℚ) + (0 : ℚ) * r) := by
-  sorry
+  refine ⟨fun r hr => ?_⟩
+  rw [zero_mul, add_zero] at hr
+  have h5 : Irrational (Real.sqrt 5) := (by norm_num : Nat.Prime 5).irrational_sqrt
+  refine h5 ⟨|r|, ?_⟩
+  have hr' : ((r : ℝ)) ^ 2 = 5 := by exact_mod_cast hr
+  rw [show ((|r| : ℚ) : ℝ) = |(r : ℝ)| by push_cast; rfl, ← Real.sqrt_sq_eq_abs, hr']
 
 /-- The number field `ℚ(√5)` as `QuadraticAlgebra ℚ 5 0`. -/
 abbrev K : Type := QuadraticAlgebra ℚ (5 : ℚ) 0
@@ -57,15 +62,19 @@ instance : NumberField K :=
 
 /-- The extension degree of `K = ℚ(√5)` over `ℚ` is `2`. -/
 theorem degree_eq_two : Module.finrank ℚ K = 2 := by
-  sorry
+  rw [Module.finrank_eq_card_basis (QuadraticAlgebra.basis (5 : ℚ) (0 : ℚ)), Fintype.card_fin]
 
 /-- The generator satisfies `(√5)² = 5`. -/
 theorem sqrtFive_sq : sqrtFive ^ 2 = 5 := by
-  sorry
+  rw [sq, QuadraticAlgebra.omega_mul_omega_eq_add]
+  simp
 
 /-- The golden ratio satisfies its defining equation `φ² = φ + 1`. -/
 theorem goldenInteger_sq : goldenInteger ^ 2 = goldenInteger + 1 := by
-  sorry
+  have h := sqrtFive_sq
+  rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
+  field_simp
+  linear_combination h
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -73,17 +82,49 @@ theorem goldenInteger_sq : goldenInteger ^ 2 = goldenInteger + 1 := by
 `𝓞 K`. This is where `5 ≡ 1 (mod 4)` enters: for `d ≡ 1 (mod 4)` the integers of `ℚ(√d)`
 are `ℤ[(1 + √d)/2]`, not `ℤ[√d]`. -/
 theorem goldenInteger_integral : goldenInteger ∈ integralClosure ℤ K := by
-  sorry
+  refine ⟨Polynomial.X ^ 2 - Polynomial.X - 1, ?_, ?_⟩
+  · monicity!
+  · simp only [Polynomial.eval₂_sub, Polynomial.eval₂_X_pow, Polynomial.eval₂_X,
+      Polynomial.eval₂_one]
+    linear_combination goldenInteger_sq
 
 /-- `φ` as an element of the ring of integers `𝓞 K`. -/
 noncomputable def goldenInt : 𝓞 K := ⟨goldenInteger, goldenInteger_integral⟩
 
 /-- The integral golden ratio also satisfies `φ² = φ + 1` in `𝓞 K`. -/
-theorem goldenInt_sq : goldenInt ^ 2 = goldenInt + 1 := by
-  sorry
+theorem goldenInt_sq : goldenInt ^ 2 = goldenInt + 1 :=
+  Subtype.ext (by push_cast [goldenInt]; exact goldenInteger_sq)
 
 /-- `√5 = 2φ - 1` as an element of `𝓞 K`. -/
 noncomputable def sqrtFiveInt : 𝓞 K := 2 * goldenInt - 1
+
+/-- The conjugation `√5 ↦ -√5` as an algebra map, via the universal property. -/
+private noncomputable def conjHom : K →ₐ[ℚ] K :=
+  QuadraticAlgebra.lift ⟨-QuadraticAlgebra.omega, by
+    have h := QuadraticAlgebra.omega_mul_omega_eq_add (R := ℚ) (a := (5 : ℚ)) (b := (0 : ℚ))
+    simpa [neg_mul_neg] using h⟩
+
+private theorem conjHom_omega : conjHom sqrtFive = -sqrtFive := by
+  change (QuadraticAlgebra.omega : K).re • (1 : K) +
+    (QuadraticAlgebra.omega : K).im • (-QuadraticAlgebra.omega) = -sqrtFive
+  simp
+
+private theorem conjHom_conjHom : conjHom.comp conjHom = AlgHom.id ℚ K := by
+  apply QuadraticAlgebra.algHom_ext
+  change conjHom (conjHom sqrtFive) = sqrtFive
+  rw [conjHom_omega, map_neg, conjHom_omega, neg_neg]
+
+private noncomputable def conj' : K ≃ₐ[ℚ] K :=
+  AlgEquiv.ofAlgHom conjHom conjHom conjHom_conjHom conjHom_conjHom
+
+private theorem conj'_omega : conj' sqrtFive = -sqrtFive := conjHom_omega
+
+private theorem conj'_golden : conj' goldenInteger = 1 - goldenInteger := by
+  rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
+  rw [show conj' ((1 + sqrtFive) / 2) = (conj' (1 + sqrtFive)) / (conj' 2) from map_div₀ _ _ _,
+    map_add, map_one, conj'_omega, map_ofNat]
+  field_simp
+  ring
 
 /-- The displayed integral-basis vectors `1, φ` (as elements of `K`). -/
 def integralBasisVectors : Fin 2 → K := ![1, goldenInteger]
