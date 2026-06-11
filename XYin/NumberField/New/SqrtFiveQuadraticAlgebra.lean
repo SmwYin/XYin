@@ -266,13 +266,57 @@ theorem span_integralBasisVectors_eq :
     · exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨1, rfl⟩)
 
 /-- The integral basis `1, φ` packaged as a genuine `ℤ`-basis of the ring of integers `𝓞 K`. -/
-noncomputable def concreteIntegralBasis : Basis (Fin 2) ℤ (𝓞 K) := by
-  sorry
+private theorem coe_goldenInt : algebraMap (𝓞 K) K goldenInt = goldenInteger := rfl
+
+private theorem li_one_golden : LinearIndependent ℤ ![(1 : 𝓞 K), goldenInt] := by
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  rw [Fin.sum_univ_two] at hg
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] at hg
+  have hgK : algebraMap (𝓞 K) K (g 0 • (1 : 𝓞 K) + g 1 • goldenInt) = 0 := by
+    rw [hg, map_zero]
+  rw [map_add, map_zsmul, map_zsmul, map_one, coe_goldenInt, goldenInteger_eq_mk] at hgK
+  have hre := congrArg QuadraticAlgebra.re hgK
+  have him := congrArg QuadraticAlgebra.im hgK
+  simp only [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add, QuadraticAlgebra.re_smul,
+    QuadraticAlgebra.im_smul, smul_eq_mul, zsmul_eq_mul] at hre him
+  have h1 : g 1 = 0 := by
+    have hh : ((g 1 : ℚ)) * (1 / 2) = 0 := by simpa using him
+    rcases mul_eq_zero.mp hh with h | h
+    · exact_mod_cast h
+    · norm_num at h
+  have h0 : g 0 = 0 := by
+    rw [h1] at hre
+    have hh : ((g 0 : ℚ)) = 0 := by simpa using hre
+    exact_mod_cast hh
+  intro i
+  fin_cases i
+  · exact h0
+  · exact h1
+
+private theorem span_one_golden :
+    ⊤ ≤ Submodule.span ℤ (Set.range ![(1 : 𝓞 K), goldenInt]) := by
+  intro z _
+  obtain ⟨A, m, hAm⟩ := exists_int_coords z.2
+  have hz : z = A • (1 : 𝓞 K) + m • goldenInt := by
+    refine Subtype.ext ?_
+    have hmap : algebraMap (𝓞 K) K (A • (1 : 𝓞 K) + m • goldenInt) =
+        (A : ℚ) • (1 : K) + (m : ℚ) • goldenInteger := by
+      rw [map_add, map_zsmul, map_zsmul, map_one, coe_goldenInt,
+        Int.cast_smul_eq_zsmul ℚ A (1 : K), Int.cast_smul_eq_zsmul ℚ m goldenInteger]
+    exact hAm.trans hmap.symm
+  rw [hz]
+  exact Submodule.add_mem _ (Submodule.smul_mem _ _ (Submodule.subset_span ⟨0, rfl⟩))
+    (Submodule.smul_mem _ _ (Submodule.subset_span ⟨1, rfl⟩))
+
+noncomputable def concreteIntegralBasis : Basis (Fin 2) ℤ (𝓞 K) :=
+  Basis.mk li_one_golden span_one_golden
 
 /-- The packaged integral basis is, vector by vector, the displayed family `1, φ`. -/
 theorem concreteIntegralBasis_apply (i : Fin 2) :
     (algebraMap (𝓞 K) K) (concreteIntegralBasis i) = integralBasisVectors i := by
-  sorry
+  fin_cases i <;>
+    simp [concreteIntegralBasis, Basis.mk_apply, integralBasisVectors, coe_goldenInt]
 
 /-- The displayed integral basis `1, φ` spans the same `ℤ`-lattice in `K` as mathlib's
 `NumberField.integralBasis K` (the correct form of "the two integral bases agree": equality
@@ -280,7 +324,15 @@ of lattices, not a mere reindexing). -/
 theorem span_integralBasisVectors_eq_integralBasis :
     Submodule.span ℤ (Set.range integralBasisVectors) =
       Submodule.span ℤ (Set.range (NumberField.integralBasis K)) := by
-  sorry
+  rw [span_integralBasisVectors_eq]
+  ext x
+  rw [Subalgebra.mem_toSubmodule]
+  constructor
+  · intro hx
+    exact (NumberField.mem_span_integralBasis K).mpr (RingHom.mem_range.mpr ⟨⟨x, hx⟩, rfl⟩)
+  · intro hx
+    obtain ⟨y, hy⟩ := RingHom.mem_range.mp ((NumberField.mem_span_integralBasis K).mp hx)
+    exact hy ▸ y.2
 
 /-- The concrete order `ℤ[φ]` inside `K`. -/
 abbrev concreteRingOfIntegers : Subalgebra ℤ K := Algebra.adjoin ℤ ({goldenInteger} : Set K)
@@ -288,13 +340,52 @@ abbrev concreteRingOfIntegers : Subalgebra ℤ K := Algebra.adjoin ℤ ({goldenI
 /-- The full ring of integers of `ℚ(√5)` is `ℤ[φ]`: the golden ratio generates a maximal
 order. -/
 theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers := by
-  sorry
+  refine le_antisymm (fun x hx => ?_)
+    (Algebra.adjoin_le (Set.singleton_subset_iff.mpr goldenInteger_integral))
+  obtain ⟨A, m, hAm⟩ := exists_int_coords hx
+  rw [show x = (A : ℚ) • (1 : K) + (m : ℚ) • goldenInteger from hAm,
+    Int.cast_smul_eq_zsmul ℚ A (1 : K), Int.cast_smul_eq_zsmul ℚ m goldenInteger, zsmul_one]
+  have hφ : goldenInteger ∈ concreteRingOfIntegers := Algebra.subset_adjoin rfl
+  have hm : m • goldenInteger ∈ concreteRingOfIntegers := zsmul_mem hφ m
+  have hA : ((A : ℤ) : K) ∈ concreteRingOfIntegers := intCast_mem concreteRingOfIntegers A
+  exact add_mem hA hm
 
 /-- By contrast, the naive order `ℤ[√5]` is NOT the full ring of integers: it has index `2`
 in `ℤ[φ]`, since `φ = (1 + √5)/2 ∉ ℤ[√5]`. -/
 theorem adjoin_sqrtFive_ne_integralClosure :
     Algebra.adjoin ℤ ({sqrtFive} : Set K) ≠ integralClosure ℤ K := by
-  sorry
+  intro h
+  let S : Subalgebra ℤ K :=
+    { carrier := {z : K | ∃ a b : ℤ, z.re = a ∧ z.im = b}
+      add_mem' := by
+        rintro z w ⟨a, b, ha, hb⟩ ⟨c, d, hc, hd⟩
+        refine ⟨a + c, b + d, ?_, ?_⟩
+        · rw [QuadraticAlgebra.re_add, ha, hc]; push_cast; ring
+        · rw [QuadraticAlgebra.im_add, hb, hd]; push_cast; ring
+      mul_mem' := by
+        rintro z w ⟨a, b, ha, hb⟩ ⟨c, d, hc, hd⟩
+        refine ⟨a * c + 5 * b * d, a * d + b * c, ?_, ?_⟩
+        · rw [QuadraticAlgebra.re_mul, ha, hb, hc, hd]; push_cast; ring
+        · rw [QuadraticAlgebra.im_mul, ha, hb, hc, hd]; push_cast; ring
+      one_mem' := ⟨1, 0, by norm_num, by norm_num⟩
+      zero_mem' := ⟨0, 0, by norm_num, by norm_num⟩
+      algebraMap_mem' := fun n => ⟨n, 0, by norm_num, by norm_num⟩ }
+  have hsub : Algebra.adjoin ℤ ({sqrtFive} : Set K) ≤ S := by
+    refine Algebra.adjoin_le ?_
+    rintro z rfl
+    exact ⟨0, 1, by simp, by simp⟩
+  have hφ : goldenInteger ∈ Algebra.adjoin ℤ ({sqrtFive} : Set K) := by
+    rw [h]
+    exact goldenInteger_integral
+  obtain ⟨a, b, ha, hb⟩ := hsub hφ
+  rw [goldenInteger_eq_mk] at ha
+  have h2 : (2 * a : ℤ) = 1 := by
+    have hq : ((2 * a : ℤ) : ℚ) = 1 := by
+      push_cast
+      rw [show ((a : ℚ)) = (1 : ℚ) / 2 from ha.symm]
+      ring
+    exact_mod_cast hq
+  omega
 
 /-! ## 3. Discriminant -/
 
