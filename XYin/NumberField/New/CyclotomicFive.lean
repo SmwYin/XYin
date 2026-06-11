@@ -734,18 +734,180 @@ theorem isPrime_primesAboveNineteen :
   · rw [span_pair_nineteen_right]
     exact isPrime_of_absNorm_361 absNorm_span_y
 
+private theorem elevenA : (ζ ^ 2 + ζ - 1) * (ζ ^ 3 + ζ - 1) = ζ ^ 4 - 2 * ζ + 2 := by
+  linear_combination zeta_pow_five
+
+private theorem elevenB : (ζ ^ 4 + ζ ^ 2 - 1) * (ζ ^ 4 + ζ ^ 3 - 1) = -(2 * ζ ^ 4) + ζ + 2 := by
+  linear_combination (ζ ^ 3 + ζ ^ 2 + ζ + 1) * zeta_pow_five
+
+private theorem elevenC : (ζ ^ 4 - 2 * ζ + 2) * (-(2 * ζ ^ 4) + ζ + 2) = 11 := by
+  linear_combination (-(2 * ζ ^ 3) + 5) * zeta_pow_five - 2 * zeta_sum_eq_zero
+
+/-- Norm computation shared by the four primes above `11`: the Galois orbit of `ζ² + ζ - 1`
+is `{ζ² + ζ - 1, ζ⁴ + ζ² - 1, ζ³ + ζ - 1, ζ⁴ + ζ³ - 1}` with product `11`. -/
+private theorem norm_eleven_orbit {w : 𝓞 K}
+    (hw : algebraMap (𝓞 K) K w * sig2 (algebraMap (𝓞 K) K w) *
+      sig3 (algebraMap (𝓞 K) K w) * sig4 (algebraMap (𝓞 K) K w) =
+        (ζ ^ 2 + ζ - 1) * (ζ ^ 3 + ζ - 1) * ((ζ ^ 4 + ζ ^ 2 - 1) * (ζ ^ 4 + ζ ^ 3 - 1))) :
+    Ideal.absNorm (Ideal.span {w}) = 11 := by
+  have hn : Algebra.norm ℤ w = 11 := by
+    apply intNorm_eq
+    rw [hw, elevenA, elevenB]
+    push_cast
+    linear_combination elevenC
+  rw [Ideal.absNorm_span_singleton, hn]
+  rfl
+
+private theorem absNorm_span_u3 :
+    Ideal.absNorm (Ideal.span {zetaInt ^ 2 + zetaInt - 1}) = 11 := by
+  refine norm_eleven_orbit ?_
+  have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 + zetaInt - 1) = ζ ^ 2 + ζ - 1 := by
+    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+  rw [e0]
+  have e2 : sig2 (ζ ^ 2 + ζ - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+    ring
+  have e3 : sig3 (ζ ^ 2 + ζ - 1) = ζ ^ 3 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+    linear_combination ζ * zeta_pow_five
+  have e4 : sig4 (ζ ^ 2 + ζ - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+    linear_combination ζ ^ 3 * zeta_pow_five
+  rw [e2, e3, e4]
+  ring
+
+private theorem absNorm_span_u4 :
+    Ideal.absNorm (Ideal.span {zetaInt ^ 4 + zetaInt ^ 3 - 1}) = 11 := by
+  refine norm_eleven_orbit ?_
+  have e0 : algebraMap (𝓞 K) K (zetaInt ^ 4 + zetaInt ^ 3 - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
+    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+  rw [e0]
+  have e2 : sig2 (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 3 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+    linear_combination (ζ ^ 3 + ζ) * zeta_pow_five
+  have e3 : sig3 (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+    linear_combination (ζ ^ 7 + ζ ^ 2 + ζ ^ 4) * zeta_pow_five
+  have e4 : sig4 (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 2 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+    linear_combination (ζ ^ 11 + ζ ^ 6 + ζ + ζ ^ 7 + ζ ^ 2) * zeta_pow_five
+  rw [e2, e3, e4]
+  ring
+
+private theorem absNorm_span_u5 :
+    Ideal.absNorm (Ideal.span {zetaInt ^ 4 + zetaInt ^ 2 - 1}) = 11 := by
+  refine norm_eleven_orbit ?_
+  have e0 : algebraMap (𝓞 K) K (zetaInt ^ 4 + zetaInt ^ 2 - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
+    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+  rw [e0]
+  have e2 : sig2 (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+    linear_combination ζ ^ 3 * zeta_pow_five
+  have e3 : sig3 (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 2 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+    linear_combination (ζ ^ 7 + ζ ^ 2 + ζ) * zeta_pow_five
+  have e4 : sig4 (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 3 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+    linear_combination (ζ ^ 11 + ζ ^ 6 + ζ + ζ ^ 3) * zeta_pow_five
+  rw [e2, e3, e4]
+  ring
+
+private theorem absNorm_span_u9 :
+    Ideal.absNorm (Ideal.span {zetaInt ^ 3 + zetaInt - 1}) = 11 := by
+  refine norm_eleven_orbit ?_
+  have e0 : algebraMap (𝓞 K) K (zetaInt ^ 3 + zetaInt - 1) = ζ ^ 3 + ζ - 1 := by
+    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+  rw [e0]
+  have e2 : sig2 (ζ ^ 3 + ζ - 1) = ζ ^ 2 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+    linear_combination ζ * zeta_pow_five
+  have e3 : sig3 (ζ ^ 3 + ζ - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+    linear_combination ζ ^ 4 * zeta_pow_five
+  have e4 : sig4 (ζ ^ 3 + ζ - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+    linear_combination (ζ ^ 7 + ζ ^ 2) * zeta_pow_five
+  rw [e2, e3, e4]
+  ring
+
+private theorem span_pair_eleven_three :
+    Ideal.span {(11 : 𝓞 K), zetaInt - 3} = Ideal.span {zetaInt ^ 2 + zetaInt - 1} := by
+  have hr : ((3 : ℤ) : ZMod 11) ^ 4 + ((3 : ℤ) : ZMod 11) ^ 3 + ((3 : ℤ) : ZMod 11) ^ 2 +
+      ((3 : ℤ) : ZMod 11) + 1 = 0 := by decide
+  refine (eq_of_le_of_absNorm_eq ((Ideal.span_singleton_le_iff_mem _).mpr ?_)
+    absNorm_span_u3 ?_ (by norm_num)).symm
+  · exact Ideal.mem_span_pair.mpr ⟨1, zetaInt + 4, by ring⟩
+  · have h := absNorm_span_pair 11 3 hr
+    rwa [show ((11 : ℕ) : 𝓞 K) = (11 : 𝓞 K) from by norm_cast,
+      show ((3 : ℤ) : 𝓞 K) = (3 : 𝓞 K) from by norm_cast] at h
+
+private theorem span_pair_eleven_four :
+    Ideal.span {(11 : 𝓞 K), zetaInt - 4} = Ideal.span {zetaInt ^ 4 + zetaInt ^ 3 - 1} := by
+  have hr : ((4 : ℤ) : ZMod 11) ^ 4 + ((4 : ℤ) : ZMod 11) ^ 3 + ((4 : ℤ) : ZMod 11) ^ 2 +
+      ((4 : ℤ) : ZMod 11) + 1 = 0 := by decide
+  refine (eq_of_le_of_absNorm_eq ((Ideal.span_singleton_le_iff_mem _).mpr ?_)
+    absNorm_span_u4 ?_ (by norm_num)).symm
+  · exact Ideal.mem_span_pair.mpr
+      ⟨29, zetaInt ^ 3 + 5 * zetaInt ^ 2 + 20 * zetaInt + 80, by ring⟩
+  · have h := absNorm_span_pair 11 4 hr
+    rwa [show ((11 : ℕ) : 𝓞 K) = (11 : 𝓞 K) from by norm_cast,
+      show ((4 : ℤ) : 𝓞 K) = (4 : 𝓞 K) from by norm_cast] at h
+
+private theorem span_pair_eleven_five :
+    Ideal.span {(11 : 𝓞 K), zetaInt - 5} = Ideal.span {zetaInt ^ 4 + zetaInt ^ 2 - 1} := by
+  have hr : ((5 : ℤ) : ZMod 11) ^ 4 + ((5 : ℤ) : ZMod 11) ^ 3 + ((5 : ℤ) : ZMod 11) ^ 2 +
+      ((5 : ℤ) : ZMod 11) + 1 = 0 := by decide
+  refine (eq_of_le_of_absNorm_eq ((Ideal.span_singleton_le_iff_mem _).mpr ?_)
+    absNorm_span_u5 ?_ (by norm_num)).symm
+  · exact Ideal.mem_span_pair.mpr
+      ⟨59, zetaInt ^ 3 + 5 * zetaInt ^ 2 + 26 * zetaInt + 130, by ring⟩
+  · have h := absNorm_span_pair 11 5 hr
+    rwa [show ((11 : ℕ) : 𝓞 K) = (11 : 𝓞 K) from by norm_cast,
+      show ((5 : ℤ) : 𝓞 K) = (5 : 𝓞 K) from by norm_cast] at h
+
+private theorem span_pair_eleven_nine :
+    Ideal.span {(11 : 𝓞 K), zetaInt - 9} = Ideal.span {zetaInt ^ 3 + zetaInt - 1} := by
+  have hr : ((9 : ℤ) : ZMod 11) ^ 4 + ((9 : ℤ) : ZMod 11) ^ 3 + ((9 : ℤ) : ZMod 11) ^ 2 +
+      ((9 : ℤ) : ZMod 11) + 1 = 0 := by decide
+  refine (eq_of_le_of_absNorm_eq ((Ideal.span_singleton_le_iff_mem _).mpr ?_)
+    absNorm_span_u9 ?_ (by norm_num)).symm
+  · exact Ideal.mem_span_pair.mpr ⟨67, zetaInt ^ 2 + 9 * zetaInt + 82, by ring⟩
+  · have h := absNorm_span_pair 11 9 hr
+    rwa [show ((11 : ℕ) : 𝓞 K) = (11 : 𝓞 K) from by norm_cast,
+      show ((9 : ℤ) : 𝓞 K) = (9 : 𝓞 K) from by norm_cast] at h
+
 /-- `11` splits completely: `11 ≡ 1 (mod 5)`, and the roots of `Φ₅` mod `11` are
 `3, 4, 5, 9` (the elements of order `5` in `(ℤ/11)ˣ`). -/
 theorem span_eleven_eq :
     Ideal.span {(11 : 𝓞 K)} =
       Ideal.span {(11 : 𝓞 K), zetaInt - 3} * Ideal.span {(11 : 𝓞 K), zetaInt - 4} *
         Ideal.span {(11 : 𝓞 K), zetaInt - 5} * Ideal.span {(11 : 𝓞 K), zetaInt - 9} := by
-  sorry
+  rw [span_pair_eleven_three, span_pair_eleven_four, span_pair_eleven_five,
+    span_pair_eleven_nine, Ideal.span_singleton_mul_span_singleton,
+    Ideal.span_singleton_mul_span_singleton, Ideal.span_singleton_mul_span_singleton]
+  have hA : (zetaInt ^ 2 + zetaInt - 1) * (zetaInt ^ 3 + zetaInt - 1) =
+      zetaInt ^ 4 - 2 * zetaInt + 2 := by
+    linear_combination zetaInt_pow_five
+  have hB : (zetaInt ^ 4 + zetaInt ^ 2 - 1) * (zetaInt ^ 4 + zetaInt ^ 3 - 1) =
+      -(2 * zetaInt ^ 4) + zetaInt + 2 := by
+    linear_combination (zetaInt ^ 3 + zetaInt ^ 2 + zetaInt + 1) * zetaInt_pow_five
+  have hC : (zetaInt ^ 4 - 2 * zetaInt + 2) * (-(2 * zetaInt ^ 4) + zetaInt + 2) =
+      (11 : 𝓞 K) := by
+    linear_combination (-(2 * zetaInt ^ 3) + 5) * zetaInt_pow_five - 2 * zetaInt_sum
+  rw [show (zetaInt ^ 2 + zetaInt - 1) * (zetaInt ^ 4 + zetaInt ^ 3 - 1) *
+      (zetaInt ^ 4 + zetaInt ^ 2 - 1) * (zetaInt ^ 3 + zetaInt - 1) = (11 : 𝓞 K) from by
+    linear_combination ((zetaInt ^ 4 + zetaInt ^ 2 - 1) * (zetaInt ^ 4 + zetaInt ^ 3 - 1)) * hA +
+      (zetaInt ^ 4 - 2 * zetaInt + 2) * hB + hC]
 
 /-- Each ideal `(11, ζ - r)` for `r ∈ {3, 4, 5, 9}` is a prime of norm `11`. -/
 theorem isPrime_primeAboveEleven (r : ℤ) (hr : r = 3 ∨ r = 4 ∨ r = 5 ∨ r = 9) :
     (Ideal.span {(11 : 𝓞 K), zetaInt - (r : 𝓞 K)}).IsPrime := by
-  sorry
+  have hr' : ((r : ZMod 11)) ^ 4 + ((r : ZMod 11)) ^ 3 + ((r : ZMod 11)) ^ 2 +
+      (r : ZMod 11) + 1 = 0 := by
+    rcases hr with rfl | rfl | rfl | rfl <;> decide
+  haveI : Fact (Nat.Prime 11) := ⟨by norm_num⟩
+  have h := (isMaximal_span_pair 11 r hr').isPrime
+  rwa [show ((11 : ℕ) : 𝓞 K) = (11 : 𝓞 K) from by norm_cast] at h
 
 /-- The splitting law for `ℚ(ζ₅)`: a prime `p` splits completely iff `p ≡ 1 (mod 5)`. -/
 theorem splits_completely_iff (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
