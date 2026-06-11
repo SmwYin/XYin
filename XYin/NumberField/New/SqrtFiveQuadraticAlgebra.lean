@@ -389,18 +389,169 @@ theorem adjoin_sqrtFive_ne_integralClosure :
 
 /-! ## 3. Discriminant -/
 
-/-- The number-field discriminant of `ℚ(√5)` is `5` (for `d ≡ 1 (mod 4)` squarefree the
-discriminant of `ℚ(√d)` is `d` itself). This is the smallest discriminant of any real
-quadratic field; in particular `5` is the only ramified prime, cf. `ramified_iff_eq_five`. -/
-theorem numberField_discr_eq : NumberField.discr K = (5 : ℤ) := by
-  sorry
-
-/-! ## 4. Norm form -/
-
 /-- The field norm agrees with the `QuadraticAlgebra` norm. -/
 private theorem algebraNorm_eq_norm (z : K) : Algebra.norm ℚ z = QuadraticAlgebra.norm z := by
   rw [Algebra.norm_apply, ← QuadraticAlgebra.det_toLinearMap_eq_norm]
   congr 1
+
+private theorem li_one_golden_K : LinearIndependent ℚ ![(1 : K), goldenInteger] := by
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  rw [Fin.sum_univ_two] at hg
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons] at hg
+  rw [goldenInteger_eq_mk] at hg
+  have hre := congrArg QuadraticAlgebra.re hg
+  have him := congrArg QuadraticAlgebra.im hg
+  simp only [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add, QuadraticAlgebra.re_smul,
+    QuadraticAlgebra.im_smul, smul_eq_mul] at hre him
+  have h1 : g 1 = 0 := by
+    have hh : g 1 * (1 / 2) = 0 := by simpa using him
+    rcases mul_eq_zero.mp hh with h | h
+    · exact h
+    · norm_num at h
+  have h0 : g 0 = 0 := by
+    rw [h1] at hre
+    simpa using hre
+  intro i
+  fin_cases i
+  · exact h0
+  · exact h1
+
+private theorem span_one_golden_K :
+    ⊤ ≤ Submodule.span ℚ (Set.range ![(1 : K), goldenInteger]) := by
+  intro z _
+  have hz : z = (z.re - z.im) • (1 : K) + (2 * z.im) • goldenInteger := by
+    rw [goldenInteger_eq_mk]
+    ext
+    · simp [QuadraticAlgebra.re_add, QuadraticAlgebra.re_smul]
+      ring
+    · simp [QuadraticAlgebra.im_add, QuadraticAlgebra.im_smul]
+      ring
+  rw [hz]
+  exact Submodule.add_mem _ (Submodule.smul_mem _ _ (Submodule.subset_span ⟨0, rfl⟩))
+    (Submodule.smul_mem _ _ (Submodule.subset_span ⟨1, rfl⟩))
+
+private noncomputable def goldenBasisK : Basis (Fin 2) ℚ K :=
+  Basis.mk li_one_golden_K span_one_golden_K
+
+/-- The golden ratio gives a `ℚ`-power basis `1, φ` of `K`. -/
+private noncomputable def goldenPowerBasis : PowerBasis ℚ K where
+  gen := goldenInteger
+  dim := 2
+  basis := goldenBasisK
+  basis_eq_pow := by
+    intro i
+    fin_cases i
+    · simp [goldenBasisK, Basis.mk_apply]
+    · simp [goldenBasisK, Basis.mk_apply]
+
+/-- The minimal polynomial of the golden ratio is `X² - X - 1`. -/
+private theorem goldenInteger_minpoly :
+    minpoly ℚ goldenInteger = Polynomial.X ^ 2 - Polynomial.X - 1 := by
+  have hint : IsIntegral ℚ goldenInteger := IsIntegral.of_finite ℚ _
+  have hmonic : (Polynomial.X ^ 2 - Polynomial.X - 1 : Polynomial ℚ).Monic := by monicity!
+  have hdeg2 : (Polynomial.X ^ 2 - Polynomial.X - 1 : Polynomial ℚ).natDegree = 2 := by
+    compute_degree!
+  have haev :
+      Polynomial.aeval goldenInteger (Polynomial.X ^ 2 - Polynomial.X - 1 : Polynomial ℚ) = 0 := by
+    rw [map_sub, map_sub, map_pow, Polynomial.aeval_X, map_one]
+    linear_combination goldenInteger_sq
+  obtain ⟨c, hc⟩ := minpoly.dvd ℚ goldenInteger haev
+  have hmin_monic : (minpoly ℚ goldenInteger).Monic := minpoly.monic hint
+  have hmindeg : (minpoly ℚ goldenInteger).natDegree = 2 :=
+    goldenPowerBasis.natDegree_minpoly
+  have hcne : c ≠ 0 := by
+    rintro rfl
+    rw [mul_zero] at hc
+    exact hmonic.ne_zero hc
+  have hcdeg : c.natDegree = 0 := by
+    have hfdeg := congrArg Polynomial.natDegree hc
+    rw [Polynomial.natDegree_mul (minpoly.ne_zero hint) hcne, hdeg2, hmindeg] at hfdeg
+    omega
+  have hlead := congrArg Polynomial.leadingCoeff hc
+  rw [Polynomial.leadingCoeff_mul, hmin_monic.leadingCoeff, one_mul,
+    hmonic.leadingCoeff] at hlead
+  have hc1 : c = 1 := by
+    rw [Polynomial.eq_C_of_natDegree_eq_zero hcdeg,
+      show c.coeff 0 = c.leadingCoeff by rw [Polynomial.leadingCoeff, hcdeg], ← hlead]
+    simp
+  rw [hc1, mul_one] at hc
+  exact hc.symm
+
+/-- The `K`-level discriminant of the power basis `1, φ` is `5`. -/
+private theorem goldenPowerBasis_discr :
+    Algebra.discr ℚ goldenPowerBasis.basis = (5 : ℚ) := by
+  rw [Algebra.discr_powerBasis_eq_norm]
+  have hgen : goldenPowerBasis.gen = goldenInteger := rfl
+  rw [hgen, degree_eq_two, goldenInteger_minpoly]
+  have hder : Polynomial.derivative (Polynomial.X ^ 2 - Polynomial.X - 1 : Polynomial ℚ) =
+      2 * Polynomial.X - 1 := by
+    simp
+    ring
+  rw [hder]
+  have haev :
+      Polynomial.aeval goldenInteger (2 * Polynomial.X - 1 : Polynomial ℚ) = sqrtFive := by
+    rw [map_sub, map_mul, Polynomial.aeval_X, map_one, map_ofNat]
+    rw [goldenInteger_eq_mk]
+    ext
+    · simp [QuadraticAlgebra.re_sub, QuadraticAlgebra.re_mul]
+    · simp [QuadraticAlgebra.im_sub, QuadraticAlgebra.im_mul]
+  rw [haev]
+  have hnorm : Algebra.norm ℚ sqrtFive = (-5 : ℚ) := by
+    rw [algebraNorm_eq_norm]
+    simp [QuadraticAlgebra.norm_def]
+  rw [hnorm]
+  norm_num
+
+set_option linter.flexible false in
+/-- The `ℤ`-discriminant of the integral basis `1, φ` is `5`. -/
+private theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (5 : ℤ) := by
+  let bInt : Basis (Fin 2) ℤ (𝓞 K) := concreteIntegralBasis
+  haveI : IsScalarTower ℤ (𝓞 K) K := IsScalarTower.of_algebraMap_eq fun _ => rfl
+  have hdiscLoc :=
+    @Algebra.discr_localizationLocalization
+      ℤ (𝓞 K) _ _ _ ℚ _ _ ℤ⁰ _ K _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ K)
+      (by infer_instance : IsScalarTower ℤ (𝓞 K) K)
+      (by infer_instance : IsLocalization (Algebra.algebraMapSubmonoid (𝓞 K) ℤ⁰) K)
+      (Fin 2) (by infer_instance) (by infer_instance) bInt
+  let bLoc : Basis (Fin 2) ℚ K :=
+    @Module.Basis.localizationLocalization
+      ℤ ℚ _ ℤ⁰ _ _ _ (𝓞 K) _ _ K _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ K)
+      (by infer_instance : IsScalarTower ℤ (𝓞 K) K)
+      (by infer_instance : IsLocalization (Algebra.algebraMapSubmonoid (𝓞 K) ℤ⁰) K)
+      (Fin 2) bInt
+  apply (algebraMap ℤ ℚ).injective_int
+  change (algebraMap ℤ ℚ) (Algebra.discr ℤ bInt) = (algebraMap ℤ ℚ) 5
+  rw [← hdiscLoc]
+  change Algebra.discr ℚ bLoc = (5 : ℚ)
+  have hfun : ⇑bLoc = ⇑goldenPowerBasis.basis := by
+    funext i
+    fin_cases i
+    · rw [show ((⟨0, by norm_num⟩ : Fin 2)) = (0 : Fin 2) from rfl]
+      simp only [bLoc, bInt, Module.Basis.localizationLocalization_apply]
+      rw [concreteIntegralBasis_apply 0]
+      simp only [integralBasisVectors, goldenPowerBasis, goldenBasisK, Matrix.cons_val_zero]
+      exact (Module.Basis.mk_apply li_one_golden_K span_one_golden_K 0).symm
+    · rw [show ((⟨1, by norm_num⟩ : Fin 2)) = (1 : Fin 2) from rfl]
+      simp only [bLoc, bInt, Module.Basis.localizationLocalization_apply]
+      rw [concreteIntegralBasis_apply 1]
+      simp only [integralBasisVectors, goldenPowerBasis, goldenBasisK, Matrix.cons_val_one,
+        Matrix.head_cons]
+      exact (Module.Basis.mk_apply li_one_golden_K span_one_golden_K 1).symm
+  rw [hfun]
+  exact goldenPowerBasis_discr
+
+/-- The number-field discriminant of `ℚ(√5)` is `5` (for `d ≡ 1 (mod 4)` squarefree the
+discriminant of `ℚ(√d)` is `d` itself). This is the smallest discriminant of any real
+quadratic field; in particular `5` is the only ramified prime, cf. `ramified_iff_eq_five`. -/
+theorem numberField_discr_eq : NumberField.discr K = (5 : ℤ) := by
+  rw [← NumberField.discr_eq_discr K concreteIntegralBasis]
+  exact concreteIntegralBasis_discr
+
+/-! ## 4. Norm form -/
 
 /-- The norm form of `ℚ(√5)` in the basis `1, φ`: the field norm of `x + yφ` is the binary
 quadratic form `x² + xy - y²` (the "Fibonacci form"). -/
