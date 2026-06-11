@@ -68,6 +68,31 @@ theorem sqrtTwoRoot_sq : sqrtTwoRoot ^ 2 = (2 : QSqrtTwo) := by
     sqrtTwoRoot ^ 2 = sqrtTwoRoot ^ 2 - 2 + 2 := by ring
     _ = 2 := by rw [hroot]; ring
 
+/-! ### The `QuadraticAlgebra ℚ 2 0` presentation -/
+
+instance : Fact (∀ r : ℚ, r ^ 2 ≠ (2 : ℚ) + (0 : ℚ) * r) := by
+  exact ⟨by
+    sorry⟩
+
+/-- The same field, now presented as the radical quadratic algebra `ℚ[√2]`. -/
+abbrev QSqrtTwoQuadratic : Type := QuadraticAlgebra ℚ (2 : ℚ) 0
+
+/-- The distinguished square root of `2` in the quadratic-algebra presentation. -/
+abbrev sqrtTwoQuadraticRoot : QSqrtTwoQuadratic := QuadraticAlgebra.omega
+
+theorem sqrtTwoQuadraticRoot_sq :
+    sqrtTwoQuadraticRoot ^ 2 = (2 : QSqrtTwoQuadratic) := by
+  sorry
+
+/-- The radical quadratic-algebra presentation is equivalent to the `AdjoinRoot` model. -/
+noncomputable def sqrtTwoQuadraticEquivAdjoinRoot :
+    QSqrtTwoQuadratic ≃ₐ[ℚ] QSqrtTwo := by
+  sorry
+
+theorem sqrtTwoQuadraticEquivAdjoinRoot_root :
+    sqrtTwoQuadraticEquivAdjoinRoot sqrtTwoQuadraticRoot = sqrtTwoRoot := by
+  sorry
+
 /-- The usual power basis `1, √2`. -/
 abbrev sqrtTwoPowerBasis : PowerBasis ℚ QSqrtTwo :=
   AdjoinRoot.powerBasis (f := sqrtTwoPolynomial)
@@ -984,6 +1009,14 @@ theorem sqrtTwo_numberField_classNumber :
 
 /-- The class group of `𝓞 ℚ(√2)` is trivial. -/
 theorem classGroupStructure : Nonempty (ClassGroup O2 ≃* Multiplicative (ZMod 1)) := by
+  sorry
+
+/-- The unit ideal as the concrete representative of the unique ideal class. -/
+abbrev unitIdealRepresentative : (Ideal O2)⁰ := ⟨(⊤ : Ideal O2), by simp⟩
+
+/-- Every ideal class is represented by the unit ideal. -/
+theorem classGroupRepresentative (C : ClassGroup O2) :
+    C = ClassGroup.mk0 unitIdealRepresentative := by
   sorry
 
 /-! ## 8. Euclidean structure -/

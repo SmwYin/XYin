@@ -1031,6 +1031,14 @@ theorem classNumber_eq_one : NumberField.classNumber QSqrtTwo = 1 := by
 theorem classGroupStructure : Nonempty (ClassGroup O2 ≃* Multiplicative (ZMod 1)) := by
   sorry
 
+/-- The unit ideal as the concrete representative of the unique ideal class. -/
+abbrev unitIdealRepresentative : (Ideal O2)⁰ := ⟨(⊤ : Ideal O2), by simp⟩
+
+/-- Every ideal class is represented by the unit ideal. -/
+theorem classGroupRepresentative (C : ClassGroup O2) :
+    C = ClassGroup.mk0 unitIdealRepresentative := by
+  sorry
+
 /-! ## 8. Euclidean structure -/
 
 /-- `ℚ(√2)` is norm-Euclidean: division with remainder in `ℤ[√2]` with respect to the

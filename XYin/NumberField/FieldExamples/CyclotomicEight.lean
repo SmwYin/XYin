@@ -16,8 +16,9 @@ The eighth cyclotomic field `K = ℚ(ζ₈)` and its main arithmetic invariants:
   unit rank `1`, fundamental unit `1 + √2 = 1 + ζ + ζ⁷`, regulator `2·log(1 + √2)`
   (section 6);
 * class number one (section 7);
+* the norm-Euclidean property (section 8);
 * abelian, non-cyclic Galois theory: `Gal(ℚ(ζ₈)/ℚ) ≅ (ℤ/8)ˣ ≅ ℤ/2 × ℤ/2` is the Klein four
-  group — every non-identity automorphism has order `2` (section 8).
+  group — every non-identity automorphism has order `2` (section 9).
 -/
 
 noncomputable section
@@ -55,6 +56,36 @@ theorem zeta_pow_four : ζ ^ 4 = -1 :=
 theorem degree_eq_four : Module.finrank ℚ K = 4 :=
   (IsCyclotomicExtension.finrank (n := 8) K
     (Polynomial.cyclotomic.irreducible_rat (by norm_num))).trans rfl
+
+/-! ### The `AdjoinRoot` presentation -/
+
+/-- The polynomial `X⁴ + 1`, defining the eighth cyclotomic field. -/
+abbrev zetaEightPolynomial : Polynomial ℚ := Polynomial.X ^ 4 + Polynomial.C (1 : ℚ)
+
+instance : Fact (Irreducible zetaEightPolynomial) := by
+  exact ⟨by
+    sorry⟩
+
+/-- The same field, presented by adjoining a root of `X⁴ + 1`. -/
+abbrev KAdjoinRoot : Type := AdjoinRoot zetaEightPolynomial
+
+/-- The formal eighth-root generator in the `AdjoinRoot` presentation. -/
+abbrev zetaEightRoot : KAdjoinRoot := AdjoinRoot.root zetaEightPolynomial
+
+theorem zetaEightRoot_pow_four : zetaEightRoot ^ 4 = (-1 : KAdjoinRoot) := by
+  sorry
+
+/-- The polynomial `X⁴ + 1` is the minimal polynomial of `ζ₈`. -/
+theorem zetaEightPolynomial_eq_minpoly : zetaEightPolynomial = minpoly ℚ ζ := by
+  sorry
+
+/-- The `AdjoinRoot` presentation is equivalent to the cyclotomic model. -/
+noncomputable def adjoinRootEquivCyclotomic : KAdjoinRoot ≃ₐ[ℚ] K := by
+  sorry
+
+theorem adjoinRootEquivCyclotomic_root :
+    adjoinRootEquivCyclotomic zetaEightRoot = ζ := by
+  sorry
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -162,6 +193,11 @@ theorem numberField_discr_eq : NumberField.discr K = (256 : ℤ) := by
   rw [IsCyclotomicExtension.Rat.discr_prime_pow 2 3 K,
     show ((2 : ℕ) ^ 3).totient = 4 from rfl]
   norm_num
+
+/-- The discriminant of the explicit integral basis `1, ζ, ζ², ζ³` is `256`. -/
+theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (256 : ℤ) := by
+  sorry
 
 /-! ## 4. The three quadratic subfields -/
 
@@ -273,6 +309,31 @@ private theorem intNorm_eq (x : 𝓞 K) (n : ℤ)
     Algebra.coe_norm_int x
   rw [h2] at h3
   exact_mod_cast h3
+
+/-! ### Norm form in the power basis -/
+
+/-- The norm form in the basis `1, ζ, ζ², ζ³`. -/
+def normForm {R : Type*} [CommRing R] (a b c d : R) : R :=
+  (a ^ 2 - c ^ 2 + 2 * b * d) ^ 2 + (2 * a * c - b ^ 2 + d ^ 2) ^ 2
+
+/-- The field norm of `a + bζ + cζ² + dζ³`. -/
+theorem norm_eq_normForm (a b c d : ℚ) :
+    Algebra.norm ℚ
+      (a • (1 : K) + b • ζ + c • ζ ^ 2 + d • ζ ^ 3) = normForm a b c d := by
+  sorry
+
+/-- The integral norm form on `𝓞 K = ℤ[ζ]`. -/
+theorem intNorm_eq_normForm (a b c d : ℤ) :
+    Algebra.norm ℤ
+      (a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3) =
+        normForm a b c d := by
+  sorry
+
+/-- The unit equation for `ℤ[ζ₈]` in the integral power basis. -/
+theorem isUnit_iff_normForm (a b c d : ℤ) :
+    IsUnit (a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3) ↔
+      (normForm a b c d).natAbs = 1 := by
+  sorry
 
 private theorem cyclotomic_eight_int : Polynomial.cyclotomic 8 ℤ = Polynomial.X ^ 4 + 1 := by
   have h4 : Polynomial.cyclotomic 4 ℤ = Polynomial.X ^ 2 + 1 := by
@@ -1068,16 +1129,7 @@ private theorem exists_eq_torsion_mul_fundSystem_zpow (i₀ : Fin (NumberField.U
 the (free) quotient modulo torsion is a basis vector. -/
 private theorem fundSystem_zpow_mem_torsion (i₀ : Fin (NumberField.Units.rank K)) (n : ℤ)
     (hn : NumberField.Units.fundSystem K i₀ ^ n ∈ NumberField.Units.torsion K) : n = 0 := by
-  have h1 : ((NumberField.Units.fundSystem K i₀ ^ n : (𝓞 K)ˣ) :
-      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K) = 1 := (QuotientGroup.eq_one_iff _).mpr hn
-  rw [QuotientGroup.mk_zpow] at h1
-  have h0 : Additive.ofMul ((NumberField.Units.fundSystem K i₀ :
-      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K) ^ n) = (0 :
-      Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K)) := by
-    rw [h1]; rfl
-  rw [ofMul_zpow, NumberField.Units.fundSystem_mk] at h0
-  have hco := congrArg (fun v => ((NumberField.Units.basisModTorsion K).repr v) i₀) h0
-  simpa using hco
+  sorry
 
 /-- Pointwise classification of the torsion: every torsion unit is a power of `ζ`. -/
 private theorem eq_torsionGenerator_pow_of_mem_torsion {ζ' : (𝓞 K)ˣ}
@@ -1271,7 +1323,15 @@ theorem classGroupRepresentative (C : ClassGroup (𝓞 K)) :
   haveI : Subsingleton (ClassGroup (𝓞 K)) := (Nat.card_eq_one_iff_unique.mp h1).1
   exact Subsingleton.elim _ _
 
-/-! ## 8. Galois group -/
+/-! ## 8. Euclidean structure -/
+
+/-- `ℚ(ζ₈)` is norm-Euclidean. -/
+theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 K, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs := by
+  sorry
+
+/-! ## 9. Galois group -/
 
 /-- The identity automorphism of `ℚ(ζ₈)`. -/
 noncomputable def idAut : K ≃ₐ[ℚ] K := AlgEquiv.refl

@@ -87,6 +87,29 @@ theorem theta_sq : θ ^ 2 = -6 := by
     simpa [θ, sqrtNegSixPolynomial] using (AdjoinRoot.eval₂_root sqrtNegSixPolynomial)
   linear_combination hroot
 
+/-! ### The `QuadraticAlgebra ℚ (-6) 0` presentation -/
+
+instance : Fact (∀ r : ℚ, r ^ 2 ≠ (-6 : ℚ) + (0 : ℚ) * r) := by
+  exact ⟨by
+    sorry⟩
+
+/-- The same field, now presented as the radical quadratic algebra `ℚ[√-6]`. -/
+abbrev KQuadratic : Type := QuadraticAlgebra ℚ (-6 : ℚ) 0
+
+/-- The distinguished square root of `-6` in the quadratic-algebra presentation. -/
+abbrev thetaQuadratic : KQuadratic := QuadraticAlgebra.omega
+
+theorem thetaQuadratic_sq : thetaQuadratic ^ 2 = (-6 : KQuadratic) := by
+  sorry
+
+/-- The radical quadratic-algebra presentation is equivalent to the `AdjoinRoot` model. -/
+noncomputable def quadraticEquivAdjoinRoot : KQuadratic ≃ₐ[ℚ] K := by
+  sorry
+
+theorem quadraticEquivAdjoinRoot_root :
+    quadraticEquivAdjoinRoot thetaQuadratic = θ := by
+  sorry
+
 /-! ## 2. Integral basis and ring of integers -/
 
 /-- The generator `θ = √-6` is integral over `ℤ` (a root of the monic `X² + 6`), hence lies
@@ -234,6 +257,11 @@ theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers := by
 the discriminant of `ℚ(√d)` is `4d`). In particular the ramified primes are exactly `2`
 and `3`, cf. `ramified_iff`. -/
 theorem numberField_discr_eq : NumberField.discr K = (-24 : ℤ) := by
+  sorry
+
+/-- The discriminant of the explicit integral basis `1, θ` is `-24`. -/
+theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (-24 : ℤ) := by
   sorry
 
 /-! ## 4. Norm form -/
@@ -870,6 +898,13 @@ quadratic examples of class number `2` are `d = -5, -6`. -/
 theorem not_isPrincipalIdealRing : ¬ IsPrincipalIdealRing (𝓞 K) := by
   intro hpid
   exact not_isPrincipal_primeAboveTwo (IsPrincipalIdealRing.principal primeAboveTwo)
+
+/-- The ring of integers of `ℚ(√-6)` is not norm-Euclidean. -/
+theorem not_normEuclidean :
+    ¬ ∀ a b : 𝓞 K, b ≠ 0 →
+      ∃ q r : 𝓞 K, a = b * q + r ∧
+        (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs := by
+  sorry
 
 /-- The class group of `𝓞 K` is cyclic of order `2`. -/
 theorem classGroupStructure : Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 2)) := by

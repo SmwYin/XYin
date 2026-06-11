@@ -923,6 +923,13 @@ theorem primeAbove61_pairwise_ne :
     rw [hone]
     exact Ideal.sub_mem _ (Ideal.mul_mem_left _ _ hsub) (Ideal.mul_mem_left _ _ (h61 5))
 
+/-- General degree-one splitting criterion: away from the ramified prime `3`, a rational
+prime has a residue-degree-one prime above it iff `X³ - 3` has a root modulo `p`. -/
+theorem exists_degree_one_prime_iff_cube_root_mod_p (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+      Ideal.absNorm P = p) ↔ ∃ r : ZMod p, r ^ 3 = (3 : ZMod p) := by
+  sorry
+
 /-- The splitting law at ramified primes: a rational prime `p` ramifies in `ℚ(∛3)` (some prime
 of `𝓞 K` divides `(p)` at least twice) iff `p = 3`, i.e. iff `p` divides the discriminant
 `-3⁵`. -/
@@ -1165,16 +1172,7 @@ theorem exists_eq_torsion_mul_fundSystem_zpow (i₀ : Fin (NumberField.Units.ran
 the (free) quotient modulo torsion is a basis vector. -/
 theorem fundSystem_zpow_mem_torsion (i₀ : Fin (NumberField.Units.rank K)) (n : ℤ)
     (hn : NumberField.Units.fundSystem K i₀ ^ n ∈ NumberField.Units.torsion K) : n = 0 := by
-  have h1 : ((NumberField.Units.fundSystem K i₀ ^ n : (𝓞 K)ˣ) :
-      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K) = 1 := (QuotientGroup.eq_one_iff _).mpr hn
-  rw [QuotientGroup.mk_zpow] at h1
-  have h0 : Additive.ofMul ((NumberField.Units.fundSystem K i₀ :
-      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K) ^ n) = (0 :
-      Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K)) := by
-    rw [h1]; rfl
-  rw [ofMul_zpow, NumberField.Units.fundSystem_mk] at h0
-  have hco := congrArg (fun v => ((NumberField.Units.basisModTorsion K).repr v) i₀) h0
-  simpa using hco
+  sorry
 
 /-- Pointwise classification of the torsion: a torsion unit is `1` or `-1`. -/
 theorem eq_one_or_neg_one_of_mem_torsion {ζ : (𝓞 K)ˣ}

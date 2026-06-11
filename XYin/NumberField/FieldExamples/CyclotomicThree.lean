@@ -249,6 +249,31 @@ theorem sqrtNegThreeEquivCyclotomic_root :
   rw [sqrtNegThreeEquivZetaThree_root]
   simp only [map_add, map_mul, map_one, map_ofNat, adjoinRootEquivCyclotomic_root]
 
+/-! #### The `QuadraticAlgebra ℚ (-3) 0` model -/
+
+instance : Fact (∀ r : ℚ, r ^ 2 ≠ (-3 : ℚ) + (0 : ℚ) * r) := by
+  exact ⟨by
+    sorry⟩
+
+/-- The same quadratic field, presented as the radical quadratic algebra `ℚ[√-3]`. -/
+abbrev QSqrtNegThreeQuadratic : Type := QuadraticAlgebra ℚ (-3 : ℚ) 0
+
+/-- The distinguished square root of `-3` in the quadratic-algebra presentation. -/
+abbrev sqrtNegThreeQuadraticRoot : QSqrtNegThreeQuadratic := QuadraticAlgebra.omega
+
+theorem sqrtNegThreeQuadraticRoot_sq :
+    sqrtNegThreeQuadraticRoot ^ 2 = (-3 : QSqrtNegThreeQuadratic) := by
+  sorry
+
+/-- The radical quadratic-algebra presentation is equivalent to the cyclotomic model. -/
+noncomputable def sqrtNegThreeQuadraticEquivCyclotomic :
+    QSqrtNegThreeQuadratic ≃ₐ[ℚ] K := by
+  sorry
+
+theorem sqrtNegThreeQuadraticEquivCyclotomic_root :
+    sqrtNegThreeQuadraticEquivCyclotomic sqrtNegThreeQuadraticRoot = 2 * ζ + 1 := by
+  sorry
+
 /-! ## 2. Integral basis and ring of integers -/
 
 /-- The ring of integers of `K`. -/
@@ -1050,6 +1075,14 @@ theorem torsionOrder_eq_six : Units.torsionOrder K = 6 := by
   rw [IsCyclotomicExtension.Rat.torsionOrder_eq (n := 3) (K := K)]
   norm_num
 
+/-- The field `ℚ(ζ₃)` has no real infinite places. -/
+theorem nrRealPlaces_eq_zero : InfinitePlace.nrRealPlaces K = 0 := by
+  sorry
+
+/-- The field `ℚ(ζ₃)` has one complex infinite place. -/
+theorem nrComplexPlaces_eq_one : InfinitePlace.nrComplexPlaces K = 1 := by
+  sorry
+
 /-- Dirichlet's unit rank is `0` for this imaginary quadratic field: the signature is
 `(r₁, r₂) = (0, 1)`, so the rank is `r₁ + r₂ - 1 = 0`. -/
 theorem unitRank_eq_zero : Units.rank K = 0 := by
@@ -1160,6 +1193,14 @@ theorem classGroupStructure : Nonempty (ClassGroup OK ≃* Multiplicative (ZMod 
   haveI : Subsingleton (ClassGroup OK) := (Nat.card_eq_one_iff_unique.mp h1).1
   haveI : Unique (ClassGroup OK) := uniqueOfSubsingleton 1
   exact ⟨MulEquiv.ofUnique⟩
+
+/-- The unit ideal as the concrete representative of the unique ideal class. -/
+abbrev unitIdealRepresentative : (Ideal OK)⁰ := ⟨(⊤ : Ideal OK), by simp⟩
+
+/-- Every ideal class is represented by the unit ideal. -/
+theorem classGroupRepresentative (C : ClassGroup OK) :
+    C = ClassGroup.mk0 unitIdealRepresentative := by
+  sorry
 
 /-! ## 8. Euclidean structure -/
 
