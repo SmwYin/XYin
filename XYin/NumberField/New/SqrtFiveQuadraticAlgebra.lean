@@ -776,12 +776,352 @@ theorem primesAboveEleven_ne :
   rw [htop, Ideal.absNorm_top] at habs
   norm_num at habs
 
+/-- A rational prime generates an ideal of norm `p²` in the quadratic ring `ℤ[φ]`. -/
+private theorem absNorm_span_natCast (p : ℕ) :
+    Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
+  have h := intNorm_eq_normForm (p : ℤ) 0
+  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • goldenInt = ((p : ℕ) : 𝓞 K) := by
+    push_cast
+    simp
+  rw [hps] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  simp [Int.natAbs_pow]
+
+/-- An element `A + B·φ` with `B = ±1` is never divisible by a rational prime `p ≥ 2`. -/
+private theorem unit_golden_coeff_not_mem (p : ℕ) (hp : 2 ≤ p) (A B : ℤ)
+    (hB : B = 1 ∨ B = -1) :
+    ((A : ℤ) : 𝓞 K) + ((B : ℤ) : 𝓞 K) * goldenInt ∉ Ideal.span {((p : ℕ) : 𝓞 K)} := by
+  intro hmem
+  rw [Ideal.mem_span_singleton] at hmem
+  obtain ⟨z, hz⟩ := hmem
+  obtain ⟨A', m, hAm⟩ := exists_int_coords z.2
+  have hzdec : z = A' • (1 : 𝓞 K) + m • goldenInt := by
+    refine Subtype.ext ?_
+    have hmap : algebraMap (𝓞 K) K (A' • (1 : 𝓞 K) + m • goldenInt) =
+        (A' : ℚ) • (1 : K) + (m : ℚ) • goldenInteger := by
+      rw [map_add, map_zsmul, map_zsmul, map_one, coe_goldenInt,
+        Int.cast_smul_eq_zsmul ℚ A' (1 : K), Int.cast_smul_eq_zsmul ℚ m goldenInteger]
+    exact hAm.trans hmap.symm
+  rw [hzdec] at hz
+  have hsum : ∑ i : Fin 2,
+      (![A - p * A', B - p * m] i) • (![(1 : 𝓞 K), goldenInt] i) = 0 := by
+    rw [Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, zsmul_eq_mul,
+      smul_eq_mul] at hz ⊢
+    push_cast at hz ⊢
+    linear_combination hz
+  have hcoeff := Fintype.linearIndependent_iff.mp li_one_golden _ hsum 1
+  simp only [Matrix.cons_val_one, Matrix.head_cons, Matrix.cons_val_zero] at hcoeff
+  rcases hB with rfl | rfl
+  · have h1 : (p : ℤ) ∣ 1 := ⟨m, by linarith [hcoeff]⟩
+    have := Int.le_of_dvd one_pos h1
+    omega
+  · have h1 : (p : ℤ) ∣ 1 := ⟨-m, by linarith [hcoeff]⟩
+    have := Int.le_of_dvd one_pos h1
+    omega
+
 /-- The splitting law for `ℚ(√5)` (a case of quadratic reciprocity): a prime `p ≠ 5` splits
 into two distinct primes iff `p ≡ ±1 (mod 5)`, and is inert otherwise. -/
 theorem splits_iff_mod_five (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
       Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4 := by
-  sorry
+  have hsq1 : IsSquare ((1 : ℕ) : ZMod 5) := by decide
+  have hsq4 : IsSquare ((4 : ℕ) : ZMod 5) := by decide
+  have hnsq2 : ¬ IsSquare ((2 : ℕ) : ZMod 5) := by decide
+  have hnsq3 : ¬ IsSquare ((3 : ℕ) : ZMod 5) := by decide
+  constructor
+  · rintro ⟨P, Q, hPprime, hQprime, hPQne, hspan⟩
+    have hmul : Ideal.absNorm P * Ideal.absNorm Q = p ^ 2 := by
+      rw [← _root_.map_mul Ideal.absNorm, ← hspan, absNorm_span_natCast]
+    have hP1 : Ideal.absNorm P ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      exact hPprime.ne_top
+    have hQ1 : Ideal.absNorm Q ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      exact hQprime.ne_top
+    have hNP : Ideal.absNorm P = p := by
+      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow hp).mp ⟨_, hmul.symm⟩
+      interval_cases k
+      · rw [pow_zero] at hkeq
+        exact absurd hkeq hP1
+      · rw [pow_one] at hkeq
+        exact hkeq
+      · exfalso
+        rw [hkeq] at hmul
+        have hQ1' : Ideal.absNorm Q = 1 :=
+          Nat.eq_of_mul_eq_mul_left (pow_pos hp.pos 2)
+            (by rw [mul_one]; exact hmul)
+        exact hQ1 hQ1'
+    have hcard : Nat.card ((𝓞 K) ⧸ P) = p := by
+      rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hNP
+      exact hNP
+    haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; exact hp.pos.ne')
+    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+    have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by
+      rw [← Nat.card_eq_fintype_card]
+      exact hcard
+    let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
+    obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P goldenInt)
+    have ht2 : t ^ 2 = t + 1 := by
+      apply e.injective
+      rw [map_pow, ht, map_add, ht, map_one, ← map_pow (Ideal.Quotient.mk P), goldenInt_sq,
+        map_add, map_one]
+    by_cases hp2 : p = 2
+    · exfalso
+      subst hp2
+      clear ht
+      revert t
+      decide
+    have hsq5 : IsSquare ((5 : ℕ) : ZMod p) := by
+      refine ⟨2 * t - 1, ?_⟩
+      push_cast
+      linear_combination -4 * ht2
+    haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+    haveI : Fact (Nat.Prime p) := ⟨hp⟩
+    have hsqp : IsSquare ((p : ℕ) : ZMod 5) :=
+      (ZMod.exists_sq_eq_prime_iff_of_mod_four_eq_one (p := 5) (q := p)
+        (by norm_num) hp2).mpr hsq5
+    have hcast : ((p : ℕ) : ZMod 5) = ((p % 5 : ℕ) : ZMod 5) := (ZMod.natCast_mod p 5).symm
+    rw [hcast] at hsqp
+    have hne0 : p % 5 ≠ 0 := by
+      intro h0
+      exact hp5 (((Nat.prime_dvd_prime_iff_eq (by norm_num) hp).mp
+        (Nat.dvd_of_mod_eq_zero h0)).symm)
+    have hcases : p % 5 = 0 ∨ p % 5 = 1 ∨ p % 5 = 2 ∨ p % 5 = 3 ∨ p % 5 = 4 := by omega
+    rcases hcases with h | h | h | h | h
+    · exact absurd h hne0
+    · exact Or.inl h
+    · rw [h] at hsqp
+      exact absurd hsqp hnsq2
+    · rw [h] at hsqp
+      exact absurd hsqp hnsq3
+    · exact Or.inr h
+  · intro hmod
+    have hp2 : p ≠ 2 := by
+      rintro rfl
+      omega
+    have hsqp : IsSquare ((p : ℕ) : ZMod 5) := by
+      rw [(ZMod.natCast_mod p 5).symm]
+      rcases hmod with h | h
+      · rw [h]
+        exact hsq1
+      · rw [h]
+        exact hsq4
+    haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+    haveI : Fact (Nat.Prime p) := ⟨hp⟩
+    have hsq5 : IsSquare ((5 : ℕ) : ZMod p) :=
+      (ZMod.exists_sq_eq_prime_iff_of_mod_four_eq_one (p := 5) (q := p)
+        (by norm_num) hp2).mp hsqp
+    obtain ⟨s, hs⟩ := hsq5
+    have h2ne : (2 : ZMod p) ≠ 0 := by
+      intro h0
+      exact hp2 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp
+        ((ZMod.natCast_eq_zero_iff 2 p).mp (by exact_mod_cast h0)))
+    set t : ZMod p := (1 + s) / 2 with htdef
+    have h2t : (2 : ZMod p) * t = 1 + s := by
+      rw [htdef, mul_comm, div_mul_cancel₀ _ h2ne]
+    have ht2 : t ^ 2 = t + 1 := by
+      have hmul4 : (4 : ZMod p) * (t ^ 2 - t - 1) = 0 := by
+        have hs' : ((5 : ℕ) : ZMod p) = s * s := hs
+        push_cast at hs'
+        linear_combination (2 * t - 1 + s) * h2t - hs'
+      have h4ne : (4 : ZMod p) ≠ 0 := by
+        rw [show (4 : ZMod p) = 2 * 2 by norm_num]
+        exact mul_ne_zero h2ne h2ne
+      have hz : t ^ 2 - t - 1 = 0 := by
+        rcases mul_eq_zero.mp hmul4 with h | h
+        · exact absurd h h4ne
+        · exact h
+      linear_combination hz
+    set c : ℤ := (t.val : ℤ) with hcdef
+    set c' : ℤ := ((1 - t).val : ℤ) with hc'def
+    have hct : ((c : ℤ) : ZMod p) = t := by
+      rw [hcdef]
+      exact_mod_cast ZMod.natCast_rightInverse t
+    have hc't : ((c' : ℤ) : ZMod p) = 1 - t := by
+      rw [hc'def]
+      exact_mod_cast ZMod.natCast_rightInverse (1 - t)
+    have hdvd1 : (p : ℤ) ∣ 1 - c - c' := by
+      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+      push_cast
+      rw [hct, hc't]
+      ring
+    have hdvd2 : (p : ℤ) ∣ 1 + c * c' := by
+      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+      push_cast
+      rw [hct, hc't]
+      linear_combination -ht2
+    obtain ⟨k₁, hk₁⟩ := hdvd1
+    obtain ⟨k₂, hk₂⟩ := hdvd2
+    have hk₁K : (1 : 𝓞 K) - (c : 𝓞 K) - (c' : 𝓞 K) = ((p : ℕ) : 𝓞 K) * (k₁ : 𝓞 K) := by
+      have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 K)) hk₁
+      push_cast at h
+      exact h
+    have hk₂K : (1 : 𝓞 K) + (c : 𝓞 K) * (c' : 𝓞 K) = ((p : ℕ) : 𝓞 K) * (k₂ : 𝓞 K) := by
+      have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 K)) hk₂
+      push_cast at h
+      exact h
+    have hprod : (goldenInt - (c : 𝓞 K)) * (goldenInt - (c' : 𝓞 K)) =
+        ((p : ℕ) : 𝓞 K) * ((k₁ : 𝓞 K) * goldenInt + (k₂ : 𝓞 K)) := by
+      linear_combination goldenInt_sq + goldenInt * hk₁K + hk₂K
+    set P := Ideal.span {((p : ℕ) : 𝓞 K), goldenInt - (c : 𝓞 K)} with hPdef
+    set Q := Ideal.span {((p : ℕ) : 𝓞 K), goldenInt - (c' : 𝓞 K)} with hQdef
+    have hp_memP : ((p : ℕ) : 𝓞 K) ∈ P := Ideal.subset_span (Set.mem_insert _ _)
+    have hgc_memP : goldenInt - (c : 𝓞 K) ∈ P :=
+      Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+    have hp_memQ : ((p : ℕ) : 𝓞 K) ∈ Q := Ideal.subset_span (Set.mem_insert _ _)
+    have hgc'_memQ : goldenInt - (c' : 𝓞 K) ∈ Q :=
+      Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+    have hPle : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ P :=
+      (Ideal.span_singleton_le_iff_mem _).mpr hp_memP
+    have hQle : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ Q :=
+      (Ideal.span_singleton_le_iff_mem _).mpr hp_memQ
+    have hnorm : ∀ (I : Ideal (𝓞 K)), Ideal.span {((p : ℕ) : 𝓞 K)} ≤ I →
+        Ideal.absNorm I ≠ 1 → Ideal.absNorm I ≠ p ^ 2 → Ideal.absNorm I = p := by
+      intro I hle h1 hpsq
+      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow hp).mp
+        ((absNorm_span_natCast p) ▸ Ideal.absNorm_dvd_absNorm_of_le hle)
+      interval_cases k
+      · rw [pow_zero] at hkeq
+        exact absurd hkeq h1
+      · rw [pow_one] at hkeq
+        exact hkeq
+      · exact absurd hkeq hpsq
+    have hPnot1 : Ideal.absNorm P ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      intro htop
+      have h1 : (1 : 𝓞 K) ∈ P := htop ▸ Submodule.mem_top
+      rw [hPdef, Ideal.mem_span_pair] at h1
+      obtain ⟨α, β, hαβ⟩ := h1
+      have hgc' : goldenInt - (c' : 𝓞 K) ∈ Ideal.span {((p : ℕ) : 𝓞 K)} := by
+        rw [Ideal.mem_span_singleton]
+        refine ⟨α * (goldenInt - (c' : 𝓞 K)) + β * ((k₁ : 𝓞 K) * goldenInt + (k₂ : 𝓞 K)), ?_⟩
+        calc goldenInt - (c' : 𝓞 K)
+            = (α * ((p : ℕ) : 𝓞 K) + β * (goldenInt - (c : 𝓞 K))) * (goldenInt - (c' : 𝓞 K)) := by
+              rw [hαβ, one_mul]
+          _ = ((p : ℕ) : 𝓞 K) *
+              (α * (goldenInt - (c' : 𝓞 K)) + β * ((k₁ : 𝓞 K) * goldenInt + (k₂ : 𝓞 K))) := by
+              linear_combination β * hprod
+      refine unit_golden_coeff_not_mem p hp.two_le (-c') 1 (Or.inl rfl) ?_
+      rw [show ((-c' : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * goldenInt = goldenInt - (c' : 𝓞 K) by
+        push_cast; ring]
+      exact hgc'
+    have hQnot1 : Ideal.absNorm Q ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      intro htop
+      have h1 : (1 : 𝓞 K) ∈ Q := htop ▸ Submodule.mem_top
+      rw [hQdef, Ideal.mem_span_pair] at h1
+      obtain ⟨α, β, hαβ⟩ := h1
+      have hgc : goldenInt - (c : 𝓞 K) ∈ Ideal.span {((p : ℕ) : 𝓞 K)} := by
+        rw [Ideal.mem_span_singleton]
+        refine ⟨α * (goldenInt - (c : 𝓞 K)) + β * ((k₁ : 𝓞 K) * goldenInt + (k₂ : 𝓞 K)), ?_⟩
+        calc goldenInt - (c : 𝓞 K)
+            = (α * ((p : ℕ) : 𝓞 K) + β * (goldenInt - (c' : 𝓞 K))) * (goldenInt - (c : 𝓞 K)) := by
+              rw [hαβ, one_mul]
+          _ = ((p : ℕ) : 𝓞 K) *
+              (α * (goldenInt - (c : 𝓞 K)) + β * ((k₁ : 𝓞 K) * goldenInt + (k₂ : 𝓞 K))) := by
+              linear_combination β * hprod
+      refine unit_golden_coeff_not_mem p hp.two_le (-c) 1 (Or.inl rfl) ?_
+      rw [show ((-c : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * goldenInt = goldenInt - (c : 𝓞 K) by
+        push_cast; ring]
+      exact hgc
+    have hPnotsq : Ideal.absNorm P ≠ p ^ 2 := by
+      intro hNP
+      have heq := eq_of_le_of_absNorm_eq hPle (absNorm_span_natCast p) hNP
+        (pow_ne_zero 2 hp.pos.ne')
+      refine unit_golden_coeff_not_mem p hp.two_le (-c) 1 (Or.inl rfl) ?_
+      rw [show ((-c : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * goldenInt = goldenInt - (c : 𝓞 K) by
+        push_cast; ring]
+      rw [heq]
+      exact hgc_memP
+    have hQnotsq : Ideal.absNorm Q ≠ p ^ 2 := by
+      intro hNQ
+      have heq := eq_of_le_of_absNorm_eq hQle (absNorm_span_natCast p) hNQ
+        (pow_ne_zero 2 hp.pos.ne')
+      refine unit_golden_coeff_not_mem p hp.two_le (-c') 1 (Or.inl rfl) ?_
+      rw [show ((-c' : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * goldenInt = goldenInt - (c' : 𝓞 K) by
+        push_cast; ring]
+      rw [heq]
+      exact hgc'_memQ
+    have hNP : Ideal.absNorm P = p := hnorm P hPle hPnot1 hPnotsq
+    have hNQ : Ideal.absNorm Q = p := hnorm Q hQle hQnot1 hQnotsq
+    have hPprime : P.IsPrime := by
+      apply Ideal.isPrime_of_irreducible_absNorm
+      rw [hNP]
+      exact hp
+    have hQprime : Q.IsPrime := by
+      apply Ideal.isPrime_of_irreducible_absNorm
+      rw [hNQ]
+      exact hp
+    have htne : t ≠ 1 - t := by
+      intro h0
+      have hs0 : s = 0 := by
+        have h2t1 : (2 : ZMod p) * t = 1 := by linear_combination h0
+        have : (1 : ZMod p) + s = 1 := by rw [← h2t, h2t1]
+        linear_combination this
+      have h50 : ((5 : ℕ) : ZMod p) = 0 := by
+        rw [hs, hs0, mul_zero]
+      exact hp5 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp
+        ((ZMod.natCast_eq_zero_iff 5 p).mp h50))
+    have hPQne : P ≠ Q := by
+      intro heq
+      have hcc' : ((c - c' : ℤ) : ZMod p) ≠ 0 := by
+        push_cast
+        rw [hct, hc't]
+        intro h0
+        exact htne (by linear_combination h0)
+      obtain ⟨u, hu⟩ := isUnit_iff_ne_zero.mpr hcc'
+      set w : ZMod p := ((u⁻¹ : (ZMod p)ˣ) : ZMod p) with hwdef
+      have hw : w * ((c - c' : ℤ) : ZMod p) = 1 := by
+        rw [hwdef, ← hu, ← Units.val_mul, inv_mul_cancel, Units.val_one]
+      have hlift : (p : ℤ) ∣ ((w.val : ℤ) * (c - c') - 1) := by
+        rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+        push_cast
+        rw [show ((w.val : ℕ) : ZMod p) = w from ZMod.natCast_rightInverse w]
+        push_cast at hw
+        linear_combination hw
+      obtain ⟨k₃, hk₃⟩ := hlift
+      have hk₃K : ((w.val : ℕ) : 𝓞 K) * ((c : 𝓞 K) - (c' : 𝓞 K)) - 1 =
+          ((p : ℕ) : 𝓞 K) * (k₃ : 𝓞 K) := by
+        have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 K)) hk₃
+        push_cast at h
+        exact h
+      have h1 : (1 : 𝓞 K) ∈ P := by
+        have hgc'P : goldenInt - (c' : 𝓞 K) ∈ P := by
+          rw [heq]
+          exact hgc'_memQ
+        have hid : (1 : 𝓞 K) = ((w.val : ℕ) : 𝓞 K) *
+            ((goldenInt - (c' : 𝓞 K)) - (goldenInt - (c : 𝓞 K))) -
+            (k₃ : 𝓞 K) * ((p : ℕ) : 𝓞 K) := by
+          linear_combination -hk₃K
+        rw [hid]
+        exact Submodule.sub_mem _
+          (Ideal.mul_mem_left _ _ (Submodule.sub_mem _ hgc'P hgc_memP))
+          (Ideal.mul_mem_left _ _ hp_memP)
+      have habs := hNP
+      rw [(Ideal.eq_top_iff_one P).mpr h1, Ideal.absNorm_top] at habs
+      exact hp2 (by omega)
+    have hPQ : Ideal.span {((p : ℕ) : 𝓞 K)} = P * Q := by
+      have hle1 : P * Q ≤ Ideal.span {((p : ℕ) : 𝓞 K)} := by
+        rw [Ideal.mul_le]
+        intro r1 hr1 r2 hr2
+        rw [hPdef, Ideal.mem_span_pair] at hr1
+        rw [hQdef, Ideal.mem_span_pair] at hr2
+        obtain ⟨x1, y1, h1⟩ := hr1
+        obtain ⟨x2, y2, h2⟩ := hr2
+        rw [Ideal.mem_span_singleton]
+        refine ⟨x1 * x2 * ((p : ℕ) : 𝓞 K) + x1 * y2 * (goldenInt - (c' : 𝓞 K)) +
+          y1 * x2 * (goldenInt - (c : 𝓞 K)) +
+          y1 * y2 * ((k₁ : 𝓞 K) * goldenInt + (k₂ : 𝓞 K)), ?_⟩
+        rw [← h1, ← h2]
+        linear_combination (y1 * y2) * hprod
+      have hNPQ : Ideal.absNorm (P * Q) = p ^ 2 := by
+        rw [_root_.map_mul, hNP, hNQ]
+        ring
+      exact (eq_of_le_of_absNorm_eq hle1 hNPQ (absNorm_span_natCast p)
+        (pow_ne_zero 2 hp.pos.ne')).symm
+    exact ⟨P, Q, hPprime, hQprime, hPQne, hPQ⟩
 
 /-- A rational prime `p` ramifies in `ℚ(√5)` iff `p = 5`, i.e. iff `p` divides the
 discriminant `5`. -/
