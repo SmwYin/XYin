@@ -177,17 +177,47 @@ theorem numberField_discr_eq : NumberField.discr K = (5 : ℤ) := by
 
 /-! ## 4. Norm form -/
 
+/-- The field norm agrees with the `QuadraticAlgebra` norm. -/
+private theorem algebraNorm_eq_norm (z : K) : Algebra.norm ℚ z = QuadraticAlgebra.norm z := by
+  rw [Algebra.norm_apply, ← QuadraticAlgebra.det_toLinearMap_eq_norm]
+  congr 1
+
+/-- The golden ratio in components. -/
+private theorem goldenInteger_eq_mk : goldenInteger = (⟨1/2, 1/2⟩ : K) := by
+  have h2 : (2 : K) ≠ 0 := two_ne_zero
+  refine mul_left_cancel₀ h2 ?_
+  have hl : (2 : K) * goldenInteger = 1 + sqrtFive := by
+    rw [show goldenInteger = (1 + sqrtFive) / 2 from rfl]
+    field_simp
+  rw [hl, show (2 : K) * (⟨1/2, 1/2⟩ : K) = (⟨1, 1⟩ : K) from by ext <;> simp <;> norm_num,
+    QuadraticAlgebra.mk_eq_add_smul_omega]
+  simp
+
 /-- The norm form of `ℚ(√5)` in the basis `1, φ`: the field norm of `x + yφ` is the binary
 quadratic form `x² + xy - y²` (the "Fibonacci form"). -/
 theorem norm_eq_normForm (x y : ℚ) :
     Algebra.norm ℚ (x • (1 : K) + y • goldenInteger) = x ^ 2 + x * y - y ^ 2 := by
-  sorry
+  rw [algebraNorm_eq_norm]
+  have hz : x • (1 : K) + y • goldenInteger = (⟨x + y / 2, y / 2⟩ : K) := by
+    rw [goldenInteger_eq_mk]
+    ext <;> simp <;> ring
+  rw [hz, QuadraticAlgebra.norm_def]
+  ring
 
 /-- The integral norm form: on `𝓞 K = ℤ[φ]` the norm of `x + yφ` (with `x, y ∈ ℤ`) is
 `x² + xy - y²`. -/
 theorem intNorm_eq_normForm (x y : ℤ) :
     Algebra.norm ℤ (x • (1 : 𝓞 K) + y • goldenInt) = x ^ 2 + x * y - y ^ 2 := by
-  sorry
+  have h1 : ((Algebra.norm ℤ (x • (1 : 𝓞 K) + y • goldenInt) : ℤ) : ℚ) =
+      Algebra.norm ℚ (algebraMap (𝓞 K) K (x • (1 : 𝓞 K) + y • goldenInt)) :=
+    Algebra.coe_norm_int _
+  have h2 : algebraMap (𝓞 K) K (x • (1 : 𝓞 K) + y • goldenInt) =
+      (x : ℚ) • (1 : K) + (y : ℚ) • goldenInteger := by
+    rw [map_add, map_zsmul, map_zsmul, map_one]
+    rw [Int.cast_smul_eq_zsmul ℚ x (1 : K), Int.cast_smul_eq_zsmul ℚ y goldenInteger]
+    rfl
+  rw [h2, norm_eq_normForm] at h1
+  exact_mod_cast h1
 
 /-- The "Pell equation" for `ℚ(√5)`: `x + yφ` is a unit of `ℤ[φ]` iff `x² + xy - y² = ±1`.
 The solutions are exactly the pairs of consecutive Fibonacci numbers, up to sign: combined
@@ -196,7 +226,15 @@ with `unit_eq_torsion_mul_fundamentalUnit_zpow`, every solution arises from `±�
 theorem isUnit_iff_normForm (x y : ℤ) :
     IsUnit (x • (1 : 𝓞 K) + y • goldenInt) ↔
       x ^ 2 + x * y - y ^ 2 = 1 ∨ x ^ 2 + x * y - y ^ 2 = -1 := by
-  sorry
+  rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm, ← Algebra.coe_norm_int,
+    intNorm_eq_normForm, abs_eq (by norm_num : (0 : ℚ) ≤ 1)]
+  constructor
+  · rintro (h | h)
+    · exact Or.inl (by exact_mod_cast h)
+    · exact Or.inr (by exact_mod_cast h)
+  · rintro (h | h)
+    · exact Or.inl (by exact_mod_cast h)
+    · exact Or.inr (by exact_mod_cast h)
 
 /-! ## 5. Splitting of primes -/
 
@@ -295,14 +333,15 @@ theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
 noncomputable def fundamentalUnit : (𝓞 K)ˣ where
   val := goldenInt
   inv := goldenInt - 1
-  val_inv := by sorry
-  inv_val := by sorry
+  val_inv := by linear_combination goldenInt_sq
+  inv_val := by linear_combination goldenInt_sq
 
 /-- The golden ratio has norm `-1`: equivalently, the negative Pell equation
 `x² + xy - y² = -1` is solvable (e.g. `(x, y) = (0, 1)`). Not every real quadratic field has
 a unit of norm `-1`. -/
 theorem intNorm_goldenInt : Algebra.norm ℤ goldenInt = -1 := by
-  sorry
+  have h := intNorm_eq_normForm 0 1
+  simpa using h
 
 /-- The system of fundamental units for the rank-`1` unit group: the single unit `φ`. -/
 noncomputable def fundamentalUnitSystem : Fin (NumberField.Units.rank K) → (𝓞 K)ˣ :=
@@ -369,28 +408,62 @@ theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
 noncomputable def idAut : K ≃ₐ[ℚ] K := AlgEquiv.refl
 
 /-- The nontrivial conjugation automorphism, sending `√5` to `-√5`. -/
-noncomputable def conjugation : K ≃ₐ[ℚ] K := by
-  sorry
+noncomputable def conjugation : K ≃ₐ[ℚ] K := conj'
 
 /-- The conjugation automorphism sends `√5` to `-√5`. -/
-theorem conjugation_apply_sqrtFive : conjugation sqrtFive = -sqrtFive := by
-  sorry
+theorem conjugation_apply_sqrtFive : conjugation sqrtFive = -sqrtFive :=
+  conjHom_omega
 
 /-- The conjugation automorphism sends the golden ratio `φ` to its conjugate `1 - φ = -1/φ`. -/
-theorem conjugation_apply_goldenInteger : conjugation goldenInteger = 1 - goldenInteger := by
-  sorry
+theorem conjugation_apply_goldenInteger : conjugation goldenInteger = 1 - goldenInteger :=
+  conj'_golden
 
 /-- Quadratic extensions are Galois: `ℚ(√5)/ℚ` is a Galois extension. (Contrast with the
 non-Galois cubic `ℚ(∛3)/ℚ`.) -/
+instance : Algebra.IsQuadraticExtension ℚ K where
+  finrank_eq_two' := degree_eq_two
+
 theorem isGalois : IsGalois ℚ K := by
-  sorry
+  infer_instance
 
 /-- Every `ℚ`-automorphism of `K` is the identity or the conjugation. -/
 theorem aut_eq_or (σ : K ≃ₐ[ℚ] K) : σ = idAut ∨ σ = conjugation := by
-  sorry
+  have hsq : (σ sqrtFive) ^ 2 = (5 : K) := by
+    rw [← map_pow, sqrtFive_sq]
+    rw [show (5 : K) = algebraMap ℚ K 5 from (map_ofNat _ 5).symm]
+    exact σ.commutes 5
+  have hfactor : (σ sqrtFive - sqrtFive) * (σ sqrtFive + sqrtFive) = 0 := by
+    have h5 := sqrtFive_sq
+    linear_combination hsq - h5
+  have hext : ∀ τ : K ≃ₐ[ℚ] K, σ sqrtFive = τ sqrtFive → σ = τ := by
+    intro τ h
+    have hgen : (σ : K →ₐ[ℚ] K) = (τ : K →ₐ[ℚ] K) := QuadraticAlgebra.algHom_ext h
+    exact AlgEquiv.ext fun x => AlgHom.congr_fun hgen x
+  rcases mul_eq_zero.mp hfactor with h | h
+  · exact Or.inl (hext idAut (by rw [sub_eq_zero] at h; exact h))
+  · refine Or.inr (hext conjugation ?_)
+    rw [conjugation_apply_sqrtFive]
+    linear_combination h
 
 /-- The Galois group of `ℚ(√5)/ℚ` is cyclic of order `2`. -/
 theorem galoisGroupStructure : Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (ZMod 2)) := by
-  sorry
+  have hconj_ne : conjugation ≠ idAut := by
+    intro h
+    have h1 : conjugation sqrtFive = sqrtFive := by rw [h]; rfl
+    rw [conjugation_apply_sqrtFive] at h1
+    have h2 : (2 : K) * sqrtFive = 0 := by linear_combination -h1
+    rcases mul_eq_zero.mp h2 with h3 | h3
+    · norm_num at h3
+    · have h4 := sqrtFive_sq
+      rw [h3] at h4
+      norm_num at h4
+  have hcard : Nat.card (K ≃ₐ[ℚ] K) = 2 := by
+    rw [Nat.card_eq_two_iff]
+    refine ⟨idAut, conjugation, Ne.symm hconj_ne, ?_⟩
+    ext σ
+    simp [aut_eq_or σ]
+  haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
+  exact ⟨mulEquivOfPrimeCardEq hcard (by
+    rw [show Nat.card (Multiplicative (ZMod 2)) = Nat.card (ZMod 2) from rfl, Nat.card_zmod])⟩
 
 end XYin.NumberField.New.SqrtFiveQuadraticAlgebra
