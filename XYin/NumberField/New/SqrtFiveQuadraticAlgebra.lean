@@ -636,7 +636,82 @@ theorem splits_iff_mod_five (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
 discriminant `5`. -/
 theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
-  sorry
+  constructor
+  · rintro ⟨P, hP, hle2⟩
+    haveI : P.IsPrime := hP
+    have hple : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ P :=
+      hle2.trans (Ideal.pow_le_self (by norm_num))
+    have hpmemP : ((p : ℕ) : 𝓞 K) ∈ P := hple (Ideal.mem_span_singleton_self _)
+    have hpne : ((p : ℕ) : 𝓞 K) ≠ 0 := Nat.cast_ne_zero.mpr hp.ne_zero
+    have hPbot : P ≠ ⊥ := by
+      intro h
+      rw [h] at hpmemP
+      exact hpne (Ideal.mem_bot.mp hpmemP)
+    have hfin : Module.finrank ℤ (𝓞 K) = 2 := by
+      rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+    have habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
+      rw [Ideal.absNorm_span_singleton]
+      have hcast : ((p : ℕ) : 𝓞 K) = algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) := by push_cast; rfl
+      rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
+    have habsPp2 : Ideal.absNorm P ∣ p ^ 2 :=
+      habsp ▸ Ideal.absNorm_dvd_absNorm_of_le hple
+    obtain ⟨k, hk2, hkeq⟩ := (Nat.dvd_prime_pow hp).mp habsPp2
+    have hk0 : k ≠ 0 := by
+      intro h0
+      rw [h0, pow_zero] at hkeq
+      exact hP.ne_top (Ideal.absNorm_eq_one_iff.mp hkeq)
+    have hmap : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) =
+        Ideal.span {((p : ℕ) : 𝓞 K)} := by
+      rw [Ideal.map_span, Set.image_singleton]
+      norm_num
+    have hle2' : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
+      rw [hmap]
+      exact hle2
+    have hno3 : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3 := by
+      intro h3
+      rw [hmap] at h3
+      have hd := Ideal.absNorm_dvd_absNorm_of_le h3
+      rw [map_pow, habsp, hkeq, ← pow_mul] at hd
+      rw [Nat.pow_dvd_pow_iff_le_right hp.one_lt] at hd
+      omega
+    have hidx : Ideal.ramificationIdx (Ideal.span {((p : ℕ) : ℤ)}) P ≠ 1 := by
+      rw [Ideal.ramificationIdx_spec hle2' hno3]
+      norm_num
+    have hund : Ideal.under ℤ P = Ideal.span {((p : ℕ) : ℤ)} := by
+      have hmem : ((p : ℕ) : ℤ) ∈ Ideal.under ℤ P := by
+        rw [Ideal.under, Ideal.mem_comap]
+        have hcast2 : algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) = ((p : ℕ) : 𝓞 K) := by push_cast; rfl
+        rw [hcast2]
+        exact hpmemP
+      have hle : Ideal.span {((p : ℕ) : ℤ)} ≤ Ideal.under ℤ P := by
+        rw [Ideal.span_le, Set.singleton_subset_iff]
+        exact hmem
+      have hprime : (Ideal.span {((p : ℕ) : ℤ)}).IsPrime :=
+        (Ideal.span_singleton_prime (by exact_mod_cast hp.ne_zero)).mpr
+          (Nat.prime_iff_prime_int.mp hp)
+      have hbot : Ideal.span {((p : ℕ) : ℤ)} ≠ ⊥ := by
+        rw [Ne, Ideal.span_singleton_eq_bot]
+        exact_mod_cast hp.ne_zero
+      have hnetop : Ideal.under ℤ P ≠ ⊤ := by
+        intro h
+        have h1 : (1 : ℤ) ∈ Ideal.under ℤ P := h ▸ Submodule.mem_top
+        rw [Ideal.under, Ideal.mem_comap, map_one] at h1
+        exact hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h1 isUnit_one)
+      exact ((hprime.isMaximal hbot).eq_of_le hnetop hle).symm
+    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P := by
+      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hPbot, hund]
+      exact hidx
+    have hPdiff : P ∣ differentIdeal ℤ (𝓞 K) := dvd_differentIdeal_iff.mpr hunram
+    have habsP5 : Ideal.absNorm P ∣ 5 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
+      rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq] at h
+      simpa using h
+    have hpdvd : p ∣ 5 := (hkeq ▸ dvd_pow_self p hk0).trans habsP5
+    exact (Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp hpdvd
+  · rintro rfl
+    refine ⟨Ideal.span {sqrtFiveInt}, isPrime_span_sqrtFive, ?_⟩
+    have hcast : ((5 : ℕ) : 𝓞 K) = (5 : 𝓞 K) := by norm_num
+    rw [hcast, span_five_eq]
 
 /-! ## 6. Ring of units -/
 
@@ -657,17 +732,61 @@ theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2 := by
 
 /-- `ℚ(√5)` is totally real: both embeddings `√5 ↦ ±√5` land in `ℝ`. (Contrast with the
 pure cubic `ℚ(∛3)`, which has a complex place.) -/
+private theorem ringHom_ext_sqrtFive {f g : K →+* ℂ} (h : f sqrtFive = g sqrtFive) :
+    f = g := by
+  ext z
+  obtain ⟨x, y⟩ := z
+  rw [QuadraticAlgebra.mk_eq_add_smul_omega, map_add, map_add]
+  congr 1
+  · exact (eq_ratCast (f.comp (algebraMap ℚ K)) x).trans
+      (eq_ratCast (g.comp (algebraMap ℚ K)) x).symm
+  · rw [Algebra.smul_def, map_mul, map_mul]
+    exact congrArg₂ (fun a b => a * b)
+      ((eq_ratCast (f.comp (algebraMap ℚ K)) y).trans
+        (eq_ratCast (g.comp (algebraMap ℚ K)) y).symm) h
+
 theorem isTotallyReal : NumberField.IsTotallyReal K := by
-  sorry
+  refine ⟨fun v => ?_⟩
+  rw [NumberField.InfinitePlace.isReal_iff, NumberField.ComplexEmbedding.isReal_iff]
+  refine ringHom_ext_sqrtFive ?_
+  rw [NumberField.ComplexEmbedding.conjugate_coe_eq]
+  set z := NumberField.InfinitePlace.embedding v sqrtFive with hz
+  have hsq : z ^ 2 = 5 := by
+    rw [hz, ← map_pow, sqrtFive_sq, map_ofNat]
+  have hc : (starRingEnd ℂ) z ^ 2 = 5 := by
+    rw [← map_pow, hsq]
+    exact map_ofNat _ 5
+  have hfac : ((starRingEnd ℂ) z - z) * ((starRingEnd ℂ) z + z) = 0 := by
+    linear_combination hc - hsq
+  rcases mul_eq_zero.mp hfac with h | h
+  · exact sub_eq_zero.mp h
+  · exfalso
+    have hzneg : (starRingEnd ℂ) z = -z := by linear_combination h
+    have hre : z.re = 0 := by
+      have hcr := congrArg Complex.re hzneg
+      rw [Complex.conj_re, Complex.neg_re] at hcr
+      linarith
+    have h5 := congrArg Complex.re hsq
+    rw [sq, Complex.mul_re, hre] at h5
+    norm_num at h5
+    nlinarith [sq_nonneg z.im, h5]
 
 /-- The signature of `ℚ(√5)` is `(2, 0)`: two real places, no complex place. -/
+private theorem nrComplexPlaces_eq_zero :
+    NumberField.InfinitePlace.nrComplexPlaces K = 0 := by
+  haveI := isTotallyReal
+  exact NumberField.IsTotallyReal.nrComplexPlaces_eq_zero K
+
 theorem nrRealPlaces_eq_two : NumberField.InfinitePlace.nrRealPlaces K = 2 := by
-  sorry
+  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
+  rw [nrComplexPlaces_eq_zero, degree_eq_two] at h
+  omega
 
 /-- The Dirichlet unit rank of `ℚ(√5)` is `1`: the signature is `(2, 0)`, so the rank is
 `r₁ + r₂ - 1 = 1`. -/
 theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
-  sorry
+  rw [NumberField.Units.rank, NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    nrRealPlaces_eq_two, nrComplexPlaces_eq_zero]
 
 /-- The fundamental unit of `𝓞 K`: the golden ratio `φ`, with explicit inverse `φ - 1`
 (since `φ(φ - 1) = φ² - φ = 1`). -/
