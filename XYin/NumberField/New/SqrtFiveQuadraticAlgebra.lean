@@ -721,14 +721,83 @@ abbrev torsionGenerator : (𝓞 K)ˣ := -1
 /-- The concrete torsion units `{1, -1}`. -/
 def torsionUnits : Set ((𝓞 K)ˣ) := {u | ∃ k : Fin 2, u = torsionGenerator ^ k.val}
 
+/-- An explicit real embedding `√5 ↦ √5`. -/
+private noncomputable def realEmb : K →ₐ[ℚ] ℝ :=
+  QuadraticAlgebra.lift ⟨Real.sqrt 5, by
+    rw [show (Real.sqrt 5) * (Real.sqrt 5) = 5 from Real.mul_self_sqrt (by norm_num)]
+    simp⟩
+
 /-- The torsion subgroup of `𝓞 Kˣ` is exactly `{1, -1}`: a real embedding only allows the
 roots of unity `±1`. -/
 theorem torsionUnits_eq : {u : (𝓞 K)ˣ | IsOfFinOrder u} = torsionUnits := by
-  sorry
+  set e : K →+* ℝ := realEmb.toRingHom with he
+  ext u
+  constructor
+  · intro hu
+    obtain ⟨n, hn, hun⟩ := isOfFinOrder_iff_pow_eq_one.mp hu
+    set x : K := algebraMap (𝓞 K) K ((u : (𝓞 K)ˣ) : 𝓞 K) with hx
+    have hxn : x ^ n = 1 := by
+      have hval : ((u ^ n : (𝓞 K)ˣ) : 𝓞 K) = 1 := by rw [hun]; rfl
+      rw [hx, ← map_pow, show (((u : (𝓞 K)ˣ) : 𝓞 K)) ^ n = ((u ^ n : (𝓞 K)ˣ) : 𝓞 K) from
+        (Units.val_pow_eq_pow_val _ _).symm, hval, map_one]
+    have hen : (e x) ^ n = 1 := by rw [← map_pow, hxn, map_one]
+    have habs : |e x| = 1 := by
+      have h1 : |e x| ^ n = 1 := by rw [← abs_pow, hen, abs_one]
+      rcases lt_trichotomy |e x| 1 with h | h | h
+      · exfalso
+        have h2 := pow_lt_one₀ (abs_nonneg _) h hn.ne'
+        rw [h1] at h2
+        norm_num at h2
+      · exact h
+      · exfalso
+        have h2 := one_lt_pow₀ h hn.ne'
+        rw [h1] at h2
+        norm_num at h2
+    have hex : e x = 1 ∨ e x = -1 := abs_eq (by norm_num : (0 : ℝ) ≤ 1) |>.mp habs
+    have hinj := IsFractionRing.injective (𝓞 K) K
+    rcases hex with h | h
+    · refine ⟨0, ?_⟩
+      have hx1 : x = 1 := e.injective (by rw [h, map_one])
+      have hu1 : ((u : (𝓞 K)ˣ) : 𝓞 K) = 1 := hinj (by rw [map_one, ← hx]; exact hx1)
+      rw [show ((0 : Fin 2) : ℕ) = 0 from rfl, pow_zero]
+      exact Units.ext hu1
+    · refine ⟨1, ?_⟩
+      have hx1 : x = -1 := e.injective (by rw [h]; simp)
+      have hu1 : ((u : (𝓞 K)ˣ) : 𝓞 K) = -1 := hinj (by rw [map_neg, map_one, ← hx]; exact hx1)
+      rw [show ((1 : Fin 2) : ℕ) = 1 from rfl, pow_one]
+      exact Units.ext hu1
+  · rintro ⟨k, rfl⟩
+    refine isOfFinOrder_iff_pow_eq_one.mpr ⟨2, by norm_num, ?_⟩
+    rw [← pow_mul, mul_comm, pow_mul]
+    simp
 
 /-- The torsion subgroup of `𝓞 Kˣ` has order `2`. -/
 theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2 := by
-  sorry
+  have hcard : Nat.card (NumberField.Units.torsion K) = 2 := by
+    rw [Nat.card_eq_two_iff]
+    have hmem1 : (1 : (𝓞 K)ˣ) ∈ NumberField.Units.torsion K :=
+      isOfFinOrder_iff_pow_eq_one.mpr ⟨2, by norm_num, by simp⟩
+    have hmemn : (-1 : (𝓞 K)ˣ) ∈ NumberField.Units.torsion K := by
+      change IsOfFinOrder _
+      exact isOfFinOrder_iff_pow_eq_one.mpr ⟨2, by norm_num, by simp⟩
+    refine ⟨⟨1, hmem1⟩, ⟨-1, hmemn⟩, ?_, ?_⟩
+    · intro h
+      have hval := congrArg (fun z => ((z : (𝓞 K)ˣ) : 𝓞 K)) (Subtype.ext_iff.mp h)
+      simp at hval
+      have h2 := congrArg (algebraMap (𝓞 K) K) hval
+      simp only [map_one, map_neg] at h2
+      exact two_ne_zero (by linear_combination h2 : (2 : K) = 0)
+    · ext z
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_univ, iff_true]
+      have hz : (z : (𝓞 K)ˣ) ∈ {u : (𝓞 K)ˣ | IsOfFinOrder u} := z.2
+      rw [torsionUnits_eq] at hz
+      obtain ⟨k, hk⟩ := hz
+      fin_cases k
+      · left
+        exact Subtype.ext (by simpa using hk)
+      · right
+        exact Subtype.ext (by simpa using hk)
+  simpa [NumberField.Units.torsionOrder] using hcard
 
 /-- `ℚ(√5)` is totally real: both embeddings `√5 ↦ ±√5` land in `ℝ`. (Contrast with the
 pure cubic `ℚ(∛3)`, which has a complex place.) -/
