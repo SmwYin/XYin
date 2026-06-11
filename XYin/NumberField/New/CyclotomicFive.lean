@@ -565,19 +565,174 @@ theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 K)}).IsPrime := by
 theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16 :=
   absNorm_span_two'
 
+private theorem nineteen_x_eq : (19 : 𝓞 K) = (zetaInt ^ 2 + 5 * zetaInt + 1) *
+    (5 * zetaInt ^ 4 + zetaInt ^ 2 + zetaInt) := by
+  linear_combination (-(5 * zetaInt + 25)) * zetaInt_pow_five - 6 * zetaInt_sum
+
+private theorem nineteen_y_eq : (19 : 𝓞 K) = (zetaInt ^ 2 - 4 * zetaInt + 1) *
+    (-(4 * zetaInt ^ 4) + zetaInt ^ 2 + zetaInt) := by
+  linear_combination (4 * zetaInt - 16) * zetaInt_pow_five + 3 * zetaInt_sum
+
+private theorem span_pair_nineteen_left :
+    Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 5 * zetaInt + 1} =
+      Ideal.span {zetaInt ^ 2 + 5 * zetaInt + 1} := by
+  refine le_antisymm (Ideal.span_le.mpr ?_) ((Ideal.span_singleton_le_iff_mem _).mpr ?_)
+  · rintro w (rfl | rfl)
+    · rw [SetLike.mem_coe, Ideal.mem_span_singleton]
+      exact ⟨5 * zetaInt ^ 4 + zetaInt ^ 2 + zetaInt, nineteen_x_eq⟩
+    · exact Ideal.mem_span_singleton_self _
+  · exact Ideal.mem_span_pair.mpr ⟨0, 1, by ring⟩
+
+private theorem span_pair_nineteen_right :
+    Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 15 * zetaInt + 1} =
+      Ideal.span {zetaInt ^ 2 - 4 * zetaInt + 1} := by
+  have h19 : (19 : 𝓞 K) ∈ Ideal.span {zetaInt ^ 2 - 4 * zetaInt + 1} := by
+    rw [Ideal.mem_span_singleton]
+    exact ⟨-(4 * zetaInt ^ 4) + zetaInt ^ 2 + zetaInt, nineteen_y_eq⟩
+  refine le_antisymm (Ideal.span_le.mpr ?_) ((Ideal.span_singleton_le_iff_mem _).mpr ?_)
+  · rintro w (rfl | rfl)
+    · exact h19
+    · rw [SetLike.mem_coe, show zetaInt ^ 2 + 15 * zetaInt + 1 =
+        (zetaInt ^ 2 - 4 * zetaInt + 1) + 19 * zetaInt from by ring]
+      exact Ideal.add_mem _ (Ideal.mem_span_singleton_self _)
+        (Ideal.mul_mem_right _ _ h19)
+  · exact Ideal.mem_span_pair.mpr ⟨-zetaInt, 1, by ring⟩
+
+private theorem absNorm_span_x :
+    Ideal.absNorm (Ideal.span {zetaInt ^ 2 + 5 * zetaInt + 1}) = 361 := by
+  have hn : Algebra.norm ℤ (zetaInt ^ 2 + 5 * zetaInt + 1) = 361 := by
+    apply intNorm_eq
+    have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 + 5 * zetaInt + 1) = ζ ^ 2 + 5 * ζ + 1 := by
+      simp [map_add, map_mul, map_pow, map_one, map_ofNat, coe_zetaInt]
+    rw [e0]
+    have e2 : sig2 (ζ ^ 2 + 5 * ζ + 1) = ζ ^ 4 + 5 * ζ ^ 2 + 1 := by
+      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sig2_zeta]
+      ring
+    have e3 : sig3 (ζ ^ 2 + 5 * ζ + 1) = ζ + 5 * ζ ^ 3 + 1 := by
+      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sig3_zeta]
+      linear_combination ζ * zeta_pow_five
+    have e4 : sig4 (ζ ^ 2 + 5 * ζ + 1) = ζ ^ 3 + 5 * ζ ^ 4 + 1 := by
+      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sig4_zeta]
+      linear_combination ζ ^ 3 * zeta_pow_five
+    rw [e2, e3, e4]
+    push_cast
+    have h13 : (ζ ^ 2 + 5 * ζ + 1) * (ζ + 5 * ζ ^ 3 + 1) = 19 * ζ ^ 4 := by
+      linear_combination 5 * zeta_pow_five + 6 * zeta_sum_eq_zero
+    have h24 : (ζ ^ 4 + 5 * ζ ^ 2 + 1) * (ζ ^ 3 + 5 * ζ ^ 4 + 1) = 19 * ζ := by
+      linear_combination (5 * ζ ^ 3 + ζ ^ 2 + 25 * ζ + 5) * zeta_pow_five +
+        6 * zeta_sum_eq_zero
+    calc (ζ ^ 2 + 5 * ζ + 1) * (ζ ^ 4 + 5 * ζ ^ 2 + 1) * (ζ + 5 * ζ ^ 3 + 1) *
+        (ζ ^ 3 + 5 * ζ ^ 4 + 1)
+        = ((ζ ^ 2 + 5 * ζ + 1) * (ζ + 5 * ζ ^ 3 + 1)) *
+          ((ζ ^ 4 + 5 * ζ ^ 2 + 1) * (ζ ^ 3 + 5 * ζ ^ 4 + 1)) := by ring
+      _ = (19 * ζ ^ 4) * (19 * ζ) := by rw [h13, h24]
+      _ = 361 := by linear_combination 361 * zeta_pow_five
+  rw [Ideal.absNorm_span_singleton, hn]
+  rfl
+
+private theorem absNorm_span_y :
+    Ideal.absNorm (Ideal.span {zetaInt ^ 2 - 4 * zetaInt + 1}) = 361 := by
+  have hn : Algebra.norm ℤ (zetaInt ^ 2 - 4 * zetaInt + 1) = 361 := by
+    apply intNorm_eq
+    have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 - 4 * zetaInt + 1) = ζ ^ 2 - 4 * ζ + 1 := by
+      simp [map_add, map_sub, map_mul, map_pow, map_one, map_ofNat, coe_zetaInt]
+    rw [e0]
+    have e2 : sig2 (ζ ^ 2 - 4 * ζ + 1) = ζ ^ 4 - 4 * ζ ^ 2 + 1 := by
+      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sig2_zeta]
+      ring
+    have e3 : sig3 (ζ ^ 2 - 4 * ζ + 1) = ζ - 4 * ζ ^ 3 + 1 := by
+      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sig3_zeta]
+      linear_combination ζ * zeta_pow_five
+    have e4 : sig4 (ζ ^ 2 - 4 * ζ + 1) = ζ ^ 3 - 4 * ζ ^ 4 + 1 := by
+      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sig4_zeta]
+      linear_combination ζ ^ 3 * zeta_pow_five
+    rw [e2, e3, e4]
+    push_cast
+    have h13 : (ζ ^ 2 - 4 * ζ + 1) * (ζ - 4 * ζ ^ 3 + 1) = 19 * ζ ^ 4 := by
+      linear_combination (-4) * zeta_pow_five - 3 * zeta_sum_eq_zero
+    have h24 : (ζ ^ 4 - 4 * ζ ^ 2 + 1) * (ζ ^ 3 - 4 * ζ ^ 4 + 1) = 19 * ζ := by
+      linear_combination (-(4 * ζ ^ 3) + ζ ^ 2 + 16 * ζ - 4) * zeta_pow_five -
+        3 * zeta_sum_eq_zero
+    calc (ζ ^ 2 - 4 * ζ + 1) * (ζ ^ 4 - 4 * ζ ^ 2 + 1) * (ζ - 4 * ζ ^ 3 + 1) *
+        (ζ ^ 3 - 4 * ζ ^ 4 + 1)
+        = ((ζ ^ 2 - 4 * ζ + 1) * (ζ - 4 * ζ ^ 3 + 1)) *
+          ((ζ ^ 4 - 4 * ζ ^ 2 + 1) * (ζ ^ 3 - 4 * ζ ^ 4 + 1)) := by ring
+      _ = (19 * ζ ^ 4) * (19 * ζ) := by rw [h13, h24]
+      _ = 361 := by linear_combination 361 * zeta_pow_five
+  rw [Ideal.absNorm_span_singleton, hn]
+  rfl
+
+/-- There is no prime of `𝓞 K` with residue field `𝔽₁₉`: `Φ₅` has no root mod `19`. -/
+private theorem absNorm_ne_nineteen (P : Ideal (𝓞 K)) : Ideal.absNorm P ≠ 19 := by
+  intro hcard
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
+  haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+  haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 K) ⧸ P) = 19 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact hcard
+  let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) (by norm_num) hcard'
+  obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P zetaInt)
+  have hs5 : 1 + s + s ^ 2 + s ^ 3 + s ^ 4 = (0 : ZMod 19) := by
+    apply e.injective
+    rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow, hs, map_zero]
+    have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_sum
+    rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow,
+      map_zero] at hmk
+    exact hmk
+  clear hs
+  revert s
+  decide
+
+private theorem isPrime_of_absNorm_361 {g : 𝓞 K}
+    (h361 : Ideal.absNorm (Ideal.span {g}) = 361) : (Ideal.span {g}).IsPrime := by
+  have htop : Ideal.span {g} ≠ ⊤ := by
+    intro h
+    rw [h, Ideal.absNorm_top] at h361
+    norm_num at h361
+  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+  have hdvd : Ideal.absNorm M ∣ 361 := h361 ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+  have hM1 : Ideal.absNorm M ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hMmax.ne_top
+  have hM19 : Ideal.absNorm M ≠ 19 := absNorm_ne_nineteen M
+  have hM361 : Ideal.absNorm M = 361 := by
+    obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow (by norm_num : Nat.Prime 19)).mp
+      (show Ideal.absNorm M ∣ 19 ^ 2 from hdvd)
+    interval_cases k
+    · rw [pow_zero] at hkeq
+      exact absurd hkeq hM1
+    · rw [pow_one] at hkeq
+      exact absurd hkeq hM19
+    · rw [hkeq]
+      norm_num
+  have heq := eq_of_le_of_absNorm_eq hMle h361 hM361 (by norm_num)
+  rw [heq]
+  exact hMmax.isPrime
+
 /-- `19` splits into two primes of degree `2`: `19 ≡ -1 (mod 5)` has order `2` in `(ℤ/5)ˣ`,
 and `Φ₅ ≡ (X² + 5X + 1)(X² + 15X + 1) (mod 19)`. -/
 theorem span_nineteen_eq :
     Ideal.span {(19 : 𝓞 K)} =
       Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 5 * zetaInt + 1} *
         Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 15 * zetaInt + 1} := by
-  sorry
+  rw [span_pair_nineteen_left, span_pair_nineteen_right,
+    Ideal.span_singleton_mul_span_singleton, Ideal.span_singleton_eq_span_singleton]
+  refine ⟨⟨-zetaInt ^ 2, -zetaInt ^ 3, by linear_combination zetaInt_pow_five,
+    by linear_combination zetaInt_pow_five⟩, ?_⟩
+  change (19 : 𝓞 K) * (-zetaInt ^ 2) =
+    (zetaInt ^ 2 + 5 * zetaInt + 1) * (zetaInt ^ 2 - 4 * zetaInt + 1)
+  linear_combination -zetaInt_sum
 
 /-- Both primes above `19` are prime ideals of norm `19² = 361`. -/
 theorem isPrime_primesAboveNineteen :
     (Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 5 * zetaInt + 1}).IsPrime ∧
       (Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 15 * zetaInt + 1}).IsPrime := by
-  sorry
+  constructor
+  · rw [span_pair_nineteen_left]
+    exact isPrime_of_absNorm_361 absNorm_span_x
+  · rw [span_pair_nineteen_right]
+    exact isPrime_of_absNorm_361 absNorm_span_y
 
 /-- `11` splits completely: `11 ≡ 1 (mod 5)`, and the roots of `Φ₅` mod `11` are
 `3, 4, 5, 9` (the elements of order `5` in `(ℤ/11)ˣ`). -/
