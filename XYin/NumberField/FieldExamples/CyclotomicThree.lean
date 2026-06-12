@@ -1067,8 +1067,15 @@ abbrev etaUnit : OKˣ :=
 The unit group is finite here: every unit is one of
 `±1`, `±ζ`, `±ζ²`.
 -/
-example (u : OKˣ) : u ∈ ([1, -1, etaUnit, -etaUnit, etaUnit ^ 2, -etaUnit ^ 2] : List OKˣ) := by
+theorem unit_mem_unitsList (u : OKˣ) :
+    u ∈ ([1, -1, etaUnit, -etaUnit, etaUnit ^ 2, -(etaUnit ^ 2)] : List OKˣ) := by
   simpa [etaUnit] using IsCyclotomicExtension.Rat.Three.Units.mem zeta_isPrimitiveRoot u
+
+/-- Every unit of `𝓞 ℚ(ζ₃)` is one of `±1`, `±ζ`, `±ζ²`. -/
+theorem unit_eq_one_or_neg_one_or_eta (u : OKˣ) :
+    u = 1 ∨ u = -1 ∨ u = etaUnit ∨ u = -etaUnit ∨ u = etaUnit ^ 2 ∨
+      u = -(etaUnit ^ 2) := by
+  simpa using unit_mem_unitsList u
 
 /-- The torsion subgroup of the unit group has order `6`. -/
 theorem torsionOrder_eq_six : Units.torsionOrder K = 6 := by
@@ -1098,8 +1105,7 @@ theorem unitGroupStructure : Nonempty (OKˣ ≃* Multiplicative (ZMod 6)) := by
   have htorsion : ∀ u : OKˣ, u ∈ Units.torsion K := by
     intro u
     change IsOfFinOrder u
-    have hmem : u ∈ ([1, -1, etaUnit, -etaUnit, etaUnit ^ 2, -etaUnit ^ 2] : List OKˣ) := by
-      simpa [etaUnit] using IsCyclotomicExtension.Rat.Three.Units.mem zeta_isPrimitiveRoot u
+    have hmem := unit_mem_unitsList u
     fin_cases hmem <;> rw [isOfFinOrder_iff_pow_eq_one]
     · exact ⟨1, by norm_num⟩
     · exact ⟨2, by norm_num, by simp⟩

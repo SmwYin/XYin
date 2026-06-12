@@ -31,7 +31,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFiveAdjoinRoot
+namespace XYin.NumberField.SqrtFiveGoldenAdjoinRoot
 
 /-! ## 1. Basics -/
 
@@ -805,4 +805,4 @@ theorem galoisGroupStructure :
     Nonempty ((QSqrtFive ≃ₐ[ℚ] QSqrtFive) ≃* Multiplicative (ZMod 2)) := by
   sorry
 
-end XYin.NumberField.SqrtFiveAdjoinRoot
+end XYin.NumberField.SqrtFiveGoldenAdjoinRoot

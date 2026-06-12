@@ -54,11 +54,12 @@ instance : NumberField QSqrtFive :=
 
 /-- The extension degree of `ℚ(√5)` over `ℚ` is `2`. -/
 theorem degree_eq_two : Module.finrank ℚ QSqrtFive = 2 := by
-  sorry
+  rw [Module.finrank_eq_card_basis (QuadraticAlgebra.basis (1 : ℚ) (1 : ℚ)),
+    Fintype.card_fin]
 
 instance : Algebra.IsQuadraticExtension ℚ QSqrtFive where
   finrank_eq_two' := by
-    sorry
+    exact degree_eq_two
 
 /-- The golden-ratio generator `φ`, satisfying `φ ^ 2 = φ + 1`. -/
 abbrev goldenRoot : QSqrtFive := QuadraticAlgebra.omega
@@ -75,7 +76,9 @@ abbrev goldenPolynomial : ℚ[X] :=
 
 instance : Fact (Irreducible goldenPolynomial) := by
   exact ⟨by
-    sorry⟩
+    simpa [goldenPolynomial, sub_eq_add_neg] using
+      (Polynomial.X_pow_sub_X_sub_one_irreducible_rat (n := 2)
+        (by norm_num : (2 : ℕ) ≠ 1))⟩
 
 /-- The same field, now presented by adjoining a root of `X² - X - 1`. -/
 abbrev QSqrtFiveAdjoinRoot : Type := AdjoinRoot goldenPolynomial
@@ -85,16 +88,38 @@ abbrev goldenAdjoinRoot : QSqrtFiveAdjoinRoot := AdjoinRoot.root goldenPolynomia
 
 theorem goldenAdjoinRoot_sq :
     goldenAdjoinRoot ^ 2 = goldenAdjoinRoot + 1 := by
-  sorry
+  have hroot : goldenAdjoinRoot ^ 2 - goldenAdjoinRoot - 1 = 0 := by
+    simpa [goldenAdjoinRoot, goldenPolynomial] using (AdjoinRoot.eval₂_root goldenPolynomial)
+  linear_combination hroot
 
 /-- The `AdjoinRoot` presentation is equivalent to the quadratic-algebra model. -/
 noncomputable def goldenAdjoinRootEquivGolden :
     QSqrtFiveAdjoinRoot ≃ₐ[ℚ] QSqrtFive := by
-  sorry
+  let f : QSqrtFiveAdjoinRoot →ₐ[ℚ] QSqrtFive :=
+    AdjoinRoot.liftAlgHom goldenPolynomial (Algebra.ofId ℚ QSqrtFive) goldenRoot (by
+      simp [goldenPolynomial, goldenRoot_sq])
+  let g : QSqrtFive →ₐ[ℚ] QSqrtFiveAdjoinRoot :=
+    (QuadraticAlgebra.lift (R := ℚ) (a := (1 : ℚ)) (b := 1)) ⟨goldenAdjoinRoot, by
+      rw [← pow_two, goldenAdjoinRoot_sq]
+      simp
+      ring_nf⟩
+  refine { __ := f, invFun := g, left_inv := ?_, right_inv := ?_ }
+  · intro x
+    have hcomp : g.comp f = AlgHom.id ℚ QSqrtFiveAdjoinRoot := by
+      apply AdjoinRoot.algHom_ext
+      change g (f goldenAdjoinRoot) = goldenAdjoinRoot
+      simp [f, g, goldenAdjoinRoot]
+    exact DFunLike.congr_fun hcomp x
+  · intro x
+    have hcomp : f.comp g = AlgHom.id ℚ QSqrtFive := by
+      apply QuadraticAlgebra.algHom_ext
+      change f (g goldenRoot) = goldenRoot
+      simp [f, g, goldenRoot, goldenAdjoinRoot]
+    exact DFunLike.congr_fun hcomp x
 
 theorem goldenAdjoinRootEquivGolden_root :
     goldenAdjoinRootEquivGolden goldenAdjoinRoot = goldenRoot := by
-  sorry
+  simp [goldenAdjoinRootEquivGolden, goldenAdjoinRoot, goldenRoot]
 
 /-- The square root of `5` recovered from `φ`: `√5 = 2φ - 1`. -/
 abbrev sqrtFiveRoot : QSqrtFive := 2 * goldenRoot - 1
@@ -441,7 +466,44 @@ instance : IsIntegralClosure O5 ℤ QSqrtFive where
 /-- The naive order `ℤ[√5]` is not the full ring of integers `ℤ[(1 + √5) / 2]`. -/
 theorem adjoin_sqrtFive_ne_integralClosure :
     Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) ≠ integralClosure ℤ QSqrtFive := by
-  sorry
+  intro h
+  let S : Subalgebra ℤ QSqrtFive :=
+    { carrier := {z : QSqrtFive | ∃ a b : ℤ, z.re = a ∧ z.im = 2 * b}
+      add_mem' := by
+        rintro z w ⟨a, b, ha, hb⟩ ⟨c, d, hc, hd⟩
+        refine ⟨a + c, b + d, ?_, ?_⟩
+        · rw [QuadraticAlgebra.re_add, ha, hc]
+          push_cast
+          ring
+        · rw [QuadraticAlgebra.im_add, hb, hd]
+          push_cast
+          ring
+      mul_mem' := by
+        rintro z w ⟨a, b, ha, hb⟩ ⟨c, d, hc, hd⟩
+        refine ⟨a * c + 4 * b * d, a * d + b * c + 2 * b * d, ?_, ?_⟩
+        · rw [QuadraticAlgebra.re_mul, ha, hb, hc, hd]
+          push_cast
+          ring
+        · rw [QuadraticAlgebra.im_mul, ha, hb, hc, hd]
+          push_cast
+          ring
+      one_mem' := ⟨1, 0, by norm_num, by norm_num⟩
+      zero_mem' := ⟨0, 0, by norm_num, by norm_num⟩
+      algebraMap_mem' := fun n => ⟨n, 0, by norm_num, by norm_num⟩ }
+  have hsub : Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) ≤ S := by
+    refine Algebra.adjoin_le ?_
+    rintro z rfl
+    refine ⟨-1, 1, ?_, ?_⟩
+    · simp [sqrtFiveRoot, goldenRoot]
+    · simp [sqrtFiveRoot, goldenRoot]
+  have hφ : goldenRoot ∈ Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) := by
+    rw [h]
+    exact goldenRoot_isIntegral
+  obtain ⟨a, b, ha, hb⟩ := hsub hφ
+  norm_num [goldenRoot] at hb
+  have hb_int : 2 * b = 1 := by
+    exact_mod_cast hb.symm
+  omega
 
 /-- The explicit integral basis `[1, (1 + √5) / 2]`. -/
 abbrev sqrtFiveExplicitIntegralBasis : Basis (Fin 2) ℤ O5 :=
@@ -477,11 +539,71 @@ theorem goldenOrderToField_basis_one :
 
 /-! ## 3. Discriminant -/
 
+private noncomputable def goldenOrderEquivRingOfIntegers : O5 ≃ₐ[ℤ] 𝓞 QSqrtFive :=
+  IsIntegralClosure.equiv ℤ O5 QSqrtFive (𝓞 QSqrtFive)
+
+private noncomputable def concreteIntegralBasis : Basis (Fin 2) ℤ (𝓞 QSqrtFive) :=
+  sqrtFiveExplicitIntegralBasis.map goldenOrderEquivRingOfIntegers.toLinearEquiv
+
+private theorem concreteIntegralBasis_basis_zero :
+    algebraMap (𝓞 QSqrtFive) QSqrtFive (concreteIntegralBasis 0) = 1 := by
+  change algebraMap (𝓞 QSqrtFive) QSqrtFive
+      (goldenOrderEquivRingOfIntegers (sqrtFiveExplicitIntegralBasis 0)) = 1
+  rw [goldenOrderEquivRingOfIntegers, IsIntegralClosure.algebraMap_equiv]
+  exact goldenOrderToField_basis_zero
+
+private theorem concreteIntegralBasis_basis_one :
+    algebraMap (𝓞 QSqrtFive) QSqrtFive (concreteIntegralBasis 1) = goldenRoot := by
+  change algebraMap (𝓞 QSqrtFive) QSqrtFive
+      (goldenOrderEquivRingOfIntegers (sqrtFiveExplicitIntegralBasis 1)) = goldenRoot
+  rw [goldenOrderEquivRingOfIntegers, IsIntegralClosure.algebraMap_equiv]
+  exact goldenOrderToField_basis_one
+
+private theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (5 : ℤ) := by
+  let bInt : Basis (Fin 2) ℤ (𝓞 QSqrtFive) := concreteIntegralBasis
+  haveI : IsScalarTower ℤ (𝓞 QSqrtFive) QSqrtFive :=
+    IsScalarTower.of_algebraMap_eq fun _ => rfl
+  have hdiscLoc :=
+    @Algebra.discr_localizationLocalization
+      ℤ (𝓞 QSqrtFive) _ _ _ ℚ _ _ ℤ⁰ _ QSqrtFive _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ QSqrtFive)
+      (by infer_instance : IsScalarTower ℤ (𝓞 QSqrtFive) QSqrtFive)
+      (by infer_instance :
+        IsLocalization (Algebra.algebraMapSubmonoid (𝓞 QSqrtFive) ℤ⁰) QSqrtFive)
+      (Fin 2) (by infer_instance) (by infer_instance) bInt
+  let bLoc : Basis (Fin 2) ℚ QSqrtFive :=
+    @Module.Basis.localizationLocalization
+      ℤ ℚ _ ℤ⁰ _ _ _ (𝓞 QSqrtFive) _ _ QSqrtFive _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ QSqrtFive)
+      (by infer_instance : IsScalarTower ℤ (𝓞 QSqrtFive) QSqrtFive)
+      (by infer_instance :
+        IsLocalization (Algebra.algebraMapSubmonoid (𝓞 QSqrtFive) ℤ⁰) QSqrtFive)
+      (Fin 2) bInt
+  apply (algebraMap ℤ ℚ).injective_int
+  change (algebraMap ℤ ℚ) (Algebra.discr ℤ bInt) = (algebraMap ℤ ℚ) 5
+  rw [← hdiscLoc]
+  change Algebra.discr ℚ bLoc = (5 : ℚ)
+  have hfun : ⇑bLoc = ⇑goldenPowerBasis.basis := by
+    funext i
+    fin_cases i
+    · rw [show ((⟨0, by norm_num⟩ : Fin 2)) = (0 : Fin 2) from rfl]
+      simp only [bLoc, bInt, Module.Basis.localizationLocalization_apply]
+      rw [concreteIntegralBasis_basis_zero]
+      exact goldenPowerBasis_basis_zero.symm
+    · rw [show ((⟨1, by norm_num⟩ : Fin 2)) = (1 : Fin 2) from rfl]
+      simp only [bLoc, bInt, Module.Basis.localizationLocalization_apply]
+      rw [concreteIntegralBasis_basis_one]
+      exact goldenPowerBasis_basis_one.symm
+  rw [hfun]
+  exact goldenPowerBasis_discr
+
 /-- The number-field discriminant of `ℚ(√5)` is `5`: since `5 ≡ 1 (mod 4)`, the discriminant
 is `5` itself (not `4·5`) — the real quadratic field of smallest discriminant. In particular
 `5` is the only ramified prime, cf. `ramified_iff_eq_five`. -/
 theorem numberField_discr_eq : NumberField.discr QSqrtFive = 5 := by
-  sorry
+  rw [← NumberField.discr_eq_discr QSqrtFive concreteIntegralBasis]
+  exact concreteIntegralBasis_discr
 
 /-! ## 4. Norm form -/
 
@@ -492,7 +614,17 @@ noncomputable def goldenIntO : 𝓞 QSqrtFive := ⟨goldenRoot, goldenRoot_isInt
 `x² + xy - y²`, the principal form of discriminant `5`. -/
 theorem intNorm_eq_normForm (x y : ℤ) :
     Algebra.norm ℤ (x • (1 : 𝓞 QSqrtFive) + y • goldenIntO) = x ^ 2 + x * y - y ^ 2 := by
-  sorry
+  have h1 : ((Algebra.norm ℤ (x • (1 : 𝓞 QSqrtFive) + y • goldenIntO) : ℤ) : ℚ) =
+      Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive
+        (x • (1 : 𝓞 QSqrtFive) + y • goldenIntO)) :=
+    Algebra.coe_norm_int _
+  have h2 : algebraMap (𝓞 QSqrtFive) QSqrtFive
+      (x • (1 : 𝓞 QSqrtFive) + y • goldenIntO) =
+      (x : ℚ) • (1 : QSqrtFive) + (y : ℚ) • goldenRoot := by
+    simp [goldenIntO, Int.cast_smul_eq_zsmul]
+  rw [h2, golden_norm_eq] at h1
+  norm_num [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add] at h1 ⊢
+  exact_mod_cast h1
 
 /-- The Pell-type unit equation for `ℚ(√5)`: `x + yφ` is a unit of `ℤ[φ]` iff
 `x² + xy - y² = ±1`. Combined with `fundamentalUnit_generates`, all integer solutions arise
@@ -501,7 +633,15 @@ pairs of consecutive Fibonacci numbers (up to sign). -/
 theorem isUnit_iff_normForm (x y : ℤ) :
     IsUnit (x • (1 : 𝓞 QSqrtFive) + y • goldenIntO) ↔
       x ^ 2 + x * y - y ^ 2 = 1 ∨ x ^ 2 + x * y - y ^ 2 = -1 := by
-  sorry
+  rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm, ← Algebra.coe_norm_int,
+    intNorm_eq_normForm, abs_eq (by norm_num : (0 : ℚ) ≤ 1)]
+  constructor
+  · rintro (h | h)
+    · exact Or.inl (by exact_mod_cast h)
+    · exact Or.inr (by exact_mod_cast h)
+  · rintro (h | h)
+    · exact Or.inl (by exact_mod_cast h)
+    · exact Or.inr (by exact_mod_cast h)
 
 /-! ## 5. Splitting of primes -/
 
@@ -512,48 +652,335 @@ noncomputable def sqrtFiveIntO : 𝓞 QSqrtFive := 2 * goldenIntO - 1
 `(2φ - 1)² = 5`. It is the unique ramified prime, matching the discriminant `5`. -/
 theorem span_five_eq :
     Ideal.span {(5 : 𝓞 QSqrtFive)} = Ideal.span {sqrtFiveIntO} ^ 2 := by
-  sorry
+  rw [Ideal.span_singleton_pow,
+    show sqrtFiveIntO ^ 2 = (5 : 𝓞 QSqrtFive) from by
+      apply Subtype.ext
+      change (2 * goldenRoot - 1) ^ 2 = (5 : QSqrtFive)
+      exact sqrtFiveRoot_sq]
 
 /-- The prime `(√5)` above `5` has norm `5` (residue degree `f = 1`). -/
 theorem absNorm_span_sqrtFiveIntO : Ideal.absNorm (Ideal.span {sqrtFiveIntO}) = 5 := by
-  sorry
+  have hsqrt : sqrtFiveIntO = (-1 : ℤ) • (1 : 𝓞 QSqrtFive) + (2 : ℤ) • goldenIntO := by
+    simp only [sqrtFiveIntO, zsmul_eq_mul]
+    push_cast
+    ring
+  have h := intNorm_eq_normForm (-1) 2
+  rw [← hsqrt] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
 
 /-- `(√5)` is a prime ideal — the unique prime of `𝓞 K` above `5`. -/
 theorem isPrime_span_sqrtFiveIntO : (Ideal.span {sqrtFiveIntO}).IsPrime := by
-  sorry
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_span_sqrtFiveIntO]
+  exact (by norm_num : Nat.Prime 5)
+
+private theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
+  Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
+
+private theorem eq_of_le_of_absNorm_eq {I J : Ideal (𝓞 QSqrtFive)} (hle : I ≤ J) {n : ℕ}
+    (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J := by
+  obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
+  have hmul := _root_.map_mul Ideal.absNorm J C
+  rw [← hC, hI, hJ] at hmul
+  have hC1 : Ideal.absNorm C = 1 :=
+    (Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hn)
+      (by rw [mul_one]; exact hmul)).symm
+  rw [hC, Ideal.absNorm_eq_one_iff.mp hC1, Ideal.mul_top]
+
+private theorem absNorm_ne_two (P : Ideal (𝓞 QSqrtFive)) : Ideal.absNorm P ≠ 2 := by
+  intro hcard
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
+  haveI : Finite ((𝓞 QSqrtFive) ⧸ P) :=
+    Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+  haveI : Fintype ((𝓞 QSqrtFive) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 QSqrtFive) ⧸ P) = 2 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact hcard
+  let e := ZMod.ringEquivOfPrime ((𝓞 QSqrtFive) ⧸ P) (by norm_num) hcard'
+  obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P goldenIntO)
+  have ht2 : t ^ 2 = t + 1 := by
+    apply e.injective
+    rw [map_pow, ht, map_add, ht, map_one, ← map_pow (Ideal.Quotient.mk P),
+      goldenIntO_sq, map_add, map_one]
+  clear ht
+  revert t
+  decide
+
+private theorem absNorm_ne_three (P : Ideal (𝓞 QSqrtFive)) : Ideal.absNorm P ≠ 3 := by
+  intro hcard
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
+  haveI : Finite ((𝓞 QSqrtFive) ⧸ P) :=
+    Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+  haveI : Fintype ((𝓞 QSqrtFive) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 QSqrtFive) ⧸ P) = 3 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact hcard
+  let e := ZMod.ringEquivOfPrime ((𝓞 QSqrtFive) ⧸ P) (by norm_num) hcard'
+  obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P goldenIntO)
+  have ht2 : t ^ 2 = t + 1 := by
+    apply e.injective
+    rw [map_pow, ht, map_add, ht, map_one, ← map_pow (Ideal.Quotient.mk P),
+      goldenIntO_sq, map_add, map_one]
+  clear ht
+  revert t
+  decide
 
 /-- `2` is inert in `ℚ(√5)`: `X² - X - 1` is irreducible mod `2`, so `(2)` is itself prime
 (of norm `4`). -/
 theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 QSqrtFive)}).IsPrime := by
-  sorry
+  have habs4 : Ideal.absNorm (Ideal.span {(2 : 𝓞 QSqrtFive)}) = 4 := by
+    have h := intNorm_eq_normForm 2 0
+    have h2 : (2 : ℤ) • (1 : 𝓞 QSqrtFive) + (0 : ℤ) • goldenIntO = 2 := by
+      simp
+    rw [h2] at h
+    norm_num at h
+    rw [Ideal.absNorm_span_singleton, h]
+    rfl
+  have htop : Ideal.span {(2 : 𝓞 QSqrtFive)} ≠ ⊤ := by
+    intro h
+    rw [h, Ideal.absNorm_top] at habs4
+    norm_num at habs4
+  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+  have hdvd : Ideal.absNorm M ∣ 4 := habs4 ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+  have hM1 : Ideal.absNorm M ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hMmax.ne_top
+  have hM2 : Ideal.absNorm M ≠ 2 := absNorm_ne_two M
+  have hM4 : Ideal.absNorm M = 4 := by
+    obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
+      (show Ideal.absNorm M ∣ 2 ^ 2 from hdvd)
+    interval_cases k
+    · rw [pow_zero] at hkeq
+      exact absurd hkeq hM1
+    · rw [pow_one] at hkeq
+      exact absurd hkeq hM2
+    · rw [hkeq]
+      norm_num
+  have heq := eq_of_le_of_absNorm_eq hMle habs4 hM4 (by norm_num)
+  rw [heq]
+  exact hMmax.isPrime
 
 /-- `3` is inert in `ℚ(√5)`: `5` is not a square mod `3`, so `(3)` is itself prime (of norm
 `9`). -/
 theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 QSqrtFive)}).IsPrime := by
-  sorry
+  have habs9 : Ideal.absNorm (Ideal.span {(3 : 𝓞 QSqrtFive)}) = 9 := by
+    have h := intNorm_eq_normForm 3 0
+    have h3 : (3 : ℤ) • (1 : 𝓞 QSqrtFive) + (0 : ℤ) • goldenIntO = 3 := by
+      simp
+    rw [h3] at h
+    norm_num at h
+    rw [Ideal.absNorm_span_singleton, h]
+    rfl
+  have htop : Ideal.span {(3 : 𝓞 QSqrtFive)} ≠ ⊤ := by
+    intro h
+    rw [h, Ideal.absNorm_top] at habs9
+    norm_num at habs9
+  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+  have hdvd : Ideal.absNorm M ∣ 9 := habs9 ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+  have hM1 : Ideal.absNorm M ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hMmax.ne_top
+  have hM3 : Ideal.absNorm M ≠ 3 := absNorm_ne_three M
+  have hM9 : Ideal.absNorm M = 9 := by
+    obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_three).mp
+      (show Ideal.absNorm M ∣ 3 ^ 2 from hdvd)
+    interval_cases k
+    · rw [pow_zero] at hkeq
+      exact absurd hkeq hM1
+    · rw [pow_one] at hkeq
+      exact absurd hkeq hM3
+    · rw [hkeq]
+      norm_num
+  have heq := eq_of_le_of_absNorm_eq hMle habs9 hM9 (by norm_num)
+  rw [heq]
+  exact hMmax.isPrime
+
+/-- The elementary identity `11 = (3 + φ)(4 - φ)` in `𝓞 QSqrtFive`. -/
+private theorem eleven_eq_mul : (11 : 𝓞 QSqrtFive) = (3 + goldenIntO) * (4 - goldenIntO) := by
+  apply Subtype.ext
+  change (11 : QSqrtFive) = (3 + goldenRoot) * (4 - goldenRoot)
+  rw [show (3 + goldenRoot) * (4 - goldenRoot) = 12 + goldenRoot - goldenRoot ^ 2 by ring]
+  rw [goldenRoot_sq]
+  ring
 
 /-- `11 ≡ 1 (mod 5)` splits: `11 = (3 + φ)(4 - φ)` and `(11)` is a product of two distinct
 primes of norm `11`. -/
 theorem span_eleven_eq :
     Ideal.span {(11 : 𝓞 QSqrtFive)} =
       Ideal.span {3 + goldenIntO} * Ideal.span {4 - goldenIntO} := by
-  sorry
+  rw [Ideal.span_singleton_mul_span_singleton, ← eleven_eq_mul]
 
 /-- The prime `(3 + φ)` above `11` has norm `11` (residue degree `f = 1`). -/
 theorem absNorm_span_three_add_golden :
     Ideal.absNorm (Ideal.span {3 + goldenIntO}) = 11 := by
-  sorry
+  have h := intNorm_eq_normForm 3 1
+  have h3 : (3 : ℤ) • (1 : 𝓞 QSqrtFive) + (1 : ℤ) • goldenIntO = 3 + goldenIntO := by
+    simp
+  rw [h3] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
 
 /-- `(3 + φ)` is a prime ideal — one of the two primes of `𝓞 K` above `11`. -/
 theorem isPrime_span_three_add_golden : (Ideal.span {3 + goldenIntO}).IsPrime := by
-  sorry
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_span_three_add_golden]
+  exact (by norm_num : Nat.Prime 11)
+
+private theorem absNorm_span_natCast (p : ℕ) :
+    Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)}) = p ^ 2 := by
+  have h := intNorm_eq_normForm (p : ℤ) 0
+  have hps : ((p : ℤ)) • (1 : 𝓞 QSqrtFive) + (0 : ℤ) • goldenIntO =
+      ((p : ℕ) : 𝓞 QSqrtFive) := by simp
+  rw [hps] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  simp [Int.natAbs_pow]
+
+private theorem concreteIntegralBasis_zero_eq_one :
+    concreteIntegralBasis 0 = (1 : 𝓞 QSqrtFive) := by
+  apply Subtype.ext
+  exact concreteIntegralBasis_basis_zero
+
+private theorem concreteIntegralBasis_one_eq_goldenIntO :
+    concreteIntegralBasis 1 = goldenIntO := by
+  apply Subtype.ext
+  exact concreteIntegralBasis_basis_one
+
+private theorem li_one_golden : LinearIndependent ℤ ![(1 : 𝓞 QSqrtFive), goldenIntO] := by
+  rw [Fintype.linearIndependent_iff]
+  intro g hg
+  rw [Fin.sum_univ_two] at hg
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one] at hg
+  have hsum : ∑ i : Fin 2, g i • concreteIntegralBasis i = 0 := by
+    rw [Fin.sum_univ_two, concreteIntegralBasis_zero_eq_one,
+      concreteIntegralBasis_one_eq_goldenIntO]
+    exact hg
+  exact Fintype.linearIndependent_iff.mp concreteIntegralBasis.linearIndependent g hsum
+
+private theorem exists_o5_coords (z : 𝓞 QSqrtFive) :
+    ∃ A B : ℤ, z = A • (1 : 𝓞 QSqrtFive) + B • goldenIntO := by
+  let A : ℤ := concreteIntegralBasis.repr z 0
+  let B : ℤ := concreteIntegralBasis.repr z 1
+  refine ⟨A, B, ?_⟩
+  have hsum := concreteIntegralBasis.sum_repr z
+  rw [Fin.sum_univ_two, concreteIntegralBasis_zero_eq_one,
+    concreteIntegralBasis_one_eq_goldenIntO] at hsum
+  simpa [A, B] using hsum.symm
+
+/-- An element `A + B·φ` with `B = ±1` is never divisible by a rational prime `p ≥ 2`. -/
+private theorem unit_golden_coeff_not_mem (p : ℕ) (hp : 2 ≤ p) (A B : ℤ)
+    (hB : B = 1 ∨ B = -1) :
+    ((A : ℤ) : 𝓞 QSqrtFive) + ((B : ℤ) : 𝓞 QSqrtFive) * goldenIntO ∉
+      Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} := by
+  intro hmem
+  rw [Ideal.mem_span_singleton] at hmem
+  obtain ⟨z, hz⟩ := hmem
+  obtain ⟨A', m, hzdec⟩ := exists_o5_coords z
+  rw [hzdec] at hz
+  have hsum : ∑ i : Fin 2,
+      (![A - p * A', B - p * m] i) • (![(1 : 𝓞 QSqrtFive), goldenIntO] i) = 0 := by
+    rw [Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, zsmul_eq_mul] at hz ⊢
+    push_cast at hz ⊢
+    linear_combination hz
+  have hcoeff := Fintype.linearIndependent_iff.mp li_one_golden _ hsum 1
+  simp only [Matrix.cons_val_one, Matrix.cons_val_zero] at hcoeff
+  rcases hB with rfl | rfl
+  · have h1 : (p : ℤ) ∣ 1 := ⟨m, by linarith [hcoeff]⟩
+    have := Int.le_of_dvd one_pos h1
+    omega
+  · have h1 : (p : ℤ) ∣ 1 := ⟨-m, by linarith [hcoeff]⟩
+    have := Int.le_of_dvd one_pos h1
+    omega
 
 /-- The splitting law at ramified primes: a rational prime `p` ramifies in `ℚ(√5)` iff
 `p = 5`, i.e. iff `p` divides the discriminant `5`. -/
 theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 QSqrtFive), P.IsPrime ∧
       Ideal.span {(p : 𝓞 QSqrtFive)} ≤ P ^ 2) ↔ p = 5 := by
-  sorry
+  constructor
+  · rintro ⟨P, hP, hle2⟩
+    haveI : P.IsPrime := hP
+    have hple : Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} ≤ P :=
+      hle2.trans (Ideal.pow_le_self (by norm_num))
+    have hpmemP : ((p : ℕ) : 𝓞 QSqrtFive) ∈ P := hple (Ideal.mem_span_singleton_self _)
+    have hpne : ((p : ℕ) : 𝓞 QSqrtFive) ≠ 0 := Nat.cast_ne_zero.mpr hp.ne_zero
+    have hPbot : P ≠ ⊥ := by
+      intro h
+      rw [h] at hpmemP
+      exact hpne (Ideal.mem_bot.mp hpmemP)
+    have hfin : Module.finrank ℤ (𝓞 QSqrtFive) = 2 := by
+      rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+    have habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)}) = p ^ 2 := by
+      rw [Ideal.absNorm_span_singleton]
+      have hcast : ((p : ℕ) : 𝓞 QSqrtFive) =
+          algebraMap ℤ (𝓞 QSqrtFive) ((p : ℕ) : ℤ) := by push_cast; rfl
+      rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
+    have habsPp2 : Ideal.absNorm P ∣ p ^ 2 :=
+      habsp ▸ Ideal.absNorm_dvd_absNorm_of_le hple
+    obtain ⟨k, hk2, hkeq⟩ := (Nat.dvd_prime_pow hp).mp habsPp2
+    have hk0 : k ≠ 0 := by
+      intro h0
+      rw [h0, pow_zero] at hkeq
+      exact hP.ne_top (Ideal.absNorm_eq_one_iff.mp hkeq)
+    have hmap : Ideal.map (algebraMap ℤ (𝓞 QSqrtFive))
+        (Ideal.span {((p : ℕ) : ℤ)}) = Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} := by
+      rw [Ideal.map_span, Set.image_singleton]
+      norm_num
+    have hle2' : Ideal.map (algebraMap ℤ (𝓞 QSqrtFive))
+        (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
+      rw [hmap]
+      exact hle2
+    have hno3 : ¬ Ideal.map (algebraMap ℤ (𝓞 QSqrtFive))
+        (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3 := by
+      intro h3
+      rw [hmap] at h3
+      have hd := Ideal.absNorm_dvd_absNorm_of_le h3
+      rw [map_pow, habsp, hkeq, ← pow_mul] at hd
+      rw [Nat.pow_dvd_pow_iff_le_right hp.one_lt] at hd
+      omega
+    have hidx : Ideal.ramificationIdx (Ideal.span {((p : ℕ) : ℤ)}) P ≠ 1 := by
+      rw [Ideal.ramificationIdx_spec hle2' hno3]
+      norm_num
+    have hund : Ideal.under ℤ P = Ideal.span {((p : ℕ) : ℤ)} := by
+      have hmem : ((p : ℕ) : ℤ) ∈ Ideal.under ℤ P := by
+        rw [Ideal.under, Ideal.mem_comap]
+        have hcast2 : algebraMap ℤ (𝓞 QSqrtFive) ((p : ℕ) : ℤ) =
+            ((p : ℕ) : 𝓞 QSqrtFive) := by push_cast; rfl
+        rw [hcast2]
+        exact hpmemP
+      have hle : Ideal.span {((p : ℕ) : ℤ)} ≤ Ideal.under ℤ P := by
+        rw [Ideal.span_le, Set.singleton_subset_iff]
+        exact hmem
+      have hprime : (Ideal.span {((p : ℕ) : ℤ)}).IsPrime :=
+        (Ideal.span_singleton_prime (by exact_mod_cast hp.ne_zero)).mpr
+          (Nat.prime_iff_prime_int.mp hp)
+      have hbot : Ideal.span {((p : ℕ) : ℤ)} ≠ ⊥ := by
+        rw [Ne, Ideal.span_singleton_eq_bot]
+        exact_mod_cast hp.ne_zero
+      have hnetop : Ideal.under ℤ P ≠ ⊤ := by
+        intro h
+        have h1 : (1 : ℤ) ∈ Ideal.under ℤ P := h ▸ Submodule.mem_top
+        rw [Ideal.under, Ideal.mem_comap, map_one] at h1
+        exact hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h1 isUnit_one)
+      exact ((hprime.isMaximal hbot).eq_of_le hnetop hle).symm
+    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P := by
+      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hPbot, hund]
+      exact hidx
+    have hPdiff : P ∣ differentIdeal ℤ (𝓞 QSqrtFive) := dvd_differentIdeal_iff.mpr hunram
+    have habsP5 : Ideal.absNorm P ∣ 5 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
+      rw [NumberField.absNorm_differentIdeal (K := QSqrtFive), numberField_discr_eq] at h
+      simpa using h
+    have hpdvd : p ∣ 5 := (hkeq ▸ dvd_pow_self p hk0).trans habsP5
+    exact (Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp hpdvd
+  · rintro rfl
+    refine ⟨Ideal.span {sqrtFiveIntO}, isPrime_span_sqrtFiveIntO, ?_⟩
+    have hcast : ((5 : ℕ) : 𝓞 QSqrtFive) = (5 : 𝓞 QSqrtFive) := by norm_num
+    rw [hcast, span_five_eq]
 
 /-- The quadratic splitting law for `ℚ(√5)`: a rational prime `p ≠ 5` splits into two
 distinct primes iff `p ≡ ±1 (mod 5)` (i.e. iff `5` is a quadratic residue mod `p`, by
@@ -561,39 +988,554 @@ quadratic reciprocity), and is inert otherwise. -/
 theorem splits_iff_pm_one_mod_five (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     (∃ P Q : Ideal (𝓞 QSqrtFive), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
       Ideal.span {(p : 𝓞 QSqrtFive)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4 := by
-  sorry
+  have hsq1 : IsSquare ((1 : ℕ) : ZMod 5) := by decide
+  have hsq4 : IsSquare ((4 : ℕ) : ZMod 5) := by decide
+  have hnsq2 : ¬ IsSquare ((2 : ℕ) : ZMod 5) := by decide
+  have hnsq3 : ¬ IsSquare ((3 : ℕ) : ZMod 5) := by decide
+  constructor
+  · rintro ⟨P, Q, hPprime, hQprime, hPQne, hspan⟩
+    have hmul : Ideal.absNorm P * Ideal.absNorm Q = p ^ 2 := by
+      rw [← _root_.map_mul Ideal.absNorm, ← hspan, absNorm_span_natCast]
+    have hP1 : Ideal.absNorm P ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      exact hPprime.ne_top
+    have hQ1 : Ideal.absNorm Q ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      exact hQprime.ne_top
+    have hNP : Ideal.absNorm P = p := by
+      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow hp).mp ⟨_, hmul.symm⟩
+      interval_cases k
+      · rw [pow_zero] at hkeq
+        exact absurd hkeq hP1
+      · rw [pow_one] at hkeq
+        exact hkeq
+      · exfalso
+        rw [hkeq] at hmul
+        have hQ1' : Ideal.absNorm Q = 1 :=
+          Nat.eq_of_mul_eq_mul_left (pow_pos hp.pos 2)
+            (by rw [mul_one]; exact hmul)
+        exact hQ1 hQ1'
+    have hcard : Nat.card ((𝓞 QSqrtFive) ⧸ P) = p := by
+      rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hNP
+      exact hNP
+    haveI : Finite ((𝓞 QSqrtFive) ⧸ P) := Nat.finite_of_card_ne_zero
+      (by rw [hcard]; exact hp.pos.ne')
+    haveI : Fintype ((𝓞 QSqrtFive) ⧸ P) := Fintype.ofFinite _
+    have hcard' : Fintype.card ((𝓞 QSqrtFive) ⧸ P) = p := by
+      rw [← Nat.card_eq_fintype_card]
+      exact hcard
+    let e := ZMod.ringEquivOfPrime ((𝓞 QSqrtFive) ⧸ P) hp hcard'
+    obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P goldenIntO)
+    have ht2 : t ^ 2 = t + 1 := by
+      apply e.injective
+      rw [map_pow, ht, map_add, ht, map_one, ← map_pow (Ideal.Quotient.mk P),
+        goldenIntO_sq, map_add, map_one]
+    by_cases hp2 : p = 2
+    · exfalso
+      subst hp2
+      clear ht
+      revert t
+      decide
+    have hsq5 : IsSquare ((5 : ℕ) : ZMod p) := by
+      refine ⟨2 * t - 1, ?_⟩
+      push_cast
+      linear_combination -4 * ht2
+    haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+    haveI : Fact (Nat.Prime p) := ⟨hp⟩
+    have hsqp : IsSquare ((p : ℕ) : ZMod 5) :=
+      (ZMod.exists_sq_eq_prime_iff_of_mod_four_eq_one (p := 5) (q := p)
+        (by norm_num) hp2).mpr hsq5
+    have hcast : ((p : ℕ) : ZMod 5) = ((p % 5 : ℕ) : ZMod 5) :=
+      (ZMod.natCast_mod p 5).symm
+    rw [hcast] at hsqp
+    have hne0 : p % 5 ≠ 0 := by
+      intro h0
+      exact hp5 (((Nat.prime_dvd_prime_iff_eq (by norm_num) hp).mp
+        (Nat.dvd_of_mod_eq_zero h0)).symm)
+    have hcases : p % 5 = 0 ∨ p % 5 = 1 ∨ p % 5 = 2 ∨ p % 5 = 3 ∨ p % 5 = 4 := by
+      omega
+    rcases hcases with h | h | h | h | h
+    · exact absurd h hne0
+    · exact Or.inl h
+    · rw [h] at hsqp
+      exact absurd hsqp hnsq2
+    · rw [h] at hsqp
+      exact absurd hsqp hnsq3
+    · exact Or.inr h
+  · intro hmod
+    have hp2 : p ≠ 2 := by
+      rintro rfl
+      omega
+    have hsqp : IsSquare ((p : ℕ) : ZMod 5) := by
+      rw [(ZMod.natCast_mod p 5).symm]
+      rcases hmod with h | h
+      · rw [h]
+        exact hsq1
+      · rw [h]
+        exact hsq4
+    haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+    haveI : Fact (Nat.Prime p) := ⟨hp⟩
+    have hsq5 : IsSquare ((5 : ℕ) : ZMod p) :=
+      (ZMod.exists_sq_eq_prime_iff_of_mod_four_eq_one (p := 5) (q := p)
+        (by norm_num) hp2).mp hsqp
+    obtain ⟨s, hs⟩ := hsq5
+    have h2ne : (2 : ZMod p) ≠ 0 := by
+      intro h0
+      exact hp2 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp
+        ((ZMod.natCast_eq_zero_iff 2 p).mp (by exact_mod_cast h0)))
+    set t : ZMod p := (1 + s) / 2 with htdef
+    have h2t : (2 : ZMod p) * t = 1 + s := by
+      rw [htdef, mul_comm, div_mul_cancel₀ _ h2ne]
+    have ht2 : t ^ 2 = t + 1 := by
+      have hmul4 : (4 : ZMod p) * (t ^ 2 - t - 1) = 0 := by
+        have hs' : ((5 : ℕ) : ZMod p) = s * s := hs
+        push_cast at hs'
+        linear_combination (2 * t - 1 + s) * h2t - hs'
+      have h4ne : (4 : ZMod p) ≠ 0 := by
+        rw [show (4 : ZMod p) = 2 * 2 by norm_num]
+        exact mul_ne_zero h2ne h2ne
+      have hz : t ^ 2 - t - 1 = 0 := by
+        rcases mul_eq_zero.mp hmul4 with h | h
+        · exact absurd h h4ne
+        · exact h
+      linear_combination hz
+    set c : ℤ := (t.val : ℤ) with hcdef
+    set c' : ℤ := ((1 - t).val : ℤ) with hc'def
+    have hct : ((c : ℤ) : ZMod p) = t := by
+      rw [hcdef]
+      exact_mod_cast ZMod.natCast_rightInverse t
+    have hc't : ((c' : ℤ) : ZMod p) = 1 - t := by
+      rw [hc'def]
+      exact_mod_cast ZMod.natCast_rightInverse (1 - t)
+    have hdvd1 : (p : ℤ) ∣ 1 - c - c' := by
+      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+      push_cast
+      rw [hct, hc't]
+      ring
+    have hdvd2 : (p : ℤ) ∣ 1 + c * c' := by
+      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+      push_cast
+      rw [hct, hc't]
+      linear_combination -ht2
+    obtain ⟨k₁, hk₁⟩ := hdvd1
+    obtain ⟨k₂, hk₂⟩ := hdvd2
+    have hk₁K : (1 : 𝓞 QSqrtFive) - (c : 𝓞 QSqrtFive) - (c' : 𝓞 QSqrtFive) =
+        ((p : ℕ) : 𝓞 QSqrtFive) * (k₁ : 𝓞 QSqrtFive) := by
+      have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 QSqrtFive)) hk₁
+      push_cast at h
+      exact h
+    have hk₂K : (1 : 𝓞 QSqrtFive) + (c : 𝓞 QSqrtFive) * (c' : 𝓞 QSqrtFive) =
+        ((p : ℕ) : 𝓞 QSqrtFive) * (k₂ : 𝓞 QSqrtFive) := by
+      have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 QSqrtFive)) hk₂
+      push_cast at h
+      exact h
+    have hprod : (goldenIntO - (c : 𝓞 QSqrtFive)) * (goldenIntO - (c' : 𝓞 QSqrtFive)) =
+        ((p : ℕ) : 𝓞 QSqrtFive) *
+          ((k₁ : 𝓞 QSqrtFive) * goldenIntO + (k₂ : 𝓞 QSqrtFive)) := by
+      linear_combination goldenIntO_sq + goldenIntO * hk₁K + hk₂K
+    set P := Ideal.span {((p : ℕ) : 𝓞 QSqrtFive), goldenIntO - (c : 𝓞 QSqrtFive)}
+      with hPdef
+    set Q := Ideal.span {((p : ℕ) : 𝓞 QSqrtFive), goldenIntO - (c' : 𝓞 QSqrtFive)}
+      with hQdef
+    have hp_memP : ((p : ℕ) : 𝓞 QSqrtFive) ∈ P := Ideal.subset_span (Set.mem_insert _ _)
+    have hgc_memP : goldenIntO - (c : 𝓞 QSqrtFive) ∈ P :=
+      Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+    have hp_memQ : ((p : ℕ) : 𝓞 QSqrtFive) ∈ Q := Ideal.subset_span (Set.mem_insert _ _)
+    have hgc'_memQ : goldenIntO - (c' : 𝓞 QSqrtFive) ∈ Q :=
+      Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+    have hPle : Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} ≤ P :=
+      (Ideal.span_singleton_le_iff_mem _).mpr hp_memP
+    have hQle : Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} ≤ Q :=
+      (Ideal.span_singleton_le_iff_mem _).mpr hp_memQ
+    have hnorm : ∀ (I : Ideal (𝓞 QSqrtFive)),
+        Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} ≤ I →
+        Ideal.absNorm I ≠ 1 → Ideal.absNorm I ≠ p ^ 2 → Ideal.absNorm I = p := by
+      intro I hle h1 hpsq
+      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow hp).mp
+        ((absNorm_span_natCast p) ▸ Ideal.absNorm_dvd_absNorm_of_le hle)
+      interval_cases k
+      · rw [pow_zero] at hkeq
+        exact absurd hkeq h1
+      · rw [pow_one] at hkeq
+        exact hkeq
+      · exact absurd hkeq hpsq
+    have hPnot1 : Ideal.absNorm P ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      intro htop
+      have h1 : (1 : 𝓞 QSqrtFive) ∈ P := htop ▸ Submodule.mem_top
+      rw [hPdef, Ideal.mem_span_pair] at h1
+      obtain ⟨α, β, hαβ⟩ := h1
+      have hgc' : goldenIntO - (c' : 𝓞 QSqrtFive) ∈
+          Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} := by
+        rw [Ideal.mem_span_singleton]
+        refine ⟨α * (goldenIntO - (c' : 𝓞 QSqrtFive)) +
+          β * ((k₁ : 𝓞 QSqrtFive) * goldenIntO + (k₂ : 𝓞 QSqrtFive)), ?_⟩
+        calc goldenIntO - (c' : 𝓞 QSqrtFive)
+            = (α * ((p : ℕ) : 𝓞 QSqrtFive) +
+                β * (goldenIntO - (c : 𝓞 QSqrtFive))) *
+              (goldenIntO - (c' : 𝓞 QSqrtFive)) := by
+              rw [hαβ, one_mul]
+          _ = ((p : ℕ) : 𝓞 QSqrtFive) *
+              (α * (goldenIntO - (c' : 𝓞 QSqrtFive)) +
+                β * ((k₁ : 𝓞 QSqrtFive) * goldenIntO + (k₂ : 𝓞 QSqrtFive))) := by
+              linear_combination β * hprod
+      refine unit_golden_coeff_not_mem p hp.two_le (-c') 1 (Or.inl rfl) ?_
+      rw [show ((-c' : ℤ) : 𝓞 QSqrtFive) +
+          ((1 : ℤ) : 𝓞 QSqrtFive) * goldenIntO =
+        goldenIntO - (c' : 𝓞 QSqrtFive) by
+        push_cast
+        ring]
+      exact hgc'
+    have hQnot1 : Ideal.absNorm Q ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      intro htop
+      have h1 : (1 : 𝓞 QSqrtFive) ∈ Q := htop ▸ Submodule.mem_top
+      rw [hQdef, Ideal.mem_span_pair] at h1
+      obtain ⟨α, β, hαβ⟩ := h1
+      have hgc : goldenIntO - (c : 𝓞 QSqrtFive) ∈
+          Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} := by
+        rw [Ideal.mem_span_singleton]
+        refine ⟨α * (goldenIntO - (c : 𝓞 QSqrtFive)) +
+          β * ((k₁ : 𝓞 QSqrtFive) * goldenIntO + (k₂ : 𝓞 QSqrtFive)), ?_⟩
+        calc goldenIntO - (c : 𝓞 QSqrtFive)
+            = (α * ((p : ℕ) : 𝓞 QSqrtFive) +
+                β * (goldenIntO - (c' : 𝓞 QSqrtFive))) *
+              (goldenIntO - (c : 𝓞 QSqrtFive)) := by
+              rw [hαβ, one_mul]
+          _ = ((p : ℕ) : 𝓞 QSqrtFive) *
+              (α * (goldenIntO - (c : 𝓞 QSqrtFive)) +
+                β * ((k₁ : 𝓞 QSqrtFive) * goldenIntO + (k₂ : 𝓞 QSqrtFive))) := by
+              linear_combination β * hprod
+      refine unit_golden_coeff_not_mem p hp.two_le (-c) 1 (Or.inl rfl) ?_
+      rw [show ((-c : ℤ) : 𝓞 QSqrtFive) +
+          ((1 : ℤ) : 𝓞 QSqrtFive) * goldenIntO =
+        goldenIntO - (c : 𝓞 QSqrtFive) by
+        push_cast
+        ring]
+      exact hgc
+    have hPnotsq : Ideal.absNorm P ≠ p ^ 2 := by
+      intro hNP
+      have heq := eq_of_le_of_absNorm_eq hPle (absNorm_span_natCast p) hNP
+        (pow_ne_zero 2 hp.pos.ne')
+      refine unit_golden_coeff_not_mem p hp.two_le (-c) 1 (Or.inl rfl) ?_
+      rw [show ((-c : ℤ) : 𝓞 QSqrtFive) +
+          ((1 : ℤ) : 𝓞 QSqrtFive) * goldenIntO =
+        goldenIntO - (c : 𝓞 QSqrtFive) by
+        push_cast
+        ring]
+      rw [heq]
+      exact hgc_memP
+    have hQnotsq : Ideal.absNorm Q ≠ p ^ 2 := by
+      intro hNQ
+      have heq := eq_of_le_of_absNorm_eq hQle (absNorm_span_natCast p) hNQ
+        (pow_ne_zero 2 hp.pos.ne')
+      refine unit_golden_coeff_not_mem p hp.two_le (-c') 1 (Or.inl rfl) ?_
+      rw [show ((-c' : ℤ) : 𝓞 QSqrtFive) +
+          ((1 : ℤ) : 𝓞 QSqrtFive) * goldenIntO =
+        goldenIntO - (c' : 𝓞 QSqrtFive) by
+        push_cast
+        ring]
+      rw [heq]
+      exact hgc'_memQ
+    have hNP : Ideal.absNorm P = p := hnorm P hPle hPnot1 hPnotsq
+    have hNQ : Ideal.absNorm Q = p := hnorm Q hQle hQnot1 hQnotsq
+    have hPprime : P.IsPrime := by
+      apply Ideal.isPrime_of_irreducible_absNorm
+      rw [hNP]
+      exact hp
+    have hQprime : Q.IsPrime := by
+      apply Ideal.isPrime_of_irreducible_absNorm
+      rw [hNQ]
+      exact hp
+    have htne : t ≠ 1 - t := by
+      intro h0
+      have hs0 : s = 0 := by
+        have h2t1 : (2 : ZMod p) * t = 1 := by linear_combination h0
+        have : (1 : ZMod p) + s = 1 := by rw [← h2t, h2t1]
+        linear_combination this
+      have h50 : ((5 : ℕ) : ZMod p) = 0 := by
+        rw [hs, hs0, mul_zero]
+      exact hp5 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp
+        ((ZMod.natCast_eq_zero_iff 5 p).mp h50))
+    have hPQne : P ≠ Q := by
+      intro heq
+      have hcc' : ((c - c' : ℤ) : ZMod p) ≠ 0 := by
+        push_cast
+        rw [hct, hc't]
+        intro h0
+        exact htne (by linear_combination h0)
+      obtain ⟨u, hu⟩ := isUnit_iff_ne_zero.mpr hcc'
+      set w : ZMod p := ((u⁻¹ : (ZMod p)ˣ) : ZMod p) with hwdef
+      have hw : w * ((c - c' : ℤ) : ZMod p) = 1 := by
+        rw [hwdef, ← hu, ← Units.val_mul, inv_mul_cancel, Units.val_one]
+      have hlift : (p : ℤ) ∣ ((w.val : ℤ) * (c - c') - 1) := by
+        rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+        push_cast
+        rw [show ((w.val : ℕ) : ZMod p) = w from ZMod.natCast_rightInverse w]
+        push_cast at hw
+        linear_combination hw
+      obtain ⟨k₃, hk₃⟩ := hlift
+      have hk₃K : ((w.val : ℕ) : 𝓞 QSqrtFive) *
+            ((c : 𝓞 QSqrtFive) - (c' : 𝓞 QSqrtFive)) - 1 =
+          ((p : ℕ) : 𝓞 QSqrtFive) * (k₃ : 𝓞 QSqrtFive) := by
+        have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 QSqrtFive)) hk₃
+        push_cast at h
+        exact h
+      have h1 : (1 : 𝓞 QSqrtFive) ∈ P := by
+        have hgc'P : goldenIntO - (c' : 𝓞 QSqrtFive) ∈ P := by
+          rw [heq]
+          exact hgc'_memQ
+        have hid : (1 : 𝓞 QSqrtFive) = ((w.val : ℕ) : 𝓞 QSqrtFive) *
+            ((goldenIntO - (c' : 𝓞 QSqrtFive)) - (goldenIntO - (c : 𝓞 QSqrtFive))) -
+            (k₃ : 𝓞 QSqrtFive) * ((p : ℕ) : 𝓞 QSqrtFive) := by
+          linear_combination -hk₃K
+        rw [hid]
+        exact Submodule.sub_mem _
+          (Ideal.mul_mem_left _ _ (Submodule.sub_mem _ hgc'P hgc_memP))
+          (Ideal.mul_mem_left _ _ hp_memP)
+      have habs := hNP
+      rw [(Ideal.eq_top_iff_one P).mpr h1, Ideal.absNorm_top] at habs
+      exact hp2 (by omega)
+    have hPQ : Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} = P * Q := by
+      have hle1 : P * Q ≤ Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)} := by
+        rw [Ideal.mul_le]
+        intro r1 hr1 r2 hr2
+        rw [hPdef, Ideal.mem_span_pair] at hr1
+        rw [hQdef, Ideal.mem_span_pair] at hr2
+        obtain ⟨x1, y1, h1⟩ := hr1
+        obtain ⟨x2, y2, h2⟩ := hr2
+        rw [Ideal.mem_span_singleton]
+        refine ⟨x1 * x2 * ((p : ℕ) : 𝓞 QSqrtFive) +
+          x1 * y2 * (goldenIntO - (c' : 𝓞 QSqrtFive)) +
+          y1 * x2 * (goldenIntO - (c : 𝓞 QSqrtFive)) +
+          y1 * y2 * ((k₁ : 𝓞 QSqrtFive) * goldenIntO + (k₂ : 𝓞 QSqrtFive)), ?_⟩
+        rw [← h1, ← h2]
+        linear_combination (y1 * y2) * hprod
+      have hNPQ : Ideal.absNorm (P * Q) = p ^ 2 := by
+        rw [_root_.map_mul, hNP, hNQ]
+        ring
+      exact (eq_of_le_of_absNorm_eq hle1 hNPQ (absNorm_span_natCast p)
+        (pow_ne_zero 2 hp.pos.ne')).symm
+    exact ⟨P, Q, hPprime, hQprime, hPQne, hPQ⟩
 
 /-! ## 6. Ring of units -/
+
+private theorem ringHom_ext_golden {f g : QSqrtFive →+* ℂ} (h : f goldenRoot = g goldenRoot) :
+    f = g := by
+  ext z
+  obtain ⟨x, y⟩ := z
+  rw [QuadraticAlgebra.mk_eq_add_smul_omega, map_add, map_add]
+  congr 1
+  · exact (eq_ratCast (f.comp (algebraMap ℚ QSqrtFive)) x).trans
+      (eq_ratCast (g.comp (algebraMap ℚ QSqrtFive)) x).symm
+  · rw [Algebra.smul_def, map_mul, map_mul]
+    exact congrArg₂ (fun a b => a * b)
+      ((eq_ratCast (f.comp (algebraMap ℚ QSqrtFive)) y).trans
+        (eq_ratCast (g.comp (algebraMap ℚ QSqrtFive)) y).symm) h
+
+private theorem isTotallyReal : NumberField.IsTotallyReal QSqrtFive := by
+  refine ⟨fun v => ?_⟩
+  rw [NumberField.InfinitePlace.isReal_iff, NumberField.ComplexEmbedding.isReal_iff]
+  refine ringHom_ext_golden ?_
+  rw [NumberField.ComplexEmbedding.conjugate_coe_eq]
+  set z := NumberField.InfinitePlace.embedding v goldenRoot with hz
+  have hsq : z ^ 2 = z + 1 := by
+    rw [hz, ← map_pow, goldenRoot_sq, map_add, map_one]
+  have hc : (starRingEnd ℂ) z ^ 2 = (starRingEnd ℂ) z + 1 := by
+    rw [← map_pow, hsq, map_add, map_one]
+  have hfac : ((starRingEnd ℂ) z - z) * ((starRingEnd ℂ) z + z - 1) = 0 := by
+    linear_combination hc - hsq
+  rcases mul_eq_zero.mp hfac with h | h
+  · exact sub_eq_zero.mp h
+  · exfalso
+    have hre : z.re = 1 / 2 := by
+      have hcr := congrArg Complex.re h
+      rw [Complex.sub_re, Complex.add_re, Complex.conj_re] at hcr
+      norm_num at hcr
+      linarith
+    have hreal := congrArg Complex.re hsq
+    rw [sq, Complex.mul_re, Complex.add_re, Complex.one_re, hre] at hreal
+    norm_num at hreal
+    nlinarith [sq_nonneg z.im]
 
 /-- The golden ratio `φ` is a unit of `𝓞 K`, with inverse `φ - 1 = 1/φ`: this is the
 fundamental unit of `ℚ(√5)`, the smallest fundamental unit of any real quadratic field. -/
 noncomputable def fundamentalUnit : (𝓞 QSqrtFive)ˣ where
   val := goldenIntO
   inv := goldenIntO - 1
-  val_inv := by sorry
-  inv_val := by sorry
+  val_inv := by
+    rw [show goldenIntO * (goldenIntO - 1) = goldenIntO ^ 2 - goldenIntO by ring]
+    rw [goldenIntO_sq]
+    ring
+  inv_val := by
+    rw [show (goldenIntO - 1) * goldenIntO = goldenIntO ^ 2 - goldenIntO by ring]
+    rw [goldenIntO_sq]
+    ring
 
 /-- The field `ℚ(√5)` has two real infinite places: the signature is `(r₁, r₂) = (2, 0)`. -/
 theorem nrRealPlaces_eq_two : InfinitePlace.nrRealPlaces QSqrtFive = 2 := by
-  sorry
+  haveI := isTotallyReal
+  have hcomplex := NumberField.IsTotallyReal.nrComplexPlaces_eq_zero QSqrtFive
+  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank QSqrtFive
+  rw [hcomplex, degree_eq_two] at h
+  omega
 
 /-- The field `ℚ(√5)` has no complex infinite places. -/
 theorem nrComplexPlaces_eq_zero : InfinitePlace.nrComplexPlaces QSqrtFive = 0 := by
-  sorry
+  haveI := isTotallyReal
+  exact NumberField.IsTotallyReal.nrComplexPlaces_eq_zero QSqrtFive
+
+/-- A torsion generator of `𝓞 QSqrtFiveˣ`, mathematically `-1`. -/
+abbrev torsionGenerator : (𝓞 QSqrtFive)ˣ := -1
+
+/-- The concrete torsion units `{1, -1}`. -/
+def torsionUnits : Set ((𝓞 QSqrtFive)ˣ) := {u | ∃ k : Fin 2, u = torsionGenerator ^ k.val}
+
+private noncomputable def realEmb : QSqrtFive →ₐ[ℚ] ℝ :=
+  QuadraticAlgebra.lift ⟨(1 + Real.sqrt 5) / 2, by
+    have hs : Real.sqrt 5 * Real.sqrt 5 = 5 := Real.mul_self_sqrt (by norm_num)
+    rw [show ((1 + Real.sqrt 5) / 2) * ((1 + Real.sqrt 5) / 2) =
+        (3 + Real.sqrt 5) / 2 by nlinarith]
+    simp
+    ring⟩
+
+private theorem torsionUnits_eq : {u : (𝓞 QSqrtFive)ˣ | IsOfFinOrder u} = torsionUnits := by
+  set e : QSqrtFive →+* ℝ := realEmb.toRingHom with he
+  ext u
+  constructor
+  · intro hu
+    obtain ⟨n, hn, hun⟩ := isOfFinOrder_iff_pow_eq_one.mp hu
+    set x : QSqrtFive :=
+      algebraMap (𝓞 QSqrtFive) QSqrtFive ((u : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) with hx
+    have hxn : x ^ n = 1 := by
+      have hval : ((u ^ n : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) = 1 := by rw [hun]; rfl
+      rw [hx, ← map_pow,
+        show (((u : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive)) ^ n =
+          ((u ^ n : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) from
+          (Units.val_pow_eq_pow_val _ _).symm,
+        hval, map_one]
+    have hen : (e x) ^ n = 1 := by rw [← map_pow, hxn, map_one]
+    have habs : |e x| = 1 := by
+      have h1 : |e x| ^ n = 1 := by rw [← abs_pow, hen, abs_one]
+      rcases lt_trichotomy |e x| 1 with h | h | h
+      · exfalso
+        have h2 := pow_lt_one₀ (abs_nonneg _) h hn.ne'
+        rw [h1] at h2
+        norm_num at h2
+      · exact h
+      · exfalso
+        have h2 := one_lt_pow₀ h hn.ne'
+        rw [h1] at h2
+        norm_num at h2
+    have hex : e x = 1 ∨ e x = -1 := abs_eq (by norm_num : (0 : ℝ) ≤ 1) |>.mp habs
+    have hinj := IsFractionRing.injective (𝓞 QSqrtFive) QSqrtFive
+    rcases hex with h | h
+    · refine ⟨0, ?_⟩
+      have hx1 : x = 1 := e.injective (by rw [h, map_one])
+      have hu1 : ((u : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) = 1 :=
+        hinj (by rw [map_one, ← hx]; exact hx1)
+      rw [show ((0 : Fin 2) : ℕ) = 0 from rfl, pow_zero]
+      exact Units.ext hu1
+    · refine ⟨1, ?_⟩
+      have hx1 : x = -1 := e.injective (by rw [h]; simp)
+      have hu1 : ((u : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) = -1 :=
+        hinj (by rw [map_neg, map_one, ← hx]; exact hx1)
+      rw [show ((1 : Fin 2) : ℕ) = 1 from rfl, pow_one]
+      exact Units.ext hu1
+  · rintro ⟨k, rfl⟩
+    refine isOfFinOrder_iff_pow_eq_one.mpr ⟨2, by norm_num, ?_⟩
+    rw [← pow_mul, mul_comm, pow_mul]
+    simp
 
 /-- The torsion subgroup of `𝓞 Kˣ` has order `2`: a totally real field has only the roots of
 unity `±1`. -/
 theorem torsionOrder_eq_two : Units.torsionOrder QSqrtFive = 2 := by
-  sorry
+  have hcard : Nat.card (NumberField.Units.torsion QSqrtFive) = 2 := by
+    rw [Nat.card_eq_two_iff]
+    have hmem1 : (1 : (𝓞 QSqrtFive)ˣ) ∈ NumberField.Units.torsion QSqrtFive :=
+      isOfFinOrder_iff_pow_eq_one.mpr ⟨2, by norm_num, by simp⟩
+    have hmemn : (-1 : (𝓞 QSqrtFive)ˣ) ∈ NumberField.Units.torsion QSqrtFive := by
+      change IsOfFinOrder _
+      exact isOfFinOrder_iff_pow_eq_one.mpr ⟨2, by norm_num, by simp⟩
+    refine ⟨⟨1, hmem1⟩, ⟨-1, hmemn⟩, ?_, ?_⟩
+    · intro h
+      have hval := congrArg (fun z => ((z : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive))
+        (Subtype.ext_iff.mp h)
+      simp only [Units.val_one, Units.val_neg] at hval
+      have h2 := congrArg (algebraMap (𝓞 QSqrtFive) QSqrtFive) hval
+      simp only [map_one, map_neg] at h2
+      exact two_ne_zero (by linear_combination h2 : (2 : QSqrtFive) = 0)
+    · ext z
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_univ, iff_true]
+      have hz : (z : (𝓞 QSqrtFive)ˣ) ∈ {u : (𝓞 QSqrtFive)ˣ | IsOfFinOrder u} := z.2
+      rw [torsionUnits_eq] at hz
+      obtain ⟨k, hk⟩ := hz
+      fin_cases k
+      · left
+        exact Subtype.ext (by simpa using hk)
+      · right
+        exact Subtype.ext (by simpa using hk)
+  simpa [NumberField.Units.torsionOrder] using hcard
 
 /-- The Dirichlet unit rank of `ℚ(√5)` is `1`: the signature is `(2, 0)`, so the rank is
 `r₁ + r₂ - 1 = 1`. -/
 theorem unitRank_eq_one : Units.rank QSqrtFive = 1 := by
-  sorry
+  rw [NumberField.Units.rank, NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    nrRealPlaces_eq_two, nrComplexPlaces_eq_zero]
+
+private theorem normFundamentalUnit_map :
+    Units.map (Algebra.norm ℤ : (𝓞 QSqrtFive) →* ℤ) fundamentalUnit = (-1 : ℤˣ) := by
+  apply Units.ext
+  change Algebra.norm ℤ goldenIntO = (-1 : ℤ)
+  have h := intNorm_eq_normForm 0 1
+  simpa using h
+
+private theorem normNegOneUnit_map :
+    Units.map (Algebra.norm ℤ : (𝓞 QSqrtFive) →* ℤ) (-1 : (𝓞 QSqrtFive)ˣ) = 1 := by
+  apply Units.ext
+  change Algebra.norm ℤ ((-1 : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) = (1 : ℤ)
+  have h := intNorm_eq_normForm (-1) 0
+  have hneg : (-1 : ℤ) • (1 : 𝓞 QSqrtFive) + (0 : ℤ) • goldenIntO =
+      ((-1 : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) := by
+    simp
+  rw [hneg] at h
+  norm_num at h
+  simpa using h
+
+private theorem even_of_negOneUnit_zpow_eq_one {n : ℤ} (h : ((-1 : ℤˣ) ^ n) = 1) :
+    ∃ k : ℤ, n = 2 * k := by
+  by_cases he : Even n
+  · rcases he with ⟨k, hk⟩
+    refine ⟨k, ?_⟩
+    omega
+  · have ho : Odd n := Int.not_even_iff_odd.mp he
+    change ((-1 : ℤˣ) ^ n) = (1 : ℤˣ) at h
+    have hodd : ((-1 : ℤˣ) ^ n) = (-1 : ℤˣ) := Odd.neg_one_zpow (α := ℤˣ) ho
+    rw [hodd] at h
+    norm_num at h
+
+private theorem normFundamentalUnit_zpow_map (n : ℤ) :
+    Units.map (Algebra.norm ℤ : (𝓞 QSqrtFive) →* ℤ) (fundamentalUnit ^ n) =
+      (-1 : ℤˣ) ^ n := by
+  rw [map_zpow, normFundamentalUnit_map]
+  rfl
+
+private theorem normNegFundamentalUnit_zpow_map (n : ℤ) :
+    Units.map (Algebra.norm ℤ : (𝓞 QSqrtFive) →* ℤ) (-(fundamentalUnit ^ n)) =
+      (-1 : ℤˣ) ^ n := by
+  rw [show (-(fundamentalUnit ^ n) : (𝓞 QSqrtFive)ˣ) =
+      (-1 : (𝓞 QSqrtFive)ˣ) * fundamentalUnit ^ n by
+    rw [neg_eq_neg_one_mul]]
+  rw [map_mul, normNegOneUnit_map, one_mul, normFundamentalUnit_zpow_map]
 
 /-- Every unit of `𝓞 ℚ(√5)` is a signed power of the golden ratio `φ`. -/
 theorem fundamentalUnit_generates (u : (𝓞 QSqrtFive)ˣ) :
     ∃ n : ℤ, u = fundamentalUnit ^ n ∨ u = -(fundamentalUnit ^ n) := by
+  -- Blocked: `SqrtTwo.lean` proves the analogous statement through `Zsqrtd` and
+  -- `Pell.Solution₁` for `x^2 - d*y^2 = 1`.  Here the full ring of integers is the
+  -- half-integral order `ℤ[(1 + √5)/2]`; the corresponding equation is
+  -- `x^2 + x*y - y^2 = ±1` (equivalently `a^2 - 5*b^2 = ±4`).  The project currently has
+  -- no completed bridge from that Fibonacci/Pell-±4 equation to the displayed unit `φ`.
   sorry
 
 /-- The norm-one Pell solutions are generated by the square of the fundamental unit. -/
@@ -601,18 +1543,34 @@ theorem normOneUnit_generated_by_fundamentalUnit_sq (u : (𝓞 QSqrtFive)ˣ)
     (hu : Algebra.norm ℤ (u : 𝓞 QSqrtFive) = 1) :
     ∃ n : ℤ, u = fundamentalUnit ^ (2 * n) ∨
       u = -(fundamentalUnit ^ (2 * n)) := by
-  sorry
+  have hnormUnit : Units.map (Algebra.norm ℤ : (𝓞 QSqrtFive) →* ℤ) u = 1 := by
+    apply Units.ext
+    exact hu
+  obtain ⟨n, hn | hn⟩ := fundamentalUnit_generates u
+  · have hpow : ((-1 : ℤˣ) ^ n) = 1 := by
+      rw [hn, normFundamentalUnit_zpow_map] at hnormUnit
+      exact hnormUnit
+    obtain ⟨k, hk⟩ := even_of_negOneUnit_zpow_eq_one hpow
+    exact ⟨k, Or.inl (by simpa [hk] using hn)⟩
+  · have hpow : ((-1 : ℤˣ) ^ n) = 1 := by
+      rw [hn, normNegFundamentalUnit_zpow_map] at hnormUnit
+      exact hnormUnit
+    obtain ⟨k, hk⟩ := even_of_negOneUnit_zpow_eq_one hpow
+    exact ⟨k, Or.inr (by simpa [hk] using hn)⟩
 
 /-- The regulator of `ℚ(√5)` is `log φ = log((1 + √5)/2) ≈ 0.4812` — the smallest regulator
 of any real quadratic field. This is the analytic restatement that `φ` is a fundamental
 unit. -/
 theorem regulator_eq :
     Units.regulator QSqrtFive = Real.log ((1 + Real.sqrt 5) / 2) := by
+  -- Blocked: this is intentionally the final theorem with no complete reference proof yet.
   sorry
 
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
     Nonempty ((𝓞 QSqrtFive)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))) := by
+  -- Blocked: the abstract rank/torsion APIs are available, but the reference proof still
+  -- depends on an unfinished independence/generation lemma for a fundamental system.
   sorry
 
 /-! ## 7. Class group -/
@@ -620,17 +1578,48 @@ theorem unitGroupStructure :
 /-- The class number of `ℚ(√5)` is `1`. The Minkowski bound is `(1/2)·√5 ≈ 1.12 < 2`, so
 every ideal class contains an ideal of norm `1` and the class group is trivial outright. -/
 theorem classNumber_eq_one : NumberField.classNumber QSqrtFive = 1 := by
-  sorry
+  rw [NumberField.classNumber_eq_one_iff]
+  apply RingOfIntegers.isPrincipalIdealRing_of_isPrincipal_of_pow_le_of_mem_primesOver_of_mem_Icc
+  intro p hp hprime P hPmem _
+  have hple : p ≤ 1 := by
+    have h2 := (Finset.mem_Icc.mp hp).2
+    have h5 : ⌊(4 / Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces QSqrtFive *
+        (((Module.finrank ℚ QSqrtFive).factorial : ℝ) /
+          ((Module.finrank ℚ QSqrtFive : ℝ)) ^ (Module.finrank ℚ QSqrtFive) *
+            Real.sqrt (|NumberField.discr QSqrtFive| : ℝ))⌋₊ < 2 := by
+      rw [Nat.floor_lt (by positivity)]
+      rw [nrComplexPlaces_eq_zero, degree_eq_two, numberField_discr_eq]
+      have hsq : Real.sqrt |(5 : ℝ)| < 3 := by
+        rw [show |(5 : ℝ)| = (5 : ℝ) by norm_num,
+          show (3 : ℝ) = Real.sqrt (3 ^ 2) from (Real.sqrt_sq (by norm_num)).symm]
+        exact Real.sqrt_lt_sqrt (by norm_num) (by norm_num)
+      have hx : (4 / Real.pi) ^ 0 * (((Nat.factorial 2 : ℕ) : ℝ) /
+          ((2 : ℕ) : ℝ) ^ (2 : ℕ) * Real.sqrt |((5 : ℤ) : ℝ)|) =
+          Real.sqrt |(5 : ℝ)| / 2 := by
+        norm_num [Nat.factorial]
+        ring
+      rw [hx, Nat.cast_ofNat]
+      set s := Real.sqrt |(5 : ℝ)| with hs
+      linarith [hsq]
+    omega
+  have hpge := (Finset.mem_Icc.mp hp).1
+  interval_cases p
+  exact absurd hprime (by norm_num)
 
 /-- The ring of integers `ℤ[φ]` is a principal ideal domain — the ring-theoretic content of
 class number one. -/
 theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 QSqrtFive) := by
-  sorry
+  rw [← NumberField.classNumber_eq_one_iff]
+  exact classNumber_eq_one
 
 /-- The class group of `𝓞 K` is trivial. -/
 theorem classGroupStructure :
     Nonempty (ClassGroup (𝓞 QSqrtFive) ≃* Multiplicative (ZMod 1)) := by
-  sorry
+  have h1 : Nat.card (ClassGroup (𝓞 QSqrtFive)) = 1 := by
+    simpa [NumberField.classNumber] using classNumber_eq_one
+  haveI : Subsingleton (ClassGroup (𝓞 QSqrtFive)) := (Nat.card_eq_one_iff_unique.mp h1).1
+  haveI : Unique (ClassGroup (𝓞 QSqrtFive)) := uniqueOfSubsingleton 1
+  exact ⟨MulEquiv.ofUnique⟩
 
 /-- The unit ideal as the concrete representative of the unique ideal class. -/
 abbrev unitIdealRepresentative : (Ideal (𝓞 QSqrtFive))⁰ :=
@@ -639,40 +1628,158 @@ abbrev unitIdealRepresentative : (Ideal (𝓞 QSqrtFive))⁰ :=
 /-- Every ideal class is represented by the unit ideal. -/
 theorem classGroupRepresentative (C : ClassGroup (𝓞 QSqrtFive)) :
     C = ClassGroup.mk0 unitIdealRepresentative := by
-  sorry
+  have h1 : Nat.card (ClassGroup (𝓞 QSqrtFive)) = 1 := by
+    simpa [NumberField.classNumber] using classNumber_eq_one
+  haveI : Subsingleton (ClassGroup (𝓞 QSqrtFive)) := (Nat.card_eq_one_iff_unique.mp h1).1
+  exact Subsingleton.elim _ _
 
 /-! ## 8. Euclidean structure -/
+
+private theorem norm_eq_normForm (x y : ℚ) :
+    Algebra.norm ℚ (x • (1 : QSqrtFive) + y • goldenRoot) = x ^ 2 + x * y - y ^ 2 := by
+  rw [golden_norm_eq]
+  norm_num [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add]
 
 /-- `ℚ(√5)` is norm-Euclidean: division with remainder in `ℤ[φ]` with respect to the
 absolute value of the field norm. This strengthens `isPrincipalIdealRing`. -/
 theorem normEuclidean (a b : 𝓞 QSqrtFive) (hb : b ≠ 0) :
     ∃ q r : 𝓞 QSqrtFive, a = b * q + r ∧
       (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs := by
-  sorry
+  set aK := algebraMap (𝓞 QSqrtFive) QSqrtFive a with haK
+  set bK := algebraMap (𝓞 QSqrtFive) QSqrtFive b with hbK
+  have hbK0 : bK ≠ 0 := by
+    intro h0
+    rw [hbK] at h0
+    exact hb (IsFractionRing.injective (𝓞 QSqrtFive) QSqrtFive (h0.trans (map_zero _).symm))
+  set x := aK / bK with hxdef
+  set u := x.re with hu
+  set v := x.im with hv
+  set q : 𝓞 QSqrtFive := ((round u : ℤ) : 𝓞 QSqrtFive) +
+    ((round v : ℤ) : 𝓞 QSqrtFive) * goldenIntO with hq
+  refine ⟨q, a - b * q, by ring, ?_⟩
+  set r : 𝓞 QSqrtFive := a - b * q with hr
+  have hxbK : x * bK = aK := div_mul_cancel₀ aK hbK0
+  have hxcoord : x = u • (1 : QSqrtFive) + v • goldenRoot := by
+    ext <;> simp [u, v]
+  have hqK : algebraMap (𝓞 QSqrtFive) QSqrtFive q =
+      ((round u : ℤ) : ℚ) • (1 : QSqrtFive) + ((round v : ℤ) : ℚ) • goldenRoot := by
+    rw [hq]
+    simp [goldenIntO, Algebra.smul_def]
+  have hrK : algebraMap (𝓞 QSqrtFive) QSqrtFive r =
+      bK * ((u - ((round u : ℤ) : ℚ)) • (1 : QSqrtFive) +
+        (v - ((round v : ℤ) : ℚ)) • goldenRoot) := by
+    rw [hr, map_sub, map_mul, hqK, ← hbK, ← haK, ← hxbK, hxcoord]
+    simp only [Algebra.smul_def, map_sub]
+    ring
+  have hs := abs_sub_round u
+  have ht := abs_sub_round v
+  have hfrac : |(u - ((round u : ℤ) : ℚ)) ^ 2 +
+      (u - ((round u : ℤ) : ℚ)) * (v - ((round v : ℤ) : ℚ)) -
+      (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ 3 / 4 := by
+    rw [abs_le] at hs ht ⊢
+    constructor <;> nlinarith [hs.1, hs.2, ht.1, ht.2]
+  have hb_pos : 0 < |Algebra.norm ℚ bK| :=
+    abs_pos.mpr (Algebra.norm_ne_zero_iff.mpr hbK0)
+  have hlt : |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
+    rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
+    change |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive r)| <
+      |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive b)|
+    rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
+    calc |Algebra.norm ℚ bK| *
+        |(u - ((round u : ℤ) : ℚ)) ^ 2 +
+          (u - ((round u : ℤ) : ℚ)) * (v - ((round v : ℤ) : ℚ)) -
+          (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ |Algebra.norm ℚ bK| * (3 / 4) :=
+          mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
+      _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
+  have hltZ : |Algebra.norm ℤ r| < |Algebra.norm ℤ b| := by exact_mod_cast hlt
+  rw [Int.abs_eq_natAbs, Int.abs_eq_natAbs] at hltZ
+  exact_mod_cast hltZ
 
 /-! ## 9. Galois group -/
+
+private noncomputable def conjHom : QSqrtFive →ₐ[ℚ] QSqrtFive :=
+  (QuadraticAlgebra.lift (R := ℚ) (a := (1 : ℚ)) (b := 1)) ⟨1 - goldenRoot, by
+    rw [← pow_two]
+    rw [show (1 - goldenRoot) ^ 2 = 1 - 2 * goldenRoot + goldenRoot ^ 2 by ring]
+    rw [goldenRoot_sq]
+    simp
+    ring⟩
+
+private theorem conjHom_root : conjHom goldenRoot = 1 - goldenRoot := by
+  simp [conjHom, goldenRoot]
+
+private theorem conjHom_comp : conjHom.comp conjHom = AlgHom.id ℚ QSqrtFive := by
+  apply QuadraticAlgebra.algHom_ext
+  change conjHom (conjHom goldenRoot) = goldenRoot
+  rw [conjHom_root, map_sub, map_one, conjHom_root]
+  ring
+
+private noncomputable def conjugation : QSqrtFive ≃ₐ[ℚ] QSqrtFive where
+  __ := conjHom
+  invFun := conjHom
+  left_inv x := DFunLike.congr_fun conjHom_comp x
+  right_inv x := DFunLike.congr_fun conjHom_comp x
+
+private theorem conjugation_root : conjugation goldenRoot = 1 - goldenRoot :=
+  conjHom_root
+
+private noncomputable def idAut : QSqrtFive ≃ₐ[ℚ] QSqrtFive := AlgEquiv.refl
 
 /-- The nontrivial automorphism of `ℚ(√5)` sends `φ` to its algebraic conjugate
 `1 - φ = -1/φ` (equivalently `√5 ↦ -√5`). -/
 theorem exists_conj :
     ∃ σ : QSqrtFive ≃ₐ[ℚ] QSqrtFive, σ goldenRoot = 1 - goldenRoot := by
-  sorry
+  exact ⟨conjugation, conjugation_root⟩
 
 /-- Every `ℚ`-automorphism of `ℚ(√5)` fixes `φ` or sends it to its conjugate `1 - φ`: the
 Galois group has exactly two elements. -/
 theorem aut_apply_goldenRoot (σ : QSqrtFive ≃ₐ[ℚ] QSqrtFive) :
     σ goldenRoot = goldenRoot ∨ σ goldenRoot = 1 - goldenRoot := by
-  sorry
+  have hsq : (σ goldenRoot) ^ 2 = σ goldenRoot + 1 := by
+    rw [← map_pow, goldenRoot_sq, map_add, map_one]
+  have hfactor : (σ goldenRoot - goldenRoot) * (σ goldenRoot - (1 - goldenRoot)) = 0 := by
+    have hφ := goldenRoot_sq
+    linear_combination hsq - hφ
+  rcases mul_eq_zero.mp hfactor with h | h
+  · exact Or.inl (by linear_combination h)
+  · exact Or.inr (by linear_combination h)
+
+private theorem aut_eq_or (σ : QSqrtFive ≃ₐ[ℚ] QSqrtFive) :
+    σ = idAut ∨ σ = conjugation := by
+  have hext : ∀ τ : QSqrtFive ≃ₐ[ℚ] QSqrtFive,
+      σ goldenRoot = τ goldenRoot → σ = τ := by
+    intro τ h
+    have hgen : (σ : QSqrtFive →ₐ[ℚ] QSqrtFive) =
+        (τ : QSqrtFive →ₐ[ℚ] QSqrtFive) := QuadraticAlgebra.algHom_ext h
+    exact AlgEquiv.ext fun x => AlgHom.congr_fun hgen x
+  rcases aut_apply_goldenRoot σ with h | h
+  · exact Or.inl (hext idAut h)
+  · exact Or.inr (hext conjugation (by rw [conjugation_root]; exact h))
 
 /-- The extension `ℚ(√5)/ℚ` is Galois (quadratic extensions in characteristic zero always
 are). -/
 theorem isGalois : IsGalois ℚ QSqrtFive := by
-  sorry
+  infer_instance
 
 /-- The Galois group of `ℚ(√5)/ℚ` is cyclic of order `2`, generated by the conjugation
 `φ ↦ 1 - φ`. -/
 theorem galoisGroupStructure :
     Nonempty ((QSqrtFive ≃ₐ[ℚ] QSqrtFive) ≃* Multiplicative (ZMod 2)) := by
-  sorry
+  have hconj_ne : conjugation ≠ idAut := by
+    intro h
+    have h1 : conjugation goldenRoot = goldenRoot := by rw [h]; rfl
+    rw [conjugation_root] at h1
+    have h2 : (2 : QSqrtFive) * goldenRoot = 1 := by linear_combination -h1
+    have h3 := congr_arg QuadraticAlgebra.im h2
+    norm_num [goldenRoot] at h3
+  have hcard : Nat.card (QSqrtFive ≃ₐ[ℚ] QSqrtFive) = 2 := by
+    rw [Nat.card_eq_two_iff]
+    refine ⟨idAut, conjugation, Ne.symm hconj_ne, ?_⟩
+    ext σ
+    simp [aut_eq_or σ]
+  haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
+  exact ⟨mulEquivOfPrimeCardEq hcard (by
+    rw [show Nat.card (Multiplicative (ZMod 2)) = Nat.card (ZMod 2) from rfl,
+      Nat.card_zmod])⟩
 
 end XYin.NumberField.SqrtFive
