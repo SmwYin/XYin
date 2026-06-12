@@ -2,7 +2,9 @@ import XYin.NumberField.FieldExamples.SqrtTwo.Basic
 
 noncomputable section
 
-open scoped NumberField nonZeroDivisors Real ENNReal
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
@@ -35,7 +37,10 @@ abbrev sqrtTwoIntegerPolynomial : ℤ[X] := X ^ 2 - C (2 : ℤ)
 
 /-- The rational minimal polynomial of the chosen root `√2`. -/
 theorem sqrtTwo_minpoly_rat : minpoly ℚ sqrtTwoRoot = sqrtTwoPolynomial := by
-  change minpoly ℚ (AdjoinRoot.root sqrtTwoPolynomial) = sqrtTwoPolynomial
+  rw [← sqrtTwoAdjoinRootToQuadratic_root]
+  change minpoly ℚ (sqrtTwoAdjoinRootEquivQuadratic sqrtTwoAdjoinRoot) =
+    sqrtTwoPolynomial
+  rw [minpoly.algEquiv_eq sqrtTwoAdjoinRootEquivQuadratic sqrtTwoAdjoinRoot]
   simpa [sqrtTwoPolynomial] using
     (AdjoinRoot.minpoly_root ((Fact.out : Irreducible sqrtTwoPolynomial).ne_zero) :
       minpoly ℚ (AdjoinRoot.root sqrtTwoPolynomial) =
@@ -82,7 +87,7 @@ theorem sqrtTwoPowerBasis_discr :
     rw [PowerBasis.finrank sqrtTwoPowerBasis]
     exact hdim
   have hgen : sqrtTwoPowerBasis.gen = sqrtTwoRoot := by
-    simp [sqrtTwoPowerBasis, sqrtTwoRoot]
+    exact sqrtTwoPowerBasis_gen
   have hnorm_two : Algebra.norm ℚ (1 + 1 : QSqrtTwo) = (4 : ℚ) := by
     rw [show (1 + 1 : QSqrtTwo) = algebraMap ℚ QSqrtTwo (2 : ℚ) by norm_num]
     rw [Algebra.norm_algebraMap, hfin]
@@ -104,7 +109,8 @@ The proof uses the discriminant bound `8 • z ∈ ℤ[√2]`, then removes the 
 theorem sqrtTwo_integral_mem_adjoin (z : QSqrtTwo) (hz : IsIntegral ℤ z) :
     z ∈ Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo) := by
   have hBint : IsIntegral ℤ sqrtTwoPowerBasis.gen := by
-    simpa [sqrtTwoPowerBasis, sqrtTwoRoot] using sqrtTwoRoot_isIntegral
+    rw [sqrtTwoPowerBasis_gen]
+    exact sqrtTwoRoot_isIntegral
   have hdiscr :=
     Algebra.discr_mul_isIntegral_mem_adjoin (K := ℚ) (L := QSqrtTwo)
       (R := ℤ) (B := sqrtTwoPowerBasis) hBint hz
@@ -118,13 +124,15 @@ theorem sqrtTwo_integral_mem_adjoin (z : QSqrtTwo) (hz : IsIntegral ℤ z) :
     mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt
       (R := ℤ) (K := ℚ) (L := QSqrtTwo) (B := sqrtTwoPowerBasis)
       (p := (2 : ℤ)) (n := 3) Int.prime_two hBint hz hpow
-      (by simpa [sqrtTwoPowerBasis, sqrtTwoRoot] using sqrtTwo_minpoly_int_isEisenstein)
-  simpa [sqrtTwoPowerBasis, sqrtTwoRoot] using hmem
+      (by rw [sqrtTwoPowerBasis_gen]; exact sqrtTwo_minpoly_int_isEisenstein)
+  rwa [sqrtTwoPowerBasis_gen] at hmem
 
 /--
-`ℤ[√2]` is integrally closed in `ℚ(√2)`.
+`ℤ[√2]` is integrally closed in `ℚ(√2)` in the same sense as the cyclotomic
+singleton-adjoin theorem on the `ζ₃` side.
 -/
-example : IsIntegralClosure
+example :
+    IsIntegralClosure
       (Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo)) ℤ QSqrtTwo := by
   refine ⟨?_, ?_⟩
   · intro x y hxy
@@ -154,7 +162,7 @@ theorem sqrtTwoInteger_adjoin_eq_top :
   rw [Algebra.adjoin_singleton_eq_range_aeval] at hfield
   rcases hfield with ⟨P, hP⟩
   have hx_eq : x = aeval sqrtTwoInteger P := by
-    ext
+    apply Subtype.ext
     change (x : QSqrtTwo) = ((aeval sqrtTwoInteger P : O2) : QSqrtTwo)
     rw [← hP]
     simpa [sqrtTwoInteger] using
@@ -164,6 +172,7 @@ theorem sqrtTwoInteger_adjoin_eq_top :
   rw [Algebra.adjoin_singleton_eq_range_aeval]
   exact ⟨P, rfl⟩
 
+/-- The integral minimal polynomial of `√2` as an element of `𝓞 ℚ(√2)`. -/
 theorem sqrtTwoInteger_minpoly :
     minpoly ℤ sqrtTwoInteger = sqrtTwoIntegerPolynomial := by
   letI : IsScalarTower ℤ O2 QSqrtTwo :=
@@ -243,7 +252,7 @@ example : sqrtTwoExplicitIntegralBasis 1 = sqrtTwoInteger :=
   sqrtTwoExplicitIntegralBasis_one
 
 theorem sqrtTwoInteger_sq : sqrtTwoInteger ^ 2 = (2 : O2) := by
-  ext
+  apply Subtype.ext
   change sqrtTwoRoot ^ 2 = (2 : QSqrtTwo)
   exact sqrtTwoRoot_sq
 
@@ -276,7 +285,8 @@ theorem sqrtTwoExplicitIntegralBasis_discr :
   rw [← hdiscLoc]
   change Algebra.discr ℚ bLoc = (8 : ℚ)
   have hBasis : bLoc = sqrtTwoPowerBasis.basis.reindex (finCongr sqrtTwoPowerBasis_dim) := by
-    ext i
+    apply DFunLike.ext
+    intro i
     fin_cases i
     · simp [bLoc, bInt, Basis.localizationLocalization_apply, sqrtTwoExplicitIntegralBasis_zero]
       change (1 : QSqrtTwo) =
@@ -295,7 +305,7 @@ theorem sqrtTwoExplicitIntegralBasis_discr :
           (((finCongr sqrtTwoPowerBasis_dim).symm (1 : Fin 2) :
             Fin sqrtTwoPowerBasis.dim) : ℕ) = 1 := rfl
       rw [hcoe]
-      simp [sqrtTwoPowerBasis, sqrtTwoRoot]
+      rw [pow_one, sqrtTwoPowerBasis_gen]
   rw [hBasis]
   simpa [Basis.coe_reindex] using
     (Algebra.discr_reindex ℚ sqrtTwoPowerBasis.basis (finCongr sqrtTwoPowerBasis_dim)).trans
@@ -306,6 +316,7 @@ theorem sqrtTwo_numberField_discr :
   rw [← NumberField.discr_eq_discr QSqrtTwo sqrtTwoExplicitIntegralBasis]
   exact sqrtTwoExplicitIntegralBasis_discr
 
+attribute [local instance] DivisionRing.toRatAlgebra in
 example : Algebra.discr ℚ (NumberField.integralBasis QSqrtTwo) = (8 : ℚ) := by
   have h := NumberField.coe_discr QSqrtTwo
   rw [sqrtTwo_numberField_discr] at h
@@ -328,6 +339,10 @@ example (P : Matrix (Fin sqrtTwoPowerBasis.dim) (Fin sqrtTwoPowerBasis.dim) ℚ)
   · rw [h]
     norm_num
 
+/--
+Ramification-flavoured analogue of `(ζ - 1) ∣ 3` on the cyclotomic side:
+here the element `√2` divides `2` in `𝓞 ℚ(√2)`.
+-/
 example : sqrtTwoInteger ∣ (2 : O2) := by
   use sqrtTwoInteger
   simpa [pow_two] using sqrtTwoInteger_sq.symm

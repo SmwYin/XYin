@@ -2,7 +2,9 @@ import XYin.NumberField.FieldExamples.SqrtTwo.NormForm
 
 noncomputable section
 
-open scoped NumberField nonZeroDivisors Real ENNReal
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
@@ -18,18 +20,18 @@ theorem span_two_eq : Ideal.span {(2 : O2)} = Ideal.span {sqrtTwoInteger} ^ 2 :=
 /-- The prime `(√2)` above `2` has norm `2` (residue degree `f = 1`). -/
 theorem absNorm_span_sqrtTwoInteger : Ideal.absNorm (Ideal.span {sqrtTwoInteger}) = 2 := by
   have h := intNorm_eq_normForm 0 1
-  have h2 : (0 : ℤ) • (1 : O2) + (1 : ℤ) • sqrtTwoInteger = sqrtTwoInteger := by
-    simp
-  rw [h2] at h
+  have hs : (0 : ℤ) • (1 : O2) + (1 : ℤ) • sqrtTwoInteger = sqrtTwoInteger := by simp
+  rw [hs] at h
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
-  rfl
+  norm_num
 
 /-- `(√2)` is a prime ideal — the unique prime of `𝓞 K` above `2`. -/
 theorem isPrime_span_sqrtTwoInteger : (Ideal.span {sqrtTwoInteger}).IsPrime := by
-  apply Ideal.isPrime_of_irreducible_absNorm
-  rw [absNorm_span_sqrtTwoInteger]
-  exact (by norm_num : Nat.Prime 2)
+  have h : Irreducible (Ideal.absNorm (Ideal.span {sqrtTwoInteger})) := by
+    rw [absNorm_span_sqrtTwoInteger]
+    exact Nat.prime_two
+  exact Ideal.isPrime_of_irreducible_absNorm h
 
 /-- `7 ≡ -1 (mod 8)` splits: `7 = (3 + √2)(3 - √2)` and `(7)` is a product of two distinct
 primes of norm `7`. -/
@@ -37,31 +39,27 @@ theorem span_seven_eq :
     Ideal.span {(7 : O2)} =
       Ideal.span {3 + sqrtTwoInteger} * Ideal.span {3 - sqrtTwoInteger} := by
   rw [Ideal.span_singleton_mul_span_singleton]
-  have hseven : (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = (7 : O2) := by
+  have h : (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = (7 : O2) := by
     calc
       (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = 9 - sqrtTwoInteger ^ 2 := by ring
       _ = 7 := by rw [sqrtTwoInteger_sq]; norm_num
-  rw [hseven]
+  rw [h]
 
 /-- The prime `(3 + √2)` above `7` has norm `7` (residue degree `f = 1`). -/
 theorem absNorm_span_three_add_sqrtTwo :
     Ideal.absNorm (Ideal.span {3 + sqrtTwoInteger}) = 7 := by
   have h := intNorm_eq_normForm 3 1
-  have h3 : (3 : ℤ) • (1 : O2) + (1 : ℤ) • sqrtTwoInteger =
-      3 + sqrtTwoInteger := by
-    simp
-  rw [h3] at h
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
   rfl
 
 /-- `(3 + √2)` is a prime ideal — one of the two primes of `𝓞 K` above `7`. -/
 theorem isPrime_span_three_add_sqrtTwo : (Ideal.span {3 + sqrtTwoInteger}).IsPrime := by
-  apply Ideal.isPrime_of_irreducible_absNorm
-  rw [absNorm_span_three_add_sqrtTwo]
-  exact (by norm_num : Nat.Prime 7)
+  have h : Irreducible (Ideal.absNorm (Ideal.span {3 + sqrtTwoInteger})) := by
+    rw [absNorm_span_three_add_sqrtTwo]
+    exact (Nat.irreducible_iff_nat_prime 7).mpr (by norm_num)
+  exact Ideal.isPrime_of_irreducible_absNorm h
 
-/-- Nonzero ideals with equal absolute norms and one inclusion are equal. -/
 private theorem eq_of_le_of_absNorm_eq {I J : Ideal O2} (hle : I ≤ J) {n : ℕ}
     (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J := by
   obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
@@ -129,9 +127,6 @@ theorem isPrime_span_three : (Ideal.span {(3 : O2)}).IsPrime := by
 /-- The inert prime `(3)` has norm `9` (residue degree `f = 2`). -/
 theorem absNorm_span_three : Ideal.absNorm (Ideal.span {(3 : O2)}) = 9 := by
   have h := intNorm_eq_normForm 3 0
-  have h3 : (3 : ℤ) • (1 : O2) + (0 : ℤ) • sqrtTwoInteger = 3 := by
-    simp
-  rw [h3] at h
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
   rfl
@@ -140,9 +135,9 @@ theorem absNorm_span_three : Ideal.absNorm (Ideal.span {(3 : O2)}) = 9 := by
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : O2)}) = p ^ 2 := by
   have h := intNorm_eq_normForm (p : ℤ) 0
-  have hp : ((p : ℤ)) • (1 : O2) + (0 : ℤ) • sqrtTwoInteger = ((p : ℕ) : O2) := by
+  have hps : ((p : ℤ)) • (1 : O2) + (0 : ℤ) • sqrtTwoInteger = ((p : ℕ) : O2) := by
     simp
-  rw [hp] at h
+  rw [hps] at h
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
   simp [Int.natAbs_pow]
@@ -208,14 +203,8 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
       intro h
       rw [h] at hpmemP
       exact hpne (Ideal.mem_bot.mp hpmemP)
-    have hfin : Module.finrank ℤ O2 = 2 := by
-      rw [Module.finrank_eq_card_basis sqrtTwoExplicitIntegralBasis, Fintype.card_fin]
-    have habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : O2)}) = p ^ 2 := by
-      rw [Ideal.absNorm_span_singleton]
-      have hcast : ((p : ℕ) : O2) = algebraMap ℤ O2 ((p : ℕ) : ℤ) := by
-        push_cast
-        rfl
-      rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
+    have habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : O2)}) = p ^ 2 :=
+      absNorm_span_natCast p
     have habsPp2 : Ideal.absNorm P ∣ p ^ 2 :=
       habsp ▸ Ideal.absNorm_dvd_absNorm_of_le hple
     obtain ⟨k, hk2, hkeq⟩ := (Nat.dvd_prime_pow hp).mp habsPp2
@@ -271,17 +260,11 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
       have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
       rw [NumberField.absNorm_differentIdeal (K := QSqrtTwo), sqrtTwo_numberField_discr] at h
       simpa using h
-    have hpdvd8 : p ∣ 8 := (hkeq ▸ dvd_pow_self p hk0).trans habsP8
-    obtain ⟨k, hk3, hpeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
-      (show p ∣ 2 ^ 3 from by simpa using hpdvd8)
-    interval_cases k
-    · rw [pow_zero] at hpeq
-      exact absurd hpeq hp.ne_one
-    · simpa using hpeq
-    · rw [hpeq] at hp
-      norm_num at hp
-    · rw [hpeq] at hp
-      norm_num at hp
+    have hpdvd : p ∣ 8 := (hkeq ▸ dvd_pow_self p hk0).trans habsP8
+    have hpdiv2 : p ∣ 2 := by
+      have hpow : p ∣ 2 ^ 3 := by simpa using hpdvd
+      exact hp.dvd_of_dvd_pow hpow
+    exact (Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hpdiv2
   · rintro rfl
     refine ⟨Ideal.span {sqrtTwoInteger}, isPrime_span_sqrtTwoInteger, ?_⟩
     have hcast : ((2 : ℕ) : O2) = (2 : O2) := by norm_num

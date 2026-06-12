@@ -1,11 +1,11 @@
-import XYin.NumberField.FieldExamples.SqrtNegSixQuadraticAlgebra.PrimeSplitting
+import XYin.NumberField.FieldExamples.SqrtNegSix.PrimeSplitting
 
 noncomputable section
 
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+namespace XYin.NumberField.New.SqrtNegSix
 
 /-! ## 6. Ring of units -/
 
@@ -162,4 +162,4 @@ theorem regulator_eq_one : NumberField.Units.regulator K = 1 := by
   simp
 
 
-end XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+end XYin.NumberField.New.SqrtNegSix

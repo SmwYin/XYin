@@ -1,11 +1,11 @@
-import XYin.NumberField.FieldExamples.SqrtNegSixQuadraticAlgebra.Units
+import XYin.NumberField.FieldExamples.SqrtNegSix.Units
 
 noncomputable section
 
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+namespace XYin.NumberField.New.SqrtNegSix
 
 
 /-! ## 7. Class group -/
@@ -168,4 +168,4 @@ theorem classGroupRepresentatives (C : ClassGroup (𝓞 K)) :
   · exact Or.inl hC
   · exact Or.inr ((hy_unique C hC).trans hram_eq.symm)
 
-end XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+end XYin.NumberField.New.SqrtNegSix

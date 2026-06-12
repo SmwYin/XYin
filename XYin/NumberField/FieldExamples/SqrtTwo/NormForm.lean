@@ -2,7 +2,9 @@ import XYin.NumberField.FieldExamples.SqrtTwo.RingOfIntegers
 
 noncomputable section
 
-open scoped NumberField nonZeroDivisors Real ENNReal
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
@@ -10,27 +12,15 @@ namespace XYin.NumberField.SqrtTwo
 
 /-! ## 4. Norm form -/
 
-/-- The norm form of `ℚ(√2)` in the basis `1, √2`: the field norm of `x + y√2` is the binary
-quadratic form `x² - 2y²`, the principal form of discriminant `8`. -/
-theorem norm_eq_normForm (x y : ℚ) :
-    Algebra.norm ℚ (x • (1 : QSqrtTwo) + y • sqrtTwoRoot) = x ^ 2 - 2 * y ^ 2 := by
-  calc
-    Algebra.norm ℚ (x • (1 : QSqrtTwo) + y • sqrtTwoRoot) =
-        Algebra.norm ℚ (sqrtTwoQuadraticEquivAdjoinRoot
-          (x • (1 : QSqrtTwoQuadratic) + y • sqrtTwoQuadraticRoot)) := by
-      congr 1
-      simp [Algebra.smul_def, sqrtTwoQuadraticEquivAdjoinRoot_root]
-    _ = Algebra.norm ℚ (x • (1 : QSqrtTwoQuadratic) + y • sqrtTwoQuadraticRoot) := by
-      rw [Algebra.norm_eq_of_algEquiv]
-    _ = x ^ 2 - 2 * y ^ 2 := by
-      rw [Algebra.norm_apply]
-      change LinearMap.det
-          (DistribSMul.toLinearMap ℚ QSqrtTwoQuadratic
-            (x • (1 : QSqrtTwoQuadratic) + y • sqrtTwoQuadraticRoot)) =
-        x ^ 2 - 2 * y ^ 2
-      rw [QuadraticAlgebra.det_toLinearMap_eq_norm, QuadraticAlgebra.norm_def]
-      simp [sqrtTwoQuadraticRoot]
-      ring
+/-- The norm form of `ℚ(√2)` in `QuadraticAlgebra` coordinates: the field norm of an element
+with components `(re, im)` (i.e. `re + im·√2`) is the binary quadratic form `re² - 2·im²`,
+the principal form of discriminant `8`. -/
+theorem norm_eq_normForm (x : QSqrtTwo) :
+    Algebra.norm ℚ x = x.re ^ 2 - 2 * x.im ^ 2 := by
+  rw [Algebra.norm_apply]
+  change LinearMap.det (DistribSMul.toLinearMap ℚ QSqrtTwo x) = x.re ^ 2 - 2 * x.im ^ 2
+  rw [QuadraticAlgebra.det_toLinearMap_eq_norm, QuadraticAlgebra.norm_def]
+  ring
 
 /-- The integral norm form: on `𝓞 K = ℤ[√2]` the norm of `x + y√2` (with `x, y ∈ ℤ`) is
 `x² - 2y²`. -/
@@ -46,7 +36,11 @@ theorem intNorm_eq_normForm (x y : ℤ) :
       Int.cast_smul_eq_zsmul ℚ y sqrtTwoRoot]
     rfl
   rw [h2, norm_eq_normForm] at h1
-  exact_mod_cast h1
+  norm_num at h1
+  have h3 : (Algebra.norm ℤ ((x : O2) + (y : O2) * sqrtTwoInteger)) =
+      x ^ 2 - 2 * y ^ 2 := by
+    exact_mod_cast h1
+  simpa [zsmul_eq_mul] using h3
 
 /-- The Pell equation for `ℚ(√2)`: `x + y√2` is a unit of `ℤ[√2]` iff `x² - 2y² = ±1`.
 Combined with `sqrtTwoFundamentalUnit_generates_unitGroup`, all integer solutions of

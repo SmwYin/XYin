@@ -2,7 +2,9 @@ import XYin.NumberField.FieldExamples.SqrtTwo.PrimeSplitting
 
 noncomputable section
 
-open scoped NumberField nonZeroDivisors Real ENNReal
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
@@ -70,12 +72,12 @@ abbrev sqrtTwoFundamentalUnit : O2ˣ where
   val := sqrtTwoInteger + 1
   inv := sqrtTwoInteger - 1
   val_inv := by
-    ext
+    apply Subtype.ext
     calc
       (sqrtTwoRoot + 1) * (sqrtTwoRoot - 1) = sqrtTwoRoot ^ 2 - 1 := by ring
       _ = (1 : QSqrtTwo) := by rw [sqrtTwoRoot_sq]; ring
   inv_val := by
-    ext
+    apply Subtype.ext
     calc
       (sqrtTwoRoot - 1) * (sqrtTwoRoot + 1) = sqrtTwoRoot ^ 2 - 1 := by ring
       _ = (1 : QSqrtTwo) := by rw [sqrtTwoRoot_sq]; ring
@@ -84,8 +86,10 @@ abbrev sqrtTwoFundamentalUnit : O2ˣ where
 abbrev zsqrtTwoFundamentalUnit : ZSqrtTwoˣ where
   val := ⟨1, 1⟩
   inv := ⟨-1, 1⟩
-  val_inv := by ext <;> norm_num
-  inv_val := by ext <;> norm_num
+  val_inv := by
+    ext <;> norm_num
+  inv_val := by
+    ext <;> norm_num
 
 theorem zsqrtTwoFundamentalUnit_norm :
     Zsqrtd.norm (zsqrtTwoFundamentalUnit : ZSqrtTwo) = -1 := by
@@ -116,7 +120,7 @@ the Pell solution attached to the fundamental unit `1 + √2`.
 theorem sqrtTwoFundamentalUnit_sq :
     ((sqrtTwoFundamentalUnit ^ 2 : O2ˣ) : O2) =
       3 + 2 * sqrtTwoInteger := by
-  ext
+  apply Subtype.ext
   calc
     (sqrtTwoRoot + 1) ^ 2 =
         sqrtTwoRoot ^ 2 + 2 * sqrtTwoRoot + 1 := by ring
@@ -266,8 +270,22 @@ theorem sqrtTwoFundamentalUnit_generates_unitGroup (u : O2ˣ) :
       _ = -(sqrtTwoFundamentalUnit ^ n) := by
         rw [zsqrtTwoEquivO2_fundamentalUnit]
 
+/--
+The unit `1 + √2` is fundamental, in the standard Pell normalization: its
+square is the positive norm-one generator, and that generator produces all
+norm-one Pell units up to sign.
+-/
+theorem sqrtTwoFundamentalUnit_isFundamental :
+    ((sqrtTwoFundamentalUnit ^ 2 : O2ˣ) : O2) =
+        3 + 2 * sqrtTwoInteger ∧
+      ∀ a : Pell.Solution₁ (2 : ℤ), ∃ n : ℤ,
+        a = pellTwoFundamentalSolution ^ n ∨
+          a = -pellTwoFundamentalSolution ^ n := by
+  exact ⟨sqrtTwoFundamentalUnit_sq,
+    pellTwoFundamentalSolution_generates_normOnePell⟩
+
 /-- The field `ℚ(√2)` has no complex infinite places. -/
-theorem sqrtTwo_nrComplexPlaces :
+theorem nrComplexPlaces_eq_zero :
     NumberField.InfinitePlace.nrComplexPlaces QSqrtTwo = 0 := by
   have hfin : Module.finrank ℚ QSqrtTwo = 2 := by
     rw [PowerBasis.finrank sqrtTwoPowerBasis]
@@ -282,18 +300,20 @@ theorem sqrtTwo_nrComplexPlaces :
   · rw [hn] at hsign
     norm_num at hsign
 
-/-- The field `ℚ(√2)` has two real infinite places. -/
-theorem sqrtTwo_nrRealPlaces :
+/-- The field `ℚ(√2)` has two real infinite places: the signature is `(r₁, r₂) = (2, 0)`,
+i.e. the field is totally real. -/
+theorem nrRealPlaces_eq_two :
     NumberField.InfinitePlace.nrRealPlaces QSqrtTwo = 2 := by
   have hfin : Module.finrank ℚ QSqrtTwo = 2 := by
     rw [PowerBasis.finrank sqrtTwoPowerBasis]
     exact sqrtTwoPowerBasis_dim
   have hsig := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := QSqrtTwo)
-  rw [hfin, sqrtTwo_nrComplexPlaces] at hsig
+  rw [hfin, nrComplexPlaces_eq_zero] at hsig
   omega
 
-/-- The only torsion units in `𝓞 ℚ(√2)` are `±1`. -/
-theorem sqrtTwo_torsion_eq_one_or_neg_one
+/-- The torsion subgroup of `𝓞 ℚ(√2)ˣ` has order `2`: a totally real field has only the
+roots of unity `±1`. -/
+private theorem sqrtTwo_torsion_eq_one_or_neg_one
     (x : Units.torsion QSqrtTwo) : (x : O2ˣ) = 1 ∨ (x : O2ˣ) = -1 := by
   by_cases! hc : 2 < orderOf (x : O2ˣ)
   · have horder :
@@ -311,7 +331,7 @@ theorem sqrtTwo_torsion_eq_one_or_neg_one
       NumberField.InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt hcK
         (IsPrimitiveRoot.orderOf ((x : O2ˣ) : QSqrtTwo)),
       show 0 < NumberField.InfinitePlace.nrRealPlaces QSqrtTwo by
-        rw [sqrtTwo_nrRealPlaces]
+        rw [nrRealPlaces_eq_two]
         norm_num]
   · interval_cases hi : orderOf (x : O2ˣ)
     · linarith [orderOf_pos_iff.2 ((CommGroup.mem_torsion x.1).1 x.2)]
@@ -319,28 +339,26 @@ theorem sqrtTwo_torsion_eq_one_or_neg_one
     · rw [← orderOf_units, CharP.orderOf_eq_two_iff 0 (by decide)] at hi
       simp [← Units.val_inj, Units.val_neg, Units.val_one, hi]
 
-/-- The torsion subgroup of `𝓞 ℚ(√2)` has order `2`. -/
-theorem sqrtTwo_units_torsionOrder :
-    Units.torsionOrder QSqrtTwo = 2 := by
+theorem torsionOrder_eq_two : Units.torsionOrder QSqrtTwo = 2 := by
   classical
   refine (Finset.card_eq_two.2 ⟨1, ⟨-1, neg_one_mem_torsion⟩,
     by simp [← Subtype.coe_ne_coe], Finset.ext fun x ↦ ⟨fun _ ↦ ?_, fun _ ↦ Finset.mem_univ _⟩⟩)
   rw [Finset.mem_insert, Finset.mem_singleton, ← Subtype.val_inj, ← Subtype.val_inj]
   exact sqrtTwo_torsion_eq_one_or_neg_one x
 
-/-- Dirichlet's unit rank is `1` for this real quadratic field. -/
-theorem sqrtTwo_units_rank :
-    Units.rank QSqrtTwo = 1 := by
+/-- The Dirichlet unit rank of `ℚ(√2)` is `1`: the signature is `(2, 0)`, so the rank is
+`r₁ + r₂ - 1 = 1`. -/
+theorem unitRank_eq_one : Units.rank QSqrtTwo = 1 := by
   dsimp [Units.rank]
   rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
-    sqrtTwo_nrRealPlaces, sqrtTwo_nrComplexPlaces]
+    nrRealPlaces_eq_two, nrComplexPlaces_eq_zero]
 
-private theorem sqrtTwo_exists_eq_torsion_mul_fundSystem_zpow
+private theorem exists_eq_torsion_mul_fundSystem_zpow
     (i₀ : Fin (NumberField.Units.rank QSqrtTwo)) (u : O2ˣ) :
     ∃ ζ ∈ NumberField.Units.torsion QSqrtTwo, ∃ n : ℤ,
       u = ζ * NumberField.Units.fundSystem QSqrtTwo i₀ ^ n := by
   haveI hsub : Subsingleton (Fin (NumberField.Units.rank QSqrtTwo)) :=
-    Fin.subsingleton_iff_le_one.mpr (by rw [sqrtTwo_units_rank])
+    Fin.subsingleton_iff_le_one.mpr (by rw [unitRank_eq_one])
   have hu : u ∈ Subgroup.closure (Set.range (NumberField.Units.fundSystem QSqrtTwo)) ⊔
       NumberField.Units.torsion QSqrtTwo := by
     rw [NumberField.Units.closure_fundSystem_sup_torsion_eq_top]
@@ -360,7 +378,7 @@ private theorem sqrtTwo_exists_eq_torsion_mul_fundSystem_zpow
   obtain ⟨n, hn⟩ := hx
   exact ⟨y, hy, n, by rw [hn, ← hxy]; exact mul_comm x y⟩
 
-private theorem sqrtTwo_fundSystem_zpow_mem_torsion
+private theorem fundSystem_zpow_mem_torsion
     (i₀ : Fin (NumberField.Units.rank QSqrtTwo)) (n : ℤ)
     (hn : NumberField.Units.fundSystem QSqrtTwo i₀ ^ n ∈
       NumberField.Units.torsion QSqrtTwo) : n = 0 := by
@@ -376,17 +394,11 @@ private theorem sqrtTwo_fundSystem_zpow_mem_torsion
       ((NumberField.Units.basisModTorsion QSqrtTwo).repr x) i₀) hq
   simpa [Module.Basis.repr_self, Module.Basis.repr_self_apply] using hrepr
 
-private theorem sqrtTwo_eq_one_or_neg_one_of_mem_torsion {ζ : O2ˣ}
+private theorem eq_one_or_neg_one_of_mem_torsion {ζ : O2ˣ}
     (hζ : ζ ∈ NumberField.Units.torsion QSqrtTwo) : ζ = 1 ∨ ζ = -1 := by
   simpa using
     (sqrtTwo_torsion_eq_one_or_neg_one
       (⟨ζ, hζ⟩ : NumberField.Units.torsion QSqrtTwo))
-
-example : Units.torsionOrder QSqrtTwo = 2 :=
-  sqrtTwo_units_torsionOrder
-
-example : Units.rank QSqrtTwo = 1 :=
-  sqrtTwo_units_rank
 
 /-- The regulator of `ℚ(√2)` is `log(1 + √2) ≈ 0.8814`, the covolume of the unit lattice.
 This is the analytic restatement that `1 + √2` is a fundamental unit. -/
@@ -397,7 +409,7 @@ theorem regulator_eq : Units.regulator QSqrtTwo = Real.log (1 + Real.sqrt 2) := 
 theorem unitGroupStructure :
     Nonempty (O2ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))) := by
   set i₀ : Fin (NumberField.Units.rank QSqrtTwo) :=
-    ⟨0, by rw [sqrtTwo_units_rank]; exact Nat.zero_lt_one⟩ with hi₀
+    ⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩ with hi₀
   set η : O2ˣ := NumberField.Units.fundSystem QSqrtTwo i₀ with hη
   have hpow : ∀ k : ℕ, ((-1 : O2ˣ)) ^ k = (-1) ^ (k % 2) := by
     intro k
@@ -436,8 +448,7 @@ theorem unitGroupStructure :
           (mul_eq_one_iff_inv_eq.mp h').symm
         rw [heq]
         exact Subgroup.inv_mem _ (Subgroup.pow_mem _ hneg_tor _)
-      have hn0 : Multiplicative.toAdd f 0 = 0 :=
-        sqrtTwo_fundSystem_zpow_mem_torsion i₀ _ htor
+      have hn0 : Multiplicative.toAdd f 0 = 0 := fundSystem_zpow_mem_torsion i₀ _ htor
       rw [hn0, zpow_zero, mul_one] at h'
       have ha : Multiplicative.toAdd a = 0 := by
         rcases (show ∀ x : ZMod 2, x = 0 ∨ x = 1 by decide) (Multiplicative.toAdd a) with
@@ -454,8 +465,8 @@ theorem unitGroupStructure :
       rw [Subsingleton.elim i 0]
       exact hn0
     · intro u
-      obtain ⟨ζ, hζ, n, hu⟩ := sqrtTwo_exists_eq_torsion_mul_fundSystem_zpow i₀ u
-      rcases sqrtTwo_eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
+      obtain ⟨ζ, hζ, n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
+      rcases eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
       · refine ⟨(Multiplicative.ofAdd (0 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
         change (-1 : O2ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
         rw [show ((0 : ZMod 2)).val = 0 from rfl, pow_zero, hu, one_mul]

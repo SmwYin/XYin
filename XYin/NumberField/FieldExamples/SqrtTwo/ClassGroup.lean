@@ -2,7 +2,9 @@ import XYin.NumberField.FieldExamples.SqrtTwo.Units
 
 noncomputable section
 
-open scoped NumberField nonZeroDivisors Real ENNReal
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
@@ -24,8 +26,9 @@ example : 0 < mixedEmbedding.minkowskiBound QSqrtTwo trivialFractionalIdealSqrtT
 example : mixedEmbedding.minkowskiBound QSqrtTwo trivialFractionalIdealSqrtTwo < ⊤ :=
   mixedEmbedding.minkowskiBound_lt_top QSqrtTwo trivialFractionalIdealSqrtTwo
 
-theorem sqrtTwo_ringOfIntegers_isPrincipalIdealRing :
-    IsPrincipalIdealRing O2 := by
+/-- The ring of integers `ℤ[√2]` is a principal ideal domain — the ring-theoretic content of
+class number one. -/
+theorem isPrincipalIdealRing : IsPrincipalIdealRing O2 := by
   apply RingOfIntegers.isPrincipalIdealRing_of_abs_discr_lt
   rw [sqrtTwo_numberField_discr]
   have hfin : Module.finrank ℚ QSqrtTwo = 2 := by
@@ -42,15 +45,16 @@ theorem sqrtTwo_ringOfIntegers_isPrincipalIdealRing :
     ring_nf
     nlinarith [Real.pi_gt_three]
 
-theorem sqrtTwo_numberField_classNumber :
-    NumberField.classNumber QSqrtTwo = 1 :=
-  NumberField.classNumber_eq_one_iff.mpr sqrtTwo_ringOfIntegers_isPrincipalIdealRing
+/-- The class number of `ℚ(√2)` is `1`. The Minkowski bound is `(1/2)·√8 ≈ 1.41`, so every
+ideal class contains an ideal of norm `1` and the class group is trivial outright. -/
+theorem classNumber_eq_one : NumberField.classNumber QSqrtTwo = 1 := by
+  exact NumberField.classNumber_eq_one_iff.mpr isPrincipalIdealRing
 
 /-- The class group of `𝓞 ℚ(√2)` is trivial. -/
 theorem classGroupStructure : Nonempty (ClassGroup O2 ≃* Multiplicative (ZMod 1)) := by
   classical
   have hcard : Fintype.card (ClassGroup O2) = 1 := by
-    simpa [NumberField.classNumber] using sqrtTwo_numberField_classNumber
+    simpa [NumberField.classNumber] using classNumber_eq_one
   haveI : Subsingleton (ClassGroup O2) :=
     Fintype.card_le_one_iff_subsingleton.mp (by omega)
   exact ⟨MulEquiv.ofBijective (1 : ClassGroup O2 →* Multiplicative (ZMod 1)) (by
@@ -68,7 +72,7 @@ theorem classGroupRepresentative (C : ClassGroup O2) :
     C = ClassGroup.mk0 unitIdealRepresentative := by
   classical
   have hcard : Fintype.card (ClassGroup O2) = 1 := by
-    simpa [NumberField.classNumber] using sqrtTwo_numberField_classNumber
+    simpa [NumberField.classNumber] using classNumber_eq_one
   haveI : Subsingleton (ClassGroup O2) :=
     Fintype.card_le_one_iff_subsingleton.mp (by omega)
   exact Subsingleton.elim _ _

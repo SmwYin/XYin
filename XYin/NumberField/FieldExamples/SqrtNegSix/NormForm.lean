@@ -1,11 +1,11 @@
-import XYin.NumberField.FieldExamples.SqrtNegSixQuadraticAlgebra.RingOfIntegers
+import XYin.NumberField.FieldExamples.SqrtNegSix.RingOfIntegers
 
 noncomputable section
 
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+namespace XYin.NumberField.New.SqrtNegSix
 
 /-! ## 4. Norm form -/
 
@@ -115,4 +115,4 @@ theorem intNorm_ne_five (z : 𝓞 K) : Algebra.norm ℤ z ≠ 5 := by
   exact normForm_ne_five x y hz5
 
 
-end XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+end XYin.NumberField.New.SqrtNegSix

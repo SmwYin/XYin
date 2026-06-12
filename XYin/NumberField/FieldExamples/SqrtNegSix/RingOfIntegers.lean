@@ -1,11 +1,11 @@
-import XYin.NumberField.FieldExamples.SqrtNegSixAdjoinRoot.Basic
+import XYin.NumberField.FieldExamples.SqrtNegSix.Basic
 
 noncomputable section
 
 open Module Polynomial
-open scoped NumberField nonZeroDivisors
+open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSixAdjoinRoot
+namespace XYin.NumberField.New.SqrtNegSix
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -26,96 +26,31 @@ theorem thetaInt_sq : thetaInt ^ 2 = -6 := by
   change (θ : K) ^ 2 = (-6 : K)
   exact theta_sq
 
-/-- The conjugation `θ ↦ -θ` as an algebra map, via the universal property. -/
-private noncomputable def conjHom : K →ₐ[ℚ] K :=
-  AdjoinRoot.liftAlgHom sqrtNegSixPolynomial (Algebra.ofId ℚ K) (-θ) (by
-    calc sqrtNegSixPolynomial.eval₂ (Algebra.ofId ℚ K) (-θ)
-        = (-θ) ^ 2 + 6 := by simp [sqrtNegSixPolynomial]
-      _ = θ ^ 2 + 6 := by ring
-      _ = 0 := by rw [theta_sq]; ring)
-
-private theorem conjHom_root : conjHom θ = -θ := by
-  change conjHom (AdjoinRoot.root sqrtNegSixPolynomial) = -θ
-  rw [conjHom]
-  exact AdjoinRoot.liftAlgHom_root sqrtNegSixPolynomial (Algebra.ofId ℚ K) (-θ) _
-
-private theorem conjHom_conjHom : conjHom.comp conjHom = AlgHom.id ℚ K := by
-  apply AdjoinRoot.algHom_ext
-  change conjHom (conjHom θ) = θ
-  rw [conjHom_root, map_neg, conjHom_root, neg_neg]
-
-noncomputable def conj' : K ≃ₐ[ℚ] K :=
-  AlgEquiv.ofAlgHom conjHom conjHom conjHom_conjHom conjHom_conjHom
-
-theorem conj'_root : conj' θ = -θ := conjHom_root
-
-theorem aut_eq_or' (σ : K ≃ₐ[ℚ] K) : σ = AlgEquiv.refl ∨ σ = conj' := by
-  have hsq : (σ θ) ^ 2 = (-6 : K) := by
-    rw [← map_pow, theta_sq]
-    rw [show (-6 : K) = algebraMap ℚ K (-6) by norm_num]
-    exact σ.commutes (-6)
-  have hfactor : (σ θ - θ) * (σ θ + θ) = 0 := by
-    have hθ := theta_sq
-    linear_combination hsq - hθ
-  rcases mul_eq_zero.mp hfactor with h | h
-  · left
-    have hσ : (σ : K →ₐ[ℚ] K) = AlgHom.id ℚ K := by
-      apply AdjoinRoot.algHom_ext
-      change σ θ = θ
-      exact sub_eq_zero.mp h
-    ext x
-    change (σ : K →ₐ[ℚ] K) x = x
-    rw [hσ]
-    rfl
-  · right
-    have hσ : (σ : K →ₐ[ℚ] K) = conj'.toAlgHom := by
-      apply AdjoinRoot.algHom_ext
-      change σ θ = conj' θ
-      rw [conj'_root]
-      exact eq_neg_of_add_eq_zero_left h
-    ext x
-    change (σ : K →ₐ[ℚ] K) x = conj'.toAlgHom x
-    rw [hσ]
-
-private theorem conj'_ne_refl : conj' ≠ (AlgEquiv.refl : K ≃ₐ[ℚ] K) := by
-  intro h
-  have hroot : -θ = θ := by
-    calc -θ = conj' θ := conj'_root.symm
-      _ = θ := by rw [h]; rfl
-  have h2 : (2 : K) * θ = 0 := by linear_combination -hroot
-  rcases mul_eq_zero.mp h2 with h2' | hθ0
-  · norm_num at h2'
-  · have h6 : (-6 : K) = 0 := by rw [← theta_sq, hθ0]; ring
-    norm_num at h6
-
-theorem prod_auts (z : K) : ∏ σ : K ≃ₐ[ℚ] K, σ z = z * conj' z := by
-  classical
-  have huniv : (Finset.univ : Finset (K ≃ₐ[ℚ] K)) =
-      insert AlgEquiv.refl {conj'} := by
-    symm
-    rw [Finset.eq_univ_iff_forall]
-    intro σ
-    rcases aut_eq_or' σ with rfl | rfl
-    · exact Finset.mem_insert_self _ _
-    · exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _)
-  rw [huniv, Finset.prod_insert (Finset.notMem_singleton.mpr (Ne.symm conj'_ne_refl)),
-    Finset.prod_singleton]
-  rfl
-
 /-- The displayed integral-basis vectors `1, θ` (as elements of `K`). -/
 def integralBasisVectors : Fin 2 → K := ![1, θ]
 
 local notation "𝓟₂" => Submodule.span ℤ ({(2 : ℤ)} : Set ℤ)
 local notation "𝓟₃" => Submodule.span ℤ ({(3 : ℤ)} : Set ℤ)
 
-private noncomputable def sqrtNegSixArithmeticPowerBasis : PowerBasis ℚ K :=
-  AdjoinRoot.powerBasis (f := sqrtNegSixPolynomial)
-    ((Fact.out : Irreducible sqrtNegSixPolynomial).ne_zero)
+private theorem quadraticBasis_zero : (QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)) 0 = (1 : K) := by
+  change (QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)) 0 = (⟨1, 0⟩ : K)
+  simp [QuadraticAlgebra.basis, Module.Basis.ofEquivFun, QuadraticAlgebra.linearEquivTuple]
 
-private theorem sqrtNegSixArithmeticPowerBasis_dim :
-    sqrtNegSixArithmeticPowerBasis.dim = 2 := by
-  change sqrtNegSixPolynomial.natDegree = 2
-  rw [sqrtNegSixPolynomial, natDegree_X_pow_add_C]
+private theorem quadraticBasis_one : (QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)) 1 = θ := by
+  change (QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)) 1 = (⟨0, 1⟩ : K)
+  simp [QuadraticAlgebra.basis, Module.Basis.ofEquivFun, QuadraticAlgebra.linearEquivTuple]
+
+private noncomputable def sqrtNegSixPowerBasis : PowerBasis ℚ K where
+  gen := θ
+  dim := 2
+  basis := QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)
+  basis_eq_pow := by
+    intro i
+    fin_cases i
+    · exact quadraticBasis_zero
+    · simpa [pow_one] using quadraticBasis_one
+
+private theorem sqrtNegSixPowerBasis_dim : sqrtNegSixPowerBasis.dim = 2 := rfl
 
 private abbrev sqrtNegSixIntegerPolynomial : ℤ[X] := Polynomial.X ^ 2 + Polynomial.C (6 : ℤ)
 
@@ -171,11 +106,15 @@ private theorem sqrtNegSix_minpoly_int_isEisensteinAt_three :
     · simp [Ideal.submodule_span_eq]
   · simp [Ideal.submodule_span_eq, Ideal.span_singleton_pow, Ideal.mem_span_singleton]
 
-private theorem sqrtNegSixArithmeticPowerBasis_discr :
-    Algebra.discr ℚ sqrtNegSixArithmeticPowerBasis.basis = (-24 : ℚ) := by
+private theorem algebraNorm_eq_quadraticNorm (z : K) :
+    Algebra.norm ℚ z = QuadraticAlgebra.norm z := by
+  rw [Algebra.norm_apply, ← QuadraticAlgebra.det_toLinearMap_eq_norm]
+  congr 1
+
+private theorem sqrtNegSixPowerBasis_discr :
+    Algebra.discr ℚ sqrtNegSixPowerBasis.basis = (-24 : ℚ) := by
   rw [Algebra.discr_powerBasis_eq_norm]
-  have hgen : sqrtNegSixArithmeticPowerBasis.gen = θ := by
-    simp [sqrtNegSixArithmeticPowerBasis, θ]
+  have hgen : sqrtNegSixPowerBasis.gen = θ := rfl
   rw [hgen, degree_eq_two, sqrtNegSix_minpoly_rat]
   have hder : Polynomial.derivative (Polynomial.X ^ 2 + Polynomial.C (6 : ℚ)) =
       2 * Polynomial.X := by
@@ -186,15 +125,9 @@ private theorem sqrtNegSixArithmeticPowerBasis_discr :
     rw [map_mul, Polynomial.aeval_X, map_ofNat]
   rw [haev]
   have hnorm : Algebra.norm ℚ (2 * θ) = (24 : ℚ) := by
-    apply FaithfulSMul.algebraMap_injective ℚ K
-    rw [Algebra.norm_eq_prod_automorphisms, prod_auts]
-    have hconj : conj' (2 * θ) = -2 * θ := by
-      rw [map_mul, map_ofNat, conj'_root]
-      ring
-    rw [hconj]
-    ring_nf
-    rw [theta_sq]
-    norm_num
+    rw [algebraNorm_eq_quadraticNorm]
+    simp [QuadraticAlgebra.norm_def, θ]
+    ring
   rw [hnorm]
   norm_num
 
@@ -203,40 +136,35 @@ private theorem integralClosure_eq_adjoin :
   apply le_antisymm
   · intro z hz
     have hzI : IsIntegral ℤ z := hz
-    have hBint : IsIntegral ℤ sqrtNegSixArithmeticPowerBasis.gen := by
-      simpa [sqrtNegSixArithmeticPowerBasis] using theta_integral
+    have hBint : IsIntegral ℤ sqrtNegSixPowerBasis.gen := by
+      simpa [sqrtNegSixPowerBasis] using theta_integral
     have hdiscr :=
       Algebra.discr_mul_isIntegral_mem_adjoin (K := ℚ) (L := K)
-        (R := ℤ) (B := sqrtNegSixArithmeticPowerBasis) hBint hzI
-    rw [sqrtNegSixArithmeticPowerBasis_discr] at hdiscr
-    have h24z : (24 : ℤ) • z ∈
-        Algebra.adjoin ℤ ({sqrtNegSixArithmeticPowerBasis.gen} : Set K) := by
+        (R := ℤ) (B := sqrtNegSixPowerBasis) hBint hzI
+    rw [sqrtNegSixPowerBasis_discr] at hdiscr
+    have h24z : (24 : ℤ) • z ∈ Algebra.adjoin ℤ ({sqrtNegSixPowerBasis.gen} : Set K) := by
       have hneg : (24 : ℤ) • z = -((-24 : ℚ) • z) := by
         simp [Algebra.smul_def]
       rw [hneg]
       exact neg_mem hdiscr
     have h8z_int : IsIntegral ℤ ((2 : ℤ) ^ 3 • z) := hzI.smul ((2 : ℤ) ^ 3)
     have h3pow : (3 : ℤ) ^ 1 • ((2 : ℤ) ^ 3 • z) ∈
-        Algebra.adjoin ℤ ({sqrtNegSixArithmeticPowerBasis.gen} : Set K) := by
+        Algebra.adjoin ℤ ({sqrtNegSixPowerBasis.gen} : Set K) := by
       convert h24z using 1
       norm_num [Algebra.smul_def]
       ring
     have h8z : (2 : ℤ) ^ 3 • z ∈
-        Algebra.adjoin ℤ ({sqrtNegSixArithmeticPowerBasis.gen} : Set K) :=
+        Algebra.adjoin ℤ ({sqrtNegSixPowerBasis.gen} : Set K) :=
       mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt
-        (R := ℤ) (K := ℚ) (L := K) (B := sqrtNegSixArithmeticPowerBasis)
+        (R := ℤ) (K := ℚ) (L := K) (B := sqrtNegSixPowerBasis)
         (p := (3 : ℤ)) (n := 1) (by norm_num : Prime (3 : ℤ)) hBint h8z_int h3pow
-        (by
-          simpa [sqrtNegSixArithmeticPowerBasis] using
-            sqrtNegSix_minpoly_int_isEisensteinAt_three)
-    have hzmem : z ∈ Algebra.adjoin ℤ ({sqrtNegSixArithmeticPowerBasis.gen} : Set K) :=
+        (by simpa [sqrtNegSixPowerBasis] using sqrtNegSix_minpoly_int_isEisensteinAt_three)
+    have hzmem : z ∈ Algebra.adjoin ℤ ({sqrtNegSixPowerBasis.gen} : Set K) :=
       mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt
-        (R := ℤ) (K := ℚ) (L := K) (B := sqrtNegSixArithmeticPowerBasis)
+        (R := ℤ) (K := ℚ) (L := K) (B := sqrtNegSixPowerBasis)
         (p := (2 : ℤ)) (n := 3) Int.prime_two hBint hzI h8z
-        (by
-          simpa [sqrtNegSixArithmeticPowerBasis] using
-            sqrtNegSix_minpoly_int_isEisensteinAt_two)
-    simpa [sqrtNegSixArithmeticPowerBasis] using hzmem
+        (by simpa [sqrtNegSixPowerBasis] using sqrtNegSix_minpoly_int_isEisensteinAt_two)
+    simpa [sqrtNegSixPowerBasis] using hzmem
   · rw [Algebra.adjoin_le_iff]
     intro x hx
     rw [Set.mem_singleton_iff] at hx
@@ -359,21 +287,19 @@ private theorem sqrtNegSixExplicitIntegralBasis_discr :
   change (algebraMap ℤ ℚ) (Algebra.discr ℤ bInt) = (algebraMap ℤ ℚ) (-24)
   rw [← hdiscLoc]
   change Algebra.discr ℚ bLoc = (-24 : ℚ)
-  have hBasis :
-      bLoc = sqrtNegSixArithmeticPowerBasis.basis.reindex
-        (finCongr sqrtNegSixArithmeticPowerBasis_dim) := by
+  have hBasis : bLoc = sqrtNegSixPowerBasis.basis.reindex (finCongr sqrtNegSixPowerBasis_dim) := by
     apply DFunLike.ext
     intro i
     fin_cases i
     · simp [bLoc, bInt, Basis.localizationLocalization_apply,
-        sqrtNegSixExplicitIntegralBasis_zero, Basis.reindex_apply]
-    · simp [bLoc, bInt, Basis.localizationLocalization_apply,
-        sqrtNegSixExplicitIntegralBasis_one, thetaInt]
-      rfl
+        sqrtNegSixExplicitIntegralBasis_zero]
+    · simpa [bLoc, bInt, Basis.localizationLocalization_apply,
+        sqrtNegSixExplicitIntegralBasis_one, thetaInt, sqrtNegSixPowerBasis]
+        using quadraticBasis_one.symm
   rw [hBasis]
   simpa [Basis.coe_reindex] using
-    (Algebra.discr_reindex ℚ sqrtNegSixArithmeticPowerBasis.basis
-      (finCongr sqrtNegSixArithmeticPowerBasis_dim)).trans sqrtNegSixArithmeticPowerBasis_discr
+    (Algebra.discr_reindex ℚ sqrtNegSixPowerBasis.basis
+      (finCongr sqrtNegSixPowerBasis_dim)).trans sqrtNegSixPowerBasis_discr
 
 /-- `1, θ` is an integral basis of `ℚ(√-6)`: their `ℤ`-span in `K` is exactly the ring of
 integers `𝓞 K`. Since `-6 ≡ 2 (mod 4)`, the naive order `ℤ[√-6]` is already maximal — in
@@ -390,6 +316,7 @@ theorem span_integralBasisVectors_eq :
   rw [hcomp, Submodule.map_top] at hmap
   rw [hmap]
   ext x
+  rw [Subalgebra.mem_toSubmodule]
   constructor
   · rintro ⟨u, rfl⟩
     exact u.2
@@ -474,4 +401,4 @@ theorem concreteIntegralBasis_discr :
   exact sqrtNegSixExplicitIntegralBasis_discr
 
 
-end XYin.NumberField.New.SqrtNegSixAdjoinRoot
+end XYin.NumberField.New.SqrtNegSix

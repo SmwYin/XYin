@@ -1,11 +1,11 @@
-import XYin.NumberField.FieldExamples.SqrtNegSixQuadraticAlgebra.Euclidean
+import XYin.NumberField.FieldExamples.SqrtNegSix.Euclidean
 
 noncomputable section
 
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+namespace XYin.NumberField.New.SqrtNegSix
 
 /-! ## 8. Failure of unique factorisation -/
 
@@ -225,4 +225,4 @@ theorem not_uniqueFactorizationMonoid : ¬ UniqueFactorizationMonoid (𝓞 K) :=
   exact not_isPrincipalIdealRing hpid
 
 
-end XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+end XYin.NumberField.New.SqrtNegSix

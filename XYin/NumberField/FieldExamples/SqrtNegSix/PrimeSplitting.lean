@@ -1,11 +1,11 @@
-import XYin.NumberField.FieldExamples.SqrtNegSixAdjoinRoot.NormForm
+import XYin.NumberField.FieldExamples.SqrtNegSix.NormForm
 
 noncomputable section
 
 open Module Polynomial
-open scoped NumberField nonZeroDivisors
+open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSixAdjoinRoot
+namespace XYin.NumberField.New.SqrtNegSix
 
 /-! ## 5. Splitting of primes -/
 
@@ -900,4 +900,4 @@ theorem ramified_iff (p : ℕ) (hp : p.Prime) :
       rw [hcast, span_three_eq]
 
 
-end XYin.NumberField.New.SqrtNegSixAdjoinRoot
+end XYin.NumberField.New.SqrtNegSix

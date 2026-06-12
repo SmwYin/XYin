@@ -4,8 +4,9 @@ import Mathlib
 # The field `ℚ(√-6)` via `QuadraticAlgebra`
 
 The imaginary quadratic field `K = ℚ(√-6)`, realised as `QuadraticAlgebra ℚ (-6) 0`, and its
-main arithmetic invariants (the `AdjoinRoot` construction of the same field is in
-`SqrtNegSixAdjoinRoot.lean`). Its interest is the *nontrivial* class group:
+main arithmetic invariants. The auxiliary `AdjoinRoot` presentation is recorded below, but
+the arithmetic development uses the quadratic-algebra model. Its interest is the *nontrivial*
+class group:
 
 * degree `2`, integral basis `1, θ` with `θ = √-6`; ring of integers `ℤ[√-6]`
   (sections 1–2);
@@ -27,7 +28,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+namespace XYin.NumberField.New.SqrtNegSix
 
 /-! ## 1. Basics -/
 
@@ -59,6 +60,9 @@ instance : NumberField K :=
 /-- The extension degree of `K = ℚ(√-6)` over `ℚ` is `2`. -/
 theorem degree_eq_two : Module.finrank ℚ K = 2 := by
   rw [Module.finrank_eq_card_basis (QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)), Fintype.card_fin]
+
+instance : Algebra.IsQuadraticExtension ℚ K where
+  finrank_eq_two' := degree_eq_two
 
 /-- The generator satisfies `θ² = -6`. -/
 theorem theta_sq : θ ^ 2 = -6 := by
@@ -145,4 +149,4 @@ theorem adjoinRootEquivQuadratic_root :
     sqrtNegSixPolynomial_aeval_theta
 
 
-end XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
+end XYin.NumberField.New.SqrtNegSix

@@ -201,6 +201,59 @@ theorem sqrtFiveAdjoinRoot_sq :
       (AdjoinRoot.eval₂_root sqrtFivePolynomial)
   linear_combination hroot
 
+private def sqrtFiveAdjoinRootToRadical : KAdjoinRoot →ₐ[ℚ] K :=
+  AdjoinRoot.liftAlgHom sqrtFivePolynomial (Algebra.ofId ℚ K) sqrtFive (by
+    calc
+      sqrtFivePolynomial.eval₂ (Algebra.ofId ℚ K) sqrtFive = sqrtFive ^ 2 - 5 := by
+        simp [sqrtFivePolynomial]
+      _ = 0 := by rw [sqrtFive_sq]; ring)
+
+private theorem sqrtFiveAdjoinRootToRadical_root :
+    sqrtFiveAdjoinRootToRadical sqrtFiveAdjoinRoot = sqrtFive := by
+  rw [sqrtFiveAdjoinRootToRadical, sqrtFiveAdjoinRoot]
+  exact AdjoinRoot.liftAlgHom_root sqrtFivePolynomial (Algebra.ofId ℚ K) sqrtFive _
+
+private def sqrtFiveRadicalToAdjoinRoot : K →ₐ[ℚ] KAdjoinRoot :=
+  (QuadraticAlgebra.lift (R := ℚ) (a := (5 : ℚ)) (b := 0)) ⟨sqrtFiveAdjoinRoot, by
+    rw [← pow_two, sqrtFiveAdjoinRoot_sq]
+    simp [Algebra.smul_def, map_ofNat]⟩
+
+private theorem sqrtFiveRadicalToAdjoinRoot_root :
+    sqrtFiveRadicalToAdjoinRoot sqrtFive = sqrtFiveAdjoinRoot := by
+  dsimp [sqrtFiveRadicalToAdjoinRoot, sqrtFive, sqrtFiveRadicalRoot, QuadraticAlgebra.lift,
+    QuadraticAlgebra.omega]
+  change (0 : ℚ) • (1 : KAdjoinRoot) + (1 : ℚ) • sqrtFiveAdjoinRoot = sqrtFiveAdjoinRoot
+  simp
+
+/-- The radical quadratic-algebra presentation is equivalent to the `AdjoinRoot` model. -/
+noncomputable def sqrtFiveRadicalEquivAdjoinRoot : K ≃ₐ[ℚ] KAdjoinRoot := by
+  refine
+    { __ := sqrtFiveRadicalToAdjoinRoot
+      invFun := sqrtFiveAdjoinRootToRadical
+      left_inv := ?_
+      right_inv := ?_ }
+  · intro x
+    have hcomp :
+        sqrtFiveAdjoinRootToRadical.comp sqrtFiveRadicalToAdjoinRoot = AlgHom.id ℚ K := by
+      apply QuadraticAlgebra.algHom_ext
+      change sqrtFiveAdjoinRootToRadical
+          (sqrtFiveRadicalToAdjoinRoot sqrtFive) = sqrtFive
+      rw [sqrtFiveRadicalToAdjoinRoot_root, sqrtFiveAdjoinRootToRadical_root]
+    exact DFunLike.congr_fun hcomp x
+  · intro x
+    have hcomp :
+        sqrtFiveRadicalToAdjoinRoot.comp sqrtFiveAdjoinRootToRadical =
+          AlgHom.id ℚ KAdjoinRoot := by
+      apply AdjoinRoot.algHom_ext
+      change sqrtFiveRadicalToAdjoinRoot
+          (sqrtFiveAdjoinRootToRadical sqrtFiveAdjoinRoot) = sqrtFiveAdjoinRoot
+      rw [sqrtFiveAdjoinRootToRadical_root, sqrtFiveRadicalToAdjoinRoot_root]
+    exact DFunLike.congr_fun hcomp x
+
+theorem sqrtFiveRadicalEquivAdjoinRoot_root :
+    sqrtFiveRadicalEquivAdjoinRoot sqrtFive = sqrtFiveAdjoinRoot :=
+  sqrtFiveRadicalToAdjoinRoot_root
+
 /-- The map from the `√5` presentation to the golden-ratio presentation. -/
 def sqrtFiveRadicalToGolden : QSqrtFiveRadical →ₐ[ℚ] QSqrtFive :=
   (QuadraticAlgebra.lift (R := ℚ) (a := (5 : ℚ)) (b := 0)) ⟨sqrtFiveRoot, by
@@ -265,6 +318,18 @@ theorem sqrtFiveRadicalEquivGolden_root :
 theorem sqrtFiveRadicalEquivGolden_symm_root :
     sqrtFiveRadicalEquivGolden.symm goldenRoot = (sqrtFiveRadicalRoot + 1) / 2 :=
   goldenToSqrtFiveRadical_root
+
+/-- The `AdjoinRoot (X^2 - 5)` model is equivalent to the golden-ratio presentation. -/
+noncomputable def sqrtFiveAdjoinRootEquivGolden : KAdjoinRoot ≃ₐ[ℚ] QSqrtFive :=
+  sqrtFiveRadicalEquivAdjoinRoot.symm.trans sqrtFiveRadicalEquivGolden
+
+theorem sqrtFiveAdjoinRootEquivGolden_root :
+    sqrtFiveAdjoinRootEquivGolden sqrtFiveAdjoinRoot = sqrtFiveRoot := by
+  rw [sqrtFiveAdjoinRootEquivGolden, AlgEquiv.trans_apply]
+  have hsymm : sqrtFiveRadicalEquivAdjoinRoot.symm sqrtFiveAdjoinRoot = sqrtFive := by
+    rw [← sqrtFiveRadicalEquivAdjoinRoot_root]
+    simp
+  rw [hsymm, sqrtFiveRadicalEquivGolden_root]
 
 
 end XYin.NumberField.SqrtFive

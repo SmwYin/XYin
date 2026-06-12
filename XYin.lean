@@ -30,9 +30,6 @@ import XYin.NumberField.CyclotomicThree
 import XYin.NumberField.Experiment
 import XYin.NumberField.Experiment_copy
 import XYin.NumberField.SqrtFive
-import XYin.NumberField.SqrtFive2
-import XYin.NumberField.SqrtTwo
-import XYin.NumberField.SqrtTwo_copy
 import XYin.NumberField.Thue_Equation
 import XYin.NumberField.Thue_Equation_copy
 -/
