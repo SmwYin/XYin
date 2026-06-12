@@ -163,7 +163,17 @@ theorem exists_eq_torsion_mul_fundSystem_zpow (i₀ : Fin (NumberField.Units.ran
 the (free) quotient modulo torsion is a basis vector. -/
 theorem fundSystem_zpow_mem_torsion (i₀ : Fin (NumberField.Units.rank K)) (n : ℤ)
     (hn : NumberField.Units.fundSystem K i₀ ^ n ∈ NumberField.Units.torsion K) : n = 0 := by
-  sorry
+  have hq : Additive.ofMul ((QuotientGroup.mk ((NumberField.Units.fundSystem K i₀) ^ n) :
+      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K)) = 0 := by
+    rw [ofMul_eq_zero]
+    exact (QuotientGroup.eq_one_iff ((NumberField.Units.fundSystem K i₀) ^ n)).mpr hn
+  rw [QuotientGroup.mk_zpow, ofMul_zpow, NumberField.Units.fundSystem_mk] at hq
+  letI : Module ℤ (Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K)) :=
+    AddCommGroup.toIntModule (Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K))
+  have hrepr := congrArg
+    (fun x : Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K) =>
+      ((NumberField.Units.basisModTorsion K).repr x) i₀) hq
+  simpa [Module.Basis.repr_self, Module.Basis.repr_self_apply] using hrepr
 
 /-- Pointwise classification of the torsion: a torsion unit is `1` or `-1`. -/
 theorem eq_one_or_neg_one_of_mem_torsion {ζ : (𝓞 K)ˣ}

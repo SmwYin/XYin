@@ -38,11 +38,12 @@ theorem torsionOrder_eq_six : Units.torsionOrder K = 6 := by
 
 /-- The field `ℚ(ζ₃)` has no real infinite places. -/
 theorem nrRealPlaces_eq_zero : InfinitePlace.nrRealPlaces K = 0 := by
-  sorry
+  exact IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 3) K (by norm_num)
 
 /-- The field `ℚ(ζ₃)` has one complex infinite place. -/
 theorem nrComplexPlaces_eq_one : InfinitePlace.nrComplexPlaces K = 1 := by
-  sorry
+  rw [IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := 3) K]
+  rw [Nat.totient_prime Nat.prime_three]
 
 /-- Dirichlet's unit rank is `0` for this imaginary quadratic field: the signature is
 `(r₁, r₂) = (0, 1)`, so the rank is `r₁ + r₂ - 1 = 0`. -/

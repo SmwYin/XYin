@@ -123,7 +123,55 @@ theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 4 := by
 
 /-- `3` is inert in `ℚ(√5)`. This statement is kept from the older `SqrtFive2` API. -/
 theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 K)}).IsPrime := by
-  sorry
+  have hno3 : ∀ P : Ideal (𝓞 K), Ideal.absNorm P ≠ 3 := by
+    intro P hcard
+    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
+    haveI : Finite ((𝓞 K) ⧸ P) :=
+      Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+    have hcard' : Fintype.card ((𝓞 K) ⧸ P) = 3 := by
+      rw [← Nat.card_eq_fintype_card]
+      exact hcard
+    let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) (by norm_num) hcard'
+    obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P goldenInt)
+    have ht2 : t ^ 2 = t + 1 := by
+      apply e.injective
+      rw [map_pow, ht, map_add, ht, map_one, ← map_pow (Ideal.Quotient.mk P),
+        goldenInt_sq, map_add, map_one]
+    clear ht
+    revert t
+    decide
+  have habs9 : Ideal.absNorm (Ideal.span {(3 : 𝓞 K)}) = 9 := by
+    have h := intNorm_eq_normForm 3 0
+    have h3 : (3 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • goldenInt = 3 := by
+      simp
+    rw [h3] at h
+    norm_num at h
+    rw [Ideal.absNorm_span_singleton, h]
+    rfl
+  have htop : Ideal.span {(3 : 𝓞 K)} ≠ ⊤ := by
+    intro h
+    rw [h, Ideal.absNorm_top] at habs9
+    norm_num at habs9
+  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+  have hdvd : Ideal.absNorm M ∣ 9 := habs9 ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+  have hM1 : Ideal.absNorm M ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hMmax.ne_top
+  have hM3 : Ideal.absNorm M ≠ 3 := hno3 M
+  have hM9 : Ideal.absNorm M = 9 := by
+    obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_three).mp
+      (show Ideal.absNorm M ∣ 3 ^ 2 from hdvd)
+    interval_cases k
+    · rw [pow_zero] at hkeq
+      exact absurd hkeq hM1
+    · rw [pow_one] at hkeq
+      exact absurd hkeq hM3
+    · rw [hkeq]
+      norm_num
+  have heq := eq_of_le_of_absNorm_eq hMle habs9 hM9 (by norm_num)
+  rw [heq]
+  exact hMmax.isPrime
 
 /-- The elementary identity `11 = (3 + φ)(4 - φ)` in `ℤ[φ]`, the two factors being conjugate
 elements of norm `11`. -/

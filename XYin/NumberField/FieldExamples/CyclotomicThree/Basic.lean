@@ -253,7 +253,9 @@ theorem sqrtNegThreeEquivCyclotomic_root :
 
 instance : Fact (∀ r : ℚ, r ^ 2 ≠ (-3 : ℚ) + (0 : ℚ) * r) := by
   exact ⟨by
-    sorry⟩
+    intro r hr
+    have h : (0 : ℚ) ≤ r ^ 2 := sq_nonneg r
+    nlinarith⟩
 
 /-- The same quadratic field, presented as the radical quadratic algebra `ℚ[√-3]`. -/
 abbrev QSqrtNegThreeQuadratic : Type := QuadraticAlgebra ℚ (-3 : ℚ) 0
@@ -263,16 +265,62 @@ abbrev sqrtNegThreeQuadraticRoot : QSqrtNegThreeQuadratic := QuadraticAlgebra.om
 
 theorem sqrtNegThreeQuadraticRoot_sq :
     sqrtNegThreeQuadraticRoot ^ 2 = (-3 : QSqrtNegThreeQuadratic) := by
-  sorry
+  rw [sq, QuadraticAlgebra.omega_mul_omega_eq_add]
+  simp
+
+private noncomputable def sqrtNegThreeQuadraticEquivAdjoinRoot :
+    QSqrtNegThreeQuadratic ≃ₐ[ℚ] QSqrtNegThree := by
+  let f : QSqrtNegThreeQuadratic →ₐ[ℚ] QSqrtNegThree :=
+    QuadraticAlgebra.lift ⟨sqrtNegThreeRoot, by
+      rw [show sqrtNegThreeRoot * sqrtNegThreeRoot = sqrtNegThreeRoot ^ 2 by ring,
+        sqrtNegThreeRoot_sq]
+      simp⟩
+  let g : QSqrtNegThree →ₐ[ℚ] QSqrtNegThreeQuadratic :=
+    AdjoinRoot.liftAlgHom sqrtNegThreePolynomial (Algebra.ofId ℚ QSqrtNegThreeQuadratic)
+      sqrtNegThreeQuadraticRoot (by
+        calc
+          sqrtNegThreePolynomial.eval₂ (Algebra.ofId ℚ QSqrtNegThreeQuadratic)
+              sqrtNegThreeQuadraticRoot = sqrtNegThreeQuadraticRoot ^ 2 + 3 := by
+            simp [sqrtNegThreePolynomial]
+          _ = 0 := by rw [sqrtNegThreeQuadraticRoot_sq]; ring)
+  have hfroot : f sqrtNegThreeQuadraticRoot = sqrtNegThreeRoot := by
+    change (QuadraticAlgebra.omega : QSqrtNegThreeQuadratic).re • (1 : QSqrtNegThree) +
+      (QuadraticAlgebra.omega : QSqrtNegThreeQuadratic).im • sqrtNegThreeRoot =
+        sqrtNegThreeRoot
+    simp
+  have hgroot : g sqrtNegThreeRoot = sqrtNegThreeQuadraticRoot := by
+    change
+      (AdjoinRoot.liftAlgHom sqrtNegThreePolynomial
+        (Algebra.ofId ℚ QSqrtNegThreeQuadratic) sqrtNegThreeQuadraticRoot _)
+        (AdjoinRoot.root sqrtNegThreePolynomial) = sqrtNegThreeQuadraticRoot
+    exact AdjoinRoot.liftAlgHom_root sqrtNegThreePolynomial
+      (Algebra.ofId ℚ QSqrtNegThreeQuadratic) sqrtNegThreeQuadraticRoot _
+  refine AlgEquiv.ofAlgHom f g ?_ ?_
+  · apply AdjoinRoot.algHom_ext
+    change f (g sqrtNegThreeRoot) = sqrtNegThreeRoot
+    rw [hgroot]
+    exact hfroot
+  · apply QuadraticAlgebra.algHom_ext
+    change g (f sqrtNegThreeQuadraticRoot) = sqrtNegThreeQuadraticRoot
+    rw [hfroot]
+    exact hgroot
+
+private theorem sqrtNegThreeQuadraticEquivAdjoinRoot_root :
+    sqrtNegThreeQuadraticEquivAdjoinRoot sqrtNegThreeQuadraticRoot = sqrtNegThreeRoot := by
+  change (QuadraticAlgebra.omega : QSqrtNegThreeQuadratic).re • (1 : QSqrtNegThree) +
+    (QuadraticAlgebra.omega : QSqrtNegThreeQuadratic).im • sqrtNegThreeRoot =
+      sqrtNegThreeRoot
+  simp
 
 /-- The radical quadratic-algebra presentation is equivalent to the cyclotomic model. -/
 noncomputable def sqrtNegThreeQuadraticEquivCyclotomic :
-    QSqrtNegThreeQuadratic ≃ₐ[ℚ] K := by
-  sorry
+    QSqrtNegThreeQuadratic ≃ₐ[ℚ] K :=
+  sqrtNegThreeQuadraticEquivAdjoinRoot.trans sqrtNegThreeEquivCyclotomic
 
 theorem sqrtNegThreeQuadraticEquivCyclotomic_root :
     sqrtNegThreeQuadraticEquivCyclotomic sqrtNegThreeQuadraticRoot = 2 * ζ + 1 := by
-  sorry
+  rw [sqrtNegThreeQuadraticEquivCyclotomic, AlgEquiv.trans_apply,
+    sqrtNegThreeQuadraticEquivAdjoinRoot_root, sqrtNegThreeEquivCyclotomic_root]
 
 
 end XYin.NumberField.CyclotomicThree

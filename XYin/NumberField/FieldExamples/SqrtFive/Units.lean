@@ -233,6 +233,62 @@ private theorem normNegFundamentalUnit_zpow_map (n : ℤ) :
     rw [neg_eq_neg_one_mul]]
   rw [map_mul, normNegOneUnit_map, one_mul, normFundamentalUnit_zpow_map]
 
+/-- Mathlib's abstract fundamental unit `fundSystem K i₀`, together with the torsion,
+generates the whole unit group. -/
+theorem exists_eq_torsion_mul_fundSystem_zpow (i₀ : Fin (Units.rank QSqrtFive))
+    (u : (𝓞 QSqrtFive)ˣ) :
+    ∃ ζ ∈ NumberField.Units.torsion QSqrtFive, ∃ n : ℤ,
+      u = ζ * NumberField.Units.fundSystem QSqrtFive i₀ ^ n := by
+  haveI hsub : Subsingleton (Fin (Units.rank QSqrtFive)) :=
+    Fin.subsingleton_iff_le_one.mpr (by rw [unitRank_eq_one])
+  have hu : u ∈ Subgroup.closure (Set.range (NumberField.Units.fundSystem QSqrtFive)) ⊔
+      NumberField.Units.torsion QSqrtFive := by
+    rw [NumberField.Units.closure_fundSystem_sup_torsion_eq_top]; trivial
+  rw [Subgroup.mem_sup] at hu
+  obtain ⟨x, hx, y, hy, hxy⟩ := hu
+  have hrange : Set.range (NumberField.Units.fundSystem QSqrtFive) =
+      {NumberField.Units.fundSystem QSqrtFive i₀} := by
+    ext v
+    constructor
+    · rintro ⟨i, rfl⟩
+      rw [Subsingleton.elim i i₀]
+      rfl
+    · rintro rfl
+      exact ⟨i₀, rfl⟩
+  rw [hrange, Subgroup.mem_closure_singleton] at hx
+  obtain ⟨n, hn⟩ := hx
+  exact ⟨y, hy, n, by rw [hn, ← hxy]; exact mul_comm x y⟩
+
+/-- A power of the abstract fundamental unit is torsion only for exponent zero. -/
+theorem fundSystem_zpow_mem_torsion (i₀ : Fin (Units.rank QSqrtFive)) (n : ℤ)
+    (hn : NumberField.Units.fundSystem QSqrtFive i₀ ^ n ∈
+      NumberField.Units.torsion QSqrtFive) : n = 0 := by
+  have hq : Additive.ofMul
+      ((QuotientGroup.mk ((NumberField.Units.fundSystem QSqrtFive i₀) ^ n) :
+        (𝓞 QSqrtFive)ˣ ⧸ NumberField.Units.torsion QSqrtFive)) = 0 := by
+    rw [ofMul_eq_zero]
+    exact (QuotientGroup.eq_one_iff
+      ((NumberField.Units.fundSystem QSqrtFive i₀) ^ n)).mpr hn
+  rw [QuotientGroup.mk_zpow, ofMul_zpow, NumberField.Units.fundSystem_mk] at hq
+  letI : Module ℤ (Additive ((𝓞 QSqrtFive)ˣ ⧸ NumberField.Units.torsion QSqrtFive)) :=
+    AddCommGroup.toIntModule
+      (Additive ((𝓞 QSqrtFive)ˣ ⧸ NumberField.Units.torsion QSqrtFive))
+  have hrepr := congrArg
+    (fun x : Additive ((𝓞 QSqrtFive)ˣ ⧸ NumberField.Units.torsion QSqrtFive) =>
+      ((NumberField.Units.basisModTorsion QSqrtFive).repr x) i₀) hq
+  simpa [Module.Basis.repr_self, Module.Basis.repr_self_apply] using hrepr
+
+/-- Pointwise classification of the torsion: a torsion unit is `1` or `-1`. -/
+theorem eq_one_or_neg_one_of_mem_torsion {ζ : (𝓞 QSqrtFive)ˣ}
+    (hζ : ζ ∈ NumberField.Units.torsion QSqrtFive) : ζ = 1 ∨ ζ = -1 := by
+  have hfin : IsOfFinOrder ζ := hζ
+  have hmem : ζ ∈ {u : (𝓞 QSqrtFive)ˣ | IsOfFinOrder u} := hfin
+  rw [torsionUnits_eq] at hmem
+  obtain ⟨k, hk⟩ := hmem
+  fin_cases k
+  · exact Or.inl (by simpa using hk)
+  · exact Or.inr (by simpa using hk)
+
 /-- Every unit of `𝓞 ℚ(√5)` is a signed power of the golden ratio `φ`. -/
 theorem fundamentalUnit_generates (u : (𝓞 QSqrtFive)ˣ) :
     ∃ n : ℤ, u = fundamentalUnit ^ n ∨ u = -(fundamentalUnit ^ n) := by
@@ -248,7 +304,24 @@ ratio generates all units of `ℤ[φ]`. -/
 theorem fundamentalUnitSystem_isFundamental :
     Subgroup.closure (Set.range fundamentalUnitSystem) ⊔ NumberField.Units.torsion QSqrtFive =
       ⊤ := by
-  sorry
+  rw [eq_top_iff]
+  intro u _
+  have hfund : fundamentalUnit ∈ Subgroup.closure (Set.range fundamentalUnitSystem) := by
+    exact Subgroup.subset_closure
+      ⟨⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩, rfl⟩
+  have hneg_tor : (-1 : (𝓞 QSqrtFive)ˣ) ∈ NumberField.Units.torsion QSqrtFive := by
+    change IsOfFinOrder _
+    exact isOfFinOrder_iff_pow_eq_one.mpr ⟨2, by norm_num, by simp⟩
+  rw [Subgroup.mem_sup]
+  obtain ⟨n, hn | hn⟩ := fundamentalUnit_generates u
+  · refine ⟨fundamentalUnit ^ n, Subgroup.zpow_mem _ hfund n, 1, Subgroup.one_mem _, ?_⟩
+    rw [hn, mul_one]
+  · refine ⟨fundamentalUnit ^ n, Subgroup.zpow_mem _ hfund n, -1, hneg_tor, ?_⟩
+    rw [hn]
+    apply Units.ext
+    change ((fundamentalUnit ^ n : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive) *
+        (-1 : 𝓞 QSqrtFive) = -((fundamentalUnit ^ n : (𝓞 QSqrtFive)ˣ) : 𝓞 QSqrtFive)
+    ring
 
 /-- Equivalently, every unit of `ℤ[φ]` is a torsion unit times a power of `φ`. -/
 theorem unit_eq_torsion_mul_fundamentalUnit_zpow (u : (𝓞 QSqrtFive)ˣ) :
@@ -292,9 +365,74 @@ theorem regulator_eq :
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
     Nonempty ((𝓞 QSqrtFive)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))) := by
-  -- Blocked: the abstract rank/torsion APIs are available, but the reference proof still
-  -- depends on an unfinished independence/generation lemma for a fundamental system.
-  sorry
+  set i₀ : Fin (Units.rank QSqrtFive) :=
+    ⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩ with hi₀
+  set η : (𝓞 QSqrtFive)ˣ := NumberField.Units.fundSystem QSqrtFive i₀ with hη
+  have hpow : ∀ k : ℕ, ((-1 : (𝓞 QSqrtFive)ˣ)) ^ k = (-1) ^ (k % 2) := by
+    intro k
+    conv_lhs => rw [← Nat.div_add_mod k 2]
+    rw [pow_add, pow_mul, neg_one_sq, one_pow, one_mul]
+  have hsign : ∀ a b : ZMod 2,
+      ((-1 : (𝓞 QSqrtFive)ˣ) ^ (a + b).val) = (-1) ^ a.val * (-1) ^ b.val := by
+    intro a b
+    calc ((-1 : (𝓞 QSqrtFive)ˣ) ^ (a + b).val) = (-1) ^ ((a + b).val % 2) := hpow _
+      _ = (-1) ^ ((a.val + b.val) % 2) := by
+          rw [ZMod.val_add, Nat.mod_mod_of_dvd _ (dvd_refl 2)]
+      _ = (-1) ^ (a.val + b.val) := (hpow _).symm
+      _ = (-1) ^ a.val * (-1) ^ b.val := pow_add _ _ _
+  let ψ₁ : Multiplicative (ZMod 2) →* (𝓞 QSqrtFive)ˣ :=
+    MonoidHom.mk' (fun a => (-1 : (𝓞 QSqrtFive)ˣ) ^ (Multiplicative.toAdd a).val)
+      (fun a b => hsign (Multiplicative.toAdd a) (Multiplicative.toAdd b))
+  let ψ₂ : Multiplicative (Fin 1 → ℤ) →* (𝓞 QSqrtFive)ˣ :=
+    MonoidHom.mk' (fun f => η ^ (Multiplicative.toAdd f 0))
+      (fun f g => by
+        change η ^ ((Multiplicative.toAdd f + Multiplicative.toAdd g) 0) = _
+        rw [Pi.add_apply, zpow_add])
+  let ψ : Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ) →* (𝓞 QSqrtFive)ˣ :=
+    ψ₁.coprod ψ₂
+  have hneg_tor : (-1 : (𝓞 QSqrtFive)ˣ) ∈ NumberField.Units.torsion QSqrtFive := by
+    change IsOfFinOrder _
+    rw [isOfFinOrder_iff_pow_eq_one]
+    exact ⟨2, by norm_num, by rw [neg_one_sq]⟩
+  have hbij : Function.Bijective ψ := by
+    constructor
+    · rw [injective_iff_map_eq_one]
+      rintro ⟨a, f⟩ h
+      have h' : (-1 : (𝓞 QSqrtFive)ˣ) ^ ((Multiplicative.toAdd a).val) *
+          η ^ (Multiplicative.toAdd f 0) = 1 := h
+      have htor : η ^ (Multiplicative.toAdd f 0) ∈
+          NumberField.Units.torsion QSqrtFive := by
+        have heq : η ^ (Multiplicative.toAdd f 0) =
+            ((-1 : (𝓞 QSqrtFive)ˣ) ^ ((Multiplicative.toAdd a).val))⁻¹ :=
+          (mul_eq_one_iff_inv_eq.mp h').symm
+        rw [heq]
+        exact Subgroup.inv_mem _ (Subgroup.pow_mem _ hneg_tor _)
+      have hn0 : Multiplicative.toAdd f 0 = 0 := fundSystem_zpow_mem_torsion i₀ _ htor
+      rw [hn0, zpow_zero, mul_one] at h'
+      have ha : Multiplicative.toAdd a = 0 := by
+        rcases (show ∀ x : ZMod 2, x = 0 ∨ x = 1 by decide) (Multiplicative.toAdd a) with
+          hx | hx
+        · exact hx
+        · exfalso
+          rw [hx, show ((1 : ZMod 2)).val = 1 from rfl, pow_one] at h'
+          have hcoe : (-1 : 𝓞 QSqrtFive) = 1 := congrArg Units.val h'
+          have h2 := congrArg (algebraMap (𝓞 QSqrtFive) QSqrtFive) hcoe
+          simp only [map_one, map_neg] at h2
+          exact two_ne_zero (by linear_combination -h2 : (2 : QSqrtFive) = 0)
+      refine Prod.ext (Multiplicative.toAdd.injective ha) ?_
+      refine Multiplicative.toAdd.injective (funext fun i => ?_)
+      rw [Subsingleton.elim i 0]
+      exact hn0
+    · intro u
+      obtain ⟨ζ, hζ, n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
+      rcases eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
+      · refine ⟨(Multiplicative.ofAdd (0 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+        change (-1 : (𝓞 QSqrtFive)ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
+        rw [show ((0 : ZMod 2)).val = 0 from rfl, pow_zero, hu, one_mul]
+      · refine ⟨(Multiplicative.ofAdd (1 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+        change (-1 : (𝓞 QSqrtFive)ˣ) ^ ((1 : ZMod 2)).val * η ^ n = u
+        rw [show ((1 : ZMod 2)).val = 1 from rfl, pow_one, hu]
+  exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
 
 end XYin.NumberField.SqrtFive

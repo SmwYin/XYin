@@ -308,11 +308,15 @@ theorem isUnit_iff_normForm (x y : ℤ) :
 
 /-- The norm of `1 - ζ` is `3`, the rational prime ramified in `ℚ(ζ₃)`. -/
 theorem norm_one_sub_zeta : Algebra.norm ℚ (1 - ζ) = 3 := by
-  sorry
+  have h := norm_eq_normForm (1 : ℚ) (-1 : ℚ)
+  norm_num at h
+  simpa [sub_eq_add_neg] using h
 
 /-- The norm of `1 + ζ` is `1`, so `1 + ζ` is another cyclotomic unit. -/
 theorem norm_one_add_zeta : Algebra.norm ℚ (1 + ζ) = 1 := by
-  sorry
+  have h := norm_eq_normForm (1 : ℚ) (1 : ℚ)
+  norm_num at h
+  simpa using h
 
 /-! ## 5. Splitting of primes -/
 

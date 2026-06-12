@@ -62,9 +62,23 @@ theorem degree_eq_four : Module.finrank ℚ K = 4 :=
 /-- The polynomial `X⁴ + 1`, defining the eighth cyclotomic field. -/
 abbrev zetaEightPolynomial : Polynomial ℚ := Polynomial.X ^ 4 + Polynomial.C (1 : ℚ)
 
-instance : Fact (Irreducible zetaEightPolynomial) := by
-  exact ⟨by
-    sorry⟩
+private theorem cyclotomic_eight_rat : Polynomial.cyclotomic 8 ℚ = zetaEightPolynomial := by
+  rw [zetaEightPolynomial]
+  have h4 : Polynomial.cyclotomic 4 ℚ = Polynomial.X ^ 2 + 1 := by
+    have h := Polynomial.cyclotomic_expand_eq_cyclotomic (R := ℚ) Nat.prime_two (dvd_refl 2)
+    rw [Polynomial.cyclotomic_two, show (2 * 2 : ℕ) = 4 from rfl] at h
+    rw [← h, map_add, map_one, Polynomial.expand_X]
+  have h8 := Polynomial.cyclotomic_expand_eq_cyclotomic (R := ℚ) Nat.prime_two
+    (by norm_num : (2 : ℕ) ∣ 4)
+  rw [h4, show (4 * 2 : ℕ) = 8 from rfl] at h8
+  rw [← h8, map_add, map_one, map_pow, Polynomial.expand_X]
+  rw [show (1 : Polynomial ℚ) = Polynomial.C 1 from Polynomial.C_1.symm]
+  ring
+
+instance : Fact (Irreducible zetaEightPolynomial) where
+  out := by
+    rw [← cyclotomic_eight_rat]
+    exact Polynomial.cyclotomic.irreducible_rat (by norm_num : 0 < 8)
 
 /-- The same field, presented by adjoining a root of `X⁴ + 1`. -/
 abbrev KAdjoinRoot : Type := AdjoinRoot zetaEightPolynomial
@@ -73,19 +87,38 @@ abbrev KAdjoinRoot : Type := AdjoinRoot zetaEightPolynomial
 abbrev zetaEightRoot : KAdjoinRoot := AdjoinRoot.root zetaEightPolynomial
 
 theorem zetaEightRoot_pow_four : zetaEightRoot ^ 4 = (-1 : KAdjoinRoot) := by
-  sorry
+  have hroot : zetaEightRoot ^ 4 + 1 = 0 := by
+    simpa [zetaEightRoot, zetaEightPolynomial] using
+      (AdjoinRoot.eval₂_root zetaEightPolynomial)
+  calc
+    zetaEightRoot ^ 4 = zetaEightRoot ^ 4 + 1 - 1 := by ring
+    _ = -1 := by rw [hroot]; ring
 
 /-- The polynomial `X⁴ + 1` is the minimal polynomial of `ζ₈`. -/
 theorem zetaEightPolynomial_eq_minpoly : zetaEightPolynomial = minpoly ℚ ζ := by
-  sorry
+  rw [← cyclotomic_eight_rat]
+  exact zeta_isPrimitiveRoot.minpoly_eq_cyclotomic_of_irreducible
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num : 0 < 8))
+
+/-- The cyclotomic model is obtained by adjoining a root of the minimal polynomial of `ζ`. -/
+def zetaMinpolyAdjoinRootPresentation : IsAdjoinRoot K (minpoly ℚ ζ) := by
+  exact IsAdjoinRoot.mkOfAdjoinEqTop
+    ((IsCyclotomicExtension.integral {8} ℚ K).isIntegral ζ)
+    (IsCyclotomicExtension.adjoin_primitive_root_eq_top zeta_isPrimitiveRoot)
 
 /-- The `AdjoinRoot` presentation is equivalent to the cyclotomic model. -/
 noncomputable def adjoinRootEquivCyclotomic : KAdjoinRoot ≃ₐ[ℚ] K := by
-  sorry
+  refine (AdjoinRoot.algEquivOfEq ℚ zetaEightPolynomial (minpoly ℚ ζ) ?_).trans ?_
+  · exact zetaEightPolynomial_eq_minpoly
+  · exact zetaMinpolyAdjoinRootPresentation.adjoinRootAlgEquiv
 
 theorem adjoinRootEquivCyclotomic_root :
     adjoinRootEquivCyclotomic zetaEightRoot = ζ := by
-  sorry
+  change zetaMinpolyAdjoinRootPresentation.adjoinRootAlgEquiv
+    ((AdjoinRoot.algEquivOfEq ℚ zetaEightPolynomial (minpoly ℚ ζ)
+      zetaEightPolynomial_eq_minpoly) (AdjoinRoot.root zetaEightPolynomial)) = ζ
+  rw [AdjoinRoot.algEquivOfEq_root]
+  simp [zetaMinpolyAdjoinRootPresentation]
 
 
 end XYin.NumberField.New.CyclotomicEight

@@ -168,6 +168,50 @@ theorem intNorm_goldenInt : Algebra.norm ℤ goldenInt = -1 := by
   have h := intNorm_eq_normForm 0 1
   simpa using h
 
+private theorem normFundamentalUnit_map :
+    Units.map (Algebra.norm ℤ : (𝓞 K) →* ℤ) fundamentalUnit = (-1 : ℤˣ) := by
+  apply Units.ext
+  change Algebra.norm ℤ goldenInt = (-1 : ℤ)
+  exact intNorm_goldenInt
+
+private theorem normNegOneUnit_map :
+    Units.map (Algebra.norm ℤ : (𝓞 K) →* ℤ) (-1 : (𝓞 K)ˣ) = 1 := by
+  apply Units.ext
+  change Algebra.norm ℤ ((-1 : (𝓞 K)ˣ) : 𝓞 K) = (1 : ℤ)
+  have h := intNorm_eq_normForm (-1) 0
+  have hneg : (-1 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • goldenInt =
+      ((-1 : (𝓞 K)ˣ) : 𝓞 K) := by
+    simp
+  rw [hneg] at h
+  norm_num at h
+  simpa using h
+
+private theorem even_of_negOneUnit_zpow_eq_one {n : ℤ} (h : ((-1 : ℤˣ) ^ n) = 1) :
+    ∃ k : ℤ, n = 2 * k := by
+  by_cases he : Even n
+  · rcases he with ⟨k, hk⟩
+    refine ⟨k, ?_⟩
+    omega
+  · have ho : Odd n := Int.not_even_iff_odd.mp he
+    change ((-1 : ℤˣ) ^ n) = (1 : ℤˣ) at h
+    have hodd : ((-1 : ℤˣ) ^ n) = (-1 : ℤˣ) := Odd.neg_one_zpow (α := ℤˣ) ho
+    rw [hodd] at h
+    norm_num at h
+
+private theorem normFundamentalUnit_zpow_map (n : ℤ) :
+    Units.map (Algebra.norm ℤ : (𝓞 K) →* ℤ) (fundamentalUnit ^ n) =
+      (-1 : ℤˣ) ^ n := by
+  rw [map_zpow, normFundamentalUnit_map]
+  rfl
+
+private theorem normNegFundamentalUnit_zpow_map (n : ℤ) :
+    Units.map (Algebra.norm ℤ : (𝓞 K) →* ℤ) (-(fundamentalUnit ^ n)) =
+      (-1 : ℤˣ) ^ n := by
+  rw [show (-(fundamentalUnit ^ n) : (𝓞 K)ˣ) =
+      (-1 : (𝓞 K)ˣ) * fundamentalUnit ^ n by
+    rw [neg_eq_neg_one_mul]]
+  rw [map_mul, normNegOneUnit_map, one_mul, normFundamentalUnit_zpow_map]
+
 /-- The system of fundamental units for the rank-`1` unit group: the single unit `φ`. -/
 noncomputable def fundamentalUnitSystem : Fin (NumberField.Units.rank K) → (𝓞 K)ˣ :=
   fun _ => fundamentalUnit
@@ -201,7 +245,17 @@ theorem exists_eq_torsion_mul_fundSystem_zpow (i₀ : Fin (NumberField.Units.ran
 /-- A power of the abstract fundamental unit is torsion only for exponent zero. -/
 theorem fundSystem_zpow_mem_torsion (i₀ : Fin (NumberField.Units.rank K)) (n : ℤ)
     (hn : NumberField.Units.fundSystem K i₀ ^ n ∈ NumberField.Units.torsion K) : n = 0 := by
-  sorry
+  have hq : Additive.ofMul ((QuotientGroup.mk ((NumberField.Units.fundSystem K i₀) ^ n) :
+      (𝓞 K)ˣ ⧸ NumberField.Units.torsion K)) = 0 := by
+    rw [ofMul_eq_zero]
+    exact (QuotientGroup.eq_one_iff ((NumberField.Units.fundSystem K i₀) ^ n)).mpr hn
+  rw [QuotientGroup.mk_zpow, ofMul_zpow, NumberField.Units.fundSystem_mk] at hq
+  letI : Module ℤ (Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K)) :=
+    AddCommGroup.toIntModule (Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K))
+  have hrepr := congrArg
+    (fun x : Additive ((𝓞 K)ˣ ⧸ NumberField.Units.torsion K) =>
+      ((NumberField.Units.basisModTorsion K).repr x) i₀) hq
+  simpa [Module.Basis.repr_self, Module.Basis.repr_self_apply] using hrepr
 
 /-- Pointwise classification of the torsion: a torsion unit is `1` or `-1`. -/
 theorem eq_one_or_neg_one_of_mem_torsion {ζ : (𝓞 K)ˣ}
@@ -254,7 +308,20 @@ theorem normOneUnit_generated_by_fundamentalUnit_sq (u : (𝓞 K)ˣ)
     (hu : Algebra.norm ℤ (u : 𝓞 K) = 1) :
     ∃ n : ℤ, u = fundamentalUnit ^ (2 * n) ∨
       u = -(fundamentalUnit ^ (2 * n)) := by
-  sorry
+  have hnormUnit : Units.map (Algebra.norm ℤ : (𝓞 K) →* ℤ) u = 1 := by
+    apply Units.ext
+    exact hu
+  obtain ⟨n, hn | hn⟩ := fundamentalUnit_generates u
+  · have hpow : ((-1 : ℤˣ) ^ n) = 1 := by
+      rw [hn, normFundamentalUnit_zpow_map] at hnormUnit
+      exact hnormUnit
+    obtain ⟨k, hk⟩ := even_of_negOneUnit_zpow_eq_one hpow
+    exact ⟨k, Or.inl (by simpa [hk] using hn)⟩
+  · have hpow : ((-1 : ℤˣ) ^ n) = 1 := by
+      rw [hn, normNegFundamentalUnit_zpow_map] at hnormUnit
+      exact hnormUnit
+    obtain ⟨k, hk⟩ := even_of_negOneUnit_zpow_eq_one hpow
+    exact ⟨k, Or.inr (by simpa [hk] using hn)⟩
 
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :

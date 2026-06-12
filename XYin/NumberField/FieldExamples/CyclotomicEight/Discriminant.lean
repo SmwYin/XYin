@@ -22,7 +22,8 @@ theorem numberField_discr_eq : NumberField.discr K = (256 : ℤ) := by
 /-- The discriminant of the explicit integral basis `1, ζ, ζ², ζ³` is `256`. -/
 theorem concreteIntegralBasis_discr :
     Algebra.discr ℤ concreteIntegralBasis = (256 : ℤ) := by
-  sorry
+  simpa [numberField_discr_eq] using
+    (NumberField.discr_eq_discr (K := K) concreteIntegralBasis)
 
 
 end XYin.NumberField.New.CyclotomicEight

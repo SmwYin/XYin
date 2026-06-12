@@ -112,20 +112,121 @@ def normForm {R : Type*} [CommRing R] (a b c d : R) : R :=
 theorem norm_eq_normForm (a b c d : ℚ) :
     Algebra.norm ℚ
       (a • (1 : K) + b • ζ + c • ζ ^ 2 + d • ζ ^ 3) = normForm a b c d := by
-  sorry
+  have hx : a • (1 : K) + b • ζ + c • ζ ^ 2 + d • ζ ^ 3 =
+      (a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3 := by
+    simp [Algebra.smul_def]
+  rw [hx]
+  have e3 : sig3 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
+      (a : K) + (d : K) * ζ - (c : K) * ζ ^ 2 + (b : K) * ζ ^ 3 := by
+    simp only [map_add, map_mul, map_pow, sig3_zeta]
+    rw [show sig3 (a : K) = (a : K) by simp,
+      show sig3 (b : K) = (b : K) by simp,
+      show sig3 (c : K) = (c : K) by simp,
+      show sig3 (d : K) = (d : K) by simp]
+    have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+    have h9 : ζ ^ 9 = ζ := by linear_combination ζ * zeta_pow_eight
+    rw [show (ζ ^ 3) ^ 2 = ζ ^ 6 by ring,
+      show (ζ ^ 3) ^ 3 = ζ ^ 9 by ring, h6, h9]
+    ring_nf
+  have e5 : sig5 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
+      (a : K) - (b : K) * ζ + (c : K) * ζ ^ 2 - (d : K) * ζ ^ 3 := by
+    simp only [map_add, map_mul, map_pow, sig5_zeta]
+    rw [show sig5 (a : K) = (a : K) by simp,
+      show sig5 (b : K) = (b : K) by simp,
+      show sig5 (c : K) = (c : K) by simp,
+      show sig5 (d : K) = (d : K) by simp]
+    have h5 : ζ ^ 5 = -ζ := by linear_combination ζ * zeta_pow_four
+    have h10 : ζ ^ 10 = ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_eight
+    have h15 : ζ ^ 15 = -ζ ^ 3 := by
+      have h7 : ζ ^ 7 = -ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_four
+      have h157 : ζ ^ 15 = ζ ^ 7 := by linear_combination ζ ^ 7 * zeta_pow_eight
+      rw [h157, h7]
+    rw [show (ζ ^ 5) ^ 2 = ζ ^ 10 by ring,
+      show (ζ ^ 5) ^ 3 = ζ ^ 15 by ring, h5, h10, h15]
+    ring_nf
+  have e7 : sig7 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
+      (a : K) - (d : K) * ζ - (c : K) * ζ ^ 2 - (b : K) * ζ ^ 3 := by
+    simp only [map_add, map_mul, map_pow, sig7_zeta]
+    rw [show sig7 (a : K) = (a : K) by simp,
+      show sig7 (b : K) = (b : K) by simp,
+      show sig7 (c : K) = (c : K) by simp,
+      show sig7 (d : K) = (d : K) by simp]
+    have h7 : ζ ^ 7 = -ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_four
+    have h14 : ζ ^ 14 = -ζ ^ 2 := by
+      have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+      have h146 : ζ ^ 14 = ζ ^ 6 := by linear_combination ζ ^ 6 * zeta_pow_eight
+      rw [h146, h6]
+    have h21 : ζ ^ 21 = -ζ := by
+      have h5 : ζ ^ 5 = -ζ := by linear_combination ζ * zeta_pow_four
+      have h2113 : ζ ^ 21 = ζ ^ 13 := by linear_combination ζ ^ 13 * zeta_pow_eight
+      have h135 : ζ ^ 13 = ζ ^ 5 := by linear_combination ζ ^ 5 * zeta_pow_eight
+      rw [h2113, h135, h5]
+    rw [show (ζ ^ 7) ^ 2 = ζ ^ 14 by ring,
+      show (ζ ^ 7) ^ 3 = ζ ^ 21 by ring, h7, h14, h21]
+    ring_nf
+  haveI := IsCyclotomicExtension.isGalois {8} ℚ K
+  apply (algebraMap ℚ K).injective
+  rw [Algebra.norm_eq_prod_automorphisms, prod_aut_apply, e3, e5, e7]
+  have hpair1 : ((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+      ((a : K) - b * ζ + c * ζ ^ 2 - d * ζ ^ 3) =
+      ((a : K) ^ 2 - c ^ 2 + 2 * b * d) + (2 * a * c - b ^ 2 + d ^ 2) * ζ ^ 2 := by
+    have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+    ring_nf
+    rw [zeta_pow_four, h6]
+    ring
+  have hpair2 : ((a : K) + d * ζ - c * ζ ^ 2 + b * ζ ^ 3) *
+      ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3) =
+      ((a : K) ^ 2 - c ^ 2 + 2 * b * d) - (2 * a * c - b ^ 2 + d ^ 2) * ζ ^ 2 := by
+    have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+    ring_nf
+    rw [zeta_pow_four, h6]
+    ring
+  rw [show ((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+      ((a : K) + d * ζ - c * ζ ^ 2 + b * ζ ^ 3) *
+      ((a : K) - b * ζ + c * ζ ^ 2 - d * ζ ^ 3) *
+      ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3) =
+      (((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+        ((a : K) - b * ζ + c * ζ ^ 2 - d * ζ ^ 3)) *
+      (((a : K) + d * ζ - c * ζ ^ 2 + b * ζ ^ 3) *
+        ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3)) by ring]
+  rw [hpair1, hpair2, normForm]
+  push_cast
+  ring_nf
+  rw [zeta_pow_four]
+  norm_num
+  ring_nf
 
 /-- The integral norm form on `𝓞 K = ℤ[ζ]`. -/
 theorem intNorm_eq_normForm (a b c d : ℤ) :
     Algebra.norm ℤ
       (a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3) =
         normForm a b c d := by
-  sorry
+  let x : 𝓞 K := a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3
+  change Algebra.norm ℤ x = normForm a b c d
+  have hx : algebraMap (𝓞 K) K x =
+      (a : ℚ) • (1 : K) + (b : ℚ) • ζ + (c : ℚ) • ζ ^ 2 + (d : ℚ) • ζ ^ 3 := by
+    simp [x, coe_zetaInt, Algebra.smul_def]
+  have hcoe : ((Algebra.norm ℤ x : ℤ) : ℚ) =
+      Algebra.norm ℚ (algebraMap (𝓞 K) K x) :=
+    Algebra.coe_norm_int x
+  rw [hx, norm_eq_normForm] at hcoe
+  norm_num [normForm] at hcoe ⊢
+  exact_mod_cast hcoe
 
 /-- The unit equation for `ℤ[ζ₈]` in the integral power basis. -/
 theorem isUnit_iff_normForm (a b c d : ℤ) :
     IsUnit (a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3) ↔
       (normForm a b c d).natAbs = 1 := by
-  sorry
+  rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm, ← Algebra.coe_norm_int,
+    intNorm_eq_normForm]
+  constructor
+  · intro h
+    apply Nat.cast_injective (R := ℚ)
+    rw [Nat.cast_natAbs, Int.cast_abs]
+    exact h
+  · intro h
+    have hq : ((normForm a b c d).natAbs : ℚ) = 1 := by exact_mod_cast h
+    rwa [Nat.cast_natAbs, Int.cast_abs] at hq
 
 private theorem cyclotomic_eight_int : Polynomial.cyclotomic 8 ℤ = Polynomial.X ^ 4 + 1 := by
   have h4 : Polynomial.cyclotomic 4 ℤ = Polynomial.X ^ 2 + 1 := by

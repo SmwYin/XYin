@@ -72,7 +72,17 @@ abbrev zetaFivePolynomial : ℚ[X] :=
 
 instance : Fact (Irreducible zetaFivePolynomial) where
   out := by
-    sorry
+    rw [zetaFivePolynomial]
+    haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+    have hΦ :
+        Polynomial.cyclotomic 5 ℚ =
+          Polynomial.X ^ 4 + Polynomial.X ^ 3 + Polynomial.X ^ 2 + Polynomial.X +
+            Polynomial.C 1 := by
+      rw [Polynomial.cyclotomic_prime]
+      simp [Finset.sum_range_succ]
+      ring
+    rw [← hΦ]
+    exact Polynomial.cyclotomic.irreducible_rat (by norm_num : 0 < 5)
 
 /-- The `AdjoinRoot` presentation of `ℚ(ζ₅)`. -/
 abbrev KAdjoinRoot : Type := AdjoinRoot zetaFivePolynomial
@@ -83,27 +93,54 @@ abbrev zetaFiveRoot : KAdjoinRoot := AdjoinRoot.root zetaFivePolynomial
 /-- The formal root satisfies `Φ₅(ζ) = 0` in the `AdjoinRoot` model. -/
 theorem zetaFiveRoot_relation :
     1 + zetaFiveRoot + zetaFiveRoot ^ 2 + zetaFiveRoot ^ 3 + zetaFiveRoot ^ 4 = 0 := by
-  sorry
+  have hroot :
+      zetaFiveRoot ^ 4 + zetaFiveRoot ^ 3 + zetaFiveRoot ^ 2 + zetaFiveRoot + 1 = 0 := by
+    simpa [zetaFiveRoot, zetaFivePolynomial] using
+      (AdjoinRoot.eval₂_root zetaFivePolynomial)
+  calc
+    1 + zetaFiveRoot + zetaFiveRoot ^ 2 + zetaFiveRoot ^ 3 + zetaFiveRoot ^ 4 =
+        zetaFiveRoot ^ 4 + zetaFiveRoot ^ 3 + zetaFiveRoot ^ 2 + zetaFiveRoot + 1 := by
+      ring
+    _ = 0 := hroot
 
 /-- The explicit polynomial `X^4 + X^3 + X^2 + X + 1` is the minimal polynomial of `ζ`. -/
 theorem zetaFivePolynomial_eq_minpoly : zetaFivePolynomial = minpoly ℚ ζ := by
-  sorry
+  rw [zetaFivePolynomial]
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  have hΦ :
+      Polynomial.cyclotomic 5 ℚ =
+        Polynomial.X ^ 4 + Polynomial.X ^ 3 + Polynomial.X ^ 2 + Polynomial.X +
+          Polynomial.C 1 := by
+    rw [Polynomial.cyclotomic_prime]
+    simp [Finset.sum_range_succ]
+    ring
+  rw [← hΦ]
+  exact zeta_isPrimitiveRoot.minpoly_eq_cyclotomic_of_irreducible
+    (Polynomial.cyclotomic.irreducible_rat (by norm_num : 0 < 5))
 
 /-- The cyclotomic model is obtained by adjoining a root of the minimal polynomial of `ζ`. -/
 def zetaMinpolyAdjoinRootPresentation : IsAdjoinRoot K (minpoly ℚ ζ) := by
-  sorry
+  exact IsAdjoinRoot.mkOfAdjoinEqTop
+    ((IsCyclotomicExtension.integral {5} ℚ K).isIntegral ζ)
+    (IsCyclotomicExtension.adjoin_primitive_root_eq_top zeta_isPrimitiveRoot)
 
 /--
 The `AdjoinRoot Φ₅` construction and the cyclotomic-field construction are equivalent as
 `ℚ`-algebras.
 -/
 noncomputable def adjoinRootEquivCyclotomic : KAdjoinRoot ≃ₐ[ℚ] K := by
-  sorry
+  refine (AdjoinRoot.algEquivOfEq ℚ zetaFivePolynomial (minpoly ℚ ζ) ?_).trans ?_
+  · exact zetaFivePolynomial_eq_minpoly
+  · exact zetaMinpolyAdjoinRootPresentation.adjoinRootAlgEquiv
 
 /-- Under the equivalence, the formal adjoining root is the cyclotomic root `ζ`. -/
 theorem adjoinRootEquivCyclotomic_root :
     adjoinRootEquivCyclotomic zetaFiveRoot = ζ := by
-  sorry
+  change zetaMinpolyAdjoinRootPresentation.adjoinRootAlgEquiv
+    ((AdjoinRoot.algEquivOfEq ℚ zetaFivePolynomial (minpoly ℚ ζ)
+      zetaFivePolynomial_eq_minpoly) (AdjoinRoot.root zetaFivePolynomial)) = ζ
+  rw [AdjoinRoot.algEquivOfEq_root]
+  simp [zetaMinpolyAdjoinRootPresentation]
 
 
 end XYin.NumberField.New.CyclotomicFive

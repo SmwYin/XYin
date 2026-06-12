@@ -9,6 +9,110 @@ namespace XYin.NumberField.New.SqrtNegSixQuadraticAlgebra
 
 /-! ## 5. Splitting of primes -/
 
+/-- Nonzero ideals with equal absolute norms and one inclusion are equal. -/
+private theorem eq_of_le_of_absNorm_eq {I J : Ideal (𝓞 K)} (hle : I ≤ J) {n : ℕ}
+    (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J := by
+  obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
+  have hmul := _root_.map_mul Ideal.absNorm J C
+  rw [← hC, hI, hJ] at hmul
+  have hC1 : Ideal.absNorm C = 1 :=
+    (Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hn)
+      (by rw [mul_one]; exact hmul)).symm
+  rw [hC, Ideal.absNorm_eq_one_iff.mp hC1, Ideal.mul_top]
+
+/-- A rational prime generates an ideal of norm `p²` in `𝓞 K`. -/
+private theorem absNorm_span_natCast (p : ℕ) :
+    Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
+  have h := intNorm_eq_normForm (p : ℤ) 0
+  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt = ((p : ℕ) : 𝓞 K) := by
+    simp
+  rw [hps] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  simp [Int.natAbs_pow]
+
+/-- An element `A + Bθ` with `B = ±1` is never divisible by a rational prime `p ≥ 2`. -/
+private theorem unit_theta_coeff_not_mem (p : ℕ) (hp : 2 ≤ p) (A B : ℤ)
+    (hB : B = 1 ∨ B = -1) :
+    ((A : ℤ) : 𝓞 K) + ((B : ℤ) : 𝓞 K) * thetaInt ∉
+      Ideal.span {((p : ℕ) : 𝓞 K)} := by
+  intro hmem
+  rw [Ideal.mem_span_singleton] at hmem
+  obtain ⟨z, hz⟩ := hmem
+  obtain ⟨A', m, hAm⟩ := exists_eq_smul_one_add_smul_theta z
+  rw [hAm] at hz
+  have hsum : ∑ i : Fin 2,
+      (![A - p * A', B - p * m] i) • (![(1 : 𝓞 K), thetaInt] i) = 0 := by
+    rw [Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, zsmul_eq_mul] at hz ⊢
+    push_cast at hz ⊢
+    linear_combination hz
+  have hcoeff := Fintype.linearIndependent_iff.mp linearIndependent_one_theta _ hsum 1
+  simp only [Matrix.cons_val_one, Matrix.cons_val_zero] at hcoeff
+  rcases hB with rfl | rfl
+  · have h1 : (p : ℤ) ∣ 1 := ⟨m, by linarith [hcoeff]⟩
+    have := Int.le_of_dvd one_pos h1
+    omega
+  · have h1 : (p : ℤ) ∣ 1 := ⟨-m, by linarith [hcoeff]⟩
+    have := Int.le_of_dvd one_pos h1
+    omega
+
+private theorem isSquare_neg_six_iff_mod_twentyfour
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
+    IsSquare ((-6 : ℤ) : ZMod p) ↔
+      p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11 := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hodd : Odd p := hp.odd_of_ne_two hp2
+  have hjmod : jacobiSym (-6) p = jacobiSym (-6) (p % 24) := by
+    simpa using (jacobiSym.mod_right (-6) hodd)
+  have hcases : p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11 ∨
+      p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23 := by
+    have hpmod2 : p % 2 ≠ 0 := by
+      intro h0
+      exact hp2 (((Nat.prime_dvd_prime_iff_eq (by norm_num) hp).mp
+        (Nat.dvd_of_mod_eq_zero h0)).symm)
+    have hpmod3 : p % 3 ≠ 0 := by
+      intro h0
+      exact hp3 (((Nat.prime_dvd_prime_iff_eq (by norm_num) hp).mp
+        (Nat.dvd_of_mod_eq_zero h0)).symm)
+    omega
+  constructor
+  · intro hs
+    have hnotneg : jacobiSym (-6) p ≠ -1 := by
+      intro hj
+      exact (ZMod.nonsquare_iff_jacobiSym_eq_neg_one.mp hj) hs
+    rcases hcases with h | h | h | h | h | h | h | h
+    · exact Or.inl h
+    · exact Or.inr (Or.inl h)
+    · exact Or.inr (Or.inr (Or.inl h))
+    · exact Or.inr (Or.inr (Or.inr h))
+    · exfalso; apply hnotneg; rw [hjmod, h]; norm_num
+    · exfalso; apply hnotneg; rw [hjmod, h]; norm_num
+    · exfalso; apply hnotneg; rw [hjmod, h]; norm_num
+    · exfalso; apply hnotneg; rw [hjmod, h]; norm_num
+  · intro hmod
+    apply ZMod.isSquare_of_jacobiSym_eq_one
+    rw [hjmod]
+    rcases hmod with h | h | h | h
+    · rw [h]; norm_num
+    · rw [h]; norm_num
+    · rw [h]; norm_num
+    · rw [h]; norm_num
+
+private theorem exists_int_inverse_mod_prime
+    (p : ℕ) [Fact p.Prime] (a : ℤ) (ha : (a : ZMod p) ≠ 0) :
+    ∃ m : ℕ, ∃ k : ℤ, (m : ℤ) * a - 1 = (p : ℤ) * k := by
+  refine ⟨(((a : ZMod p)⁻¹).val), ?_⟩
+  have hm : (((((a : ZMod p)⁻¹).val : ℕ) : ZMod p) * (a : ZMod p)) = 1 := by
+    rw [ZMod.natCast_rightInverse]
+    exact inv_mul_cancel₀ ha
+  have hlift : (p : ℤ) ∣ (((((a : ZMod p)⁻¹).val : ℕ) : ℤ) * a - 1) := by
+    rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+    push_cast
+    linear_combination hm
+  obtain ⟨k, hk⟩ := hlift
+  exact ⟨k, hk⟩
+
 /-- The ramified prime above `2`: the ideal `(2, θ)`. It is *not* principal — see
 `not_isPrincipal_primeAboveTwo`. -/
 def primeAboveTwo : Ideal (𝓞 K) := Ideal.span {(2 : 𝓞 K), thetaInt}
@@ -130,6 +234,123 @@ theorem isPrime_primeAboveThree : primeAboveThree.IsPrime := by
     nlinarith
   rw [habs]
   exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
+
+theorem absNorm_primeAboveThree : Ideal.absNorm primeAboveThree = 3 := by
+  have hspan : Ideal.absNorm (Ideal.span {(3 : 𝓞 K)}) = 9 := by
+    have h := intNorm_eq_normForm 3 0
+    have heq : (3 : 𝓞 K) = (3 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt := by simp
+    rw [Ideal.absNorm_span_singleton, heq, h]
+    rfl
+  have h := congrArg Ideal.absNorm span_three_eq
+  rw [hspan, map_pow] at h
+  nlinarith
+
+/-- The principal ideal `(θ)` is the product of the two ramified primes above `2` and `3`. -/
+theorem span_theta_eq : Ideal.span {thetaInt} = primeAboveTwo * primeAboveThree := by
+  rw [primeAboveTwo, primeAboveThree, Ideal.span_pair_mul_span_pair]
+  apply le_antisymm
+  · rw [Ideal.span_le, Set.singleton_subset_iff]
+    have h2θ : (2 : 𝓞 K) * thetaInt ∈
+        Ideal.span
+          ({(2 : 𝓞 K) * 3, (2 : 𝓞 K) * thetaInt, thetaInt * 3,
+            thetaInt * thetaInt} : Set (𝓞 K)) :=
+      Ideal.subset_span (by simp)
+    have h3θ : thetaInt * 3 ∈
+        Ideal.span
+          ({(2 : 𝓞 K) * 3, (2 : 𝓞 K) * thetaInt, thetaInt * 3,
+            thetaInt * thetaInt} : Set (𝓞 K)) :=
+      Ideal.subset_span (by simp)
+    convert Ideal.sub_mem _ h3θ h2θ using 1
+    ring
+  · rw [Ideal.span_le]
+    intro z hz
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hz
+    rcases hz with rfl | rfl | rfl | rfl
+    · rw [show (2 : 𝓞 K) * 3 = thetaInt * (-thetaInt) by
+        rw [show thetaInt * (-thetaInt) = -(thetaInt ^ 2) by ring, thetaInt_sq]
+        ring]
+      exact Ideal.mem_span_singleton.mpr ⟨-thetaInt, by ring⟩
+    · exact Ideal.mem_span_singleton.mpr ⟨(2 : 𝓞 K), by ring⟩
+    · exact Ideal.mem_span_singleton.mpr ⟨(3 : 𝓞 K), by ring⟩
+    · exact Ideal.mem_span_singleton.mpr ⟨thetaInt, by ring⟩
+
+theorem ideal_eq_primeAboveTwo_of_absNorm_eq_two
+    (I : Ideal (𝓞 K)) (hI : Ideal.absNorm I = 2) : I = primeAboveTwo := by
+  have hIprime : I.IsPrime := by
+    apply Ideal.isPrime_of_irreducible_absNorm
+    rw [hI]
+    exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
+  haveI : I.IsPrime := hIprime
+  have h2mem : (2 : 𝓞 K) ∈ I := by
+    have hunder := Ideal.span_singleton_absNorm (S := 𝓞 K) (I := I) (by rw [hI]; norm_num)
+    have hmem_under : (2 : ℤ) ∈ Ideal.comap (algebraMap ℤ (𝓞 K)) I := by
+      rw [← hunder]
+      rw [hI]
+      exact Ideal.mem_span_singleton_self _
+    have hmem : ((2 : ℤ) : 𝓞 K) ∈ I := by
+      simpa [Ideal.mem_comap] using hmem_under
+    norm_num at hmem ⊢
+    exact hmem
+  have hθmem : thetaInt ∈ I := by
+    rw [← Ideal.Quotient.eq_zero_iff_mem]
+    have hsq : (Ideal.Quotient.mk I thetaInt) ^ 2 = 0 := by
+      rw [← map_pow, thetaInt_sq]
+      rw [map_neg, map_ofNat]
+      change -(6 : (𝓞 K) ⧸ I) = 0
+      have h6mem : (6 : 𝓞 K) ∈ I := by
+        convert Ideal.mul_mem_left I (3 : 𝓞 K) h2mem using 1
+        norm_num
+      rw [← Ideal.Quotient.eq_zero_iff_mem] at h6mem
+      norm_num at h6mem ⊢
+      exact h6mem
+    exact sq_eq_zero_iff.mp hsq
+  symm
+  exact eq_of_le_of_absNorm_eq (by
+    rw [primeAboveTwo, Ideal.span_le]
+    intro z hz
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hz
+    rcases hz with rfl | rfl
+    · exact h2mem
+    · exact hθmem) absNorm_primeAboveTwo hI (by norm_num)
+
+theorem ideal_eq_primeAboveThree_of_absNorm_eq_three
+    (I : Ideal (𝓞 K)) (hI : Ideal.absNorm I = 3) : I = primeAboveThree := by
+  have hIprime : I.IsPrime := by
+    apply Ideal.isPrime_of_irreducible_absNorm
+    rw [hI]
+    exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
+  haveI : I.IsPrime := hIprime
+  have h3mem : (3 : 𝓞 K) ∈ I := by
+    have hunder := Ideal.span_singleton_absNorm (S := 𝓞 K) (I := I) (by rw [hI]; norm_num)
+    have hmem_under : (3 : ℤ) ∈ Ideal.comap (algebraMap ℤ (𝓞 K)) I := by
+      rw [← hunder]
+      rw [hI]
+      exact Ideal.mem_span_singleton_self _
+    have hmem : ((3 : ℤ) : 𝓞 K) ∈ I := by
+      simpa [Ideal.mem_comap] using hmem_under
+    norm_num at hmem ⊢
+    exact hmem
+  have hθmem : thetaInt ∈ I := by
+    rw [← Ideal.Quotient.eq_zero_iff_mem]
+    have hsq : (Ideal.Quotient.mk I thetaInt) ^ 2 = 0 := by
+      rw [← map_pow, thetaInt_sq]
+      rw [map_neg, map_ofNat]
+      change -(6 : (𝓞 K) ⧸ I) = 0
+      have h6mem : (6 : 𝓞 K) ∈ I := by
+        convert Ideal.mul_mem_left I (2 : 𝓞 K) h3mem using 1
+        norm_num
+      rw [← Ideal.Quotient.eq_zero_iff_mem] at h6mem
+      norm_num at h6mem ⊢
+      exact h6mem
+    exact sq_eq_zero_iff.mp hsq
+  symm
+  exact eq_of_le_of_absNorm_eq (by
+    rw [primeAboveThree, Ideal.span_le]
+    intro z hz
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hz
+    rcases hz with rfl | rfl
+    · exact h3mem
+    · exact hθmem) absNorm_primeAboveThree hI (by norm_num)
 
 /-- The elementary identity `7 = (1 + θ)(1 - θ)` in `ℤ[θ]` (norms: `1 + 6 = 7`). -/
 theorem seven_eq_mul : (7 : 𝓞 K) = (1 + thetaInt) * (1 - thetaInt) := by
@@ -336,7 +557,250 @@ theorem splits_iff_mod_twentyfour (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 
     (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
       Ideal.span {(p : 𝓞 K)} = P * Q) ↔
         p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11 := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  haveI : NeZero p := ⟨hp.ne_zero⟩
+  constructor
+  · rintro ⟨P, Q, hPprime, hQprime, hPQne, hspan⟩
+    have hmul : Ideal.absNorm P * Ideal.absNorm Q = p ^ 2 := by
+      rw [← _root_.map_mul Ideal.absNorm, ← hspan, absNorm_span_natCast]
+    have hP1 : Ideal.absNorm P ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      exact hPprime.ne_top
+    have hQ1 : Ideal.absNorm Q ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      exact hQprime.ne_top
+    have hNP : Ideal.absNorm P = p := by
+      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow hp).mp ⟨_, hmul.symm⟩
+      interval_cases k
+      · rw [pow_zero] at hkeq
+        exact absurd hkeq hP1
+      · rw [pow_one] at hkeq
+        exact hkeq
+      · exfalso
+        rw [hkeq] at hmul
+        have hQ1' : Ideal.absNorm Q = 1 :=
+          Nat.eq_of_mul_eq_mul_left (pow_pos hp.pos 2) (by rw [mul_one]; exact hmul)
+        exact hQ1 hQ1'
+    have hcard : Nat.card ((𝓞 K) ⧸ P) = p := by
+      rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hNP
+      exact hNP
+    haveI : Finite ((𝓞 K) ⧸ P) :=
+      Nat.finite_of_card_ne_zero (by rw [hcard]; exact hp.pos.ne')
+    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+    have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by
+      rw [← Nat.card_eq_fintype_card]
+      exact hcard
+    let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
+    obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P thetaInt)
+    have ht2 : t ^ 2 + 6 = 0 := by
+      apply e.injective
+      rw [map_add, map_pow, ht, map_ofNat, ← map_pow (Ideal.Quotient.mk P), thetaInt_sq]
+      rw [map_zero, map_neg, map_ofNat]
+      ring
+    have hsq : IsSquare ((-6 : ℤ) : ZMod p) := by
+      refine ⟨t, ?_⟩
+      push_cast
+      linear_combination -ht2
+    exact (isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mp hsq
+  · intro hmod
+    have hsq : IsSquare ((-6 : ℤ) : ZMod p) :=
+      (isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mpr hmod
+    obtain ⟨s, hs⟩ := hsq
+    have h2ne : (2 : ZMod p) ≠ 0 := by
+      intro h0
+      exact hp2 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp
+        ((ZMod.natCast_eq_zero_iff 2 p).mp (by exact_mod_cast h0)))
+    set c : ℤ := (s.val : ℤ) with hcdef
+    set d : ℤ := ((-s).val : ℤ) with hddef
+    have hct : ((c : ℤ) : ZMod p) = s := by
+      rw [hcdef]
+      exact_mod_cast ZMod.natCast_rightInverse s
+    have hdt : ((d : ℤ) : ZMod p) = -s := by
+      rw [hddef]
+      exact_mod_cast ZMod.natCast_rightInverse (-s)
+    have hdvd1 : (p : ℤ) ∣ c + d := by
+      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+      push_cast
+      rw [hct, hdt]
+      ring
+    have hdvd2 : (p : ℤ) ∣ c * d - 6 := by
+      rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
+      push_cast
+      rw [hct, hdt]
+      linear_combination hs
+    obtain ⟨k₁, hk₁⟩ := hdvd1
+    obtain ⟨k₂, hk₂⟩ := hdvd2
+    have hk₁K : (c : 𝓞 K) + (d : 𝓞 K) = ((p : ℕ) : 𝓞 K) * (k₁ : 𝓞 K) := by
+      have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 K)) hk₁
+      push_cast at h
+      exact h
+    have hk₂K : (c : 𝓞 K) * (d : 𝓞 K) - 6 =
+        ((p : ℕ) : 𝓞 K) * (k₂ : 𝓞 K) := by
+      have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 K)) hk₂
+      push_cast at h
+      exact h
+    have hprod : (thetaInt - (c : 𝓞 K)) * (thetaInt - (d : 𝓞 K)) =
+        ((p : ℕ) : 𝓞 K) * (-(k₁ : 𝓞 K) * thetaInt + (k₂ : 𝓞 K)) := by
+      linear_combination thetaInt_sq - thetaInt * hk₁K + hk₂K
+    set P := Ideal.span {((p : ℕ) : 𝓞 K), thetaInt - (c : 𝓞 K)} with hPdef
+    set Q := Ideal.span {((p : ℕ) : 𝓞 K), thetaInt - (d : 𝓞 K)} with hQdef
+    have hp_memP : ((p : ℕ) : 𝓞 K) ∈ P := Ideal.subset_span (Set.mem_insert _ _)
+    have htc_memP : thetaInt - (c : 𝓞 K) ∈ P :=
+      Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+    have hp_memQ : ((p : ℕ) : 𝓞 K) ∈ Q := Ideal.subset_span (Set.mem_insert _ _)
+    have htd_memQ : thetaInt - (d : 𝓞 K) ∈ Q :=
+      Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
+    have hPle : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ P :=
+      (Ideal.span_singleton_le_iff_mem _).mpr hp_memP
+    have hQle : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ Q :=
+      (Ideal.span_singleton_le_iff_mem _).mpr hp_memQ
+    have hnorm : ∀ (I : Ideal (𝓞 K)), Ideal.span {((p : ℕ) : 𝓞 K)} ≤ I →
+        Ideal.absNorm I ≠ 1 → Ideal.absNorm I ≠ p ^ 2 → Ideal.absNorm I = p := by
+      intro I hle h1 hpsq
+      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow hp).mp
+        ((absNorm_span_natCast p) ▸ Ideal.absNorm_dvd_absNorm_of_le hle)
+      interval_cases k
+      · rw [pow_zero] at hkeq
+        exact absurd hkeq h1
+      · rw [pow_one] at hkeq
+        exact hkeq
+      · exact absurd hkeq hpsq
+    have hPnot1 : Ideal.absNorm P ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      intro htop
+      have h1 : (1 : 𝓞 K) ∈ P := htop ▸ Submodule.mem_top
+      rw [hPdef, Ideal.mem_span_pair] at h1
+      obtain ⟨α, β, hαβ⟩ := h1
+      have htd : thetaInt - (d : 𝓞 K) ∈ Ideal.span {((p : ℕ) : 𝓞 K)} := by
+        rw [Ideal.mem_span_singleton]
+        refine ⟨α * (thetaInt - (d : 𝓞 K)) +
+          β * (-(k₁ : 𝓞 K) * thetaInt + (k₂ : 𝓞 K)), ?_⟩
+        calc thetaInt - (d : 𝓞 K)
+            = (α * ((p : ℕ) : 𝓞 K) + β * (thetaInt - (c : 𝓞 K))) *
+                (thetaInt - (d : 𝓞 K)) := by
+              rw [hαβ, one_mul]
+          _ = ((p : ℕ) : 𝓞 K) * (α * (thetaInt - (d : 𝓞 K)) +
+                β * (-(k₁ : 𝓞 K) * thetaInt + (k₂ : 𝓞 K))) := by
+              linear_combination β * hprod
+      refine unit_theta_coeff_not_mem p hp.two_le (-d) 1 (Or.inl rfl) ?_
+      rw [show ((-d : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * thetaInt =
+        thetaInt - (d : 𝓞 K) by push_cast; ring]
+      exact htd
+    have hQnot1 : Ideal.absNorm Q ≠ 1 := by
+      rw [Ne, Ideal.absNorm_eq_one_iff]
+      intro htop
+      have h1 : (1 : 𝓞 K) ∈ Q := htop ▸ Submodule.mem_top
+      rw [hQdef, Ideal.mem_span_pair] at h1
+      obtain ⟨α, β, hαβ⟩ := h1
+      have htc : thetaInt - (c : 𝓞 K) ∈ Ideal.span {((p : ℕ) : 𝓞 K)} := by
+        rw [Ideal.mem_span_singleton]
+        refine ⟨α * (thetaInt - (c : 𝓞 K)) +
+          β * (-(k₁ : 𝓞 K) * thetaInt + (k₂ : 𝓞 K)), ?_⟩
+        calc thetaInt - (c : 𝓞 K)
+            = (α * ((p : ℕ) : 𝓞 K) + β * (thetaInt - (d : 𝓞 K))) *
+                (thetaInt - (c : 𝓞 K)) := by
+              rw [hαβ, one_mul]
+          _ = ((p : ℕ) : 𝓞 K) * (α * (thetaInt - (c : 𝓞 K)) +
+                β * (-(k₁ : 𝓞 K) * thetaInt + (k₂ : 𝓞 K))) := by
+              linear_combination β * hprod
+      refine unit_theta_coeff_not_mem p hp.two_le (-c) 1 (Or.inl rfl) ?_
+      rw [show ((-c : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * thetaInt =
+        thetaInt - (c : 𝓞 K) by push_cast; ring]
+      exact htc
+    have hPnotsq : Ideal.absNorm P ≠ p ^ 2 := by
+      intro hNP
+      have heq := eq_of_le_of_absNorm_eq hPle (absNorm_span_natCast p) hNP
+        (pow_ne_zero 2 hp.pos.ne')
+      refine unit_theta_coeff_not_mem p hp.two_le (-c) 1 (Or.inl rfl) ?_
+      rw [show ((-c : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * thetaInt =
+        thetaInt - (c : 𝓞 K) by push_cast; ring]
+      rw [heq]
+      exact htc_memP
+    have hQnotsq : Ideal.absNorm Q ≠ p ^ 2 := by
+      intro hNQ
+      have heq := eq_of_le_of_absNorm_eq hQle (absNorm_span_natCast p) hNQ
+        (pow_ne_zero 2 hp.pos.ne')
+      refine unit_theta_coeff_not_mem p hp.two_le (-d) 1 (Or.inl rfl) ?_
+      rw [show ((-d : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * thetaInt =
+        thetaInt - (d : 𝓞 K) by push_cast; ring]
+      rw [heq]
+      exact htd_memQ
+    have hNP : Ideal.absNorm P = p := hnorm P hPle hPnot1 hPnotsq
+    have hNQ : Ideal.absNorm Q = p := hnorm Q hQle hQnot1 hQnotsq
+    have hPprime : P.IsPrime := by
+      apply Ideal.isPrime_of_irreducible_absNorm
+      rw [hNP]
+      exact hp
+    have hQprime : Q.IsPrime := by
+      apply Ideal.isPrime_of_irreducible_absNorm
+      rw [hNQ]
+      exact hp
+    have hsne : s ≠ -s := by
+      intro h0
+      have h2s : (2 : ZMod p) * s = 0 := by linear_combination h0
+      have hs0 : s = 0 := by
+        rcases mul_eq_zero.mp h2s with h | h
+        · exact absurd h h2ne
+        · exact h
+      have hneg6zero : ((-6 : ℤ) : ZMod p) = 0 := by
+        rw [hs, hs0, mul_zero]
+      have h6zero : ((6 : ℕ) : ZMod p) = 0 := by
+        have h := congrArg Neg.neg hneg6zero
+        simpa using h
+      have hpdiv6 : p ∣ 6 := (ZMod.natCast_eq_zero_iff 6 p).mp h6zero
+      have hpdiv23 : p ∣ 2 * 3 := by simpa using hpdiv6
+      rcases hp.dvd_mul.mp hpdiv23 with hpdiv2 | hpdiv3
+      · exact hp2 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp hpdiv2)
+      · exact hp3 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num)).mp hpdiv3)
+    have hPQne : P ≠ Q := by
+      intro heq
+      have hcd : ((c - d : ℤ) : ZMod p) ≠ 0 := by
+        push_cast
+        rw [hct, hdt]
+        intro h0
+        exact hsne (by linear_combination h0)
+      obtain ⟨m, k₃, hk₃⟩ := exists_int_inverse_mod_prime p (c - d) hcd
+      have hk₃K : ((m : ℕ) : 𝓞 K) * ((c : 𝓞 K) - (d : 𝓞 K)) - 1 =
+          ((p : ℕ) : 𝓞 K) * (k₃ : 𝓞 K) := by
+        have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 K)) hk₃
+        push_cast at h
+        exact h
+      have h1 : (1 : 𝓞 K) ∈ P := by
+        have htdP : thetaInt - (d : 𝓞 K) ∈ P := by
+          rw [heq]
+          exact htd_memQ
+        have hid : (1 : 𝓞 K) = ((m : ℕ) : 𝓞 K) *
+            ((thetaInt - (d : 𝓞 K)) - (thetaInt - (c : 𝓞 K))) -
+            (k₃ : 𝓞 K) * ((p : ℕ) : 𝓞 K) := by
+          linear_combination -hk₃K
+        rw [hid]
+        exact Submodule.sub_mem _
+          (Ideal.mul_mem_left _ _ (Submodule.sub_mem _ htdP htc_memP))
+          (Ideal.mul_mem_left _ _ hp_memP)
+      have habs := hNP
+      rw [(Ideal.eq_top_iff_one P).mpr h1, Ideal.absNorm_top] at habs
+      exact hp2 (by omega)
+    have hPQ : Ideal.span {((p : ℕ) : 𝓞 K)} = P * Q := by
+      have hle1 : P * Q ≤ Ideal.span {((p : ℕ) : 𝓞 K)} := by
+        rw [Ideal.mul_le]
+        intro r1 hr1 r2 hr2
+        rw [hPdef, Ideal.mem_span_pair] at hr1
+        rw [hQdef, Ideal.mem_span_pair] at hr2
+        obtain ⟨x1, y1, h1⟩ := hr1
+        obtain ⟨x2, y2, h2⟩ := hr2
+        rw [Ideal.mem_span_singleton]
+        refine ⟨x1 * x2 * ((p : ℕ) : 𝓞 K) +
+          x1 * y2 * (thetaInt - (d : 𝓞 K)) +
+          y1 * x2 * (thetaInt - (c : 𝓞 K)) +
+          y1 * y2 * (-(k₁ : 𝓞 K) * thetaInt + (k₂ : 𝓞 K)), ?_⟩
+        rw [← h1, ← h2]
+        linear_combination (y1 * y2) * hprod
+      have hNPQ : Ideal.absNorm (P * Q) = p ^ 2 := by
+        rw [_root_.map_mul, hNP, hNQ]
+        ring
+      exact (eq_of_le_of_absNorm_eq hle1 hNPQ (absNorm_span_natCast p)
+        (pow_ne_zero 2 hp.pos.ne')).symm
+    exact ⟨P, Q, hPprime, hQprime, hPQne, hPQ⟩
 
 /-- A rational prime `p` ramifies in `ℚ(√-6)` iff `p ∈ {2, 3}`, i.e. iff `p` divides the
 discriminant `-24`. -/

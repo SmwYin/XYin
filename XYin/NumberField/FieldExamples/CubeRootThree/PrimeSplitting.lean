@@ -398,12 +398,171 @@ theorem primeAbove61_pairwise_ne :
     rw [hone]
     exact Ideal.sub_mem _ (Ideal.mul_mem_left _ _ hsub) (Ideal.mul_mem_left _ _ (h61 5))
 
+private theorem adjoin_thetaInt_eq_top : Algebra.adjoin ℤ ({thetaInt} : Set (𝓞 K)) = ⊤ := by
+  rw [eq_top_iff]
+  intro x _
+  have hxspan : x ∈ Submodule.span ℤ (Set.range integralBasisVectorsInt) := by
+    rw [span_integralBasisVectorsInt_eq_top]
+    trivial
+  exact Submodule.span_induction (s := Set.range integralBasisVectorsInt)
+    (p := fun y _ => y ∈ Algebra.adjoin ℤ ({thetaInt} : Set (𝓞 K)))
+    (fun y hy => by
+      rcases hy with ⟨i, rfl⟩
+      fin_cases i
+      · change (1 : 𝓞 K) ∈ Algebra.adjoin ℤ ({thetaInt} : Set (𝓞 K))
+        exact one_mem _
+      · exact Algebra.subset_adjoin (Set.mem_singleton thetaInt)
+      · change thetaInt ^ 2 ∈ Algebra.adjoin ℤ ({thetaInt} : Set (𝓞 K))
+        exact pow_mem (Algebra.subset_adjoin (Set.mem_singleton thetaInt)) 2)
+    (by simp)
+    (fun _ _ _ _ hy hz => add_mem hy hz)
+    (fun a _ _ hy => zsmul_mem hy a)
+    hxspan
+
+private noncomputable abbrev thetaIntPowerBasis : PowerBasis ℤ (𝓞 K) :=
+  PowerBasis.ofAdjoinEqTop' (NumberField.RingOfIntegers.isIntegral thetaInt)
+    adjoin_thetaInt_eq_top
+
+private theorem thetaIntPowerBasis_gen : thetaIntPowerBasis.gen = thetaInt := by
+  exact PowerBasis.ofAdjoinEqTop'_gen (NumberField.RingOfIntegers.isIntegral thetaInt)
+    adjoin_thetaInt_eq_top
+
+private theorem thetaInt_minpoly_eq : minpoly ℤ thetaInt = X ^ 3 - C (3 : ℤ) := by
+  have hf : cubePolynomial ≠ 0 := by intro h; simpa using congrArg natDegree h
+  set pb := AdjoinRoot.powerBasis hf with hpb
+  have hgen : pb.gen = cubeRootThree := AdjoinRoot.powerBasis_gen hf
+  have hmonic : cubePolynomial.Monic := by monicity!
+  have hminQ : minpoly ℚ cubeRootThree = cubePolynomial := by
+    rw [← hgen]
+    exact AdjoinRoot.minpoly_powerBasis_gen_of_monic hmonic hf
+  have hcoe : (thetaInt : K) = cubeRootThree :=
+    NumberField.RingOfIntegers.map_mk cubeRootThree cubeRootThree_integral
+  have hfield := minpoly.isIntegrallyClosed_eq_field_fractions (R := ℤ) (S := K) ℚ K
+    cubeRootThree_integral
+  change minpoly ℚ cubeRootThree =
+    Polynomial.map (algebraMap ℤ ℚ) (minpoly ℤ cubeRootThree) at hfield
+  rw [hminQ] at hfield
+  have htarget : Polynomial.map (algebraMap ℤ ℚ) (minpoly ℤ thetaInt) = cubePolynomial := by
+    rw [← NumberField.RingOfIntegers.minpoly_coe thetaInt, hcoe]
+    exact hfield.symm
+  have hmap : Polynomial.map (algebraMap ℤ ℚ) (minpoly ℤ thetaInt) =
+      Polynomial.map (algebraMap ℤ ℚ) (X ^ 3 - C (3 : ℤ)) := by
+    rw [htarget, Polynomial.map_sub, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
+    rfl
+  exact Polynomial.map_injective (algebraMap ℤ ℚ)
+    (show Function.Injective (algebraMap ℤ ℚ) from Int.cast_injective) hmap
+
+private noncomputable def residueHom (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
+    (𝓞 K) →ₐ[ℤ] ZMod p :=
+  thetaIntPowerBasis.lift ((r : ℤ) : ZMod p) (by
+    rw [thetaIntPowerBasis_gen, thetaInt_minpoly_eq]
+    simp only [map_sub, map_pow, aeval_X, map_ofNat]
+    exact sub_eq_zero.mpr hr)
+
+private theorem residueHom_thetaInt (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
+    residueHom p r hr thetaInt = (r : ZMod p) := by
+  rw [← thetaIntPowerBasis_gen]
+  exact thetaIntPowerBasis.lift_gen ((r : ℤ) : ZMod p) _
+
+private theorem ker_residueHom (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
+    RingHom.ker (residueHom p r hr).toRingHom =
+      Ideal.span {(p : 𝓞 K), thetaInt - (r : 𝓞 K)} := by
+  refine le_antisymm (fun x hx => ?_) ?_
+  · rw [RingHom.mem_ker] at hx
+    obtain ⟨q, -, hq⟩ := thetaIntPowerBasis.exists_eq_aeval x
+    rw [thetaIntPowerBasis_gen] at hq
+    have key : x - ((q.eval r : ℤ) : 𝓞 K) ∈ Ideal.span {thetaInt - (r : 𝓞 K)} := by
+      rw [Ideal.mem_span_singleton, hq]
+      have hdvd := Polynomial.sub_dvd_eval_sub thetaInt ((r : ℤ) : 𝓞 K)
+        (q.map (algebraMap ℤ (𝓞 K)))
+      have e1 : (q.map (algebraMap ℤ (𝓞 K))).eval thetaInt =
+          Polynomial.aeval thetaInt q := by
+        rw [Polynomial.eval_map, ← Polynomial.aeval_def]
+      have e2 : (q.map (algebraMap ℤ (𝓞 K))).eval ((r : ℤ) : 𝓞 K) =
+          ((q.eval r : ℤ) : 𝓞 K) := by
+        have hcast : ((r : ℤ) : 𝓞 K) = algebraMap ℤ (𝓞 K) r := by
+          simp [algebraMap_int_eq]
+        rw [Polynomial.eval_map, hcast, Polynomial.eval₂_at_apply]
+        simp [algebraMap_int_eq]
+      rw [e1, e2] at hdvd
+      exact hdvd
+    obtain ⟨d, hd⟩ := Ideal.mem_span_singleton.mp key
+    have hphi : ((q.eval r : ℤ) : ZMod p) = 0 := by
+      have h1 : residueHom p r hr (x - ((q.eval r : ℤ) : 𝓞 K)) = 0 := by
+        rw [hd, map_mul, map_sub, residueHom_thetaInt, map_intCast, sub_self, zero_mul]
+      rw [map_sub, map_intCast, show residueHom p r hr x = 0 from hx, zero_sub,
+        neg_eq_zero] at h1
+      exact h1
+    obtain ⟨m, hm⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hphi
+    have hx_eq : x = (thetaInt - (r : 𝓞 K)) * d + (p : 𝓞 K) * ((m : ℤ) : 𝓞 K) := by
+      have h2 : x = (thetaInt - (r : 𝓞 K)) * d + ((q.eval r : ℤ) : 𝓞 K) := by
+        rw [← hd]
+        ring
+      rw [h2, hm]
+      push_cast
+      ring
+    rw [hx_eq]
+    refine Ideal.add_mem _ (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
+      (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_)) <;> simp
+  · rw [Ideal.span_le]
+    rintro y (rfl | rfl)
+    · rw [SetLike.mem_coe, RingHom.mem_ker]
+      simp
+    · rw [SetLike.mem_coe, RingHom.mem_ker]
+      have h0 : (residueHom p r hr) (thetaInt - (r : 𝓞 K)) = 0 := by
+        rw [map_sub, residueHom_thetaInt, map_intCast, sub_self]
+      exact h0
+
+private theorem residueHom_surjective (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
+    Function.Surjective (residueHom p r hr) := by
+  intro z
+  obtain ⟨m, hm⟩ := ZMod.intCast_surjective z
+  exact ⟨((m : ℤ) : 𝓞 K), by rw [map_intCast]; exact hm⟩
+
+private theorem isMaximal_span_pair (p : ℕ) [Fact p.Prime] (r : ℤ)
+    (hr : ((r : ZMod p)) ^ 3 = 3) :
+    (Ideal.span {(p : 𝓞 K), thetaInt - (r : 𝓞 K)}).IsMaximal := by
+  rw [← ker_residueHom p r hr]
+  exact RingHom.ker_isMaximal_of_surjective _ (residueHom_surjective p r hr)
+
+private theorem absNorm_span_pair (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
+    Ideal.absNorm (Ideal.span {(p : 𝓞 K), thetaInt - (r : 𝓞 K)}) = p := by
+  rw [← ker_residueHom p r hr, Ideal.absNorm_apply, Submodule.cardQuot_apply]
+  rw [Nat.card_congr (RingHom.quotientKerEquivOfSurjective
+    (residueHom_surjective p r hr)).toEquiv]
+  exact Nat.card_zmod p
+
 /-- General degree-one splitting criterion: away from the ramified prime `3`, a rational
 prime has a residue-degree-one prime above it iff `X³ - 3` has a root modulo `p`. -/
 theorem exists_degree_one_prime_iff_cube_root_mod_p (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
       Ideal.absNorm P = p) ↔ ∃ r : ZMod p, r ^ 3 = (3 : ZMod p) := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  have : p ≠ 3 := hp3
+  constructor
+  · rintro ⟨P, _hPprime, _hle, habs⟩
+    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
+    haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by
+      rw [habs]
+      exact hp.ne_zero)
+    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+    have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by
+      rw [← Nat.card_eq_fintype_card]
+      exact habs
+    let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
+    obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P thetaInt)
+    refine ⟨s, ?_⟩
+    apply e.injective
+    rw [map_pow, hs, map_ofNat, ← map_pow (Ideal.Quotient.mk P), thetaInt_cube, map_ofNat]
+  · rintro ⟨r, hr⟩
+    obtain ⟨z, hz⟩ := ZMod.intCast_surjective r
+    have hzroot : ((z : ℤ) : ZMod p) ^ 3 = 3 := by
+      rw [hz]
+      exact hr
+    refine ⟨Ideal.span {((p : ℕ) : 𝓞 K), thetaInt - ((z : ℤ) : 𝓞 K)},
+      (isMaximal_span_pair p z hzroot).isPrime, ?_, absNorm_span_pair p z hzroot⟩
+    rw [Ideal.span_le, Set.singleton_subset_iff]
+    exact Ideal.subset_span (by simp)
 
 /-- The splitting law at ramified primes: a rational prime `p` ramifies in `ℚ(∛3)` (some prime
 of `𝓞 K` divides `(p)` at least twice) iff `p = 3`, i.e. iff `p` divides the discriminant

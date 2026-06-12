@@ -359,6 +359,53 @@ theorem unitRank_eq_one : Units.rank QSqrtTwo = 1 := by
   rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
     sqrtTwo_nrRealPlaces_eq_two, sqrtTwo_nrComplexPlaces_eq_zero]
 
+private theorem exists_eq_torsion_mul_fundSystem_zpow
+    (i₀ : Fin (NumberField.Units.rank QSqrtTwo)) (u : O2ˣ) :
+    ∃ ζ ∈ NumberField.Units.torsion QSqrtTwo, ∃ n : ℤ,
+      u = ζ * NumberField.Units.fundSystem QSqrtTwo i₀ ^ n := by
+  haveI hsub : Subsingleton (Fin (NumberField.Units.rank QSqrtTwo)) :=
+    Fin.subsingleton_iff_le_one.mpr (by rw [unitRank_eq_one])
+  have hu : u ∈ Subgroup.closure (Set.range (NumberField.Units.fundSystem QSqrtTwo)) ⊔
+      NumberField.Units.torsion QSqrtTwo := by
+    rw [NumberField.Units.closure_fundSystem_sup_torsion_eq_top]
+    trivial
+  rw [Subgroup.mem_sup] at hu
+  obtain ⟨x, hx, y, hy, hxy⟩ := hu
+  have hrange : Set.range (NumberField.Units.fundSystem QSqrtTwo) =
+      {NumberField.Units.fundSystem QSqrtTwo i₀} := by
+    ext v
+    constructor
+    · rintro ⟨i, rfl⟩
+      rw [Subsingleton.elim i i₀]
+      rfl
+    · rintro rfl
+      exact ⟨i₀, rfl⟩
+  rw [hrange, Subgroup.mem_closure_singleton] at hx
+  obtain ⟨n, hn⟩ := hx
+  exact ⟨y, hy, n, by rw [hn, ← hxy]; exact mul_comm x y⟩
+
+private theorem fundSystem_zpow_mem_torsion
+    (i₀ : Fin (NumberField.Units.rank QSqrtTwo)) (n : ℤ)
+    (hn : NumberField.Units.fundSystem QSqrtTwo i₀ ^ n ∈
+      NumberField.Units.torsion QSqrtTwo) : n = 0 := by
+  have hq : Additive.ofMul ((QuotientGroup.mk ((NumberField.Units.fundSystem QSqrtTwo i₀) ^ n) :
+      O2ˣ ⧸ NumberField.Units.torsion QSqrtTwo)) = 0 := by
+    rw [ofMul_eq_zero]
+    exact (QuotientGroup.eq_one_iff ((NumberField.Units.fundSystem QSqrtTwo i₀) ^ n)).mpr hn
+  rw [QuotientGroup.mk_zpow, ofMul_zpow, NumberField.Units.fundSystem_mk] at hq
+  letI : Module ℤ (Additive (O2ˣ ⧸ NumberField.Units.torsion QSqrtTwo)) :=
+    AddCommGroup.toIntModule (Additive (O2ˣ ⧸ NumberField.Units.torsion QSqrtTwo))
+  have hrepr := congrArg
+    (fun x : Additive (O2ˣ ⧸ NumberField.Units.torsion QSqrtTwo) =>
+      ((NumberField.Units.basisModTorsion QSqrtTwo).repr x) i₀) hq
+  simpa [Module.Basis.repr_self, Module.Basis.repr_self_apply] using hrepr
+
+private theorem eq_one_or_neg_one_of_mem_torsion {ζ : O2ˣ}
+    (hζ : ζ ∈ NumberField.Units.torsion QSqrtTwo) : ζ = 1 ∨ ζ = -1 := by
+  simpa using
+    (sqrtTwo_torsion_eq_one_or_neg_one
+      (⟨ζ, hζ⟩ : NumberField.Units.torsion QSqrtTwo))
+
 /-- The regulator of `ℚ(√2)` is `log(1 + √2) ≈ 0.8814`, the covolume of the unit lattice.
 This is the analytic restatement that `1 + √2` is a fundamental unit. -/
 theorem regulator_eq : Units.regulator QSqrtTwo = Real.log (1 + Real.sqrt 2) := by
@@ -367,7 +414,72 @@ theorem regulator_eq : Units.regulator QSqrtTwo = Real.log (1 + Real.sqrt 2) := 
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
     Nonempty (O2ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))) := by
-  sorry
+  set i₀ : Fin (NumberField.Units.rank QSqrtTwo) :=
+    ⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩ with hi₀
+  set η : O2ˣ := NumberField.Units.fundSystem QSqrtTwo i₀ with hη
+  have hpow : ∀ k : ℕ, ((-1 : O2ˣ)) ^ k = (-1) ^ (k % 2) := by
+    intro k
+    conv_lhs => rw [← Nat.div_add_mod k 2]
+    rw [pow_add, pow_mul, neg_one_sq, one_pow, one_mul]
+  have hsign : ∀ a b : ZMod 2,
+      ((-1 : O2ˣ) ^ (a + b).val) = (-1) ^ a.val * (-1) ^ b.val := by
+    intro a b
+    calc ((-1 : O2ˣ) ^ (a + b).val) = (-1) ^ ((a + b).val % 2) := hpow _
+      _ = (-1) ^ ((a.val + b.val) % 2) := by
+          rw [ZMod.val_add, Nat.mod_mod_of_dvd _ (dvd_refl 2)]
+      _ = (-1) ^ (a.val + b.val) := (hpow _).symm
+      _ = (-1) ^ a.val * (-1) ^ b.val := pow_add _ _ _
+  let ψ₁ : Multiplicative (ZMod 2) →* O2ˣ :=
+    MonoidHom.mk' (fun a => (-1 : O2ˣ) ^ (Multiplicative.toAdd a).val)
+      (fun a b => hsign (Multiplicative.toAdd a) (Multiplicative.toAdd b))
+  let ψ₂ : Multiplicative (Fin 1 → ℤ) →* O2ˣ :=
+    MonoidHom.mk' (fun f => η ^ (Multiplicative.toAdd f 0))
+      (fun f g => by
+        change η ^ ((Multiplicative.toAdd f + Multiplicative.toAdd g) 0) = _
+        rw [Pi.add_apply, zpow_add])
+  let ψ : Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ) →* O2ˣ := ψ₁.coprod ψ₂
+  have hneg_tor : (-1 : O2ˣ) ∈ NumberField.Units.torsion QSqrtTwo := by
+    change IsOfFinOrder _
+    rw [isOfFinOrder_iff_pow_eq_one]
+    exact ⟨2, by norm_num, by rw [neg_one_sq]⟩
+  have hbij : Function.Bijective ψ := by
+    constructor
+    · rw [injective_iff_map_eq_one]
+      rintro ⟨a, f⟩ h
+      have h' : (-1 : O2ˣ) ^ ((Multiplicative.toAdd a).val) *
+          η ^ (Multiplicative.toAdd f 0) = 1 := h
+      have htor : η ^ (Multiplicative.toAdd f 0) ∈ NumberField.Units.torsion QSqrtTwo := by
+        have heq : η ^ (Multiplicative.toAdd f 0) =
+            ((-1 : O2ˣ) ^ ((Multiplicative.toAdd a).val))⁻¹ :=
+          (mul_eq_one_iff_inv_eq.mp h').symm
+        rw [heq]
+        exact Subgroup.inv_mem _ (Subgroup.pow_mem _ hneg_tor _)
+      have hn0 : Multiplicative.toAdd f 0 = 0 := fundSystem_zpow_mem_torsion i₀ _ htor
+      rw [hn0, zpow_zero, mul_one] at h'
+      have ha : Multiplicative.toAdd a = 0 := by
+        rcases (show ∀ x : ZMod 2, x = 0 ∨ x = 1 by decide) (Multiplicative.toAdd a) with
+          hx | hx
+        · exact hx
+        · exfalso
+          rw [hx, show ((1 : ZMod 2)).val = 1 from rfl, pow_one] at h'
+          have hcoe : (-1 : O2) = 1 := congrArg Units.val h'
+          have h2 := congrArg (algebraMap O2 QSqrtTwo) hcoe
+          simp only [map_one, map_neg] at h2
+          exact two_ne_zero (by linear_combination -h2 : (2 : QSqrtTwo) = 0)
+      refine Prod.ext (Multiplicative.toAdd.injective ha) ?_
+      refine Multiplicative.toAdd.injective (funext fun i => ?_)
+      rw [Subsingleton.elim i 0]
+      exact hn0
+    · intro u
+      obtain ⟨ζ, hζ, n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
+      rcases eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
+      · refine ⟨(Multiplicative.ofAdd (0 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+        change (-1 : O2ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
+        rw [show ((0 : ZMod 2)).val = 0 from rfl, pow_zero, hu, one_mul]
+      · refine ⟨(Multiplicative.ofAdd (1 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+        change (-1 : O2ˣ) ^ ((1 : ZMod 2)).val * η ^ n = u
+        rw [show ((1 : ZMod 2)).val = 1 from rfl, pow_one, hu]
+  exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
 
 end XYin.NumberField.SqrtTwoQuadraticAlgebra

@@ -55,7 +55,10 @@ abbrev unitIdealRepresentative : (Ideal OK)⁰ := ⟨(⊤ : Ideal OK), by simp�
 /-- Every ideal class is represented by the unit ideal. -/
 theorem classGroupRepresentative (C : ClassGroup OK) :
     C = ClassGroup.mk0 unitIdealRepresentative := by
-  sorry
+  have h1 : Nat.card (ClassGroup OK) = 1 := by
+    simpa [NumberField.classNumber] using classNumber_eq_one
+  haveI : Subsingleton (ClassGroup OK) := (Nat.card_eq_one_iff_unique.mp h1).1
+  exact Subsingleton.elim _ _
 
 
 end XYin.NumberField.CyclotomicThree

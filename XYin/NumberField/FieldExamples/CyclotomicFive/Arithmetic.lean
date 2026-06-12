@@ -23,7 +23,8 @@ theorem numberField_discr_eq : NumberField.discr K = (125 : ℤ) := by
 /-- The discriminant of the explicit integral basis `1, ζ, ζ², ζ³` is `125`. -/
 theorem concreteIntegralBasis_discr :
     Algebra.discr ℤ concreteIntegralBasis = (125 : ℤ) := by
-  sorry
+  simpa [numberField_discr_eq] using
+    (NumberField.discr_eq_discr (K := K) concreteIntegralBasis)
 
 section PrivateMachinery
 
@@ -307,20 +308,141 @@ theorem norm_eq_normForm (a b c d : ℚ) :
     Algebra.norm ℚ
         (a • (1 : K) + b • ζ + c • ζ ^ 2 + d • ζ ^ 3) =
       normForm a b c d := by
-  sorry
+  have hx : a • (1 : K) + b • ζ + c • ζ ^ 2 + d • ζ ^ 3 =
+      (a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3 := by
+    simp [Algebra.smul_def]
+  rw [hx]
+  have e2 : sig2 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
+      (a : K) - c + (d - c) * ζ + (b - c) * ζ ^ 2 - c * ζ ^ 3 := by
+    simp only [map_add, map_mul, map_pow, sig2_zeta]
+    rw [show sig2 (a : K) = (a : K) by simp,
+      show sig2 (b : K) = (b : K) by simp,
+      show sig2 (c : K) = (c : K) by simp,
+      show sig2 (d : K) = (d : K) by simp]
+    have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
+      linear_combination zeta_sum_eq_zero
+    have h6 : ζ ^ 6 = ζ := by linear_combination ζ * zeta_pow_five
+    rw [show (ζ ^ 2) ^ 2 = ζ ^ 4 by ring,
+      show (ζ ^ 2) ^ 3 = ζ ^ 6 by ring, h4, h6]
+    ring
+  have e3 : sig3 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
+      (a : K) - d + (c - d) * ζ - d * ζ ^ 2 + (b - d) * ζ ^ 3 := by
+    simp only [map_add, map_mul, map_pow, sig3_zeta]
+    rw [show sig3 (a : K) = (a : K) by simp,
+      show sig3 (b : K) = (b : K) by simp,
+      show sig3 (c : K) = (c : K) by simp,
+      show sig3 (d : K) = (d : K) by simp]
+    have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
+      linear_combination zeta_sum_eq_zero
+    have h6 : ζ ^ 6 = ζ := by linear_combination ζ * zeta_pow_five
+    have h9 : ζ ^ 9 = ζ ^ 4 := by linear_combination ζ ^ 4 * zeta_pow_five
+    rw [show (ζ ^ 3) ^ 2 = ζ ^ 6 by ring,
+      show (ζ ^ 3) ^ 3 = ζ ^ 9 by ring, h6, h9, h4]
+    ring
+  have e4 : sig4 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
+      (a : K) - b - b * ζ + (d - b) * ζ ^ 2 + (c - b) * ζ ^ 3 := by
+    simp only [map_add, map_mul, map_pow, sig4_zeta]
+    rw [show sig4 (a : K) = (a : K) by simp,
+      show sig4 (b : K) = (b : K) by simp,
+      show sig4 (c : K) = (c : K) by simp,
+      show sig4 (d : K) = (d : K) by simp]
+    have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
+      linear_combination zeta_sum_eq_zero
+    have h8 : ζ ^ 8 = ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_five
+    have h7 : ζ ^ 7 = ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_five
+    have h12 : ζ ^ 12 = ζ ^ 7 := by linear_combination ζ ^ 7 * zeta_pow_five
+    rw [show (ζ ^ 4) ^ 2 = ζ ^ 8 by ring,
+      show (ζ ^ 4) ^ 3 = ζ ^ 12 by ring, h4, h8, h12, h7]
+    ring
+  haveI := IsCyclotomicExtension.isGalois {5} ℚ K
+  apply (algebraMap ℚ K).injective
+  rw [Algebra.norm_eq_prod_automorphisms, prod_aut_apply, e2, e3, e4]
+  let A : K := a ^ 2 - a * b + b ^ 2 - b * c + c ^ 2 - c * d + d ^ 2
+  let B : K := -c * d + b * d - b * c + a * d + a * c - a * b
+  let C : K := a ^ 2 - a * c - a * d + b ^ 2 - b * d + c ^ 2 + d ^ 2
+  let T : K := ζ ^ 2 + ζ ^ 3
+  have hpair14 : ((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+      (a - b - b * ζ + (d - b) * ζ ^ 2 + (c - b) * ζ ^ 3) = A + B * T := by
+    dsimp [A, B, T]
+    have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
+      linear_combination zeta_sum_eq_zero
+    have h6 : ζ ^ 6 = ζ := by linear_combination ζ * zeta_pow_five
+    ring_nf
+    rw [zeta_pow_five, h6, h4]
+    ring
+  have hpair23 : ((a : K) - c + (d - c) * ζ + (b - c) * ζ ^ 2 - c * ζ ^ 3) *
+      (a - d + (c - d) * ζ - d * ζ ^ 2 + (b - d) * ζ ^ 3) = C - B * T := by
+    dsimp [B, C, T]
+    have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
+      linear_combination zeta_sum_eq_zero
+    have h6 : ζ ^ 6 = ζ := by linear_combination ζ * zeta_pow_five
+    ring_nf
+    rw [zeta_pow_five, h6, h4]
+    ring
+  have hT : T ^ 2 = 1 - T := by
+    dsimp [T]
+    have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
+      linear_combination zeta_sum_eq_zero
+    have h6 : ζ ^ 6 = ζ := by linear_combination ζ * zeta_pow_five
+    ring_nf
+    rw [zeta_pow_five, h6, h4]
+    ring
+  have hlin : C - A + B = 0 := by
+    dsimp [A, B, C]
+    ring
+  have hmain : (A + B * T) * (C - B * T) = A * C - B ^ 2 := by
+    calc
+      (A + B * T) * (C - B * T) =
+          A * C - B ^ 2 + B * T * (C - A + B) - B ^ 2 * (T ^ 2 - (1 - T)) := by
+        ring
+      _ = A * C - B ^ 2 := by
+        rw [hlin, hT]
+        ring
+  have hACB : A * C - B ^ 2 = algebraMap ℚ K (normForm a b c d) := by
+    dsimp [A, B, C, normForm]
+    norm_num
+    ring
+  rw [show ((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+        ((a - c) + (d - c) * ζ + (b - c) * ζ ^ 2 - c * ζ ^ 3) *
+        ((a - d) + (c - d) * ζ - d * ζ ^ 2 + (b - d) * ζ ^ 3) *
+        ((a - b) - b * ζ + (d - b) * ζ ^ 2 + (c - b) * ζ ^ 3) =
+      (((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+        ((a - b) - b * ζ + (d - b) * ζ ^ 2 + (c - b) * ζ ^ 3)) *
+      (((a - c) + (d - c) * ζ + (b - c) * ζ ^ 2 - c * ζ ^ 3) *
+        ((a - d) + (c - d) * ζ - d * ζ ^ 2 + (b - d) * ζ ^ 3)) by ring]
+  rw [hpair14, hpair23, hmain, hACB]
 
 /-- The integral norm of `a + bζ + cζ² + dζ³` is the same quartic form over `ℤ`. -/
 theorem intNorm_eq_normForm (a b c d : ℤ) :
     Algebra.norm ℤ
         (a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3) =
       normForm a b c d := by
-  sorry
+  let x : 𝓞 K := a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3
+  change Algebra.norm ℤ x = normForm a b c d
+  have hx : algebraMap (𝓞 K) K x =
+      (a : ℚ) • (1 : K) + (b : ℚ) • ζ + (c : ℚ) • ζ ^ 2 + (d : ℚ) • ζ ^ 3 := by
+    simp [x, coe_zetaInt, Algebra.smul_def]
+  have hcoe : ((Algebra.norm ℤ x : ℤ) : ℚ) =
+      Algebra.norm ℚ (algebraMap (𝓞 K) K x) :=
+    Algebra.coe_norm_int x
+  rw [hx, norm_eq_normForm] at hcoe
+  norm_num [normForm] at hcoe ⊢
+  exact_mod_cast hcoe
 
 /-- The unit equation in `ℤ[ζ₅]`, written in the integral basis `1, ζ, ζ², ζ³`. -/
 theorem isUnit_iff_normForm (a b c d : ℤ) :
     IsUnit (a • (1 : 𝓞 K) + b • zetaInt + c • zetaInt ^ 2 + d • zetaInt ^ 3) ↔
       (normForm a b c d).natAbs = 1 := by
-  sorry
+  rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm, ← Algebra.coe_norm_int,
+    intNorm_eq_normForm]
+  constructor
+  · intro h
+    apply Nat.cast_injective (R := ℚ)
+    rw [Nat.cast_natAbs, Int.cast_abs]
+    exact h
+  · intro h
+    have hq : ((normForm a b c d).natAbs : ℚ) = 1 := by exact_mod_cast h
+    rwa [Nat.cast_natAbs, Int.cast_abs] at hq
 
 /-! ## 5. Splitting of primes -/
 
