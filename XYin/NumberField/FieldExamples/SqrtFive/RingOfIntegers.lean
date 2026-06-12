@@ -242,6 +242,66 @@ instance : IsIntegralClosure O5 ℤ QSqrtFive where
     · rintro ⟨y, rfl⟩
       exact IsIntegral.algebraMap (Algebra.IsIntegral.isIntegral (R := ℤ) y)
 
+/-- The displayed integral-basis vectors `1, φ` as elements of the field. -/
+def integralBasisVectors : Fin 2 → QSqrtFive := ![1, goldenRoot]
+
+/-- The displayed vectors `1, φ` span exactly the ring of integers inside `ℚ(√5)`. -/
+theorem span_integralBasisVectors_eq :
+    Submodule.span ℤ (Set.range integralBasisVectors) =
+      Subalgebra.toSubmodule (integralClosure ℤ QSqrtFive) := by
+  refine le_antisymm (Submodule.span_le.mpr ?_) (fun x hx => ?_)
+  · rintro y ⟨i, rfl⟩
+    fin_cases i
+    · exact isIntegral_one
+    · exact goldenRoot_isIntegral
+  · obtain ⟨y, hy⟩ := integral_mem_goldenOrderToField_range hx
+    have hycoords :
+        algebraMap O5 QSqrtFive y =
+          (y.re : ℤ) • (1 : QSqrtFive) + (y.im : ℤ) • goldenRoot := by
+      cases y
+      rw [algebraMap_O5_QSqrtFive_eq_goldenOrderToField]
+      ext <;> simp [goldenOrderToField, goldenRoot]
+    rw [← hy, hycoords]
+    exact Submodule.add_mem _
+      (Submodule.smul_mem _ _ (Submodule.subset_span ⟨0, rfl⟩))
+      (Submodule.smul_mem _ _ (Submodule.subset_span ⟨1, rfl⟩))
+
+/-- The concrete order `ℤ[φ]` inside `ℚ(√5)`. -/
+abbrev concreteRingOfIntegers : Subalgebra ℤ QSqrtFive :=
+  Algebra.adjoin ℤ ({goldenRoot} : Set QSqrtFive)
+
+/-- The full ring of integers of `ℚ(√5)` is the concrete order `ℤ[φ]`. -/
+theorem ringOfIntegers_eq : integralClosure ℤ QSqrtFive = concreteRingOfIntegers := by
+  refine le_antisymm (fun x hx => ?_)
+    (Algebra.adjoin_le (Set.singleton_subset_iff.mpr goldenRoot_isIntegral))
+  obtain ⟨y, hy⟩ := integral_mem_goldenOrderToField_range hx
+  rw [← hy]
+  cases y with
+  | mk a b =>
+      change (⟨(a : ℚ), (b : ℚ)⟩ : QSqrtFive) ∈ concreteRingOfIntegers
+      rw [QuadraticAlgebra.mk_eq_add_smul_omega]
+      have hφ : goldenRoot ∈ concreteRingOfIntegers := Algebra.subset_adjoin rfl
+      have hb : b • goldenRoot ∈ concreteRingOfIntegers := zsmul_mem hφ b
+      have ha : ((a : ℤ) : QSqrtFive) ∈ concreteRingOfIntegers :=
+        intCast_mem concreteRingOfIntegers a
+      simpa [Algebra.smul_def, goldenRoot] using add_mem ha hb
+
+/-- The displayed integral basis spans the same lattice as mathlib's integral basis. -/
+theorem span_integralBasisVectors_eq_integralBasis :
+    Submodule.span ℤ (Set.range integralBasisVectors) =
+      Submodule.span ℤ (Set.range (NumberField.integralBasis QSqrtFive)) := by
+  rw [span_integralBasisVectors_eq]
+  ext x
+  rw [Subalgebra.mem_toSubmodule]
+  constructor
+  · intro hx
+    exact (NumberField.mem_span_integralBasis QSqrtFive).mpr
+      (RingHom.mem_range.mpr ⟨⟨x, hx⟩, rfl⟩)
+  · intro hx
+    obtain ⟨y, hy⟩ := RingHom.mem_range.mp
+      ((NumberField.mem_span_integralBasis QSqrtFive).mp hx)
+    exact hy ▸ y.2
+
 /-- The naive order `ℤ[√5]` is not the full ring of integers `ℤ[(1 + √5) / 2]`. -/
 theorem adjoin_sqrtFive_ne_integralClosure :
     Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) ≠ integralClosure ℤ QSqrtFive := by

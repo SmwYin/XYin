@@ -91,7 +91,9 @@ theorem theta_sq : θ ^ 2 = -6 := by
 
 instance : Fact (∀ r : ℚ, r ^ 2 ≠ (-6 : ℚ) + (0 : ℚ) * r) := by
   exact ⟨by
-    sorry⟩
+    intro r hr
+    have h : (0 : ℚ) ≤ r ^ 2 := sq_nonneg r
+    nlinarith⟩
 
 /-- The same field, now presented as the radical quadratic algebra `ℚ[√-6]`. -/
 abbrev KQuadratic : Type := QuadraticAlgebra ℚ (-6 : ℚ) 0
@@ -100,15 +102,44 @@ abbrev KQuadratic : Type := QuadraticAlgebra ℚ (-6 : ℚ) 0
 abbrev thetaQuadratic : KQuadratic := QuadraticAlgebra.omega
 
 theorem thetaQuadratic_sq : thetaQuadratic ^ 2 = (-6 : KQuadratic) := by
-  sorry
+  rw [sq, QuadraticAlgebra.omega_mul_omega_eq_add]
+  simp
 
 /-- The radical quadratic-algebra presentation is equivalent to the `AdjoinRoot` model. -/
 noncomputable def quadraticEquivAdjoinRoot : KQuadratic ≃ₐ[ℚ] K := by
-  sorry
+  let f : KQuadratic →ₐ[ℚ] K :=
+    QuadraticAlgebra.lift ⟨θ, by
+      rw [show θ * θ = θ ^ 2 by ring, theta_sq]
+      simp⟩
+  let g : K →ₐ[ℚ] KQuadratic :=
+    AdjoinRoot.liftAlgHom sqrtNegSixPolynomial (Algebra.ofId ℚ KQuadratic) thetaQuadratic (by
+      calc sqrtNegSixPolynomial.eval₂ (Algebra.ofId ℚ KQuadratic) thetaQuadratic
+          = thetaQuadratic ^ 2 + 6 := by simp [sqrtNegSixPolynomial]
+        _ = 0 := by rw [thetaQuadratic_sq]; ring)
+  have hfroot : f thetaQuadratic = θ := by
+    change (QuadraticAlgebra.omega : KQuadratic).re • (1 : K) +
+      (QuadraticAlgebra.omega : KQuadratic).im • θ = θ
+    simp
+  have hgroot : g θ = thetaQuadratic := by
+    change (AdjoinRoot.liftAlgHom sqrtNegSixPolynomial (Algebra.ofId ℚ KQuadratic)
+      thetaQuadratic _) (AdjoinRoot.root sqrtNegSixPolynomial) = thetaQuadratic
+    exact AdjoinRoot.liftAlgHom_root sqrtNegSixPolynomial (Algebra.ofId ℚ KQuadratic)
+      thetaQuadratic _
+  refine AlgEquiv.ofAlgHom f g ?_ ?_
+  · apply AdjoinRoot.algHom_ext
+    change f (g θ) = θ
+    rw [hgroot]
+    exact hfroot
+  · apply QuadraticAlgebra.algHom_ext
+    change g (f thetaQuadratic) = thetaQuadratic
+    rw [hfroot]
+    exact hgroot
 
 theorem quadraticEquivAdjoinRoot_root :
     quadraticEquivAdjoinRoot thetaQuadratic = θ := by
-  sorry
+  change (QuadraticAlgebra.omega : KQuadratic).re • (1 : K) +
+    (QuadraticAlgebra.omega : KQuadratic).im • θ = θ
+  simp
 
 
 end XYin.NumberField.New.SqrtNegSixAdjoinRoot

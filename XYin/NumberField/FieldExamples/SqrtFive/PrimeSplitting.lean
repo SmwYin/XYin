@@ -149,6 +149,16 @@ theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 QSqrtFive)}).IsPrime := by
   rw [heq]
   exact hMmax.isPrime
 
+/-- The inert prime `(2)` has norm `4` (residue degree `f = 2`). -/
+theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 QSqrtFive)}) = 4 := by
+  have h := intNorm_eq_normForm 2 0
+  have h2 : (2 : ℤ) • (1 : 𝓞 QSqrtFive) + (0 : ℤ) • goldenIntO = 2 := by
+    simp
+  rw [h2] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
 /-- `3` is inert in `ℚ(√5)`: `5` is not a square mod `3`, so `(3)` is itself prime (of norm
 `9`). -/
 theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 QSqrtFive)}).IsPrime := by
@@ -185,7 +195,7 @@ theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 QSqrtFive)}).IsPrime := by
   exact hMmax.isPrime
 
 /-- The elementary identity `11 = (3 + φ)(4 - φ)` in `𝓞 QSqrtFive`. -/
-private theorem eleven_eq_mul : (11 : 𝓞 QSqrtFive) = (3 + goldenIntO) * (4 - goldenIntO) := by
+theorem eleven_eq_mul : (11 : 𝓞 QSqrtFive) = (3 + goldenIntO) * (4 - goldenIntO) := by
   apply Subtype.ext
   change (11 : QSqrtFive) = (3 + goldenRoot) * (4 - goldenRoot)
   rw [show (3 + goldenRoot) * (4 - goldenRoot) = 12 + goldenRoot - goldenRoot ^ 2 by ring]
@@ -215,6 +225,56 @@ theorem isPrime_span_three_add_golden : (Ideal.span {3 + goldenIntO}).IsPrime :=
   apply Ideal.isPrime_of_irreducible_absNorm
   rw [absNorm_span_three_add_golden]
   exact (by norm_num : Nat.Prime 11)
+
+/-- The prime `(4 - φ)` above `11` has norm `11` (residue degree `f = 1`). -/
+theorem absNorm_span_four_sub_golden :
+    Ideal.absNorm (Ideal.span {4 - goldenIntO}) = 11 := by
+  have h := intNorm_eq_normForm 4 (-1)
+  have h4 : (4 : ℤ) • (1 : 𝓞 QSqrtFive) + (-1 : ℤ) • goldenIntO = 4 - goldenIntO := by
+    simp only [zsmul_eq_mul]
+    push_cast
+    ring
+  rw [h4] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- `(4 - φ)` is a prime ideal — the conjugate prime above `11`. -/
+theorem isPrime_span_four_sub_golden : (Ideal.span {4 - goldenIntO}).IsPrime := by
+  apply Ideal.isPrime_of_irreducible_absNorm
+  rw [absNorm_span_four_sub_golden]
+  exact (by norm_num : Nat.Prime 11)
+
+/-- The two principal primes above `11` are distinct. -/
+theorem primesAboveEleven_ne :
+    Ideal.span ({3 + goldenIntO} : Set (𝓞 QSqrtFive)) ≠ Ideal.span {4 - goldenIntO} := by
+  intro h
+  have h4 : (4 : 𝓞 QSqrtFive) - goldenIntO ∈
+      Ideal.span ({3 + goldenIntO} : Set (𝓞 QSqrtFive)) := by
+    rw [h]
+    exact Ideal.mem_span_singleton_self _
+  have hs : sqrtFiveIntO ∈ Ideal.span ({3 + goldenIntO} : Set (𝓞 QSqrtFive)) := by
+    rw [show sqrtFiveIntO = (3 + goldenIntO) - ((4 : 𝓞 QSqrtFive) - goldenIntO) from by
+      simp only [sqrtFiveIntO]
+      ring]
+    exact Ideal.sub_mem _ (Ideal.mem_span_singleton_self _) h4
+  have h5 : (5 : 𝓞 QSqrtFive) ∈ Ideal.span ({3 + goldenIntO} : Set (𝓞 QSqrtFive)) := by
+    rw [show (5 : 𝓞 QSqrtFive) = sqrtFiveIntO * sqrtFiveIntO from by
+      apply Subtype.ext
+      change (5 : QSqrtFive) = (2 * goldenRoot - 1) * (2 * goldenRoot - 1)
+      rw [← pow_two, sqrtFiveRoot_sq]]
+    exact Ideal.mul_mem_right _ _ hs
+  have h11 : (11 : 𝓞 QSqrtFive) ∈ Ideal.span ({3 + goldenIntO} : Set (𝓞 QSqrtFive)) := by
+    rw [eleven_eq_mul]
+    exact Ideal.mul_mem_right _ _ (Ideal.mem_span_singleton_self _)
+  have h1 : (1 : 𝓞 QSqrtFive) ∈ Ideal.span ({3 + goldenIntO} : Set (𝓞 QSqrtFive)) := by
+    rw [show (1 : 𝓞 QSqrtFive) = 11 - 2 * 5 from by norm_num]
+    exact Ideal.sub_mem _ h11 (Ideal.mul_mem_left _ _ h5)
+  have htop : Ideal.span ({3 + goldenIntO} : Set (𝓞 QSqrtFive)) = ⊤ :=
+    (Ideal.eq_top_iff_one _).mpr h1
+  have habs := absNorm_span_three_add_golden
+  rw [htop, Ideal.absNorm_top] at habs
+  norm_num at habs
 
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 QSqrtFive)}) = p ^ 2 := by

@@ -15,6 +15,13 @@ namespace XYin.NumberField.SqrtFive
 /-- `φ` as an element of the abstract ring of integers `𝓞 QSqrtFive`. -/
 noncomputable def goldenIntO : 𝓞 QSqrtFive := ⟨goldenRoot, goldenRoot_isIntegral⟩
 
+/-- The norm form of `ℚ(√5)` in the basis `1, φ`: the field norm of `x + yφ` is the binary
+quadratic form `x² + xy - y²`. -/
+theorem norm_eq_normForm (x y : ℚ) :
+    Algebra.norm ℚ (x • (1 : QSqrtFive) + y • goldenRoot) = x ^ 2 + x * y - y ^ 2 := by
+  rw [golden_norm_eq]
+  norm_num [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add]
+
 /-- The integral norm form: on `𝓞 K = ℤ[φ]` the norm of `x + yφ` (with `x, y ∈ ℤ`) is
 `x² + xy - y²`, the principal form of discriminant `5`. -/
 theorem intNorm_eq_normForm (x y : ℤ) :
@@ -27,8 +34,8 @@ theorem intNorm_eq_normForm (x y : ℤ) :
       (x • (1 : 𝓞 QSqrtFive) + y • goldenIntO) =
       (x : ℚ) • (1 : QSqrtFive) + (y : ℚ) • goldenRoot := by
     simp [goldenIntO, Int.cast_smul_eq_zsmul]
-  rw [h2, golden_norm_eq] at h1
-  norm_num [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add] at h1 ⊢
+  rw [h2, norm_eq_normForm] at h1
+  norm_num at h1 ⊢
   exact_mod_cast h1
 
 /-- The Pell-type unit equation for `ℚ(√5)`: `x + yφ` is a unit of `ℤ[φ]` iff

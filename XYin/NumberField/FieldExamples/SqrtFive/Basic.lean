@@ -166,6 +166,41 @@ theorem sqrtFiveRadicalRoot_sq :
   change (⟨0, 1⟩ : QSqrtFiveRadical) ^ 2 = ⟨5, 0⟩
   ext <;> simp [pow_two]
 
+/-- A short alias for the radical presentation `QuadraticAlgebra ℚ 5 0`. -/
+abbrev K : Type := QSqrtFiveRadical
+
+/-- The distinguished square root of `5` in the radical presentation. -/
+abbrev sqrtFive : K := sqrtFiveRadicalRoot
+
+theorem sqrtFive_sq : sqrtFive ^ 2 = (5 : K) :=
+  sqrtFiveRadicalRoot_sq
+
+/-- The golden ratio in the radical presentation. -/
+abbrev goldenRadicalRoot : K := (1 + sqrtFive) / 2
+
+theorem goldenRadicalRoot_sq : goldenRadicalRoot ^ 2 = goldenRadicalRoot + 1 := by
+  have h := sqrtFive_sq
+  rw [goldenRadicalRoot]
+  field_simp
+  linear_combination h
+
+/-- The polynomial `X² - 5`, whose root is `√5`. -/
+abbrev sqrtFivePolynomial : ℚ[X] :=
+  X ^ 2 - C (5 : ℚ)
+
+/-- The same radical field, presented by adjoining a root of `X² - 5`. -/
+abbrev KAdjoinRoot : Type := AdjoinRoot sqrtFivePolynomial
+
+/-- The formal square root of `5` in the `AdjoinRoot` presentation. -/
+abbrev sqrtFiveAdjoinRoot : KAdjoinRoot := AdjoinRoot.root sqrtFivePolynomial
+
+theorem sqrtFiveAdjoinRoot_sq :
+    sqrtFiveAdjoinRoot ^ 2 = (5 : KAdjoinRoot) := by
+  have hroot : sqrtFiveAdjoinRoot ^ 2 - 5 = 0 := by
+    simpa [sqrtFiveAdjoinRoot, sqrtFivePolynomial] using
+      (AdjoinRoot.eval₂_root sqrtFivePolynomial)
+  linear_combination hroot
+
 /-- The map from the `√5` presentation to the golden-ratio presentation. -/
 def sqrtFiveRadicalToGolden : QSqrtFiveRadical →ₐ[ℚ] QSqrtFive :=
   (QuadraticAlgebra.lift (R := ℚ) (a := (5 : ℚ)) (b := 0)) ⟨sqrtFiveRoot, by

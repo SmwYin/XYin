@@ -12,11 +12,6 @@ namespace XYin.NumberField.SqrtFive
 
 /-! ## 8. Euclidean structure -/
 
-private theorem norm_eq_normForm (x y : ℚ) :
-    Algebra.norm ℚ (x • (1 : QSqrtFive) + y • goldenRoot) = x ^ 2 + x * y - y ^ 2 := by
-  rw [golden_norm_eq]
-  norm_num [QuadraticAlgebra.re_add, QuadraticAlgebra.im_add]
-
 /-- `ℚ(√5)` is norm-Euclidean: division with remainder in `ℤ[φ]` with respect to the
 absolute value of the field norm. This strengthens `isPrincipalIdealRing`. -/
 theorem normEuclidean (a b : 𝓞 QSqrtFive) (hb : b ≠ 0) :

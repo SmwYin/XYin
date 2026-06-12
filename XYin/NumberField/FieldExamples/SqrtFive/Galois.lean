@@ -29,7 +29,7 @@ private theorem conjHom_comp : conjHom.comp conjHom = AlgHom.id ℚ QSqrtFive :=
   rw [conjHom_root, map_sub, map_one, conjHom_root]
   ring
 
-private noncomputable def conjugation : QSqrtFive ≃ₐ[ℚ] QSqrtFive where
+noncomputable def conjugation : QSqrtFive ≃ₐ[ℚ] QSqrtFive where
   __ := conjHom
   invFun := conjHom
   left_inv x := DFunLike.congr_fun conjHom_comp x
@@ -38,7 +38,16 @@ private noncomputable def conjugation : QSqrtFive ≃ₐ[ℚ] QSqrtFive where
 private theorem conjugation_root : conjugation goldenRoot = 1 - goldenRoot :=
   conjHom_root
 
-private noncomputable def idAut : QSqrtFive ≃ₐ[ℚ] QSqrtFive := AlgEquiv.refl
+noncomputable def idAut : QSqrtFive ≃ₐ[ℚ] QSqrtFive := AlgEquiv.refl
+
+/-- The nontrivial conjugation sends `φ` to `1 - φ`. -/
+theorem conjugation_apply_goldenRoot : conjugation goldenRoot = 1 - goldenRoot :=
+  conjugation_root
+
+/-- The nontrivial conjugation sends `√5 = 2φ - 1` to `-√5`. -/
+theorem conjugation_apply_sqrtFiveRoot : conjugation sqrtFiveRoot = -sqrtFiveRoot := by
+  rw [sqrtFiveRoot, map_sub, map_mul, map_ofNat, map_one, conjugation_apply_goldenRoot]
+  ring
 
 /-- The nontrivial automorphism of `ℚ(√5)` sends `φ` to its algebraic conjugate
 `1 - φ = -1/φ` (equivalently `√5 ↦ -√5`). -/
@@ -59,7 +68,7 @@ theorem aut_apply_goldenRoot (σ : QSqrtFive ≃ₐ[ℚ] QSqrtFive) :
   · exact Or.inl (by linear_combination h)
   · exact Or.inr (by linear_combination h)
 
-private theorem aut_eq_or (σ : QSqrtFive ≃ₐ[ℚ] QSqrtFive) :
+theorem aut_eq_or (σ : QSqrtFive ≃ₐ[ℚ] QSqrtFive) :
     σ = idAut ∨ σ = conjugation := by
   have hext : ∀ τ : QSqrtFive ≃ₐ[ℚ] QSqrtFive,
       σ goldenRoot = τ goldenRoot → σ = τ := by
