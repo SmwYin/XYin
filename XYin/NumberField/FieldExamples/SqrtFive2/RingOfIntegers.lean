@@ -1,0 +1,412 @@
+import XYin.NumberField.FieldExamples.SqrtFive2.Basic
+
+noncomputable section
+
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+open Module NumberField Polynomial
+
+namespace XYin.NumberField.SqrtFiveGoldenAdjoinRoot
+
+/-! ## 2. Integral basis and ring of integers -/
+
+/-- The same polynomial, now over `ℤ`. -/
+abbrev goldenIntegerPolynomial : ℤ[X] :=
+  C (1 : ℤ) * X ^ 2 + C (-1 : ℤ) * X + C (-1 : ℤ)
+
+theorem goldenIntegerPolynomial_monic : goldenIntegerPolynomial.Monic := by
+  rw [goldenIntegerPolynomial]
+  monicity
+  all_goals norm_num
+
+theorem goldenIntegerPolynomial_natDegree : goldenIntegerPolynomial.natDegree = 2 := by
+  rw [goldenIntegerPolynomial]
+  exact natDegree_quadratic (by norm_num : (1 : ℤ) ≠ 0)
+
+/-- The integral order `ℤ[φ]`, presented as an `AdjoinRoot`. -/
+abbrev O5 : Type :=
+  AdjoinRoot goldenIntegerPolynomial
+
+example : CommRing O5 := by infer_instance
+
+/-- The algebraic integer `φ = (1 + √5) / 2`. -/
+abbrev goldenInteger : O5 :=
+  AdjoinRoot.root goldenIntegerPolynomial
+
+theorem goldenInteger_sq : goldenInteger ^ 2 = goldenInteger + 1 := by
+  have hroot : goldenInteger ^ 2 - goldenInteger - 1 = 0 := by
+    simpa [goldenInteger, goldenIntegerPolynomial] using
+      AdjoinRoot.eval₂_root goldenIntegerPolynomial
+  calc
+    goldenInteger ^ 2 = goldenInteger + 1 + (goldenInteger ^ 2 - goldenInteger - 1) := by ring
+    _ = goldenInteger + 1 := by rw [hroot]; ring
+
+theorem goldenInteger_isIntegral : IsIntegral ℤ goldenInteger :=
+  AdjoinRoot.isIntegral_root' goldenIntegerPolynomial_monic
+
+theorem goldenRoot_is_root_goldenIntegerPolynomial :
+    goldenIntegerPolynomial.eval₂ (algebraMap ℤ QSqrtFive) goldenRoot = 0 := by
+  simp [goldenIntegerPolynomial, goldenRoot_sq]
+
+/-- The natural embedding of the integral model into the field model. -/
+def goldenOrderToField : O5 →+* QSqrtFive :=
+  AdjoinRoot.lift (algebraMap ℤ QSqrtFive) goldenRoot
+    goldenRoot_is_root_goldenIntegerPolynomial
+
+@[simp]
+theorem goldenOrderToField_goldenInteger :
+    goldenOrderToField goldenInteger = goldenRoot := by
+  exact AdjoinRoot.lift_root goldenRoot_is_root_goldenIntegerPolynomial
+
+instance : Algebra O5 QSqrtFive :=
+  goldenOrderToField.toAlgebra
+
+@[simp]
+theorem algebraMap_O5_QSqrtFive_eq_goldenOrderToField (x : O5) :
+    algebraMap O5 QSqrtFive x = goldenOrderToField x :=
+  rfl
+
+instance : IsScalarTower ℤ O5 QSqrtFive :=
+  IsScalarTower.of_algebraMap_eq fun _ => by simp
+
+/-- The integral power basis `1, φ` of `ℤ[φ]`. -/
+abbrev sqrtFiveExplicitIntegralPowerBasis : PowerBasis ℤ O5 :=
+  AdjoinRoot.powerBasis' goldenIntegerPolynomial_monic
+
+theorem sqrtFiveExplicitIntegralPowerBasis_gen :
+    sqrtFiveExplicitIntegralPowerBasis.gen = goldenInteger := by
+  rfl
+
+theorem sqrtFiveExplicitIntegralPowerBasis_dim :
+    sqrtFiveExplicitIntegralPowerBasis.dim = 2 := by
+  rw [sqrtFiveExplicitIntegralPowerBasis]
+  exact goldenIntegerPolynomial_natDegree
+
+instance : Module.Finite ℤ O5 :=
+  sqrtFiveExplicitIntegralPowerBasis.finite
+
+instance : Algebra.IsIntegral ℤ O5 where
+  isIntegral x := by
+    exact @IsIntegral.of_finite ℤ O5 _ _ _ sqrtFiveExplicitIntegralPowerBasis.finite x
+
+/-- The explicit integral basis `[1, (1 + √5) / 2]`. -/
+abbrev sqrtFiveExplicitIntegralBasis : Basis (Fin 2) ℤ O5 :=
+  sqrtFiveExplicitIntegralPowerBasis.basis.reindex
+    (finCongr sqrtFiveExplicitIntegralPowerBasis_dim)
+
+/-- The first vector in the explicit integral basis is `1`. -/
+theorem sqrtFiveExplicitIntegralBasis_zero :
+    sqrtFiveExplicitIntegralBasis 0 = 1 := by
+  rw [sqrtFiveExplicitIntegralBasis]
+  change (sqrtFiveExplicitIntegralPowerBasis.basis.reindex
+      (finCongr sqrtFiveExplicitIntegralPowerBasis_dim)) 0 = 1
+  rw [sqrtFiveExplicitIntegralPowerBasis.basis.reindex_apply]
+  rw [sqrtFiveExplicitIntegralPowerBasis.basis_eq_pow]
+  have hcoe :
+      (((finCongr sqrtFiveExplicitIntegralPowerBasis_dim).symm (0 : Fin 2) :
+        Fin sqrtFiveExplicitIntegralPowerBasis.dim) : ℕ) = 0 := rfl
+  rw [hcoe]
+  simp
+
+/-- The second vector in the explicit integral basis is `(1 + √5) / 2`. -/
+theorem sqrtFiveExplicitIntegralBasis_one :
+    sqrtFiveExplicitIntegralBasis 1 = goldenInteger := by
+  rw [sqrtFiveExplicitIntegralBasis]
+  change (sqrtFiveExplicitIntegralPowerBasis.basis.reindex
+      (finCongr sqrtFiveExplicitIntegralPowerBasis_dim)) 1 = goldenInteger
+  rw [sqrtFiveExplicitIntegralPowerBasis.basis.reindex_apply]
+  rw [sqrtFiveExplicitIntegralPowerBasis.basis_eq_pow]
+  have hcoe :
+      (((finCongr sqrtFiveExplicitIntegralPowerBasis_dim).symm (1 : Fin 2) :
+        Fin sqrtFiveExplicitIntegralPowerBasis.dim) : ℕ) = 1 := rfl
+  rw [hcoe]
+  simp
+
+example : sqrtFiveExplicitIntegralBasis 0 = 1 :=
+  sqrtFiveExplicitIntegralBasis_zero
+
+example : sqrtFiveExplicitIntegralBasis 1 = goldenInteger :=
+  sqrtFiveExplicitIntegralBasis_one
+
+theorem goldenOrderToField_basis_zero :
+    goldenOrderToField (sqrtFiveExplicitIntegralBasis 0) = 1 := by
+  rw [sqrtFiveExplicitIntegralBasis_zero]
+  exact goldenOrderToField.map_one
+
+theorem goldenOrderToField_basis_one :
+    goldenOrderToField (sqrtFiveExplicitIntegralBasis 1) = goldenRoot := by
+  rw [sqrtFiveExplicitIntegralBasis_one]
+  exact goldenOrderToField_goldenInteger
+
+theorem goldenOrderToField_basis_one_as_sqrtFive :
+    goldenOrderToField (sqrtFiveExplicitIntegralBasis 1) = (sqrtFiveRoot + 1) / 2 := by
+  rw [goldenOrderToField_basis_one, ← goldenRoot_eq_half_sqrtFiveRoot_add_one]
+
+theorem goldenOrderToField_integralBasis (i : Fin 2) :
+    goldenOrderToField (sqrtFiveExplicitIntegralBasis i) = goldenPowerBasis.basis i := by
+  fin_cases i
+  · change goldenOrderToField (sqrtFiveExplicitIntegralBasis (0 : Fin 2)) =
+      goldenPowerBasis.basis (0 : Fin 2)
+    rw [goldenOrderToField_basis_zero, goldenPowerBasis_basis_zero]
+  · change goldenOrderToField (sqrtFiveExplicitIntegralBasis (1 : Fin 2)) =
+      goldenPowerBasis.basis (1 : Fin 2)
+    rw [goldenOrderToField_basis_one, goldenPowerBasis_basis_one]
+
+theorem goldenOrderToField_coord (z : O5) (i : Fin 2) :
+    goldenPowerBasis.basis.equivFun (goldenOrderToField z) i =
+      (sqrtFiveExplicitIntegralBasis.equivFun z i : ℚ) := by
+  rw [← sqrtFiveExplicitIntegralBasis.sum_equivFun z]
+  simp_rw [map_sum, map_zsmul]
+  simp_rw [goldenOrderToField_integralBasis]
+  rw [Basis.equivFun_apply]
+  classical
+  fin_cases i <;> simp
+
+theorem goldenOrderToField_injective : Function.Injective goldenOrderToField := by
+  intro x y hxy
+  apply sqrtFiveExplicitIntegralBasis.equivFun.injective
+  ext i
+  have hcoord := congr_arg (fun z => goldenPowerBasis.basis.equivFun z i) hxy
+  change goldenPowerBasis.basis.equivFun (goldenOrderToField x) i =
+    goldenPowerBasis.basis.equivFun (goldenOrderToField y) i at hcoord
+  rw [goldenOrderToField_coord x i, goldenOrderToField_coord y i] at hcoord
+  exact_mod_cast hcoord
+
+theorem mul_goldenRoot_eq (x : QSqrtFive) :
+    x * goldenRoot =
+      goldenPowerBasis.basis.equivFun x 1 • (1 : QSqrtFive) +
+        (goldenPowerBasis.basis.equivFun x 0 + goldenPowerBasis.basis.equivFun x 1) •
+          goldenRoot := by
+  nth_rewrite 1 [← goldenPowerBasis.basis.sum_equivFun x]
+  rw [Fin.sum_univ_two]
+  change (goldenPowerBasis.basis.equivFun x 0 • goldenPowerBasis.basis 0 +
+      goldenPowerBasis.basis.equivFun x 1 • goldenPowerBasis.basis 1) * goldenRoot =
+    goldenPowerBasis.basis.equivFun x 1 • (1 : QSqrtFive) +
+      (goldenPowerBasis.basis.equivFun x 0 + goldenPowerBasis.basis.equivFun x 1) •
+        goldenRoot
+  rw [goldenPowerBasis_basis_zero, goldenPowerBasis_basis_one]
+  simp [Algebra.smul_def]
+  ring_nf
+  rw [goldenRoot_sq]
+  ring
+
+theorem golden_trace_eq (x : QSqrtFive) :
+    Algebra.trace ℚ QSqrtFive x =
+      2 * goldenPowerBasis.basis.equivFun x 0 + goldenPowerBasis.basis.equivFun x 1 := by
+  rw [Algebra.trace_eq_matrix_trace goldenPowerBasis.basis]
+  rw [Matrix.trace_fin_two]
+  simp_rw [Algebra.leftMulMatrix_eq_repr_mul]
+  change goldenPowerBasis.basis.equivFun (x * goldenPowerBasis.basis 0) 0 +
+      goldenPowerBasis.basis.equivFun (x * goldenPowerBasis.basis 1) 1 =
+    2 * goldenPowerBasis.basis.equivFun x 0 + goldenPowerBasis.basis.equivFun x 1
+  rw [goldenPowerBasis_basis_zero, goldenPowerBasis_basis_one, mul_one, mul_goldenRoot_eq]
+  rw [goldenPowerBasis_equivFun_linear_one]
+  ring
+
+theorem golden_norm_eq (x : QSqrtFive) :
+    Algebra.norm ℚ x =
+      goldenPowerBasis.basis.equivFun x 0 ^ 2 +
+        goldenPowerBasis.basis.equivFun x 0 * goldenPowerBasis.basis.equivFun x 1 -
+          goldenPowerBasis.basis.equivFun x 1 ^ 2 := by
+  rw [Algebra.norm_eq_matrix_det goldenPowerBasis.basis]
+  rw [Matrix.det_fin_two]
+  simp_rw [Algebra.leftMulMatrix_eq_repr_mul]
+  change goldenPowerBasis.basis.equivFun (x * goldenPowerBasis.basis 0) 0 *
+        goldenPowerBasis.basis.equivFun (x * goldenPowerBasis.basis 1) 1 -
+      goldenPowerBasis.basis.equivFun (x * goldenPowerBasis.basis 1) 0 *
+        goldenPowerBasis.basis.equivFun (x * goldenPowerBasis.basis 0) 1 =
+    goldenPowerBasis.basis.equivFun x 0 ^ 2 +
+      goldenPowerBasis.basis.equivFun x 0 * goldenPowerBasis.basis.equivFun x 1 -
+        goldenPowerBasis.basis.equivFun x 1 ^ 2
+  rw [goldenPowerBasis_basis_zero, goldenPowerBasis_basis_one, mul_one, mul_goldenRoot_eq]
+  rw [goldenPowerBasis_equivFun_linear_one, goldenPowerBasis_equivFun_linear_zero]
+  ring
+
+theorem goldenPowerBasis_discr :
+    Algebra.discr ℚ goldenPowerBasis.basis = (5 : ℚ) := by
+  rw [Algebra.discr_def]
+  have hmatrix : Algebra.traceMatrix ℚ goldenPowerBasis.basis = !![(2 : ℚ), 1; 1, 3] := by
+    ext i j
+    fin_cases i <;> fin_cases j
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (0 : Fin 2) * goldenPowerBasis.basis (0 : Fin 2)) =
+          (2 : ℚ)
+      rw [goldenPowerBasis_basis_zero, one_mul, golden_trace_eq]
+      rw [goldenPowerBasis_equivFun_one_zero, goldenPowerBasis_equivFun_one_one]
+      norm_num
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (0 : Fin 2) * goldenPowerBasis.basis (1 : Fin 2)) =
+          (1 : ℚ)
+      rw [goldenPowerBasis_basis_zero, goldenPowerBasis_basis_one, one_mul, golden_trace_eq]
+      rw [goldenPowerBasis_equivFun_goldenRoot_zero, goldenPowerBasis_equivFun_goldenRoot_one]
+      norm_num
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (1 : Fin 2) * goldenPowerBasis.basis (0 : Fin 2)) =
+          (1 : ℚ)
+      rw [goldenPowerBasis_basis_one, goldenPowerBasis_basis_zero, mul_one, golden_trace_eq]
+      rw [goldenPowerBasis_equivFun_goldenRoot_zero, goldenPowerBasis_equivFun_goldenRoot_one]
+      norm_num
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (1 : Fin 2) * goldenPowerBasis.basis (1 : Fin 2)) =
+          (3 : ℚ)
+      rw [goldenPowerBasis_basis_one, ← pow_two, goldenRoot_sq, golden_trace_eq]
+      rw [show goldenRoot + 1 = (1 : ℚ) • (1 : QSqrtFive) + (1 : ℚ) • goldenRoot by
+        simp [Algebra.smul_def, add_comm]]
+      rw [goldenPowerBasis_equivFun_linear_zero, goldenPowerBasis_equivFun_linear_one]
+      norm_num
+  rw [hmatrix, Matrix.det_fin_two_of]
+  norm_num
+
+theorem five_dvd_coords_of_trace_norm {m n T N : ℤ}
+    (hT : 2 * m + n = 5 * T)
+    (hN : m * m + m * n - n * n = 25 * N) :
+    (5 : ℤ) ∣ m ∧ (5 : ℤ) ∣ n := by
+  have hn_eq : n = 5 * T - 2 * m := by omega
+  have hm_sq : m * m = 5 * (m * T - T * T - N) := by
+    rw [hn_eq] at hN
+    nlinarith
+  have hm_sq_dvd : (5 : ℤ) ∣ m * m := ⟨m * T - T * T - N, hm_sq⟩
+  have hprime : Prime (5 : ℤ) := by norm_num [Int.prime_ofNat_iff, Nat.prime_five]
+  have hm : (5 : ℤ) ∣ m := by
+    exact hprime.dvd_of_dvd_pow (a := m) (n := 2) (by simpa [pow_two] using hm_sq_dvd)
+  have hn : (5 : ℤ) ∣ n := by
+    rcases hm with ⟨m', rfl⟩
+    use T - 2 * m'
+    omega
+  exact ⟨hm, hn⟩
+
+theorem int_eq_of_rat_div_five_eq {a b : ℤ} (h : ((a : ℚ) / 5) = (b : ℚ)) :
+    a = 5 * b := by
+  have h' : (a : ℚ) = (5 * b : ℤ) := by
+    norm_num at h ⊢
+    linear_combination 5 * h
+  exact_mod_cast h'
+
+theorem int_eq_of_rat_div_twentyFive_eq {a b : ℤ}
+    (h : ((a : ℚ) / 25) = (b : ℚ)) :
+    a = 25 * b := by
+  have h' : (a : ℚ) = (25 * b : ℤ) := by
+    norm_num at h ⊢
+    linear_combination 25 * h
+  exact_mod_cast h'
+
+theorem integral_mem_goldenOrderToField_range {x : QSqrtFive} (hx : IsIntegral ℤ x) :
+    ∃ y : O5, algebraMap O5 QSqrtFive y = x := by
+  have hmem :
+      (5 : ℚ) • x ∈ Algebra.adjoin ℤ ({goldenRoot} : Set QSqrtFive) := by
+    convert Algebra.discr_mul_isIntegral_mem_adjoin ℚ
+        (B := goldenPowerBasis) goldenRoot_isIntegral hx using 1
+    rw [goldenPowerBasis_discr]
+  rw [Algebra.adjoin_singleton_eq_range_aeval] at hmem
+  rcases hmem with ⟨P, hP⟩
+  let y : O5 := aeval goldenInteger P
+  have hy : algebraMap O5 QSqrtFive y = (5 : ℚ) • x := by
+    rw [← hP]
+    simpa [y, goldenOrderToField_goldenInteger] using
+      (Polynomial.aeval_algHom_apply goldenOrderToField.toIntAlgHom goldenInteger P).symm
+  let m : ℤ := sqrtFiveExplicitIntegralBasis.equivFun y 0
+  let n : ℤ := sqrtFiveExplicitIntegralBasis.equivFun y 1
+  have hcoord0 :
+      goldenPowerBasis.basis.equivFun (algebraMap O5 QSqrtFive y) 0 = (m : ℚ) := by
+    change goldenPowerBasis.basis.equivFun (goldenOrderToField y) 0 = (m : ℚ)
+    rw [goldenOrderToField_coord]
+  have hcoord1 :
+      goldenPowerBasis.basis.equivFun (algebraMap O5 QSqrtFive y) 1 = (n : ℚ) := by
+    change goldenPowerBasis.basis.equivFun (goldenOrderToField y) 1 = (n : ℚ)
+    rw [goldenOrderToField_coord]
+  have hre : (m : ℚ) = 5 * goldenPowerBasis.basis.equivFun x 0 := by
+    have h := congr_arg (fun z => goldenPowerBasis.basis.equivFun z 0) hy
+    change goldenPowerBasis.basis.equivFun (algebraMap O5 QSqrtFive y) 0 =
+      goldenPowerBasis.basis.equivFun ((5 : ℚ) • x) 0 at h
+    rw [hcoord0] at h
+    simpa using h
+  have him : (n : ℚ) = 5 * goldenPowerBasis.basis.equivFun x 1 := by
+    have h := congr_arg (fun z => goldenPowerBasis.basis.equivFun z 1) hy
+    change goldenPowerBasis.basis.equivFun (algebraMap O5 QSqrtFive y) 1 =
+      goldenPowerBasis.basis.equivFun ((5 : ℚ) • x) 1 at h
+    rw [hcoord1] at h
+    simpa using h
+  have hx_re : goldenPowerBasis.basis.equivFun x 0 = (m : ℚ) / 5 := by linarith
+  have hx_im : goldenPowerBasis.basis.equivFun x 1 = (n : ℚ) / 5 := by linarith
+  have htrace_int : IsIntegral ℤ (Algebra.trace ℚ QSqrtFive x) :=
+    Algebra.isIntegral_trace (L := ℚ) (F := QSqrtFive) hx
+  obtain ⟨T, hT⟩ := (htrace_int.exists_int_iff_exists_rat).mp
+    ⟨Algebra.trace ℚ QSqrtFive x, rfl⟩
+  have hnorm_int : IsIntegral ℤ (Algebra.norm ℚ x) :=
+    Algebra.isIntegral_norm ℚ hx
+  obtain ⟨N, hN⟩ := (hnorm_int.exists_int_iff_exists_rat).mp
+    ⟨Algebra.norm ℚ x, rfl⟩
+  have hT_rat : (((2 * m + n : ℤ) : ℚ) / 5) = (T : ℚ) := by
+    rw [← hT, golden_trace_eq, hx_re, hx_im]
+    push_cast
+    ring
+  have hN_rat : (((m * m + m * n - n * n : ℤ) : ℚ) / 25) = (N : ℚ) := by
+    rw [← hN, golden_norm_eq, hx_re, hx_im]
+    push_cast
+    ring
+  have hT_int : 2 * m + n = 5 * T :=
+    int_eq_of_rat_div_five_eq hT_rat
+  have hN_int : m * m + m * n - n * n = 25 * N :=
+    int_eq_of_rat_div_twentyFive_eq hN_rat
+  rcases five_dvd_coords_of_trace_norm hT_int hN_int with ⟨hm, hn⟩
+  rcases hm with ⟨m', hm'⟩
+  rcases hn with ⟨n', hn'⟩
+  let coeffs : Fin 2 → ℤ := ![m', n']
+  let z : O5 := sqrtFiveExplicitIntegralBasis.equivFun.symm coeffs
+  have hz0 : (m' : ℚ) = goldenPowerBasis.basis.equivFun x 0 := by
+    rw [hm'] at hre
+    norm_num at hre
+    simpa using hre
+  have hz1 : (n' : ℚ) = goldenPowerBasis.basis.equivFun x 1 := by
+    rw [hn'] at him
+    norm_num at him
+    simpa using him
+  have hzcoord : sqrtFiveExplicitIntegralBasis.equivFun z = coeffs := by
+    dsimp [z]
+    exact sqrtFiveExplicitIntegralBasis.equivFun.apply_symm_apply coeffs
+  refine ⟨z, ?_⟩
+  apply goldenPowerBasis.basis.equivFun.injective
+  ext i
+  fin_cases i
+  · change goldenPowerBasis.basis.equivFun (goldenOrderToField z) 0 =
+      goldenPowerBasis.basis.equivFun x 0
+    rw [goldenOrderToField_coord]
+    rw [hzcoord]
+    simp [coeffs, hz0]
+  · change goldenPowerBasis.basis.equivFun (goldenOrderToField z) 1 =
+      goldenPowerBasis.basis.equivFun x 1
+    rw [goldenOrderToField_coord]
+    rw [hzcoord]
+    simp [coeffs, hz1]
+
+instance : IsIntegralClosure O5 ℤ QSqrtFive where
+  algebraMap_injective := goldenOrderToField_injective
+  isIntegral_iff {x} := by
+    constructor
+    · exact integral_mem_goldenOrderToField_range
+    · rintro ⟨y, rfl⟩
+      change IsIntegral ℤ (goldenOrderToField y)
+      exact map_isIntegral_int goldenOrderToField
+        (Algebra.IsIntegral.isIntegral (R := ℤ) y)
+
+/-- The naive order `ℤ[√5]` is not the full ring of integers `ℤ[(1 + √5) / 2]`. -/
+theorem adjoin_sqrtFive_ne_integralClosure :
+    Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) ≠ integralClosure ℤ QSqrtFive := by
+  sorry
+
+/-! ## 3. Discriminant -/
+
+/-- The number-field discriminant of `ℚ(√5)` is `5`: since `5 ≡ 1 (mod 4)`, the discriminant
+is `5` itself (not `4·5`) — the real quadratic field of smallest discriminant. In particular
+`5` is the only ramified prime, cf. `ramified_iff_eq_five`. -/
+theorem numberField_discr_eq : NumberField.discr QSqrtFive = 5 := by
+  sorry
+
+
+end XYin.NumberField.SqrtFiveGoldenAdjoinRoot

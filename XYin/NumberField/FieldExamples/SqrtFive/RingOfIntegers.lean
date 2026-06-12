@@ -1,0 +1,388 @@
+import XYin.NumberField.FieldExamples.SqrtFive.Basic
+
+noncomputable section
+
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+open Module NumberField Polynomial
+
+namespace XYin.NumberField.SqrtFive
+
+/-! ## 2. Integral basis and ring of integers -/
+
+/--
+A concrete model for the ring of integers: elements are `a + bφ`, with
+`a b : ℤ` and `φ ^ 2 = φ + 1`.
+-/
+abbrev O5 : Type := QuadraticAlgebra ℤ (1 : ℤ) (1 : ℤ)
+
+example : CommRing O5 := by infer_instance
+
+/-- The algebraic integer `φ = (1 + √5) / 2`. -/
+abbrev goldenInteger : O5 := QuadraticAlgebra.omega
+
+theorem goldenInteger_sq : goldenInteger ^ 2 = goldenInteger + 1 := by
+  change (⟨0, 1⟩ : O5) ^ 2 = ⟨0, 1⟩ + ⟨1, 0⟩
+  ext <;> simp [pow_two]
+
+theorem goldenInteger_isIntegral : IsIntegral ℤ goldenInteger := by
+  refine ⟨X ^ 2 - X - 1, ?_, ?_⟩
+  · monicity
+    norm_num
+  · simp [goldenInteger_sq]
+
+instance : Algebra.IsIntegral ℤ O5 := by
+  constructor
+  intro z
+  cases z with
+  | mk a b =>
+    rw [QuadraticAlgebra.mk_eq_add_smul_omega a b]
+    exact isIntegral_algebraMap.add (goldenInteger_isIntegral.zsmul b)
+
+/-- The natural embedding of the integral model into the field model. -/
+def goldenOrderToField : O5 →+* QSqrtFive where
+  toFun z := ⟨z.re, z.im⟩
+  map_zero' := by ext <;> simp
+  map_one' := by
+    change (⟨((1 : O5).re : ℚ), ((1 : O5).im : ℚ)⟩ : QSqrtFive) = ⟨1, 0⟩
+    ext <;> simp only [QuadraticAlgebra.re_one, QuadraticAlgebra.im_one, Int.cast_one,
+      Int.cast_zero]
+  map_add' x y := by ext <;> simp
+  map_mul' x y := by ext <;> simp
+
+@[simp]
+theorem goldenOrderToField_goldenInteger :
+    goldenOrderToField goldenInteger = goldenRoot := by
+  rfl
+
+instance : Algebra O5 QSqrtFive :=
+  goldenOrderToField.toAlgebra
+
+instance : IsScalarTower ℤ O5 QSqrtFive :=
+  IsScalarTower.of_algebraMap_eq fun _ => by ext <;> simp
+
+theorem goldenOrderToField_injective : Function.Injective goldenOrderToField := by
+  intro x y hxy
+  ext
+  · have h := congr_arg QuadraticAlgebra.re hxy
+    change (x.re : ℚ) = y.re at h
+    exact_mod_cast h
+  · have h := congr_arg QuadraticAlgebra.im hxy
+    change (x.im : ℚ) = y.im at h
+    exact_mod_cast h
+
+@[simp]
+theorem algebraMap_O5_QSqrtFive_eq_goldenOrderToField (x : O5) :
+    algebraMap O5 QSqrtFive x = goldenOrderToField x :=
+  rfl
+
+abbrev goldenPowerBasis : PowerBasis ℚ QSqrtFive where
+  gen := goldenRoot
+  dim := 2
+  basis := QuadraticAlgebra.basis (1 : ℚ) (1 : ℚ)
+  basis_eq_pow i := by
+    fin_cases i <;> ext <;>
+      simp [QuadraticAlgebra.basis, QuadraticAlgebra.linearEquivTuple, goldenRoot]
+
+theorem goldenPowerBasis_basis_zero : goldenPowerBasis.basis 0 = (1 : QSqrtFive) := by
+  change (QuadraticAlgebra.basis (1 : ℚ) (1 : ℚ)) (0 : Fin 2) = (1 : QSqrtFive)
+  ext <;> simp [QuadraticAlgebra.basis, QuadraticAlgebra.linearEquivTuple]
+
+theorem goldenPowerBasis_basis_one : goldenPowerBasis.basis 1 = goldenRoot := by
+  change (QuadraticAlgebra.basis (1 : ℚ) (1 : ℚ)) (1 : Fin 2) = goldenRoot
+  ext <;> simp [QuadraticAlgebra.basis, QuadraticAlgebra.linearEquivTuple, goldenRoot]
+
+theorem golden_trace_eq (x : QSqrtFive) :
+    Algebra.trace ℚ QSqrtFive x = 2 * x.re + x.im := by
+  rw [Algebra.trace_eq_matrix_trace (QuadraticAlgebra.basis (1 : ℚ) (1 : ℚ))]
+  cases x
+  simp [Algebra.leftMulMatrix_eq_repr_mul, QuadraticAlgebra.basis,
+    QuadraticAlgebra.linearEquivTuple, QuadraticAlgebra.equivProd, Matrix.trace_fin_two]
+  ring_nf
+
+theorem golden_norm_eq (x : QSqrtFive) :
+    Algebra.norm ℚ x = x.re ^ 2 + x.re * x.im - x.im ^ 2 := by
+  rw [Algebra.norm_eq_matrix_det (QuadraticAlgebra.basis (1 : ℚ) (1 : ℚ))]
+  cases x
+  simp [Algebra.leftMulMatrix_eq_repr_mul, QuadraticAlgebra.basis,
+    QuadraticAlgebra.linearEquivTuple, QuadraticAlgebra.equivProd, Matrix.det_fin_two, pow_two]
+  ring_nf
+
+theorem goldenPowerBasis_discr :
+    Algebra.discr ℚ goldenPowerBasis.basis = (5 : ℚ) := by
+  rw [Algebra.discr_def]
+  have hmatrix : Algebra.traceMatrix ℚ goldenPowerBasis.basis = !![(2 : ℚ), 1; 1, 3] := by
+    ext i j
+    fin_cases i <;> fin_cases j
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (0 : Fin 2) * goldenPowerBasis.basis (0 : Fin 2)) =
+          (2 : ℚ)
+      rw [goldenPowerBasis_basis_zero, one_mul, golden_trace_eq]
+      norm_num
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (0 : Fin 2) * goldenPowerBasis.basis (1 : Fin 2)) =
+          (1 : ℚ)
+      rw [goldenPowerBasis_basis_zero, goldenPowerBasis_basis_one, one_mul, golden_trace_eq]
+      norm_num [goldenRoot]
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (1 : Fin 2) * goldenPowerBasis.basis (0 : Fin 2)) =
+          (1 : ℚ)
+      rw [goldenPowerBasis_basis_one, goldenPowerBasis_basis_zero, mul_one, golden_trace_eq]
+      norm_num [goldenRoot]
+    · change
+        Algebra.trace ℚ QSqrtFive
+            (goldenPowerBasis.basis (1 : Fin 2) * goldenPowerBasis.basis (1 : Fin 2)) =
+          (3 : ℚ)
+      rw [goldenPowerBasis_basis_one, golden_trace_eq]
+      norm_num [goldenRoot]
+  rw [hmatrix, Matrix.det_fin_two_of]
+  norm_num
+
+theorem five_dvd_coords_of_trace_norm {m n T N : ℤ}
+    (hT : 2 * m + n = 5 * T)
+    (hN : m * m + m * n - n * n = 25 * N) :
+    (5 : ℤ) ∣ m ∧ (5 : ℤ) ∣ n := by
+  have hn_eq : n = 5 * T - 2 * m := by omega
+  have hm_sq : m * m = 5 * (m * T - T * T - N) := by
+    rw [hn_eq] at hN
+    nlinarith
+  have hm_sq_dvd : (5 : ℤ) ∣ m * m := ⟨m * T - T * T - N, hm_sq⟩
+  have hprime : Prime (5 : ℤ) := by norm_num [Int.prime_ofNat_iff, Nat.prime_five]
+  have hm : (5 : ℤ) ∣ m := by
+    exact hprime.dvd_of_dvd_pow (a := m) (n := 2) (by simpa [pow_two] using hm_sq_dvd)
+  have hn : (5 : ℤ) ∣ n := by
+    rcases hm with ⟨m', rfl⟩
+    use T - 2 * m'
+    omega
+  exact ⟨hm, hn⟩
+
+theorem int_eq_of_rat_div_five_eq {a b : ℤ} (h : ((a : ℚ) / 5) = (b : ℚ)) :
+    a = 5 * b := by
+  have h' : (a : ℚ) = (5 * b : ℤ) := by
+    norm_num at h ⊢
+    linear_combination 5 * h
+  exact_mod_cast h'
+
+theorem int_eq_of_rat_div_twentyFive_eq {a b : ℤ}
+    (h : ((a : ℚ) / 25) = (b : ℚ)) :
+    a = 25 * b := by
+  have h' : (a : ℚ) = (25 * b : ℤ) := by
+    norm_num at h ⊢
+    linear_combination 25 * h
+  exact_mod_cast h'
+
+theorem integral_mem_goldenOrderToField_range {x : QSqrtFive} (hx : IsIntegral ℤ x) :
+    ∃ y : O5, algebraMap O5 QSqrtFive y = x := by
+  have hmem :
+      (5 : ℚ) • x ∈ Algebra.adjoin ℤ ({goldenRoot} : Set QSqrtFive) := by
+    convert Algebra.discr_mul_isIntegral_mem_adjoin ℚ
+        (B := goldenPowerBasis) goldenRoot_isIntegral hx using 1
+    rw [goldenPowerBasis_discr]
+  rw [Algebra.adjoin_singleton_eq_range_aeval] at hmem
+  rcases hmem with ⟨P, hP⟩
+  let y : O5 := aeval goldenInteger P
+  have hy : algebraMap O5 QSqrtFive y = (5 : ℚ) • x := by
+    rw [← hP]
+    simpa [y, goldenOrderToField_goldenInteger] using
+      (Polynomial.aeval_algHom_apply goldenOrderToField.toIntAlgHom goldenInteger P).symm
+  let m : ℤ := y.re
+  let n : ℤ := y.im
+  have hre : (m : ℚ) = 5 * x.re := by
+    have h := congr_arg QuadraticAlgebra.re hy
+    simpa [m] using h
+  have him : (n : ℚ) = 5 * x.im := by
+    have h := congr_arg QuadraticAlgebra.im hy
+    simpa [n] using h
+  have hx_re : x.re = (m : ℚ) / 5 := by linarith
+  have hx_im : x.im = (n : ℚ) / 5 := by linarith
+  have htrace_int : IsIntegral ℤ (Algebra.trace ℚ QSqrtFive x) :=
+    Algebra.isIntegral_trace (L := ℚ) (F := QSqrtFive) hx
+  obtain ⟨T, hT⟩ := (htrace_int.exists_int_iff_exists_rat).mp
+    ⟨Algebra.trace ℚ QSqrtFive x, rfl⟩
+  have hnorm_int : IsIntegral ℤ (Algebra.norm ℚ x) :=
+    Algebra.isIntegral_norm ℚ hx
+  obtain ⟨N, hN⟩ := (hnorm_int.exists_int_iff_exists_rat).mp
+    ⟨Algebra.norm ℚ x, rfl⟩
+  have hT_rat : (((2 * m + n : ℤ) : ℚ) / 5) = (T : ℚ) := by
+    rw [← hT, golden_trace_eq, hx_re, hx_im]
+    push_cast
+    ring
+  have hN_rat : (((m * m + m * n - n * n : ℤ) : ℚ) / 25) = (N : ℚ) := by
+    rw [← hN, golden_norm_eq, hx_re, hx_im]
+    push_cast
+    ring
+  have hT_int : 2 * m + n = 5 * T :=
+    int_eq_of_rat_div_five_eq hT_rat
+  have hN_int : m * m + m * n - n * n = 25 * N :=
+    int_eq_of_rat_div_twentyFive_eq hN_rat
+  rcases five_dvd_coords_of_trace_norm hT_int hN_int with ⟨hm, hn⟩
+  rcases hm with ⟨m', hm'⟩
+  rcases hn with ⟨n', hn'⟩
+  refine ⟨⟨m', n'⟩, ?_⟩
+  ext
+  · change (m' : ℚ) = x.re
+    rw [hm'] at hre
+    norm_num at hre
+    linarith
+  · change (n' : ℚ) = x.im
+    rw [hn'] at him
+    norm_num at him
+    linarith
+
+instance : IsIntegralClosure O5 ℤ QSqrtFive where
+  algebraMap_injective := goldenOrderToField_injective
+  isIntegral_iff {x} := by
+    constructor
+    · exact integral_mem_goldenOrderToField_range
+    · rintro ⟨y, rfl⟩
+      exact IsIntegral.algebraMap (Algebra.IsIntegral.isIntegral (R := ℤ) y)
+
+/-- The naive order `ℤ[√5]` is not the full ring of integers `ℤ[(1 + √5) / 2]`. -/
+theorem adjoin_sqrtFive_ne_integralClosure :
+    Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) ≠ integralClosure ℤ QSqrtFive := by
+  intro h
+  let S : Subalgebra ℤ QSqrtFive :=
+    { carrier := {z : QSqrtFive | ∃ a b : ℤ, z.re = a ∧ z.im = 2 * b}
+      add_mem' := by
+        rintro z w ⟨a, b, ha, hb⟩ ⟨c, d, hc, hd⟩
+        refine ⟨a + c, b + d, ?_, ?_⟩
+        · rw [QuadraticAlgebra.re_add, ha, hc]
+          push_cast
+          ring
+        · rw [QuadraticAlgebra.im_add, hb, hd]
+          push_cast
+          ring
+      mul_mem' := by
+        rintro z w ⟨a, b, ha, hb⟩ ⟨c, d, hc, hd⟩
+        refine ⟨a * c + 4 * b * d, a * d + b * c + 2 * b * d, ?_, ?_⟩
+        · rw [QuadraticAlgebra.re_mul, ha, hb, hc, hd]
+          push_cast
+          ring
+        · rw [QuadraticAlgebra.im_mul, ha, hb, hc, hd]
+          push_cast
+          ring
+      one_mem' := ⟨1, 0, by norm_num, by norm_num⟩
+      zero_mem' := ⟨0, 0, by norm_num, by norm_num⟩
+      algebraMap_mem' := fun n => ⟨n, 0, by norm_num, by norm_num⟩ }
+  have hsub : Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) ≤ S := by
+    refine Algebra.adjoin_le ?_
+    rintro z rfl
+    refine ⟨-1, 1, ?_, ?_⟩
+    · simp [sqrtFiveRoot, goldenRoot]
+    · simp [sqrtFiveRoot, goldenRoot]
+  have hφ : goldenRoot ∈ Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) := by
+    rw [h]
+    exact goldenRoot_isIntegral
+  obtain ⟨a, b, ha, hb⟩ := hsub hφ
+  norm_num [goldenRoot] at hb
+  have hb_int : 2 * b = 1 := by
+    exact_mod_cast hb.symm
+  omega
+
+/-- The explicit integral basis `[1, (1 + √5) / 2]`. -/
+abbrev sqrtFiveExplicitIntegralBasis : Basis (Fin 2) ℤ O5 :=
+  QuadraticAlgebra.basis (1 : ℤ) (1 : ℤ)
+
+/-- The first vector in the explicit integral basis is `1`. -/
+theorem sqrtFiveExplicitIntegralBasis_zero :
+    sqrtFiveExplicitIntegralBasis 0 = 1 := by
+  change (QuadraticAlgebra.basis (1 : ℤ) (1 : ℤ)) (0 : Fin 2) = ⟨1, 0⟩
+  ext <;> simp [QuadraticAlgebra.basis, QuadraticAlgebra.linearEquivTuple]
+
+/-- The second vector in the explicit integral basis is `(1 + √5) / 2`. -/
+theorem sqrtFiveExplicitIntegralBasis_one :
+    sqrtFiveExplicitIntegralBasis 1 = goldenInteger := by
+  change (QuadraticAlgebra.basis (1 : ℤ) (1 : ℤ)) (1 : Fin 2) = ⟨0, 1⟩
+  ext <;> simp [QuadraticAlgebra.basis, QuadraticAlgebra.linearEquivTuple]
+
+example : sqrtFiveExplicitIntegralBasis 0 = 1 :=
+  sqrtFiveExplicitIntegralBasis_zero
+
+example : sqrtFiveExplicitIntegralBasis 1 = goldenInteger :=
+  sqrtFiveExplicitIntegralBasis_one
+
+theorem goldenOrderToField_basis_zero :
+    goldenOrderToField (sqrtFiveExplicitIntegralBasis 0) = 1 := by
+  rw [sqrtFiveExplicitIntegralBasis_zero]
+  exact goldenOrderToField.map_one
+
+theorem goldenOrderToField_basis_one :
+    goldenOrderToField (sqrtFiveExplicitIntegralBasis 1) = goldenRoot := by
+  rw [sqrtFiveExplicitIntegralBasis_one]
+  exact goldenOrderToField_goldenInteger
+
+/-! ## 3. Discriminant -/
+
+private noncomputable def goldenOrderEquivRingOfIntegers : O5 ≃ₐ[ℤ] 𝓞 QSqrtFive :=
+  IsIntegralClosure.equiv ℤ O5 QSqrtFive (𝓞 QSqrtFive)
+
+private noncomputable def concreteIntegralBasis : Basis (Fin 2) ℤ (𝓞 QSqrtFive) :=
+  sqrtFiveExplicitIntegralBasis.map goldenOrderEquivRingOfIntegers.toLinearEquiv
+
+private theorem concreteIntegralBasis_basis_zero :
+    algebraMap (𝓞 QSqrtFive) QSqrtFive (concreteIntegralBasis 0) = 1 := by
+  change algebraMap (𝓞 QSqrtFive) QSqrtFive
+      (goldenOrderEquivRingOfIntegers (sqrtFiveExplicitIntegralBasis 0)) = 1
+  rw [goldenOrderEquivRingOfIntegers, IsIntegralClosure.algebraMap_equiv]
+  exact goldenOrderToField_basis_zero
+
+private theorem concreteIntegralBasis_basis_one :
+    algebraMap (𝓞 QSqrtFive) QSqrtFive (concreteIntegralBasis 1) = goldenRoot := by
+  change algebraMap (𝓞 QSqrtFive) QSqrtFive
+      (goldenOrderEquivRingOfIntegers (sqrtFiveExplicitIntegralBasis 1)) = goldenRoot
+  rw [goldenOrderEquivRingOfIntegers, IsIntegralClosure.algebraMap_equiv]
+  exact goldenOrderToField_basis_one
+
+private theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (5 : ℤ) := by
+  let bInt : Basis (Fin 2) ℤ (𝓞 QSqrtFive) := concreteIntegralBasis
+  haveI : IsScalarTower ℤ (𝓞 QSqrtFive) QSqrtFive :=
+    IsScalarTower.of_algebraMap_eq fun _ => rfl
+  have hdiscLoc :=
+    @Algebra.discr_localizationLocalization
+      ℤ (𝓞 QSqrtFive) _ _ _ ℚ _ _ ℤ⁰ _ QSqrtFive _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ QSqrtFive)
+      (by infer_instance : IsScalarTower ℤ (𝓞 QSqrtFive) QSqrtFive)
+      (by infer_instance :
+        IsLocalization (Algebra.algebraMapSubmonoid (𝓞 QSqrtFive) ℤ⁰) QSqrtFive)
+      (Fin 2) (by infer_instance) (by infer_instance) bInt
+  let bLoc : Basis (Fin 2) ℚ QSqrtFive :=
+    @Module.Basis.localizationLocalization
+      ℤ ℚ _ ℤ⁰ _ _ _ (𝓞 QSqrtFive) _ _ QSqrtFive _ _ _ _
+      (by infer_instance : IsScalarTower ℤ ℚ QSqrtFive)
+      (by infer_instance : IsScalarTower ℤ (𝓞 QSqrtFive) QSqrtFive)
+      (by infer_instance :
+        IsLocalization (Algebra.algebraMapSubmonoid (𝓞 QSqrtFive) ℤ⁰) QSqrtFive)
+      (Fin 2) bInt
+  apply (algebraMap ℤ ℚ).injective_int
+  change (algebraMap ℤ ℚ) (Algebra.discr ℤ bInt) = (algebraMap ℤ ℚ) 5
+  rw [← hdiscLoc]
+  change Algebra.discr ℚ bLoc = (5 : ℚ)
+  have hfun : ⇑bLoc = ⇑goldenPowerBasis.basis := by
+    funext i
+    fin_cases i
+    · rw [show ((⟨0, by norm_num⟩ : Fin 2)) = (0 : Fin 2) from rfl]
+      simp only [bLoc, bInt, Module.Basis.localizationLocalization_apply]
+      rw [concreteIntegralBasis_basis_zero]
+      exact goldenPowerBasis_basis_zero.symm
+    · rw [show ((⟨1, by norm_num⟩ : Fin 2)) = (1 : Fin 2) from rfl]
+      simp only [bLoc, bInt, Module.Basis.localizationLocalization_apply]
+      rw [concreteIntegralBasis_basis_one]
+      exact goldenPowerBasis_basis_one.symm
+  rw [hfun]
+  exact goldenPowerBasis_discr
+
+/-- The number-field discriminant of `ℚ(√5)` is `5`: since `5 ≡ 1 (mod 4)`, the discriminant
+is `5` itself (not `4·5`) — the real quadratic field of smallest discriminant. In particular
+`5` is the only ramified prime, cf. `ramified_iff_eq_five`. -/
+theorem numberField_discr_eq : NumberField.discr QSqrtFive = 5 := by
+  rw [← NumberField.discr_eq_discr QSqrtFive concreteIntegralBasis]
+  exact concreteIntegralBasis_discr
+
+
+end XYin.NumberField.SqrtFive

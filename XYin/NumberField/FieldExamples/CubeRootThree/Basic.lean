@@ -1,0 +1,79 @@
+import Mathlib
+
+/-!
+# The field `ℚ(∛3)` via `AdjoinRoot`
+
+The pure cubic number field `K = ℚ(∛3)`, realised as `AdjoinRoot (X ^ 3 - 3)`, and its main
+arithmetic invariants:
+
+* degree `3`, integral basis `1, θ, θ²`, ring of integers `ℤ[θ]` (sections 1–2);
+* discriminant `-243 = -3⁵` (section 3);
+* the norm form `x³ + 3y³ + 9z³ - 9xyz` and its unit ("cubic Pell") equation (section 4);
+* splitting of rational primes: `3` ramifies totally, `2` splits as (deg 1)·(deg 2), `7` is
+  inert, `61` splits completely (section 5);
+* unit group `{±1} × (θ² - 2)^ℤ`, signature `(1, 1)`, regulator `|log(∛9 - 2)|` (section 6);
+* class number one (section 7);
+* the norm-Euclidean property (section 8);
+* trivial automorphism group, hence non-Galois; Galois closure `ℚ(∛3, ζ₃)` of degree `6` with
+  Galois group `S₃` (section 9).
+-/
+
+noncomputable section
+
+open Module Polynomial
+open scoped NumberField nonZeroDivisors
+
+namespace XYin.NumberField.New.CubeRootThree
+
+/-! ## 1. Basics -/
+
+/-- The polynomial `X^3 - 3` over `ℚ`, defining `ℚ(∛3)`. -/
+abbrev cubePolynomial : ℚ[X] := X ^ 3 - C (3 : ℚ)
+
+/-- The polynomial `X^3 - 3` is irreducible over `ℚ`. -/
+instance : Fact (Irreducible cubePolynomial) := by
+  refine ⟨X_pow_sub_C_irreducible_of_prime (by norm_num) ?_⟩
+  intro b hb
+  have hint : IsIntegral ℤ b := by
+    refine ⟨X ^ 3 - C 3, ?_, ?_⟩
+    · monicity!
+    · simp [hb]
+  obtain ⟨n, hn⟩ := IsIntegrallyClosed.isIntegral_iff.mp hint
+  rw [← hn] at hb
+  simp only [algebraMap_int_eq, eq_intCast] at hb
+  have hn3 : n ^ 3 = 3 := by exact_mod_cast hb
+  have hdvd : n ∣ 3 := ⟨n ^ 2, by rw [← hn3]; ring⟩
+  have h2 : n ≤ 3 := Int.le_of_dvd (by norm_num) hdvd
+  have h3 : -3 ≤ n := by
+    have := Int.le_of_dvd (show (0 : ℤ) < 3 by norm_num) ((neg_dvd).mpr hdvd); linarith
+  interval_cases n <;> omega
+
+/-- The number field `ℚ(∛3)` as an `AdjoinRoot`. -/
+abbrev K : Type := AdjoinRoot cubePolynomial
+
+/-- The distinguished cube root of `3`. -/
+abbrev cubeRootThree : K := AdjoinRoot.root cubePolynomial
+
+/-- The field structure on `K`. -/
+instance : Field K := by
+  infer_instance
+
+/-- The number-field structure on `K`. -/
+instance : NumberField K := by
+  infer_instance
+
+/-- The extension degree of `K = ℚ(∛3)` over `ℚ` is `3`. -/
+theorem degree_eq_three : Module.finrank ℚ K = 3 := by
+  have hf : cubePolynomial ≠ 0 := by
+    intro h; simpa using congrArg natDegree h
+  rw [(AdjoinRoot.powerBasis hf).finrank, AdjoinRoot.powerBasis_dim hf]
+  exact natDegree_X_pow_sub_C
+
+/-- The generator `θ = ∛3` satisfies `θ³ = 3`. -/
+theorem cubeRootThree_cube : cubeRootThree ^ 3 = 3 := by
+  have h : (AdjoinRoot.mk cubePolynomial) (X ^ 3 - C 3) = 0 := AdjoinRoot.mk_self
+  simp only [map_sub, map_pow, AdjoinRoot.mk_X, map_ofNat] at h
+  linear_combination h
+
+
+end XYin.NumberField.New.CubeRootThree
