@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 /-! ## 3. Discriminant -/
 
@@ -26,4 +26,4 @@ theorem concreteIntegralBasis_discr :
     (NumberField.discr_eq_discr (K := K) concreteIntegralBasis)
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

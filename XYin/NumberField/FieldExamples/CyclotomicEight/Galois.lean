@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 /-! ## 9. Galois group -/
 
@@ -130,4 +130,4 @@ theorem aut_eq (σ : K ≃ₐ[ℚ] K) :
   · exact Or.inr (Or.inr (Or.inr (hext sigmaSeven (by rw [← hspec, sigmaSeven_apply_zeta]))))
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFive
+namespace NumberField.SqrtFive
 
 /-! ## 9. Galois group -/
 
@@ -107,4 +107,4 @@ theorem galoisGroupStructure :
       Nat.card_zmod])⟩
 
 
-end XYin.NumberField.SqrtFive
+end NumberField.SqrtFive

@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CubeRootThree
+namespace NumberField.CubeRootThree
 
 /-! ## 8. Euclidean structure -/
 
@@ -18,4 +18,4 @@ theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
   sorry
 
 
-end XYin.NumberField.New.CubeRootThree
+end NumberField.CubeRootThree

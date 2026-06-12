@@ -28,7 +28,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSix
+namespace NumberField.SqrtNegSix
 
 /-! ## 1. Basics -/
 
@@ -149,4 +149,4 @@ theorem adjoinRootEquivQuadratic_root :
     sqrtNegSixPolynomial_aeval_theta
 
 
-end XYin.NumberField.New.SqrtNegSix
+end NumberField.SqrtNegSix

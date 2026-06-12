@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtTwo
+namespace NumberField.SqrtTwo
 
 /-! ## 7. Class group -/
 
@@ -78,4 +78,4 @@ theorem classGroupRepresentative (C : ClassGroup O2) :
   exact Subsingleton.elim _ _
 
 
-end XYin.NumberField.SqrtTwo
+end NumberField.SqrtTwo

@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSix
+namespace NumberField.SqrtNegSix
 
 /-! ## 8. Failure of unique factorisation -/
 
@@ -225,4 +225,4 @@ theorem not_uniqueFactorizationMonoid : ¬ UniqueFactorizationMonoid (𝓞 K) :=
   exact not_isPrincipalIdealRing hpid
 
 
-end XYin.NumberField.New.SqrtNegSix
+end NumberField.SqrtNegSix

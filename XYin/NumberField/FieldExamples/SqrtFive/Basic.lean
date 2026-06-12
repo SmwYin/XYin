@@ -28,7 +28,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFive
+namespace NumberField.SqrtFive
 
 /-! ## 1. Basics -/
 
@@ -332,4 +332,4 @@ theorem sqrtFiveAdjoinRootEquivGolden_root :
   rw [hsymm, sqrtFiveRadicalEquivGolden_root]
 
 
-end XYin.NumberField.SqrtFive
+end NumberField.SqrtFive

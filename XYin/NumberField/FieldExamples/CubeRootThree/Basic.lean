@@ -23,7 +23,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CubeRootThree
+namespace NumberField.CubeRootThree
 
 /-! ## 1. Basics -/
 
@@ -76,4 +76,4 @@ theorem cubeRootThree_cube : cubeRootThree ^ 3 = 3 := by
   linear_combination h
 
 
-end XYin.NumberField.New.CubeRootThree
+end NumberField.CubeRootThree

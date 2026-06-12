@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtTwo
+namespace NumberField.SqrtTwo
 
 /-! ## 5. Splitting of primes -/
 
@@ -439,4 +439,4 @@ theorem splits_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     exact ⟨P, Q, hPprime, hQprime, hPQ, by simpa using hspan⟩
 
 
-end XYin.NumberField.SqrtTwo
+end NumberField.SqrtTwo

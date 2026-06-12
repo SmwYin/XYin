@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicFive
+namespace NumberField.CyclotomicFive
 
 /-! ## 8. Euclidean structure -/
 
@@ -16,4 +16,7 @@ theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
   sorry
 
 
-end XYin.NumberField.New.CyclotomicFive
+end NumberField.CyclotomicFive
+
+-- AUTO_AXIOM_CHECK_MARKER_DO_NOT_COMMIT
+#print axioms NumberField.CyclotomicFive.normEuclidean

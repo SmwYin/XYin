@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtTwo
+namespace NumberField.SqrtTwo
 
 /-! ## 6. Ring of units -/
 
@@ -476,4 +476,4 @@ theorem unitGroupStructure :
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
 
-end XYin.NumberField.SqrtTwo
+end NumberField.SqrtTwo

@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicFive
+namespace NumberField.CyclotomicFive
 
 /-! ## 9. The quadratic subfield via the Gauss sum -/
 
@@ -111,4 +111,4 @@ theorem sqrtFiveToCyclotomic_injective : Function.Injective sqrtFiveToCyclotomic
   exact RingHom.injective sqrtFiveToCyclotomic.toRingHom
 
 
-end XYin.NumberField.New.CyclotomicFive
+end NumberField.CyclotomicFive

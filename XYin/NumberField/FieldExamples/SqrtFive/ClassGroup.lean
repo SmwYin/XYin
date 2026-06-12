@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFive
+namespace NumberField.SqrtFive
 
 /-! ## 7. Class group -/
 
@@ -71,4 +71,4 @@ theorem classGroupRepresentative (C : ClassGroup (𝓞 QSqrtFive)) :
   exact Subsingleton.elim _ _
 
 
-end XYin.NumberField.SqrtFive
+end NumberField.SqrtFive

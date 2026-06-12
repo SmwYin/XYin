@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 /-! ## 4. The three quadratic subfields -/
 
@@ -24,4 +24,4 @@ theorem sqrt_neg_two_sq : (ζ - ζ ^ 7) ^ 2 = -2 := by
   linear_combination (ζ ^ 10 - ζ ^ 6 - 2 * ζ ^ 4 + ζ ^ 2 + 2) * zeta_pow_four
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

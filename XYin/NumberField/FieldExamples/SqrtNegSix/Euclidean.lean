@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSix
+namespace NumberField.SqrtNegSix
 
 /-- `ℤ[√-6]` is *not* a principal ideal domain — the smallest-discriminant imaginary
 quadratic examples of class number `2` are `d = -5, -6`. -/
@@ -58,4 +58,4 @@ theorem not_normEuclidean :
   exact not_lt_of_ge hnorm_ge hltZ
 
 
-end XYin.NumberField.New.SqrtNegSix
+end NumberField.SqrtNegSix

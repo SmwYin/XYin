@@ -6,7 +6,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.CyclotomicThree
+namespace NumberField.CyclotomicThree
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -89,4 +89,4 @@ example : Algebra.adjoin ℤ ({integralPowerBasis.gen} : Set (𝓞 K)) = ⊤ :=
   integralPowerBasis.adjoin_gen_eq_top
 
 
-end XYin.NumberField.CyclotomicThree
+end NumberField.CyclotomicThree

@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
   rw [zeta_isPrimitiveRoot.integralPowerBasis_gen]
@@ -209,4 +209,4 @@ theorem classGroupRepresentative (C : ClassGroup (𝓞 K)) :
   exact Subsingleton.elim _ _
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

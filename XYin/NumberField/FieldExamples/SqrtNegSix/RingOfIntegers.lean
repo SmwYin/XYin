@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSix
+namespace NumberField.SqrtNegSix
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -401,4 +401,4 @@ theorem concreteIntegralBasis_discr :
   exact sqrtNegSixExplicitIntegralBasis_discr
 
 
-end XYin.NumberField.New.SqrtNegSix
+end NumberField.SqrtNegSix

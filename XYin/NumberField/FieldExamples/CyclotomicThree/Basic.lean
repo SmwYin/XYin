@@ -24,7 +24,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.CyclotomicThree
+namespace NumberField.CyclotomicThree
 
 /-! ## 1. Basics -/
 
@@ -323,4 +323,4 @@ theorem sqrtNegThreeQuadraticEquivCyclotomic_root :
     sqrtNegThreeQuadraticEquivAdjoinRoot_root, sqrtNegThreeEquivCyclotomic_root]
 
 
-end XYin.NumberField.CyclotomicThree
+end NumberField.CyclotomicThree

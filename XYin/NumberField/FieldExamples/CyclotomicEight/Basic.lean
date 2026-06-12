@@ -26,7 +26,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 /-! ## 1. Basics -/
 
@@ -121,4 +121,4 @@ theorem adjoinRootEquivCyclotomic_root :
   simp [zetaMinpolyAdjoinRootPresentation]
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

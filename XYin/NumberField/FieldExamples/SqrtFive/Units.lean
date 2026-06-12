@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFive
+namespace NumberField.SqrtFive
 
 private theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
   Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
@@ -435,4 +435,4 @@ theorem unitGroupStructure :
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
 
-end XYin.NumberField.SqrtFive
+end NumberField.SqrtFive

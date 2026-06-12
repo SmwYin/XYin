@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtTwo
+namespace NumberField.SqrtTwo
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -348,4 +348,4 @@ example : sqrtTwoInteger ∣ (2 : O2) := by
   simpa [pow_two] using sqrtTwoInteger_sq.symm
 
 
-end XYin.NumberField.SqrtTwo
+end NumberField.SqrtTwo

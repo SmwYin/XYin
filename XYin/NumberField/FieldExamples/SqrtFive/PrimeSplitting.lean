@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFive
+namespace NumberField.SqrtFive
 
 private noncomputable def goldenOrderEquivRingOfIntegers : O5 ≃ₐ[ℤ] 𝓞 QSqrtFive :=
   IsIntegralClosure.equiv ℤ O5 QSqrtFive (𝓞 QSqrtFive)
@@ -766,4 +766,4 @@ theorem splits_iff_pm_one_mod_five (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     exact ⟨P, Q, hPprime, hQprime, hPQne, hPQ⟩
 
 
-end XYin.NumberField.SqrtFive
+end NumberField.SqrtFive

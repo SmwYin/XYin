@@ -1,30 +1,16 @@
-import XYin.NumberField.FieldExamples.CyclotomicFive.RingOfIntegers
+import XYin.NumberField.FieldExamples.CyclotomicFive.Discriminant
+
+set_option linter.style.header false
 
 noncomputable section
 
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicFive
+namespace NumberField.CyclotomicFive
 
 private theorem zetaInt_sum : 1 + zetaInt + zetaInt ^ 2 + zetaInt ^ 3 + zetaInt ^ 4 = 0 :=
   Subtype.ext (by push_cast [zetaInt]; exact zeta_sum_eq_zero)
-
-/-! ## 3. Discriminant -/
-
-/-- The number-field discriminant of `ℚ(ζ₅)` is `125 = 5³` (for an odd prime `p` the
-discriminant of `ℚ(ζ_p)` is `(-1)^((p-1)/2) p^(p-2)`). In particular `5` is the only
-ramified prime, cf. `ramified_iff_eq_five`. -/
-theorem numberField_discr_eq : NumberField.discr K = (125 : ℤ) := by
-  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
-  rw [IsCyclotomicExtension.Rat.discr_prime 5 K]
-  norm_num
-
-/-- The discriminant of the explicit integral basis `1, ζ, ζ², ζ³` is `125`. -/
-theorem concreteIntegralBasis_discr :
-    Algebra.discr ℤ concreteIntegralBasis = (125 : ℤ) := by
-  simpa [numberField_discr_eq] using
-    (NumberField.discr_eq_discr (K := K) concreteIntegralBasis)
 
 section PrivateMachinery
 
@@ -1100,4 +1086,4 @@ theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     exact Ideal.pow_le_pow_right (by norm_num)
 
 
-end XYin.NumberField.New.CyclotomicFive
+end NumberField.CyclotomicFive

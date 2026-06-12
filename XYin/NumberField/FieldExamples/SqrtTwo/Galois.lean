@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtTwo
+namespace NumberField.SqrtTwo
 
 /-! ## 9. Galois group -/
 
@@ -137,4 +137,4 @@ theorem galoisGroupStructure : Nonempty (Gal(QSqrtTwo/ℚ) ≃* Multiplicative (
   exact ⟨sqrtTwoGalEquivCyclicTwo⟩
 
 
-end XYin.NumberField.SqrtTwo
+end NumberField.SqrtTwo

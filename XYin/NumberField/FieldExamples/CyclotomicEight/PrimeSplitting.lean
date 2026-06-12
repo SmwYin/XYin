@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 /-! ## 5. Splitting of primes -/
 
@@ -915,4 +915,4 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
     exact Ideal.pow_le_pow_right (by norm_num)
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

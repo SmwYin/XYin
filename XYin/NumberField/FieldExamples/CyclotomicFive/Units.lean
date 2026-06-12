@@ -1,11 +1,11 @@
-import XYin.NumberField.FieldExamples.CyclotomicFive.Arithmetic
+import XYin.NumberField.FieldExamples.CyclotomicFive.PrimeSplitting
 
 noncomputable section
 
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicFive
+namespace NumberField.CyclotomicFive
 
 private theorem zetaInt_sum : 1 + zetaInt + zetaInt ^ 2 + zetaInt ^ 3 + zetaInt ^ 4 = 0 :=
   Subtype.ext (by push_cast [zetaInt]; exact zeta_sum_eq_zero)
@@ -257,4 +257,4 @@ theorem regulator_eq :
   sorry
 
 
-end XYin.NumberField.New.CyclotomicFive
+end NumberField.CyclotomicFive

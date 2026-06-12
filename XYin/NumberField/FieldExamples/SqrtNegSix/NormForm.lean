@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSix
+namespace NumberField.SqrtNegSix
 
 /-! ## 4. Norm form -/
 
@@ -115,4 +115,4 @@ theorem intNorm_ne_five (z : 𝓞 K) : Algebra.norm ℤ z ≠ 5 := by
   exact normForm_ne_five x y hz5
 
 
-end XYin.NumberField.New.SqrtNegSix
+end NumberField.SqrtNegSix

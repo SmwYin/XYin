@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFive
+namespace NumberField.SqrtFive
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -445,4 +445,4 @@ theorem numberField_discr_eq : NumberField.discr QSqrtFive = 5 := by
   exact concreteIntegralBasis_discr
 
 
-end XYin.NumberField.SqrtFive
+end NumberField.SqrtFive

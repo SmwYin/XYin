@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
-namespace XYin.NumberField.New.SqrtNegSix
+namespace NumberField.SqrtNegSix
 
 /-! ## 5. Splitting of primes -/
 
@@ -900,4 +900,4 @@ theorem ramified_iff (p : ℕ) (hp : p.Prime) :
       rw [hcast, span_three_eq]
 
 
-end XYin.NumberField.New.SqrtNegSix
+end NumberField.SqrtNegSix

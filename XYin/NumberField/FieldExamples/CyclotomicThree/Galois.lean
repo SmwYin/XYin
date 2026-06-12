@@ -6,7 +6,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.CyclotomicThree
+namespace NumberField.CyclotomicThree
 
 /-! ## 9. Galois group -/
 
@@ -38,4 +38,4 @@ theorem galoisGroupStructure : Nonempty (Gal(K/ℚ) ≃* Multiplicative (ZMod 2)
   exact ⟨mulEquivOfPrimeCardEq hcard htarget⟩
 
 
-end XYin.NumberField.CyclotomicThree
+end NumberField.CyclotomicThree

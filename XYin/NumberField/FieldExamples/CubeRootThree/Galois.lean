@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CubeRootThree
+namespace NumberField.CubeRootThree
 
 /-! ## 9. Galois group and Galois closure -/
 
@@ -139,4 +139,4 @@ theorem finrank_galoisClosure : Module.finrank ℚ galoisClosure = 6 := by
   rfl
 
 
-end XYin.NumberField.New.CubeRootThree
+end NumberField.CubeRootThree

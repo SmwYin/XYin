@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CubeRootThree
+namespace NumberField.CubeRootThree
 
 /-! ## 3. Discriminant -/
 
@@ -52,4 +52,4 @@ theorem numberField_discr_eq : NumberField.discr K = (-243 : ℤ) := by
   exact_mod_cast hQ
 
 
-end XYin.NumberField.New.CubeRootThree
+end NumberField.CubeRootThree

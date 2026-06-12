@@ -1,0 +1,31 @@
+import XYin.NumberField.FieldExamples.CyclotomicFive.RingOfIntegers
+
+set_option linter.style.header false
+
+/-!
+# Discriminant of `ℚ(ζ₅)`
+-/
+
+noncomputable section
+
+open Module Polynomial
+open scoped NumberField nonZeroDivisors
+
+namespace NumberField.CyclotomicFive
+
+/-- The number-field discriminant of `ℚ(ζ₅)` is `125 = 5³` (for an odd prime `p` the
+discriminant of `ℚ(ζ_p)` is `(-1)^((p-1)/2) p^(p-2)`). In particular `5` is the only
+ramified prime, cf. `ramified_iff_eq_five`. -/
+theorem numberField_discr_eq : NumberField.discr K = (125 : ℤ) := by
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  rw [IsCyclotomicExtension.Rat.discr_prime 5 K]
+  norm_num
+
+/-- The discriminant of the explicit integral basis `1, ζ, ζ², ζ³` is `125`. -/
+theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (125 : ℤ) := by
+  simpa [numberField_discr_eq] using
+    (NumberField.discr_eq_discr (K := K) concreteIntegralBasis)
+
+
+end NumberField.CyclotomicFive

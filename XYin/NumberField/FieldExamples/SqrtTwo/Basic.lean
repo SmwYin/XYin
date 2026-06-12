@@ -28,7 +28,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtTwo
+namespace NumberField.SqrtTwo
 
 /-! ## 1. Basics -/
 
@@ -285,4 +285,4 @@ theorem sqrtTwoEquivUnitModel_root :
   sqrtTwoToUnitModel_root
 
 
-end XYin.NumberField.SqrtTwo
+end NumberField.SqrtTwo

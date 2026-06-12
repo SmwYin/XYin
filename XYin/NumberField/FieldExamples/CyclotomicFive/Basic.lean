@@ -27,7 +27,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicFive
+namespace NumberField.CyclotomicFive
 
 /-! ## 1. Basics -/
 
@@ -143,4 +143,4 @@ theorem adjoinRootEquivCyclotomic_root :
   simp [zetaMinpolyAdjoinRootPresentation]
 
 
-end XYin.NumberField.New.CyclotomicFive
+end NumberField.CyclotomicFive

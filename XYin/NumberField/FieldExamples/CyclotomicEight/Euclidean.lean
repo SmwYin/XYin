@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 /-! ## 8. Euclidean structure -/
 
@@ -16,4 +16,4 @@ theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
   sorry
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

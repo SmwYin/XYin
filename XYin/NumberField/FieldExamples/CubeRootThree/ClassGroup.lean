@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CubeRootThree
+namespace NumberField.CubeRootThree
 
 /-! ## 7. Class group -/
 
@@ -86,4 +86,4 @@ theorem classGroupRepresentative (C : ClassGroup (𝓞 K)) :
   exact Subsingleton.elim _ _
 
 
-end XYin.NumberField.New.CubeRootThree
+end NumberField.CubeRootThree

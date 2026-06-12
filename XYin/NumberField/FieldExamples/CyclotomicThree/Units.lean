@@ -1,4 +1,4 @@
-import XYin.NumberField.FieldExamples.CyclotomicThree.Arithmetic
+import XYin.NumberField.FieldExamples.CyclotomicThree.PrimeSplitting
 
 noncomputable section
 
@@ -6,7 +6,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.CyclotomicThree
+namespace NumberField.CyclotomicThree
 
 private theorem zeta_pow_three : ζ ^ 3 = 1 :=
   zeta_isPrimitiveRoot.pow_eq_one
@@ -115,4 +115,4 @@ theorem regulator_eq_one : Units.regulator K = 1 := by
   simp
 
 
-end XYin.NumberField.CyclotomicThree
+end NumberField.CyclotomicThree

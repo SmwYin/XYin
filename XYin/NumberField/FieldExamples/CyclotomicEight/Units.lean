@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
 
@@ -242,4 +242,4 @@ theorem regulator_eq :
   sorry
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

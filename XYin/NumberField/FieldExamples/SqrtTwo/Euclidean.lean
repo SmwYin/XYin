@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtTwo
+namespace NumberField.SqrtTwo
 
 /-! ## 8. Euclidean structure -/
 
@@ -78,4 +78,4 @@ theorem normEuclidean (a b : O2) (hb : b ≠ 0) :
   exact_mod_cast hltZ
 
 
-end XYin.NumberField.SqrtTwo
+end NumberField.SqrtTwo

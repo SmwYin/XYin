@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicFive
+namespace NumberField.CyclotomicFive
 
 /-! ## 10. Galois group -/
 
@@ -113,4 +113,4 @@ theorem aut_eq (σ : K ≃ₐ[ℚ] K) :
   autEq' σ
 
 
-end XYin.NumberField.New.CyclotomicFive
+end NumberField.CyclotomicFive

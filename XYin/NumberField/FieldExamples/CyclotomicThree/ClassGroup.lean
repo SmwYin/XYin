@@ -6,7 +6,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.CyclotomicThree
+namespace NumberField.CyclotomicThree
 
 /-! ## 7. Class group -/
 
@@ -61,4 +61,4 @@ theorem classGroupRepresentative (C : ClassGroup OK) :
   exact Subsingleton.elim _ _
 
 
-end XYin.NumberField.CyclotomicThree
+end NumberField.CyclotomicThree

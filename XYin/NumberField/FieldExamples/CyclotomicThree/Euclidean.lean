@@ -6,7 +6,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.CyclotomicThree
+namespace NumberField.CyclotomicThree
 
 private theorem coe_zetaInt : algebraMap OK K zetaInt = ζ := rfl
 
@@ -84,4 +84,4 @@ theorem normEuclidean (a b : OK) (hb : b ≠ 0) :
   exact_mod_cast hltZ
 
 
-end XYin.NumberField.CyclotomicThree
+end NumberField.CyclotomicThree

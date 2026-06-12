@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CubeRootThree
+namespace NumberField.CubeRootThree
 
 /-! ## 4. Norm form -/
 
@@ -44,4 +44,4 @@ theorem isUnit_iff_normForm (x y z : ℤ) :
     exact_mod_cast h'
 
 
-end XYin.NumberField.New.CubeRootThree
+end NumberField.CubeRootThree

@@ -5,7 +5,7 @@ noncomputable section
 open Module
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicEight
+namespace NumberField.CyclotomicEight
 
 /-! ## 2. Integral basis and ring of integers -/
 
@@ -103,4 +103,4 @@ theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers := by
   exact hy ▸ y.2
 
 
-end XYin.NumberField.New.CyclotomicEight
+end NumberField.CyclotomicEight

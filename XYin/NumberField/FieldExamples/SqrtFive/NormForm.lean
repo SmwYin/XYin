@@ -8,7 +8,7 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
-namespace XYin.NumberField.SqrtFive
+namespace NumberField.SqrtFive
 
 /-! ## 4. Norm form -/
 
@@ -56,4 +56,4 @@ theorem isUnit_iff_normForm (x y : ℤ) :
     · exact Or.inr (by exact_mod_cast h)
 
 
-end XYin.NumberField.SqrtFive
+end NumberField.SqrtFive

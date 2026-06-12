@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CyclotomicFive
+namespace NumberField.CyclotomicFive
 
 /-! ## 7. Class group -/
 
@@ -66,4 +66,4 @@ theorem classGroupRepresentative (C : ClassGroup (𝓞 K)) :
   exact Subsingleton.elim _ _
 
 
-end XYin.NumberField.New.CyclotomicFive
+end NumberField.CyclotomicFive

@@ -5,7 +5,7 @@ noncomputable section
 open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
-namespace XYin.NumberField.New.CubeRootThree
+namespace NumberField.CubeRootThree
 
 /-! ## 6. Ring of units -/
 
@@ -262,4 +262,4 @@ theorem regulator_eq :
   sorry
 
 
-end XYin.NumberField.New.CubeRootThree
+end NumberField.CubeRootThree
