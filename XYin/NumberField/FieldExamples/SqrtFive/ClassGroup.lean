@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtFive.Units
+
+/-!
+# `ℚ(√5)` Class group
+
+This file develops the class group part of the `ℚ(√5)` number field example.
+-/
 
 noncomputable section
 
@@ -9,8 +20,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtFive
-
-/-! ## 7. Class group -/
 
 /-- The class number of `ℚ(√5)` is `1`. The Minkowski bound is `(1/2)·√5 ≈ 1.12 < 2`, so
 every ideal class contains an ideal of norm `1` and the class group is trivial outright. -/

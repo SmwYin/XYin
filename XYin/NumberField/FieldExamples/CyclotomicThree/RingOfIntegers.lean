@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicThree.Basic
+
+/-!
+# `ℚ(ζ₃)` Ring of integers
+
+This file develops the ring of integers part of the `ℚ(ζ₃)` number field example.
+-/
 
 noncomputable section
 
@@ -7,8 +18,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 open Module NumberField Polynomial
 
 namespace NumberField.CyclotomicThree
-
-/-! ## 2. Integral basis and ring of integers -/
 
 /-- The ring of integers of `K`. -/
 abbrev OK : Type := 𝓞 K

@@ -1,4 +1,16 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
+import XYin.NumberField.FieldExamples.Common
 import XYin.NumberField.FieldExamples.SqrtFive.ClassGroup
+
+/-!
+# `ℚ(√5)` Euclidean structure
+
+This file develops the Euclidean structure part of the `ℚ(√5)` number field example.
+-/
 
 noncomputable section
 
@@ -7,10 +19,33 @@ attribute [-instance] DivisionRing.toRatAlgebra
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
+open NumberField.FieldExamples
 
 namespace NumberField.SqrtFive
 
-/-! ## 8. Euclidean structure -/
+private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 QSqrtFive} {bK : QSqrtFive}
+    {u v : ℚ}
+    (hbK : bK = algebraMap (𝓞 QSqrtFive) QSqrtFive b)
+    (hrK :
+      algebraMap (𝓞 QSqrtFive) QSqrtFive r =
+        bK * ((u - ((round u : ℤ) : ℚ)) • (1 : QSqrtFive) +
+          (v - ((round v : ℤ) : ℚ)) • goldenRoot))
+    (hb_pos : 0 < |Algebra.norm ℚ bK|)
+    (hfrac :
+      |(u - ((round u : ℤ) : ℚ)) ^ 2 +
+        (u - ((round u : ℤ) : ℚ)) * (v - ((round v : ℤ) : ℚ)) -
+        (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ 3 / 4) :
+    |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
+  rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
+  change |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive r)| <
+    |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive b)|
+  rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
+  calc |Algebra.norm ℚ bK| *
+      |(u - ((round u : ℤ) : ℚ)) ^ 2 +
+        (u - ((round u : ℤ) : ℚ)) * (v - ((round v : ℤ) : ℚ)) -
+        (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ |Algebra.norm ℚ bK| * (3 / 4) :=
+        mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
+    _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
 
 /-- `ℚ(√5)` is norm-Euclidean: division with remainder in `ℤ[φ]` with respect to the
 absolute value of the field norm. This strengthens `isPrincipalIdealRing`. -/
@@ -52,20 +87,8 @@ theorem normEuclidean (a b : 𝓞 QSqrtFive) (hb : b ≠ 0) :
     constructor <;> nlinarith [hs.1, hs.2, ht.1, ht.2]
   have hb_pos : 0 < |Algebra.norm ℚ bK| :=
     abs_pos.mpr (Algebra.norm_ne_zero_iff.mpr hbK0)
-  have hlt : |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
-    rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-    change |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive r)| <
-      |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive b)|
-    rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
-    calc |Algebra.norm ℚ bK| *
-        |(u - ((round u : ℤ) : ℚ)) ^ 2 +
-          (u - ((round u : ℤ) : ℚ)) * (v - ((round v : ℤ) : ℚ)) -
-          (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ |Algebra.norm ℚ bK| * (3 / 4) :=
-          mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
-      _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
-  have hltZ : |Algebra.norm ℤ r| < |Algebra.norm ℤ b| := by exact_mod_cast hlt
-  rw [Int.abs_eq_natAbs, Int.abs_eq_natAbs] at hltZ
-  exact_mod_cast hltZ
+  have hlt := abs_norm_int_lt_of_remainder_eq hbK hrK hb_pos hfrac
+  exact natAbs_lt_of_abs_ratCast_lt hlt
 
 
 end NumberField.SqrtFive

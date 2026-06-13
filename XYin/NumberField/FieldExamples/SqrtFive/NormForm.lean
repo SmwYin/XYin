@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtFive.RingOfIntegers
+
+/-!
+# `ℚ(√5)` Norm form
+
+This file develops the norm form part of the `ℚ(√5)` number field example.
+-/
 
 noncomputable section
 
@@ -9,8 +20,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtFive
-
-/-! ## 4. Norm form -/
 
 /-- `φ` as an element of the abstract ring of integers `𝓞 QSqrtFive`. -/
 noncomputable def goldenIntO : 𝓞 QSqrtFive := ⟨goldenRoot, goldenRoot_isIntegral⟩

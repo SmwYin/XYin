@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtNegSix.UniqueFactorization
+
+/-!
+# `ℚ(√-6)` Galois group
+
+This file develops the Galois group part of the `ℚ(√-6)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
-
-/-! ## 9. Galois group -/
 
 /-- The identity automorphism of `ℚ(√-6)`. -/
 noncomputable def idAut : K ≃ₐ[ℚ] K := AlgEquiv.refl

@@ -1,4 +1,16 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
+import XYin.NumberField.FieldExamples.Common
 import XYin.NumberField.FieldExamples.SqrtTwo.ClassGroup
+
+/-!
+# `ℚ(√2)` Euclidean structure
+
+This file develops the Euclidean structure part of the `ℚ(√2)` number field example.
+-/
 
 noncomputable section
 
@@ -7,10 +19,31 @@ attribute [-instance] DivisionRing.toRatAlgebra
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
+open NumberField.FieldExamples
 
 namespace NumberField.SqrtTwo
 
-/-! ## 8. Euclidean structure -/
+private theorem abs_norm_int_lt_of_remainder_eq {b r : O2} {bK e : QSqrtTwo} {u v : ℚ}
+    (hbK : bK = algebraMap O2 QSqrtTwo b)
+    (hrK : algebraMap O2 QSqrtTwo r = bK * e)
+    (hb_pos : 0 < |Algebra.norm ℚ bK|)
+    (hnorm_e :
+      |Algebra.norm ℚ e| =
+        |(u - ((round u : ℤ) : ℚ)) ^ 2 - 2 * (v - ((round v : ℤ) : ℚ)) ^ 2|)
+    (hfrac :
+      |(u - ((round u : ℤ) : ℚ)) ^ 2 - 2 * (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ 1 / 2) :
+    |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
+  rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
+  change |Algebra.norm ℚ (algebraMap O2 QSqrtTwo r)| <
+    |Algebra.norm ℚ (algebraMap O2 QSqrtTwo b)|
+  rw [hrK, map_mul, abs_mul, ← hbK]
+  calc |Algebra.norm ℚ bK| * |Algebra.norm ℚ e| =
+        |Algebra.norm ℚ bK| *
+          |(u - ((round u : ℤ) : ℚ)) ^ 2 - 2 * (v - ((round v : ℤ) : ℚ)) ^ 2| := by
+        rw [hnorm_e]
+    _ ≤ |Algebra.norm ℚ bK| * (1 / 2) :=
+        mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
+    _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
 
 /-- `ℚ(√2)` is norm-Euclidean: division with remainder in `ℤ[√2]` with respect to the
 absolute value of the field norm. This is the classical Euclidean algorithm for the real
@@ -61,21 +94,7 @@ theorem normEuclidean (a b : O2) (hb : b ≠ 0) :
         2 * (v - ((round v : ℤ) : ℚ)) ^ 2| := by
     rw [he, norm_eq_normForm]
     simp [sqrtTwoRoot, Algebra.smul_def]
-  have hlt : |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
-    rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-    change |Algebra.norm ℚ (algebraMap O2 QSqrtTwo r)| <
-      |Algebra.norm ℚ (algebraMap O2 QSqrtTwo b)|
-    rw [hrK, map_mul, abs_mul, ← hbK]
-    calc |Algebra.norm ℚ bK| * |Algebra.norm ℚ e| =
-          |Algebra.norm ℚ bK| *
-            |(u - ((round u : ℤ) : ℚ)) ^ 2 -
-              2 * (v - ((round v : ℤ) : ℚ)) ^ 2| := by rw [hnorm_e]
-      _ ≤ |Algebra.norm ℚ bK| * (1 / 2) :=
-          mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
-      _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
-  have hltZ : |Algebra.norm ℤ r| < |Algebra.norm ℤ b| := by exact_mod_cast hlt
-  rw [Int.abs_eq_natAbs, Int.abs_eq_natAbs] at hltZ
-  exact_mod_cast hltZ
-
+  have hlt := abs_norm_int_lt_of_remainder_eq hbK hrK hb_pos hnorm_e hfrac
+  exact natAbs_lt_of_abs_ratCast_lt hlt
 
 end NumberField.SqrtTwo

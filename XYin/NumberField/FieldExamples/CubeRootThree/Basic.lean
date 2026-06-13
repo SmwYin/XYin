@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import Mathlib
 
 /-!
@@ -24,8 +29,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CubeRootThree
-
-/-! ## 1. Basics -/
 
 /-- The polynomial `X^3 - 3` over `ℚ`, defining `ℚ(∛3)`. -/
 abbrev cubePolynomial : ℚ[X] := X ^ 3 - C (3 : ℚ)

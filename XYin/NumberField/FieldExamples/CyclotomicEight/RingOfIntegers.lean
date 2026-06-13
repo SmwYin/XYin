@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicEight.Basic
+
+/-!
+# `ℚ(ζ₈)` Ring of integers
+
+This file develops the ring of integers part of the `ℚ(ζ₈)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
-
-/-! ## 2. Integral basis and ring of integers -/
 
 /-- `ζ` is integral over `ℤ` (a root of the monic `X⁸ - 1`), hence lies in `𝓞 K`. -/
 theorem zeta_integral : ζ ∈ integralClosure ℤ K :=

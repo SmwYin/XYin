@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import Mathlib
 
 /-!
@@ -29,8 +34,6 @@ open Module
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
-
-/-! ## 1. Basics -/
 
 /-- The nonsquare condition making `QuadraticAlgebra ℚ (-6) 0` a field: `-6` is not a
 rational square. -/
@@ -68,8 +71,6 @@ instance : Algebra.IsQuadraticExtension ℚ K where
 theorem theta_sq : θ ^ 2 = -6 := by
   rw [sq, QuadraticAlgebra.omega_mul_omega_eq_add]
   simp
-
-/-! ### The `AdjoinRoot` presentation -/
 
 /-- The polynomial `X² + 6`, whose root is `√-6`. -/
 abbrev sqrtNegSixPolynomial : Polynomial ℚ :=

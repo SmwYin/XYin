@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import Mathlib
 
 /-!
@@ -29,8 +34,6 @@ open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicFive
 
-/-! ## 1. Basics -/
-
 /-- The fifth cyclotomic field over `ℚ`. -/
 abbrev K : Type := CyclotomicField 5 ℚ
 
@@ -60,8 +63,6 @@ theorem zeta_sum_eq_zero : 1 + ζ + ζ ^ 2 + ζ ^ 3 + ζ ^ 4 = 0 := by
 theorem degree_eq_four : Module.finrank ℚ K = 4 :=
   (IsCyclotomicExtension.finrank (n := 5) K
     (Polynomial.cyclotomic.irreducible_rat (by norm_num))).trans rfl
-
-/-! ### Alternative `AdjoinRoot` presentation -/
 
 /--
 The same quartic field built directly by adjoining a root of

@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtNegSix.Units
+
+/-!
+# `ℚ(√-6)` Class group
+
+This file develops the class group part of the `ℚ(√-6)` number field example.
+-/
 
 noncomputable section
 
@@ -6,9 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
-
-
-/-! ## 7. Class group -/
 
 /-- The ramified prime `(2, θ)` as an element of the monoid of nonzero ideals: the concrete
 representative of the nontrivial ideal class. -/

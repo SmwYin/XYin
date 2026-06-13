@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtFive.Euclidean
+
+/-!
+# `ℚ(√5)` Galois group
+
+This file develops the Galois group part of the `ℚ(√5)` number field example.
+-/
 
 noncomputable section
 
@@ -9,8 +20,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtFive
-
-/-! ## 9. Galois group -/
 
 private noncomputable def conjHom : QSqrtFive →ₐ[ℚ] QSqrtFive :=
   (QuadraticAlgebra.lift (R := ℚ) (a := (1 : ℚ)) (b := 1)) ⟨1 - goldenRoot, by

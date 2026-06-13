@@ -1,12 +1,23 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicThree.Discriminant
+import XYin.NumberField.FieldExamples.Common
 
-set_option linter.style.header false
+/-!
+# `ℚ(ζ₃)` Prime splitting
+
+This file develops the prime splitting part of the `ℚ(ζ₃)` number field example.
+-/
 
 noncomputable section
 
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
+open NumberField.FieldExamples
 
 namespace NumberField.CyclotomicThree
 
@@ -195,20 +206,7 @@ private theorem absNorm_span_pair (p : ℕ) (r : ℤ)
   rw [Nat.card_congr (RingHom.quotientKerEquivOfSurjective
     (residueHom_surjective p r hr)).toEquiv]
   exact Nat.card_zmod p
-
-private theorem eq_of_le_of_absNorm_eq {I J : Ideal OK} (hle : I ≤ J) {n : ℕ}
-    (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J := by
-  obtain ⟨C, hC⟩ := Ideal.dvd_iff_le.mpr hle
-  have hmul := _root_.map_mul Ideal.absNorm J C
-  rw [← hC, hI, hJ] at hmul
-  have hC1 : Ideal.absNorm C = 1 :=
-    (Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hn)
-      (by rw [mul_one]; exact hmul)).symm
-  rw [hC, Ideal.absNorm_eq_one_iff.mp hC1, Ideal.mul_top]
-
 end PrivateMachinery
-
-/-! ## 4. Norm form -/
 
 /-- The norm form of `ℚ(ζ₃)` in the basis `1, ζ`: the field norm of `x + yζ` is the binary
 quadratic form `x² - xy + y²`, the principal form of discriminant `-3`. -/
@@ -236,9 +234,8 @@ theorem intNorm_eq_normForm (x y : ℤ) :
   rw [h2, norm_eq_normForm] at h1
   exact_mod_cast h1
 
-/-- The unit equation of `ℚ(ζ₃)`: `x + yζ` is a unit of `ℤ[ζ]` iff `x² - xy + y² = 1`. The
-form is positive definite (this is the imaginary quadratic case), so only the value `+1`
-occurs, and the six integer solutions correspond to the six roots of unity `±1, ±ζ, ±ζ²`. -/
+/-- The unit equation of `ℚ(ζ₃)`: `x + yζ` is a unit of `ℤ[ζ]` iff `x² - xy + y² = 1`.
+The six integer solutions correspond to the six roots of unity `±1, ±ζ, ±ζ²`. -/
 theorem isUnit_iff_normForm (x y : ℤ) :
     IsUnit (x • (1 : OK) + y • zetaInt) ↔ x ^ 2 - x * y + y ^ 2 = 1 := by
   rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm, ← Algebra.coe_norm_int,
@@ -265,16 +262,6 @@ theorem norm_one_add_zeta : Algebra.norm ℚ (1 + ζ) = 1 := by
   have h := norm_eq_normForm (1 : ℚ) (1 : ℚ)
   norm_num at h
   simpa using h
-
-/-! ## 5. Splitting of primes -/
-
-private theorem map_span_intCast (p : ℤ) :
-    Ideal.map (algebraMap ℤ OK) (Ideal.span {p}) = Ideal.span {(p : OK)} := by
-  rw [Ideal.map_span, Set.image_singleton]
-  change Ideal.span ({algebraMap ℤ OK p} : Set OK) =
-    Ideal.span ({algebraMap ℤ OK p} : Set OK)
-  rfl
-
 /-- The element `ζ - 1` is a prime element of the ring of integers. -/
 theorem zetaInt_sub_one_prime : Prime (zetaInt - 1 : OK) := by
   rw [zetaInt]
@@ -346,12 +333,13 @@ theorem inertiaDeg_span_zetaInt_sub_one :
 theorem ramificationIdx_span_zetaInt_sub_one :
     (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {zetaInt - 1}) = 2 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast]
+  · rw [Ideal.map_span, Set.image_singleton]
     change Ideal.span {(3 : OK)} ≤ Ideal.span {zetaInt - 1} ^ 2
     rw [span_three_eq]
   · intro hle3
-    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle3
-    rw [map_span_intCast] at hdvd
+    have hdvd : Ideal.absNorm (Ideal.span {zetaInt - 1} ^ 3) ∣
+        Ideal.absNorm (Ideal.span {((3 : ℤ) : OK)}) := by
+      simpa [Ideal.map_span, Set.image_singleton] using Ideal.absNorm_dvd_absNorm_of_le hle3
     have hnorm3 : Ideal.absNorm (Ideal.span {((3 : ℤ) : OK)}) = 9 := by
       change Ideal.absNorm (Ideal.span {(3 : OK)}) = 9
       have hfin : Module.finrank ℤ OK = 2 := by
@@ -375,15 +363,22 @@ theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : OK)}) = 4 := by
     Algebra.norm_algebraMap, hfin]
   rfl
 
-/-- `2` is inert in `ℚ(ζ₃)`: `2 ≡ 2 (mod 3)`, equivalently `X² + X + 1` is irreducible
-mod `2`, so `(2)` is itself prime. -/
-theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime := by
-  have htop : Ideal.span {(2 : OK)} ≠ ⊤ := by
-    intro h
-    have h4 := absNorm_span_two
-    rw [h, Ideal.absNorm_top] at h4
-    norm_num at h4
-  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+private theorem quotient_zeta_ne_one_of_two_mem {M : Ideal OK} [M.IsMaximal]
+    (h2mem : (2 : OK) ∈ M) : Ideal.Quotient.mk M zetaInt ≠ 1 := by
+  letI : Field (OK ⧸ M) := Ideal.Quotient.field M
+  intro h1
+  have hs := congrArg (Ideal.Quotient.mk M) zetaInt_relation
+  rw [map_add, map_add, map_one, map_pow, map_zero,
+    show Ideal.Quotient.mk M zetaInt = (1 : OK ⧸ M) from h1] at hs
+  have h2q : (2 : OK ⧸ M) = 0 := by
+    rw [show (2 : OK ⧸ M) = Ideal.Quotient.mk M 2 from (map_ofNat _ 2).symm,
+      Ideal.Quotient.eq_zero_iff_mem]
+    exact h2mem
+  have h1q : (1 : OK ⧸ M) = 0 := by linear_combination hs - h2q
+  exact one_ne_zero h1q
+
+private theorem absNorm_maximal_over_span_two_eq_four {M : Ideal OK} (hMmax : M.IsMaximal)
+    (hMle : Ideal.span {(2 : OK)} ≤ M) : Ideal.absNorm M = 4 := by
   haveI := hMmax
   letI : Field (OK ⧸ M) := Ideal.Quotient.field M
   have hdvd : Ideal.absNorm M ∣ 4 :=
@@ -393,16 +388,7 @@ theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime := by
   have hω3 : ω ^ 3 = 1 := by
     rw [hω, ← map_pow, zetaInt_pow_three, map_one]
   have hω1 : ω ≠ 1 := by
-    intro h1
-    have hs := congrArg (Ideal.Quotient.mk M) zetaInt_relation
-    rw [map_add, map_add, map_one, map_pow, map_zero, show Ideal.Quotient.mk M zetaInt = ω from rfl,
-      h1] at hs
-    have h2q : (2 : OK ⧸ M) = 0 := by
-      rw [show (2 : OK ⧸ M) = Ideal.Quotient.mk M 2 from (map_ofNat _ 2).symm,
-        Ideal.Quotient.eq_zero_iff_mem]
-      exact h2mem
-    have h1q : (1 : OK ⧸ M) = 0 := by linear_combination hs - h2q
-    exact one_ne_zero h1q
+    simpa [hω] using quotient_zeta_ne_one_of_two_mem (M := M) h2mem
   classical
   have habs : Ideal.absNorm M = Nat.card (OK ⧸ M) := by
     rw [Ideal.absNorm_apply, Submodule.cardQuot_apply]
@@ -431,13 +417,23 @@ theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime := by
   have h3dvd : (3 : ℕ) ∣ 2 ^ k - 1 := by
     have horderω : orderOf ω = 3 := orderOf_eq_prime hω3 hω1
     exact horderω ▸ orderOf_dvd_of_pow_eq_one hpow1
-  have hM4 : Ideal.absNorm M = 4 := by
-    rw [hkeq]
-    interval_cases k
-    · rw [hkeq] at hM1
-      norm_num at hM1
-    · norm_num at h3dvd
-    · norm_num
+  rw [hkeq]
+  interval_cases k
+  · rw [hkeq] at hM1
+    norm_num at hM1
+  · norm_num at h3dvd
+  · norm_num
+
+/-- `2` is inert in `ℚ(ζ₃)`: `2 ≡ 2 (mod 3)`, equivalently `X² + X + 1` is irreducible
+mod `2`, so `(2)` is itself prime. -/
+theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime := by
+  have htop : Ideal.span {(2 : OK)} ≠ ⊤ := by
+    intro h
+    have h4 := absNorm_span_two
+    rw [h, Ideal.absNorm_top] at h4
+    norm_num at h4
+  obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
+  have hM4 : Ideal.absNorm M = 4 := absNorm_maximal_over_span_two_eq_four hMmax hMle
   have heq := eq_of_le_of_absNorm_eq hMle absNorm_span_two hM4 (by norm_num)
   rw [heq]
   exact hMmax.isPrime
@@ -531,49 +527,13 @@ theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
       intro h0
       rw [h0, pow_zero] at hkeq
       exact hP.ne_top (Ideal.absNorm_eq_one_iff.mp hkeq)
-    have hmap : Ideal.map (algebraMap ℤ OK) (Ideal.span {((p : ℕ) : ℤ)}) =
-        Ideal.span {((p : ℕ) : OK)} := by
-      rw [Ideal.map_span, Set.image_singleton]
-      norm_num
     have hle2' : Ideal.map (algebraMap ℤ OK) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
-      rw [hmap]
-      exact hle2
-    have hno3 : ¬ Ideal.map (algebraMap ℤ OK) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3 := by
-      intro h3
-      rw [hmap] at h3
-      have hd := Ideal.absNorm_dvd_absNorm_of_le h3
-      rw [map_pow, habsp, hkeq, ← pow_mul] at hd
-      rw [Nat.pow_dvd_pow_iff_le_right hp.one_lt] at hd
-      omega
-    have hidx : Ideal.ramificationIdx (Ideal.span {((p : ℕ) : ℤ)}) P ≠ 1 := by
-      rw [Ideal.ramificationIdx_spec hle2' hno3]
-      norm_num
-    have hund : Ideal.under ℤ P = Ideal.span {((p : ℕ) : ℤ)} := by
-      have hmem : ((p : ℕ) : ℤ) ∈ Ideal.under ℤ P := by
-        rw [Ideal.under, Ideal.mem_comap]
-        have hcast2 : algebraMap ℤ OK ((p : ℕ) : ℤ) = ((p : ℕ) : OK) := by
-          push_cast
-          rfl
-        rw [hcast2]
-        exact hpmemP
-      have hle : Ideal.span {((p : ℕ) : ℤ)} ≤ Ideal.under ℤ P := by
-        rw [Ideal.span_le, Set.singleton_subset_iff]
-        exact hmem
-      have hprime : (Ideal.span {((p : ℕ) : ℤ)}).IsPrime :=
-        (Ideal.span_singleton_prime (by exact_mod_cast hp.ne_zero)).mpr
-          (Nat.prime_iff_prime_int.mp hp)
-      have hbot : Ideal.span {((p : ℕ) : ℤ)} ≠ ⊥ := by
-        rw [Ne, Ideal.span_singleton_eq_bot]
-        exact_mod_cast hp.ne_zero
-      have hnetop : Ideal.under ℤ P ≠ ⊤ := by
-        intro h
-        have h1 : (1 : ℤ) ∈ Ideal.under ℤ P := h ▸ Submodule.mem_top
-        rw [Ideal.under, Ideal.mem_comap, map_one] at h1
-        exact hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h1 isUnit_one)
-      exact ((hprime.isMaximal hbot).eq_of_le hnetop hle).symm
-    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P := by
-      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hPbot, hund]
-      exact hidx
+      simpa [Ideal.map_span, Set.image_singleton] using hle2
+    have hno3 : ¬ Ideal.map (algebraMap ℤ OK) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3 :=
+      not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow hp habsp hkeq hk0
+    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P :=
+      not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ hp hpmemP hPbot hle2'
+        hno3
     have hPdiff : P ∣ differentIdeal ℤ OK := dvd_differentIdeal_iff.mpr hunram
     have habsP3 : Ideal.absNorm P ∣ 3 := by
       have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
@@ -590,12 +550,12 @@ theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
 theorem ramificationIdx_span_two :
     (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {(2 : OK)}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast, pow_one]
+  · rw [Ideal.map_span, Set.image_singleton, pow_one]
     simp
   · intro hle2
     have hram : ∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(2 : OK)} ≤ P ^ 2 := by
       refine ⟨Ideal.span {(2 : OK)}, isPrime_span_two, ?_⟩
-      rw [map_span_intCast] at hle2
+      rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
     have h := (ramified_iff_eq_three 2 Nat.prime_two).mp hram
     norm_num at h
@@ -604,14 +564,14 @@ theorem ramificationIdx_span_two :
 theorem ramificationIdx_span_seven_factor :
     (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {3 + zetaInt}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast, pow_one]
+  · rw [Ideal.map_span, Set.image_singleton, pow_one]
     change Ideal.span {(7 : OK)} ≤ Ideal.span {3 + zetaInt}
     rw [span_seven_eq]
     exact Ideal.mul_le_right
   · intro hle2
     have hram : ∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(7 : OK)} ≤ P ^ 2 := by
       refine ⟨Ideal.span {3 + zetaInt}, isPrime_span_seven_factor, ?_⟩
-      rw [map_span_intCast] at hle2
+      rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
     have h := (ramified_iff_eq_three 7 (by norm_num)).mp hram
     norm_num at h
@@ -626,99 +586,157 @@ private theorem absNorm_span_natCast (p : ℕ) :
     rfl
   rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
 
+private theorem one_mod_three_of_prime_norm (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    (∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(p : OK)} ≤ P ∧ Ideal.absNorm P = p) →
+      p % 3 = 1 := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  rintro ⟨P, hPprime, hle, habs⟩
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
+  haveI : Finite (OK ⧸ P) := Nat.finite_of_card_ne_zero (by rw [habs]; exact hp.ne_zero)
+  haveI : Fintype (OK ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card (OK ⧸ P) = p := by
+    rw [← Nat.card_eq_fintype_card]
+    exact habs
+  let e := ZMod.ringEquivOfPrime (OK ⧸ P) hp hcard'
+  obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P zetaInt)
+  have hs3 : s ^ 3 = (1 : ZMod p) := by
+    apply e.injective
+    rw [map_pow, hs, ← map_pow (Ideal.Quotient.mk P), zetaInt_pow_three, map_one, map_one]
+  have hssum : s ^ 2 + s + 1 = (0 : ZMod p) := by
+    apply e.injective
+    rw [map_add, map_add, map_one, map_pow, hs, map_zero]
+    have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_relation
+    rw [map_add, map_add, map_one, map_pow, map_zero] at hmk
+    exact hmk
+  have hs1 : s ≠ 1 := by
+    intro h1
+    rw [h1] at hssum
+    have h3 : ((3 : ℕ) : ZMod p) = 0 := by
+      push_cast
+      linear_combination hssum
+    have hdvd := (CharP.cast_eq_zero_iff (ZMod p) p 3).mp h3
+    exact hp3 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num : Nat.Prime 3)).mp hdvd)
+  set u : (ZMod p)ˣ := Units.mkOfMulEqOne s (s ^ 2)
+    (by rw [← pow_succ']; exact hs3) with hudef
+  have hu : (u : ZMod p) = s := rfl
+  have horder : orderOf u = 3 := by
+    refine orderOf_eq_prime ?_ ?_
+    · ext
+      rw [Units.val_pow_eq_pow_val, hu]
+      exact hs3
+    · intro h1
+      apply hs1
+      rw [← hu, h1, Units.val_one]
+  have hdvd_card : (3 : ℕ) ∣ p - 1 := by
+    have h := orderOf_dvd_natCard u
+    rw [horder, Nat.card_eq_fintype_card, ZMod.card_units_eq_totient, Nat.totient_prime hp] at h
+    exact h
+  have h2le := hp.two_le
+  obtain ⟨m, hm⟩ := hdvd_card
+  omega
+
+private theorem exists_prime_norm_of_one_mod_three (p : ℕ) (hp : p.Prime) :
+    p % 3 = 1 →
+      ∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(p : OK)} ≤ P ∧ Ideal.absNorm P = p := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  intro hmod
+  have hcard : Nat.card (ZMod p)ˣ = p - 1 := by
+    rw [Nat.card_eq_fintype_card, ZMod.card_units_eq_totient, Nat.totient_prime hp]
+  obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := (ZMod p)ˣ)
+  have hog : orderOf g = p - 1 := by
+    rw [orderOf_eq_card_of_forall_mem_zpowers hg, hcard]
+  have h2le := hp.two_le
+  obtain ⟨m, hm⟩ : (3 : ℕ) ∣ p - 1 := ⟨(p - 1) / 3, by omega⟩
+  have hm0 : m ≠ 0 := by omega
+  have hou : orderOf (g ^ m) = 3 := by
+    rw [orderOf_pow, hog, hm]
+    have hgcd : Nat.gcd (3 * m) m = m := Nat.gcd_eq_right ⟨3, by ring⟩
+    rw [hgcd, Nat.mul_div_assoc 3 (dvd_refl m), Nat.div_self (show 0 < m by omega),
+      mul_one]
+  have hu3 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 3 = 1 := by
+    have h := pow_orderOf_eq_one (g ^ m)
+    rw [hou] at h
+    have hc := congrArg Units.val h
+    simpa using hc
+  have hu1 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ≠ 1 := by
+    intro h1
+    have : (g ^ m) = 1 := Units.ext (by simpa using h1)
+    rw [this, orderOf_one] at hou
+    norm_num at hou
+  have hr : (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) ^ 2 +
+      (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) + 1 = 0 := by
+    have hcast : (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) =
+        ((g ^ m : (ZMod p)ˣ) : ZMod p) := by
+      push_cast
+      exact ZMod.natCast_rightInverse _
+    rw [hcast]
+    set v : ZMod p := ((g ^ m : (ZMod p)ˣ) : ZMod p)
+    have hfactor : (v - 1) * (v ^ 2 + v + 1) = 0 := by
+      linear_combination hu3
+    rcases mul_eq_zero.mp hfactor with h | h
+    · exact absurd (by linear_combination h) hu1
+    · linear_combination h
+  refine ⟨Ideal.span {((p : ℕ) : OK),
+    zetaInt - ((((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : OK))},
+    (isMaximal_span_pair p _ hr).isPrime, ?_, absNorm_span_pair p _ hr⟩
+  rw [Ideal.span_le, Set.singleton_subset_iff]
+  exact Ideal.subset_span (by simp)
+
 private theorem exists_prime_norm_iff_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     (∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(p : OK)} ≤ P ∧ Ideal.absNorm P = p) ↔
       p % 3 = 1 := by
-  haveI : Fact p.Prime := ⟨hp⟩
   constructor
-  · rintro ⟨P, hPprime, hle, habs⟩
-    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
-    haveI : Finite (OK ⧸ P) := Nat.finite_of_card_ne_zero (by rw [habs]; exact hp.ne_zero)
-    haveI : Fintype (OK ⧸ P) := Fintype.ofFinite _
-    have hcard' : Fintype.card (OK ⧸ P) = p := by
-      rw [← Nat.card_eq_fintype_card]
-      exact habs
-    let e := ZMod.ringEquivOfPrime (OK ⧸ P) hp hcard'
-    obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P zetaInt)
-    have hs3 : s ^ 3 = (1 : ZMod p) := by
-      apply e.injective
-      rw [map_pow, hs, ← map_pow (Ideal.Quotient.mk P), zetaInt_pow_three, map_one,
-        map_one]
-    have hssum : s ^ 2 + s + 1 = (0 : ZMod p) := by
-      apply e.injective
-      rw [map_add, map_add, map_one, map_pow, hs, map_zero]
-      have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_relation
-      rw [map_add, map_add, map_one, map_pow, map_zero] at hmk
-      exact hmk
-    have hs1 : s ≠ 1 := by
-      intro h1
-      rw [h1] at hssum
-      have h3 : ((3 : ℕ) : ZMod p) = 0 := by
-        push_cast
-        linear_combination hssum
-      have hdvd := (CharP.cast_eq_zero_iff (ZMod p) p 3).mp h3
-      exact hp3 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num : Nat.Prime 3)).mp hdvd)
-    set u : (ZMod p)ˣ := Units.mkOfMulEqOne s (s ^ 2)
-      (by rw [← pow_succ']; exact hs3) with hudef
-    have hu : (u : ZMod p) = s := rfl
-    have horder : orderOf u = 3 := by
-      refine orderOf_eq_prime ?_ ?_
-      · ext
-        rw [Units.val_pow_eq_pow_val, hu]
-        exact hs3
-      · intro h1
-        apply hs1
-        rw [← hu, h1, Units.val_one]
-    have hdvd_card : (3 : ℕ) ∣ p - 1 := by
-      have h := orderOf_dvd_natCard u
-      rw [horder, Nat.card_eq_fintype_card, ZMod.card_units_eq_totient,
-        Nat.totient_prime hp] at h
-      exact h
-    have h2le := hp.two_le
-    obtain ⟨m, hm⟩ := hdvd_card
-    omega
-  · intro hmod
-    have hcard : Nat.card (ZMod p)ˣ = p - 1 := by
-      rw [Nat.card_eq_fintype_card, ZMod.card_units_eq_totient, Nat.totient_prime hp]
-    obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := (ZMod p)ˣ)
-    have hog : orderOf g = p - 1 := by
-      rw [orderOf_eq_card_of_forall_mem_zpowers hg, hcard]
-    have h2le := hp.two_le
-    obtain ⟨m, hm⟩ : (3 : ℕ) ∣ p - 1 := ⟨(p - 1) / 3, by omega⟩
-    have hm0 : m ≠ 0 := by omega
-    have hou : orderOf (g ^ m) = 3 := by
-      rw [orderOf_pow, hog, hm]
-      have hgcd : Nat.gcd (3 * m) m = m := Nat.gcd_eq_right ⟨3, by ring⟩
-      rw [hgcd, Nat.mul_div_assoc 3 (dvd_refl m), Nat.div_self (show 0 < m by omega),
-        mul_one]
-    have hu3 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 3 = 1 := by
-      have h := pow_orderOf_eq_one (g ^ m)
-      rw [hou] at h
-      have hc := congrArg Units.val h
-      simpa using hc
-    have hu1 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ≠ 1 := by
-      intro h1
-      have : (g ^ m) = 1 := Units.ext (by simpa using h1)
-      rw [this, orderOf_one] at hou
-      norm_num at hou
-    have hr : (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) ^ 2 +
-        (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) + 1 = 0 := by
-      have hcast : (((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : ZMod p) =
-          ((g ^ m : (ZMod p)ˣ) : ZMod p) := by
-        push_cast
-        exact ZMod.natCast_rightInverse _
-      rw [hcast]
-      set v : ZMod p := ((g ^ m : (ZMod p)ˣ) : ZMod p)
-      have hfactor : (v - 1) * (v ^ 2 + v + 1) = 0 := by
-        linear_combination hu3
-      rcases mul_eq_zero.mp hfactor with h | h
-      · exact absurd (by linear_combination h) hu1
-      · linear_combination h
-    refine ⟨Ideal.span {((p : ℕ) : OK),
-      zetaInt - ((((((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ)) : OK))},
-      (isMaximal_span_pair p _ hr).isPrime, ?_, absNorm_span_pair p _ hr⟩
-    rw [Ideal.span_le, Set.singleton_subset_iff]
-    exact Ideal.subset_span (by simp)
+  · exact one_mod_three_of_prime_norm p hp hp3
+  · exact exists_prime_norm_of_one_mod_three p hp
+
+private theorem one_mod_three_of_splits (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    (∃ P Q : Ideal OK, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : OK)} = P * Q) → p % 3 = 1 := by
+  rintro ⟨P, Q, hPprime, hQprime, hPQ, hspan⟩
+  have hPle : Ideal.span {(p : OK)} ≤ P := by
+    rw [hspan]
+    exact (Ideal.mul_le_right (I := P) (J := Q))
+  have hmul := _root_.map_mul Ideal.absNorm P Q
+  have hspan' : Ideal.span {((p : ℕ) : OK)} = P * Q := by
+    simpa using hspan
+  rw [← hspan', absNorm_span_natCast] at hmul
+  have hPnorm_ne_one : Ideal.absNorm P ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hPprime.ne_top
+  have hQnorm_ne_one : Ideal.absNorm Q ≠ 1 := by
+    rw [Ne, Ideal.absNorm_eq_one_iff]
+    exact hQprime.ne_top
+  have hPnorm_eq : Ideal.absNorm P = p :=
+    left_eq_prime_of_mul_eq_prime_sq_of_ne_one hp hmul.symm hPnorm_ne_one hQnorm_ne_one
+  exact (exists_prime_norm_iff_one_mod_three p hp hp3).mp
+    ⟨P, hPprime, hPle, hPnorm_eq⟩
+
+private theorem splits_of_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    p % 3 = 1 →
+      ∃ P Q : Ideal OK, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+        Ideal.span {(p : OK)} = P * Q := by
+  intro hmod
+  obtain ⟨P, hPprime, hPle, hPnorm⟩ :=
+    (exists_prime_norm_iff_one_mod_three p hp hp3).mpr hmod
+  obtain ⟨Q, hspan⟩ := Ideal.dvd_iff_le.mpr hPle
+  have hQnorm : Ideal.absNorm Q = p := by
+    have hmul := _root_.map_mul Ideal.absNorm P Q
+    have hspan' : Ideal.span {((p : ℕ) : OK)} = P * Q := by
+      simpa using hspan
+    rw [← hspan', absNorm_span_natCast, hPnorm] at hmul
+    rw [pow_two] at hmul
+    exact Nat.eq_of_mul_eq_mul_left hp.pos hmul.symm
+  have hQprime : Q.IsPrime := by
+    apply Ideal.isPrime_of_irreducible_absNorm
+    rw [hQnorm]
+    exact (Nat.irreducible_iff_nat_prime _).mpr hp
+  have hPQ : P ≠ Q := by
+    intro h
+    have hram : ∃ R : Ideal OK, R.IsPrime ∧ Ideal.span {(p : OK)} ≤ R ^ 2 := by
+      refine ⟨P, hPprime, ?_⟩
+      rw [hspan, h, sq]
+    exact hp3 ((ramified_iff_eq_three p hp).mp hram)
+  exact ⟨P, Q, hPprime, hQprime, hPQ, by simpa using hspan⟩
 
 /-- The quadratic (cyclotomic) splitting law for `ℚ(ζ₃)`: an unramified rational prime `p`
 splits into two distinct primes iff `p ≡ 1 (mod 3)`, and is inert otherwise. This is the
@@ -727,58 +745,7 @@ theorem splits_iff_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     (∃ P Q : Ideal OK, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
       Ideal.span {(p : OK)} = P * Q) ↔ p % 3 = 1 := by
   constructor
-  · rintro ⟨P, Q, hPprime, hQprime, hPQ, hspan⟩
-    have hPle : Ideal.span {(p : OK)} ≤ P := by
-      rw [hspan]
-      exact (Ideal.mul_le_right (I := P) (J := Q))
-    have hPnorm_dvd : Ideal.absNorm P ∣ p ^ 2 := by
-      exact absNorm_span_natCast p ▸ Ideal.absNorm_dvd_absNorm_of_le hPle
-    obtain ⟨k, hk2, hPnorm⟩ := (Nat.dvd_prime_pow hp).mp hPnorm_dvd
-    have hk0 : k ≠ 0 := by
-      intro h0
-      rw [h0, pow_zero] at hPnorm
-      exact hPprime.ne_top (Ideal.absNorm_eq_one_iff.mp hPnorm)
-    have hmul := _root_.map_mul Ideal.absNorm P Q
-    have hspan' : Ideal.span {((p : ℕ) : OK)} = P * Q := by
-      simpa using hspan
-    rw [← hspan', absNorm_span_natCast] at hmul
-    have hQnorm_ne_one : Ideal.absNorm Q ≠ 1 := by
-      rw [Ne, Ideal.absNorm_eq_one_iff]
-      exact hQprime.ne_top
-    have hPnorm_eq : Ideal.absNorm P = p := by
-      interval_cases k
-      · exact (hk0 rfl).elim
-      · simpa using hPnorm
-      · exfalso
-        rw [hPnorm] at hmul
-        have hQone : Ideal.absNorm Q = 1 :=
-          (Nat.eq_of_mul_eq_mul_left (pow_pos hp.pos 2)
-            (by rw [mul_one]; exact hmul)).symm
-        exact hQnorm_ne_one hQone
-    exact (exists_prime_norm_iff_one_mod_three p hp hp3).mp
-      ⟨P, hPprime, hPle, hPnorm_eq⟩
-  · intro hmod
-    obtain ⟨P, hPprime, hPle, hPnorm⟩ :=
-      (exists_prime_norm_iff_one_mod_three p hp hp3).mpr hmod
-    obtain ⟨Q, hspan⟩ := Ideal.dvd_iff_le.mpr hPle
-    have hQnorm : Ideal.absNorm Q = p := by
-      have hmul := _root_.map_mul Ideal.absNorm P Q
-      have hspan' : Ideal.span {((p : ℕ) : OK)} = P * Q := by
-        simpa using hspan
-      rw [← hspan', absNorm_span_natCast, hPnorm] at hmul
-      rw [pow_two] at hmul
-      exact Nat.eq_of_mul_eq_mul_left hp.pos hmul.symm
-    have hQprime : Q.IsPrime := by
-      apply Ideal.isPrime_of_irreducible_absNorm
-      rw [hQnorm]
-      exact (Nat.irreducible_iff_nat_prime _).mpr hp
-    have hPQ : P ≠ Q := by
-      intro h
-      have hram : ∃ R : Ideal OK, R.IsPrime ∧ Ideal.span {(p : OK)} ≤ R ^ 2 := by
-        refine ⟨P, hPprime, ?_⟩
-        rw [hspan, h, sq]
-      exact hp3 ((ramified_iff_eq_three p hp).mp hram)
-    exact ⟨P, Q, hPprime, hQprime, hPQ, by simpa using hspan⟩
-
+  · exact one_mod_three_of_splits p hp hp3
+  · exact splits_of_one_mod_three p hp hp3
 
 end NumberField.CyclotomicThree

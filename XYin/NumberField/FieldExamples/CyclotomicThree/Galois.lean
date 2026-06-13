@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicThree.Euclidean
+
+/-!
+# `ℚ(ζ₃)` Galois group
+
+This file develops the Galois group part of the `ℚ(ζ₃)` number field example.
+-/
 
 noncomputable section
 
@@ -7,8 +18,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 open Module NumberField Polynomial
 
 namespace NumberField.CyclotomicThree
-
-/-! ## 9. Galois group -/
 
 /-- Cyclotomic extensions are Galois: `ℚ(ζ₃)/ℚ` is a Galois extension. -/
 theorem isGalois : IsGalois ℚ K :=

@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtNegSix.RingOfIntegers
+
+/-!
+# `ℚ(√-6)` Norm form
+
+This file develops the norm form part of the `ℚ(√-6)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
-
-/-! ## 4. Norm form -/
 
 /-- The norm form of `ℚ(√-6)` in the basis `1, θ`: the field norm of `x + yθ` is the
 positive-definite binary quadratic form `x² + 6y²`. -/

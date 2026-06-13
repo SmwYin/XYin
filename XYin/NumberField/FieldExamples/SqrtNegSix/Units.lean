@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtNegSix.PrimeSplitting
+
+/-!
+# `ℚ(√-6)` Unit group
+
+This file develops the unit group part of the `ℚ(√-6)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
-
-/-! ## 6. Ring of units -/
 
 /-- A torsion generator of `𝓞 Kˣ`, mathematically `-1`. -/
 abbrev torsionGenerator : (𝓞 K)ˣ := -1

@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicEight.Discriminant
+
+/-!
+# `ℚ(ζ₈)` Subfields
+
+This file develops the subfields part of the `ℚ(ζ₈)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
-
-/-! ## 4. The three quadratic subfields -/
 
 /-- `√2 = ζ + ζ⁻¹` inside `ℚ(ζ₈)`: one has `(ζ + ζ⁷)² = 2`, since `ζ² + ζ⁻² = 0`. -/
 theorem sqrt_two_sq : (ζ + ζ ^ 7) ^ 2 = 2 := by

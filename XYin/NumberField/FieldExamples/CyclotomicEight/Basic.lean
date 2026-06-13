@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import Mathlib
 
 /-!
@@ -28,8 +33,6 @@ open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
 
-/-! ## 1. Basics -/
-
 /-- The eighth cyclotomic field over `ℚ`. -/
 abbrev K : Type := CyclotomicField 8 ℚ
 
@@ -56,8 +59,6 @@ theorem zeta_pow_four : ζ ^ 4 = -1 :=
 theorem degree_eq_four : Module.finrank ℚ K = 4 :=
   (IsCyclotomicExtension.finrank (n := 8) K
     (Polynomial.cyclotomic.irreducible_rat (by norm_num))).trans rfl
-
-/-! ### The `AdjoinRoot` presentation -/
 
 /-- The polynomial `X⁴ + 1`, defining the eighth cyclotomic field. -/
 abbrev zetaEightPolynomial : Polynomial ℚ := Polynomial.X ^ 4 + Polynomial.C (1 : ℚ)

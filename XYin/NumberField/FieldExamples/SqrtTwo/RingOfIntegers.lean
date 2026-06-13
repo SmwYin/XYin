@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtTwo.Basic
+
+/-!
+# `ℚ(√2)` Ring of integers
+
+This file develops the ring of integers part of the `ℚ(√2)` number field example.
+-/
 
 noncomputable section
 
@@ -9,8 +20,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtTwo
-
-/-! ## 2. Integral basis and ring of integers -/
 
 /-- The ring of integers of `ℚ(√2)`. -/
 abbrev O2 : Type := 𝓞 QSqrtTwo
@@ -64,8 +73,6 @@ theorem sqrtTwo_minpoly_int_isEisenstein :
     interval_cases n <;>
       simp [Ideal.submodule_span_eq]
   · simp [Ideal.submodule_span_eq, Ideal.span_singleton_pow, Ideal.mem_span_singleton]
-
-/-! ## 3. Discriminant -/
 
 /-- The discriminant of the order `ℤ[√2]` with basis `1, √2` is `8`. -/
 theorem sqrtTwoPowerBasis_discr :
@@ -277,20 +284,14 @@ theorem sqrtTwoExplicitIntegralBasis_discr :
       change (1 : QSqrtTwo) =
         sqrtTwoPowerBasis.basis ((finCongr sqrtTwoPowerBasis_dim).symm (0 : Fin 2))
       rw [sqrtTwoPowerBasis.basis_eq_pow]
-      have hcoe :
-          (((finCongr sqrtTwoPowerBasis_dim).symm (0 : Fin 2) :
-            Fin sqrtTwoPowerBasis.dim) : ℕ) = 0 := rfl
-      rw [hcoe]
-      simp
+      norm_num
     · simp [bLoc, bInt, Basis.localizationLocalization_apply, sqrtTwoExplicitIntegralBasis_one]
       change sqrtTwoRoot =
         sqrtTwoPowerBasis.basis ((finCongr sqrtTwoPowerBasis_dim).symm (1 : Fin 2))
       rw [sqrtTwoPowerBasis.basis_eq_pow]
-      have hcoe :
-          (((finCongr sqrtTwoPowerBasis_dim).symm (1 : Fin 2) :
-            Fin sqrtTwoPowerBasis.dim) : ℕ) = 1 := rfl
-      rw [hcoe]
-      rw [pow_one, sqrtTwoPowerBasis_gen]
+      norm_num
+      rw [← sqrtTwoPowerBasis_gen]
+      rfl
   rw [hBasis]
   simpa [Basis.coe_reindex] using
     (Algebra.discr_reindex ℚ sqrtTwoPowerBasis.basis (finCongr sqrtTwoPowerBasis_dim)).trans

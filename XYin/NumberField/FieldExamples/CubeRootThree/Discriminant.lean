@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CubeRootThree.RingOfIntegers
+
+/-!
+# `ℚ(∛3)` Discriminant computations
+
+This file develops the discriminant computations part of the `ℚ(∛3)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CubeRootThree
-
-/-! ## 3. Discriminant -/
 
 /-- The number-field discriminant of `ℚ(∛3)` is `-243 = -3⁵` (for `X³ - a` one has
 `disc = -27a²`). In particular `3` is the only ramified prime, cf. `ramified_iff_eq_three`. -/

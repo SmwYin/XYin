@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicFive.Units
+
+/-!
+# `ℚ(ζ₅)` Class group
+
+This file develops the class group part of the `ℚ(ζ₅)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicFive
-
-/-! ## 7. Class group -/
 
 /-- The class number of `ℚ(ζ₅)` is `1` (the Minkowski bound is `(4/π)² · 4!/4⁴ · √125 ≈ 1.7`,
 so there is nothing to check beyond the unit ideal). -/

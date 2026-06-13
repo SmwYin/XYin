@@ -1,15 +1,25 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicEight.PrimeSplitting
+
+/-!
+# `ℚ(ζ₈)` Unit group
+
+This file develops the unit group part of the `ℚ(ζ₈)` number field example.
+-/
 
 noncomputable section
 
 open Module
+open NumberField.FieldExamples
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
 
 private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
-
-/-! ## 6. Ring of units -/
 
 /-- A torsion generator of `𝓞 Kˣ`: the eighth root of unity `ζ` itself, with explicit
 inverse `ζ⁷`. -/
@@ -166,6 +176,51 @@ theorem unit_eq_torsion_mul_fundamentalUnit_zpow (u : (𝓞 K)ˣ) :
   obtain ⟨n, hn⟩ := hx
   exact ⟨y, hy, n, by rw [hn, ← hxy]; exact mul_comm x y⟩
 
+private theorem unitGroupStructure_bijective
+    (i₀ : Fin (NumberField.Units.rank K)) (η : (𝓞 K)ˣ)
+    (hη : η = NumberField.Units.fundSystem K i₀) (htg8 : torsionGenerator ^ 8 = 1)
+    (htg_tor : torsionGenerator ∈ NumberField.Units.torsion K) :
+    Function.Bijective
+      ((torsionPowerHom 8 torsionGenerator htg8).coprod (rankOnePowerHom η)) := by
+  constructor
+  · rw [injective_iff_map_eq_one]
+    rintro ⟨a, f⟩ h
+    have h' : torsionGenerator ^ ((Multiplicative.toAdd a).val) *
+        η ^ (Multiplicative.toAdd f 0) = 1 := h
+    have htor : η ^ (Multiplicative.toAdd f 0) ∈ NumberField.Units.torsion K := by
+      have heq : η ^ (Multiplicative.toAdd f 0) =
+          (torsionGenerator ^ ((Multiplicative.toAdd a).val))⁻¹ :=
+        (mul_eq_one_iff_inv_eq.mp h').symm
+      rw [heq]
+      exact Subgroup.inv_mem _ (Subgroup.pow_mem _ htg_tor _)
+    have hn0 : Multiplicative.toAdd f 0 = 0 :=
+      fundSystem_zpow_mem_torsion i₀ _ (by simpa [hη] using htor)
+    rw [hn0, zpow_zero, mul_one] at h'
+    have haval : (Multiplicative.toAdd a).val = 0 := by
+      have hOK : zetaInt ^ (Multiplicative.toAdd a).val = 1 := by
+        have hval := congrArg Units.val h'
+        simpa [Units.val_pow_eq_pow_val] using hval
+      have hK : ζ ^ (Multiplicative.toAdd a).val = 1 := by
+        have hmap := congrArg (algebraMap (𝓞 K) K) hOK
+        simpa [map_pow, coe_zetaInt] using hmap
+      have hdvd := (IsPrimitiveRoot.pow_eq_one_iff_dvd zeta_isPrimitiveRoot _).mp hK
+      have hlt : (Multiplicative.toAdd a).val < 8 := ZMod.val_lt _
+      omega
+    have ha0 : Multiplicative.toAdd a = 0 := by
+      have hinv := ZMod.natCast_rightInverse (n := 8) (Multiplicative.toAdd a)
+      rw [← hinv, haval]
+      rfl
+    refine Prod.ext (Multiplicative.toAdd.injective ha0) ?_
+    refine Multiplicative.toAdd.injective (funext fun i => ?_)
+    rw [Subsingleton.elim i 0]
+    exact hn0
+  · intro u
+    obtain ⟨ζ', hζ', n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
+    obtain ⟨k, hk⟩ := eq_torsionGenerator_pow_of_mem_torsion hζ'
+    refine ⟨(Multiplicative.ofAdd ((k.val : ZMod 8)), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+    change torsionGenerator ^ ((k.val : ZMod 8)).val * η ^ n = u
+    rw [hη, ZMod.val_cast_of_lt k.isLt, hu, hk]
+
 /-- The unit group is `μ₈ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
     Nonempty ((𝓞 K)ˣ ≃* (Multiplicative (ZMod 8) × Multiplicative (Fin 1 → ℤ))) := by
@@ -175,69 +230,16 @@ theorem unitGroupStructure :
   have htg8 : torsionGenerator ^ 8 = 1 := by
     ext
     exact zeta_pow_eight
-  have hpow : ∀ k : ℕ, torsionGenerator ^ k = torsionGenerator ^ (k % 8) := by
-    intro k
-    conv_lhs => rw [← Nat.div_add_mod k 8]
-    rw [pow_add, pow_mul, htg8, one_pow, one_mul]
-  have hsign : ∀ a b : ZMod 8,
-      torsionGenerator ^ (a + b).val = torsionGenerator ^ a.val * torsionGenerator ^ b.val := by
-    intro a b
-    calc torsionGenerator ^ (a + b).val = torsionGenerator ^ ((a + b).val % 8) := hpow _
-      _ = torsionGenerator ^ ((a.val + b.val) % 8) := by
-          rw [ZMod.val_add, Nat.mod_mod_of_dvd _ (dvd_refl 8)]
-      _ = torsionGenerator ^ (a.val + b.val) := (hpow _).symm
-      _ = torsionGenerator ^ a.val * torsionGenerator ^ b.val := pow_add _ _ _
   let ψ₁ : Multiplicative (ZMod 8) →* (𝓞 K)ˣ :=
-    MonoidHom.mk' (fun a => torsionGenerator ^ (Multiplicative.toAdd a).val)
-      (fun a b => hsign (Multiplicative.toAdd a) (Multiplicative.toAdd b))
+    torsionPowerHom 8 torsionGenerator htg8
   let ψ₂ : Multiplicative (Fin 1 → ℤ) →* (𝓞 K)ˣ :=
-    MonoidHom.mk' (fun f => η ^ (Multiplicative.toAdd f 0))
-      (fun f g => by
-        change η ^ ((Multiplicative.toAdd f + Multiplicative.toAdd g) 0) = _
-        rw [Pi.add_apply, zpow_add])
+    rankOnePowerHom η
   let ψ : Multiplicative (ZMod 8) × Multiplicative (Fin 1 → ℤ) →* (𝓞 K)ˣ := ψ₁.coprod ψ₂
   have htg_tor : torsionGenerator ∈ NumberField.Units.torsion K := by
     change IsOfFinOrder torsionGenerator
     rw [isOfFinOrder_iff_pow_eq_one]
     exact ⟨8, by norm_num, htg8⟩
-  have hbij : Function.Bijective ψ := by
-    constructor
-    · rw [injective_iff_map_eq_one]
-      rintro ⟨a, f⟩ h
-      have h' : torsionGenerator ^ ((Multiplicative.toAdd a).val) *
-          η ^ (Multiplicative.toAdd f 0) = 1 := h
-      have htor : η ^ (Multiplicative.toAdd f 0) ∈ NumberField.Units.torsion K := by
-        have heq : η ^ (Multiplicative.toAdd f 0) =
-            (torsionGenerator ^ ((Multiplicative.toAdd a).val))⁻¹ :=
-          (mul_eq_one_iff_inv_eq.mp h').symm
-        rw [heq]
-        exact Subgroup.inv_mem _ (Subgroup.pow_mem _ htg_tor _)
-      have hn0 : Multiplicative.toAdd f 0 = 0 := fundSystem_zpow_mem_torsion i₀ _ htor
-      rw [hn0, zpow_zero, mul_one] at h'
-      have haval : (Multiplicative.toAdd a).val = 0 := by
-        have hOK : zetaInt ^ (Multiplicative.toAdd a).val = 1 := by
-          have hval := congrArg Units.val h'
-          simpa [Units.val_pow_eq_pow_val] using hval
-        have hK : ζ ^ (Multiplicative.toAdd a).val = 1 := by
-          have hmap := congrArg (algebraMap (𝓞 K) K) hOK
-          simpa [map_pow, coe_zetaInt] using hmap
-        have hdvd := (IsPrimitiveRoot.pow_eq_one_iff_dvd zeta_isPrimitiveRoot _).mp hK
-        have hlt : (Multiplicative.toAdd a).val < 8 := ZMod.val_lt _
-        omega
-      have ha0 : Multiplicative.toAdd a = 0 := by
-        have hinv := ZMod.natCast_rightInverse (n := 8) (Multiplicative.toAdd a)
-        rw [← hinv, haval]
-        rfl
-      refine Prod.ext (Multiplicative.toAdd.injective ha0) ?_
-      refine Multiplicative.toAdd.injective (funext fun i => ?_)
-      rw [Subsingleton.elim i 0]
-      exact hn0
-    · intro u
-      obtain ⟨ζ', hζ', n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
-      obtain ⟨k, hk⟩ := eq_torsionGenerator_pow_of_mem_torsion hζ'
-      refine ⟨(Multiplicative.ofAdd ((k.val : ZMod 8)), Multiplicative.ofAdd (fun _ => n)), ?_⟩
-      change torsionGenerator ^ ((k.val : ZMod 8)).val * η ^ n = u
-      rw [ZMod.val_cast_of_lt k.isLt, hu, hk]
+  have hbij : Function.Bijective ψ := unitGroupStructure_bijective i₀ η hη htg8 htg_tor
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
 /-- The regulator of `ℚ(ζ₈)` is `2·log(1 + √2) ≈ 1.7627`: the complex place contributes

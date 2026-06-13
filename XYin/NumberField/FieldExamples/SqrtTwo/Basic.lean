@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import Mathlib
 
 /-!
@@ -30,8 +35,6 @@ open Module NumberField Polynomial
 
 namespace NumberField.SqrtTwo
 
-/-! ## 1. Basics -/
-
 /-!
 Unlike the cyclotomic side, this field is not cyclotomic-specific: there is no
 primitive-root-of-unity generator, and no direct analogue of `IsCyclotomicExtension {3} ℚ K`.
@@ -58,8 +61,6 @@ abbrev sqrtTwoRoot : QSqrtTwo := QuadraticAlgebra.omega
 theorem sqrtTwoRoot_sq : sqrtTwoRoot ^ 2 = (2 : QSqrtTwo) := by
   rw [pow_two, sqrtTwoRoot, QuadraticAlgebra.omega_mul_omega_eq_add]
   ext <;> norm_num
-
-/-! ### Alternative `AdjoinRoot` presentations -/
 
 /-- The polynomial defining the real quadratic field `ℚ(√2)`. -/
 abbrev sqrtTwoPolynomial : ℚ[X] := X ^ 2 - C (2 : ℚ)

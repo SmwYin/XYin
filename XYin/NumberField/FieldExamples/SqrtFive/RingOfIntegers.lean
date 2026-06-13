@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtFive.Basic
+
+/-!
+# `ℚ(√5)` Ring of integers
+
+This file develops the ring of integers part of the `ℚ(√5)` number field example.
+-/
 
 noncomputable section
 
@@ -9,8 +20,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtFive
-
-/-! ## 2. Integral basis and ring of integers -/
 
 /--
 A concrete model for the ring of integers: elements are `a + bφ`, with
@@ -184,28 +193,9 @@ theorem int_eq_of_rat_div_twentyFive_eq {a b : ℤ}
     linear_combination 25 * h
   exact_mod_cast h'
 
-theorem integral_mem_goldenOrderToField_range {x : QSqrtFive} (hx : IsIntegral ℤ x) :
-    ∃ y : O5, algebraMap O5 QSqrtFive y = x := by
-  have hmem :
-      (5 : ℚ) • x ∈ Algebra.adjoin ℤ ({goldenRoot} : Set QSqrtFive) := by
-    convert Algebra.discr_mul_isIntegral_mem_adjoin ℚ
-        (B := goldenPowerBasis) goldenRoot_isIntegral hx using 1
-    rw [goldenPowerBasis_discr]
-  rw [Algebra.adjoin_singleton_eq_range_aeval] at hmem
-  rcases hmem with ⟨P, hP⟩
-  let y : O5 := aeval goldenInteger P
-  have hy : algebraMap O5 QSqrtFive y = (5 : ℚ) • x := by
-    rw [← hP]
-    simpa [y, goldenOrderToField_goldenInteger] using
-      (Polynomial.aeval_algHom_apply goldenOrderToField.toIntAlgHom goldenInteger P).symm
-  let m : ℤ := y.re
-  let n : ℤ := y.im
-  have hre : (m : ℚ) = 5 * x.re := by
-    have h := congr_arg QuadraticAlgebra.re hy
-    simpa [m] using h
-  have him : (n : ℚ) = 5 * x.im := by
-    have h := congr_arg QuadraticAlgebra.im hy
-    simpa [n] using h
+private theorem five_dvd_coords_of_integral {x : QSqrtFive} (hx : IsIntegral ℤ x)
+    {m n : ℤ} (hre : (m : ℚ) = 5 * x.re) (him : (n : ℚ) = 5 * x.im) :
+    (5 : ℤ) ∣ m ∧ (5 : ℤ) ∣ n := by
   have hx_re : x.re = (m : ℚ) / 5 := by linarith
   have hx_im : x.im = (n : ℚ) / 5 := by linarith
   have htrace_int : IsIntegral ℤ (Algebra.trace ℚ QSqrtFive x) :=
@@ -228,7 +218,31 @@ theorem integral_mem_goldenOrderToField_range {x : QSqrtFive} (hx : IsIntegral �
     int_eq_of_rat_div_five_eq hT_rat
   have hN_int : m * m + m * n - n * n = 25 * N :=
     int_eq_of_rat_div_twentyFive_eq hN_rat
-  rcases five_dvd_coords_of_trace_norm hT_int hN_int with ⟨hm, hn⟩
+  exact five_dvd_coords_of_trace_norm hT_int hN_int
+
+theorem integral_mem_goldenOrderToField_range {x : QSqrtFive} (hx : IsIntegral ℤ x) :
+    ∃ y : O5, algebraMap O5 QSqrtFive y = x := by
+  have hmem :
+      (5 : ℚ) • x ∈ Algebra.adjoin ℤ ({goldenRoot} : Set QSqrtFive) := by
+    convert Algebra.discr_mul_isIntegral_mem_adjoin ℚ
+        (B := goldenPowerBasis) goldenRoot_isIntegral hx using 1
+    rw [goldenPowerBasis_discr]
+  rw [Algebra.adjoin_singleton_eq_range_aeval] at hmem
+  rcases hmem with ⟨P, hP⟩
+  let y : O5 := aeval goldenInteger P
+  have hy : algebraMap O5 QSqrtFive y = (5 : ℚ) • x := by
+    rw [← hP]
+    simpa [y, goldenOrderToField_goldenInteger] using
+      (Polynomial.aeval_algHom_apply goldenOrderToField.toIntAlgHom goldenInteger P).symm
+  let m : ℤ := y.re
+  let n : ℤ := y.im
+  have hre : (m : ℚ) = 5 * x.re := by
+    have h := congr_arg QuadraticAlgebra.re hy
+    simpa [m] using h
+  have him : (n : ℚ) = 5 * x.im := by
+    have h := congr_arg QuadraticAlgebra.im hy
+    simpa [n] using h
+  rcases five_dvd_coords_of_integral hx hre him with ⟨hm, hn⟩
   rcases hm with ⟨m', hm'⟩
   rcases hn with ⟨n', hn'⟩
   refine ⟨⟨m', n'⟩, ?_⟩
@@ -377,8 +391,6 @@ theorem goldenOrderToField_basis_one :
     goldenOrderToField (sqrtFiveExplicitIntegralBasis 1) = goldenRoot := by
   rw [sqrtFiveExplicitIntegralBasis_one]
   exact goldenOrderToField_goldenInteger
-
-/-! ## 3. Discriminant -/
 
 /-- The concrete order `ℤ[φ]` is the full ring of integers of `ℚ(√5)`. -/
 noncomputable def goldenOrderEquivRingOfIntegers : O5 ≃ₐ[ℤ] 𝓞 QSqrtFive :=

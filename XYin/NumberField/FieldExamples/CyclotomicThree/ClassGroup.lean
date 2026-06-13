@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicThree.Units
+
+/-!
+# `ℚ(ζ₃)` Class group
+
+This file develops the class group part of the `ℚ(ζ₃)` number field example.
+-/
 
 noncomputable section
 
@@ -7,8 +18,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 open Module NumberField Polynomial
 
 namespace NumberField.CyclotomicThree
-
-/-! ## 7. Class group -/
 
 /-- The ring of integers `ℤ[ζ]` is a principal ideal domain — the ring-theoretic content of
 class number one. -/

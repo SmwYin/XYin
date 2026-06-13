@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtNegSix.ClassGroup
+
+/-!
+# `ℚ(√-6)` Euclidean structure
+
+This file develops the Euclidean structure part of the `ℚ(√-6)` number field example.
+-/
 
 noncomputable section
 

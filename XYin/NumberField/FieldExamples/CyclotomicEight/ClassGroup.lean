@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicEight.Units
+
+/-!
+# `ℚ(ζ₈)` Class group
+
+This file develops the class group part of the `ℚ(ζ₈)` number field example.
+-/
 
 noncomputable section
 
@@ -122,8 +133,6 @@ private theorem span_one_sub_zetaInt_eq_pair :
       exact Ideal.pow_le_self (by norm_num) h2
     · rw [SetLike.mem_coe, Ideal.mem_span_singleton]
       exact ⟨-1, by push_cast; ring⟩
-
-/-! ## 7. Class group -/
 
 /-- The class number of `ℚ(ζ₈)` is `1` (the Minkowski bound is `(4/π)² · 4!/4⁴ · √256 ≈ 2.4`,
 and the only prime below it, `2`, is principal: `(2) = (1 - ζ)⁴` with `(1 - ζ)` principal). -/

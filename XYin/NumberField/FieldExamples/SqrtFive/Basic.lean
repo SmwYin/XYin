@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import Mathlib
 
 /-!
@@ -29,8 +34,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtFive
-
-/-! ## 1. Basics -/
 
 instance : Fact (∀ r : ℚ, r ^ 2 ≠ (1 : ℚ) + (1 : ℚ) * r) := by
   refine ⟨?_⟩
@@ -65,8 +68,6 @@ abbrev goldenRoot : QSqrtFive := QuadraticAlgebra.omega
 theorem goldenRoot_sq : goldenRoot ^ 2 = goldenRoot + 1 := by
   change (⟨0, 1⟩ : QSqrtFive) ^ 2 = ⟨0, 1⟩ + ⟨1, 0⟩
   ext <;> simp [pow_two]
-
-/-! ### The `AdjoinRoot` presentation -/
 
 /-- The polynomial `X² - X - 1`, whose root is the golden ratio. -/
 abbrev goldenPolynomial : ℚ[X] :=
@@ -139,8 +140,6 @@ theorem goldenRoot_isIntegral : IsIntegral ℤ goldenRoot := by
   · monicity
     norm_num
   · simp [goldenRoot_sq]
-
-/-! ### The `QuadraticAlgebra ℚ 5 0` presentation -/
 
 instance : Fact (∀ r : ℚ, r ^ 2 ≠ (5 : ℚ) + (0 : ℚ) * r) := by
   refine ⟨?_⟩

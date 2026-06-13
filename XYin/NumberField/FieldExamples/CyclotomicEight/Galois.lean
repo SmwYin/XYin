@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicEight.Euclidean
+
+/-!
+# `ℚ(ζ₈)` Galois group
+
+This file develops the Galois group part of the `ℚ(ζ₈)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
-
-/-! ## 9. Galois group -/
 
 /-- The identity automorphism of `ℚ(ζ₈)`. -/
 noncomputable def idAut : K ≃ₐ[ℚ] K := AlgEquiv.refl

@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtNegSix.Basic
+
+/-!
+# `ℚ(√-6)` Ring of integers
+
+This file develops the ring of integers part of the `ℚ(√-6)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
-
-/-! ## 2. Integral basis and ring of integers -/
 
 /-- The generator `θ = √-6` is integral over `ℤ` (a root of the monic `X² + 6`), hence lies
 in `𝓞 K`. -/
@@ -395,8 +404,6 @@ abbrev concreteRingOfIntegers : Subalgebra ℤ K := Algebra.adjoin ℤ ({θ} : S
 `-6 ≡ 2 (mod 4)`). -/
 theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers := by
   exact integralClosure_eq_adjoin
-
-/-! ## 3. Discriminant -/
 
 /-- The number-field discriminant of `ℚ(√-6)` is `-24` (for `d ≡ 2, 3 (mod 4)` squarefree
 the discriminant of `ℚ(√d)` is `4d`). In particular the ramified primes are exactly `2`

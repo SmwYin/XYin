@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import Mathlib
 
 /-!
@@ -26,8 +31,6 @@ open Module NumberField Polynomial
 
 namespace NumberField.CyclotomicThree
 
-/-! ## 1. Basics -/
-
 /-- Our running example: the third cyclotomic field, i.e. `ℚ(√-3)`. -/
 abbrev K : Type := CyclotomicField 3 ℚ
 
@@ -55,8 +58,6 @@ theorem degree_eq_two : Module.finrank ℚ K = 2 := by
 
 instance : Algebra.IsQuadraticExtension ℚ K where
   finrank_eq_two' := degree_eq_two
-
-/-! ### Alternative `AdjoinRoot` presentations -/
 
 /--
 The same quadratic field built directly by adjoining a root of `X^2 + X + 1`.
@@ -111,8 +112,6 @@ theorem two_mul_zeta_add_one_sq : (2 * ζ + 1) ^ 2 = (-3 : K) := by
   calc
     (2 * ζ + 1) ^ 2 = 4 * (ζ ^ 2 + ζ + 1) - 3 := by ring
     _ = -3 := by rw [hζ]; ring
-
-/-! #### The `ℚ(√-3)` `AdjoinRoot` model -/
 
 /-- The polynomial defining `ℚ(√-3)` as an `AdjoinRoot`. -/
 abbrev sqrtNegThreePolynomial : ℚ[X] := X ^ 2 + 3
@@ -232,8 +231,6 @@ theorem sqrtNegThreeEquivCyclotomic_root :
   rw [sqrtNegThreeEquivCyclotomic, AlgEquiv.trans_apply]
   rw [sqrtNegThreeEquivZetaThree_root]
   simp only [map_add, map_mul, map_one, map_ofNat, adjoinRootEquivCyclotomic_root]
-
-/-! #### The `QuadraticAlgebra ℚ (-3) 0` model -/
 
 instance : Fact (∀ r : ℚ, r ^ 2 ≠ (-3 : ℚ) + (0 : ℚ) * r) := by
   exact ⟨by

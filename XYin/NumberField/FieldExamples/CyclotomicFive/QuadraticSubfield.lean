@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicFive.Euclidean
+
+/-!
+# `ℚ(ζ₅)` Quadratic subfield
+
+This file develops the quadratic subfield part of the `ℚ(ζ₅)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicFive
-
-/-! ## 9. The quadratic subfield via the Gauss sum -/
 
 /-- The quadratic Gauss sum for `5`: `(1 + 2ζ + 2ζ⁴)² = 5`. Hence `√5 ∈ ℚ(ζ₅)` and `ℚ(√5)`
 is the unique quadratic subfield (corresponding to the index-`2` subgroup of the cyclic

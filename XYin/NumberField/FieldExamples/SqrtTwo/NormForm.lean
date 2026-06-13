@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtTwo.RingOfIntegers
+
+/-!
+# `ℚ(√2)` Norm form
+
+This file develops the norm form part of the `ℚ(√2)` number field example.
+-/
 
 noncomputable section
 
@@ -9,8 +20,6 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtTwo
-
-/-! ## 4. Norm form -/
 
 /-- The norm form of `ℚ(√2)` in `QuadraticAlgebra` coordinates: the field norm of an element
 with components `(re, im)` (i.e. `re + im·√2`) is the binary quadratic form `re² - 2·im²`,

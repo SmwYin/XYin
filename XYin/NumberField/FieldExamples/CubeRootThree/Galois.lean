@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CubeRootThree.Euclidean
+
+/-!
+# `ℚ(∛3)` Galois group
+
+This file develops the Galois group part of the `ℚ(∛3)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CubeRootThree
-
-/-! ## 9. Galois group and Galois closure -/
 
 /-- The identity automorphism of `ℚ(∛3)`. -/
 noncomputable def idAut : K ≃ₐ[ℚ] K := AlgEquiv.refl

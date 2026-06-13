@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtFive.PrimeSplitting
+
+/-!
+# `ℚ(√5)` Unit group
+
+This file develops the unit group part of the `ℚ(√5)` number field example.
+-/
 
 noncomputable section
 
@@ -7,13 +18,12 @@ attribute [-instance] DivisionRing.toRatAlgebra
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
+open NumberField.FieldExamples
 
 namespace NumberField.SqrtFive
 
 private theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
   Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
-
-/-! ## 6. Ring of units -/
 
 private theorem ringHom_ext_golden {f g : QSqrtFive →+* ℂ} (h : f goldenRoot = g goldenRoot) :
     f = g := by
@@ -362,76 +372,69 @@ theorem regulator_eq :
   -- Blocked: this is intentionally the final theorem with no complete reference proof yet.
   sorry
 
+private theorem unitGroupStructure_bijective
+    (i₀ : Fin (Units.rank QSqrtFive)) (η : (𝓞 QSqrtFive)ˣ)
+    (hη : η = NumberField.Units.fundSystem QSqrtFive i₀)
+    (hneg_tor : (-1 : (𝓞 QSqrtFive)ˣ) ∈ NumberField.Units.torsion QSqrtFive) :
+    Function.Bijective
+      ((torsionPowerHom 2 (-1 : (𝓞 QSqrtFive)ˣ) (by rw [neg_one_sq])).coprod
+        (rankOnePowerHom η)) := by
+  constructor
+  · rw [injective_iff_map_eq_one]
+    rintro ⟨a, f⟩ h
+    have h' : (-1 : (𝓞 QSqrtFive)ˣ) ^ ((Multiplicative.toAdd a).val) *
+        η ^ (Multiplicative.toAdd f 0) = 1 := h
+    have htor : η ^ (Multiplicative.toAdd f 0) ∈
+        NumberField.Units.torsion QSqrtFive := by
+      have heq : η ^ (Multiplicative.toAdd f 0) =
+          ((-1 : (𝓞 QSqrtFive)ˣ) ^ ((Multiplicative.toAdd a).val))⁻¹ :=
+        (mul_eq_one_iff_inv_eq.mp h').symm
+      rw [heq]
+      exact Subgroup.inv_mem _ (Subgroup.pow_mem _ hneg_tor _)
+    have hn0 : Multiplicative.toAdd f 0 = 0 :=
+      fundSystem_zpow_mem_torsion i₀ _ (by simpa [hη] using htor)
+    rw [hn0, zpow_zero, mul_one] at h'
+    have ha : Multiplicative.toAdd a = 0 := by
+      rcases (show ∀ x : ZMod 2, x = 0 ∨ x = 1 by decide) (Multiplicative.toAdd a) with
+        hx | hx
+      · exact hx
+      · exfalso
+        rw [hx, show ((1 : ZMod 2)).val = 1 from rfl, pow_one] at h'
+        have hcoe : (-1 : 𝓞 QSqrtFive) = 1 := congrArg Units.val h'
+        have h2 := congrArg (algebraMap (𝓞 QSqrtFive) QSqrtFive) hcoe
+        simp only [map_one, map_neg] at h2
+        exact two_ne_zero (by linear_combination -h2 : (2 : QSqrtFive) = 0)
+    refine Prod.ext (Multiplicative.toAdd.injective ha) ?_
+    refine Multiplicative.toAdd.injective (funext fun i => ?_)
+    rw [Subsingleton.elim i 0]
+    exact hn0
+  · intro u
+    obtain ⟨ζ, hζ, n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
+    rcases eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
+    · refine ⟨(Multiplicative.ofAdd (0 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+      change (-1 : (𝓞 QSqrtFive)ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
+      rw [hη, show ((0 : ZMod 2)).val = 0 from rfl, pow_zero, hu, one_mul]
+    · refine ⟨(Multiplicative.ofAdd (1 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
+      change (-1 : (𝓞 QSqrtFive)ˣ) ^ ((1 : ZMod 2)).val * η ^ n = u
+      rw [hη, show ((1 : ZMod 2)).val = 1 from rfl, pow_one, hu]
+
 /-- The unit group is `μ₂ × ℤ` as an abstract abelian group. -/
 theorem unitGroupStructure :
     Nonempty ((𝓞 QSqrtFive)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))) := by
   set i₀ : Fin (Units.rank QSqrtFive) :=
     ⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩ with hi₀
   set η : (𝓞 QSqrtFive)ˣ := NumberField.Units.fundSystem QSqrtFive i₀ with hη
-  have hpow : ∀ k : ℕ, ((-1 : (𝓞 QSqrtFive)ˣ)) ^ k = (-1) ^ (k % 2) := by
-    intro k
-    conv_lhs => rw [← Nat.div_add_mod k 2]
-    rw [pow_add, pow_mul, neg_one_sq, one_pow, one_mul]
-  have hsign : ∀ a b : ZMod 2,
-      ((-1 : (𝓞 QSqrtFive)ˣ) ^ (a + b).val) = (-1) ^ a.val * (-1) ^ b.val := by
-    intro a b
-    calc ((-1 : (𝓞 QSqrtFive)ˣ) ^ (a + b).val) = (-1) ^ ((a + b).val % 2) := hpow _
-      _ = (-1) ^ ((a.val + b.val) % 2) := by
-          rw [ZMod.val_add, Nat.mod_mod_of_dvd _ (dvd_refl 2)]
-      _ = (-1) ^ (a.val + b.val) := (hpow _).symm
-      _ = (-1) ^ a.val * (-1) ^ b.val := pow_add _ _ _
   let ψ₁ : Multiplicative (ZMod 2) →* (𝓞 QSqrtFive)ˣ :=
-    MonoidHom.mk' (fun a => (-1 : (𝓞 QSqrtFive)ˣ) ^ (Multiplicative.toAdd a).val)
-      (fun a b => hsign (Multiplicative.toAdd a) (Multiplicative.toAdd b))
+    torsionPowerHom 2 (-1 : (𝓞 QSqrtFive)ˣ) (by rw [neg_one_sq])
   let ψ₂ : Multiplicative (Fin 1 → ℤ) →* (𝓞 QSqrtFive)ˣ :=
-    MonoidHom.mk' (fun f => η ^ (Multiplicative.toAdd f 0))
-      (fun f g => by
-        change η ^ ((Multiplicative.toAdd f + Multiplicative.toAdd g) 0) = _
-        rw [Pi.add_apply, zpow_add])
+    rankOnePowerHom η
   let ψ : Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ) →* (𝓞 QSqrtFive)ˣ :=
     ψ₁.coprod ψ₂
   have hneg_tor : (-1 : (𝓞 QSqrtFive)ˣ) ∈ NumberField.Units.torsion QSqrtFive := by
     change IsOfFinOrder _
     rw [isOfFinOrder_iff_pow_eq_one]
     exact ⟨2, by norm_num, by rw [neg_one_sq]⟩
-  have hbij : Function.Bijective ψ := by
-    constructor
-    · rw [injective_iff_map_eq_one]
-      rintro ⟨a, f⟩ h
-      have h' : (-1 : (𝓞 QSqrtFive)ˣ) ^ ((Multiplicative.toAdd a).val) *
-          η ^ (Multiplicative.toAdd f 0) = 1 := h
-      have htor : η ^ (Multiplicative.toAdd f 0) ∈
-          NumberField.Units.torsion QSqrtFive := by
-        have heq : η ^ (Multiplicative.toAdd f 0) =
-            ((-1 : (𝓞 QSqrtFive)ˣ) ^ ((Multiplicative.toAdd a).val))⁻¹ :=
-          (mul_eq_one_iff_inv_eq.mp h').symm
-        rw [heq]
-        exact Subgroup.inv_mem _ (Subgroup.pow_mem _ hneg_tor _)
-      have hn0 : Multiplicative.toAdd f 0 = 0 := fundSystem_zpow_mem_torsion i₀ _ htor
-      rw [hn0, zpow_zero, mul_one] at h'
-      have ha : Multiplicative.toAdd a = 0 := by
-        rcases (show ∀ x : ZMod 2, x = 0 ∨ x = 1 by decide) (Multiplicative.toAdd a) with
-          hx | hx
-        · exact hx
-        · exfalso
-          rw [hx, show ((1 : ZMod 2)).val = 1 from rfl, pow_one] at h'
-          have hcoe : (-1 : 𝓞 QSqrtFive) = 1 := congrArg Units.val h'
-          have h2 := congrArg (algebraMap (𝓞 QSqrtFive) QSqrtFive) hcoe
-          simp only [map_one, map_neg] at h2
-          exact two_ne_zero (by linear_combination -h2 : (2 : QSqrtFive) = 0)
-      refine Prod.ext (Multiplicative.toAdd.injective ha) ?_
-      refine Multiplicative.toAdd.injective (funext fun i => ?_)
-      rw [Subsingleton.elim i 0]
-      exact hn0
-    · intro u
-      obtain ⟨ζ, hζ, n, hu⟩ := exists_eq_torsion_mul_fundSystem_zpow i₀ u
-      rcases eq_one_or_neg_one_of_mem_torsion hζ with rfl | rfl
-      · refine ⟨(Multiplicative.ofAdd (0 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
-        change (-1 : (𝓞 QSqrtFive)ˣ) ^ ((0 : ZMod 2)).val * η ^ n = u
-        rw [show ((0 : ZMod 2)).val = 0 from rfl, pow_zero, hu, one_mul]
-      · refine ⟨(Multiplicative.ofAdd (1 : ZMod 2), Multiplicative.ofAdd (fun _ => n)), ?_⟩
-        change (-1 : (𝓞 QSqrtFive)ˣ) ^ ((1 : ZMod 2)).val * η ^ n = u
-        rw [show ((1 : ZMod 2)).val = 1 from rfl, pow_one, hu]
+  have hbij : Function.Bijective ψ := unitGroupStructure_bijective i₀ η hη hneg_tor
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
 

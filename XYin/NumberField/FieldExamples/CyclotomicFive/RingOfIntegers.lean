@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicFive.Basic
+
+/-!
+# `ℚ(ζ₅)` Ring of integers
+
+This file develops the ring of integers part of the `ℚ(ζ₅)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicFive
-
-/-! ## 2. Integral basis and ring of integers -/
 
 /-- `ζ` is integral over `ℤ` (a root of the monic `X⁵ - 1`), hence lies in `𝓞 K`. -/
 theorem zeta_integral : ζ ∈ integralClosure ℤ K :=
@@ -71,8 +80,7 @@ theorem span_integralBasisVectors_eq :
     have hkey : x = Polynomial.aeval ζ (p %ₘ q) := by
       conv_lhs => rw [← hp, ← Polynomial.modByMonic_add_div p q]
       rw [map_add, map_mul, show (Polynomial.aeval ζ).toRingHom q = 0 from haq, zero_mul,
-        add_zero]
-      rfl
+        add_zero]; rfl
     have hdeg : (p %ₘ q).natDegree < 4 := by
       rcases eq_or_ne (p %ₘ q) 0 with h0 | h0
       · rw [h0]

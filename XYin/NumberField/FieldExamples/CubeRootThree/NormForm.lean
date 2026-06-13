@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CubeRootThree.Discriminant
+
+/-!
+# `ℚ(∛3)` Norm form
+
+This file develops the norm form part of the `ℚ(∛3)` number field example.
+-/
 
 noncomputable section
 
@@ -7,8 +18,6 @@ open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CubeRootThree
 
-/-! ## 4. Norm form -/
-
 /-- The integral norm form: on `𝓞 K = ℤ[θ]` the norm of `x + yθ + zθ²` (with `x, y, z ∈ ℤ`)
 is `x³ + 3y³ + 9z³ - 9xyz`. -/
 theorem intNorm_eq_normForm (x y z : ℤ) :
@@ -16,7 +25,6 @@ theorem intNorm_eq_normForm (x y z : ℤ) :
       x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z := by
   have ht : ((thetaInt : 𝓞 K) : K) = cubeRootThree :=
     NumberField.RingOfIntegers.map_mk cubeRootThree cubeRootThree_integral
-  -- prove the identity after the injective cast `ℤ ↪ ℚ`, reducing to `norm_eq_normForm`
   have key : (Algebra.norm ℤ (x • (1 : 𝓞 K) + y • thetaInt + z • thetaInt ^ 2) : ℚ)
       = ((x : ℚ) ^ 3 + 3 * (y : ℚ) ^ 3 + 9 * (z : ℚ) ^ 3 - 9 * x * y * z) := by
     rw [Algebra.coe_norm_int]

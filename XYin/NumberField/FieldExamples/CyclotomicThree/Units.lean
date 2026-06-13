@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicThree.PrimeSplitting
+
+/-!
+# `ℚ(ζ₃)` Unit group
+
+This file develops the unit group part of the `ℚ(ζ₃)` number field example.
+-/
 
 noncomputable section
 
@@ -10,8 +21,6 @@ namespace NumberField.CyclotomicThree
 
 private theorem zeta_pow_three : ζ ^ 3 = 1 :=
   zeta_isPrimitiveRoot.pow_eq_one
-
-/-! ## 6. Ring of units -/
 
 /-- The unit corresponding to `ζ`. -/
 abbrev etaUnit : OKˣ :=

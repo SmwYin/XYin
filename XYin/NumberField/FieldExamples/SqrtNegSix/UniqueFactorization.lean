@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.SqrtNegSix.Euclidean
+
+/-!
+# `ℚ(√-6)` Unique factorization
+
+This file develops the unique factorization part of the `ℚ(√-6)` number field example.
+-/
 
 noncomputable section
 
@@ -7,26 +18,39 @@ open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
 
-/-! ## 8. Failure of unique factorisation -/
-
 /-- The two essentially different factorisations of `6` in `ℤ[√-6]`: `6 = 2 · 3` and
 `6 = -θ²` (i.e. `6 = -√-6 · √-6`). -/
 theorem six_eq_neg_theta_sq : (6 : 𝓞 K) = -(thetaInt * thetaInt) := by
   rw [← sq, thetaInt_sq]
   ring
 
+private theorem intNorm_two : Algebra.norm ℤ (2 : 𝓞 K) = 4 := by
+  have h := intNorm_eq_normForm 2 0
+  have heq : (2 : 𝓞 K) = (2 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt := by
+    simp
+  rw [← heq] at h
+  exact h
+
+private theorem intNorm_three : Algebra.norm ℤ (3 : 𝓞 K) = 9 := by
+  have h := intNorm_eq_normForm 3 0
+  have heq : (3 : 𝓞 K) = (3 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt := by
+    simp
+  rw [← heq] at h
+  exact h
+
+private theorem intNorm_thetaInt : Algebra.norm ℤ thetaInt = 6 := by
+  have h := intNorm_eq_normForm 0 1
+  have heq : thetaInt = (0 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • thetaInt := by
+    simp
+  rw [← heq] at h
+  exact h
+
 /-- `2` is irreducible in `ℤ[√-6]` (no element has norm `2`). -/
 theorem irreducible_two : Irreducible (2 : 𝓞 K) := by
   refine ⟨?_, ?_⟩
   · intro hunit
-    have hnorm2 : Algebra.norm ℤ (2 : 𝓞 K) = 4 := by
-      have h := intNorm_eq_normForm 2 0
-      have heq : (2 : 𝓞 K) = (2 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt := by
-        simp
-      rw [← heq] at h
-      exact h
     have hunitnorm := (isUnit_iff_intNorm_eq_one (2 : 𝓞 K)).mp hunit
-    rw [hnorm2] at hunitnorm
+    rw [intNorm_two] at hunitnorm
     norm_num at hunitnorm
   · intro a b hmul
     by_cases ha : IsUnit a
@@ -34,14 +58,8 @@ theorem irreducible_two : Irreducible (2 : 𝓞 K) := by
     by_cases hb : IsUnit b
     · exact Or.inr hb
     exfalso
-    have hN2 : Algebra.norm ℤ (2 : 𝓞 K) = 4 := by
-      have h := intNorm_eq_normForm 2 0
-      have heq : (2 : 𝓞 K) = (2 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt := by
-        simp
-      rw [← heq] at h
-      exact h
     have hmulN : Algebra.norm ℤ a * Algebra.norm ℤ b = 4 := by
-      rw [← map_mul, ← hmul, hN2]
+      rw [← map_mul, ← hmul, intNorm_two]
     let A : ℤ := Algebra.norm ℤ a
     let B : ℤ := Algebra.norm ℤ b
     have hAB : A * B = 4 := by simpa [A, B] using hmulN
@@ -70,14 +88,8 @@ theorem irreducible_two : Irreducible (2 : 𝓞 K) := by
 theorem irreducible_three : Irreducible (3 : 𝓞 K) := by
   refine ⟨?_, ?_⟩
   · intro hunit
-    have hnorm3 : Algebra.norm ℤ (3 : 𝓞 K) = 9 := by
-      have h := intNorm_eq_normForm 3 0
-      have heq : (3 : 𝓞 K) = (3 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt := by
-        simp
-      rw [← heq] at h
-      exact h
     have hunitnorm := (isUnit_iff_intNorm_eq_one (3 : 𝓞 K)).mp hunit
-    rw [hnorm3] at hunitnorm
+    rw [intNorm_three] at hunitnorm
     norm_num at hunitnorm
   · intro a b hmul
     by_cases ha : IsUnit a
@@ -85,14 +97,8 @@ theorem irreducible_three : Irreducible (3 : 𝓞 K) := by
     by_cases hb : IsUnit b
     · exact Or.inr hb
     exfalso
-    have hN3 : Algebra.norm ℤ (3 : 𝓞 K) = 9 := by
-      have h := intNorm_eq_normForm 3 0
-      have heq : (3 : 𝓞 K) = (3 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt := by
-        simp
-      rw [← heq] at h
-      exact h
     have hmulN : Algebra.norm ℤ a * Algebra.norm ℤ b = 9 := by
-      rw [← map_mul, ← hmul, hN3]
+      rw [← map_mul, ← hmul, intNorm_three]
     let A : ℤ := Algebra.norm ℤ a
     let B : ℤ := Algebra.norm ℤ b
     have hAB : A * B = 9 := by simpa [A, B] using hmulN
@@ -127,14 +133,8 @@ norm is attained). -/
 theorem irreducible_theta : Irreducible thetaInt := by
   refine ⟨?_, ?_⟩
   · intro hunit
-    have hnormθ : Algebra.norm ℤ thetaInt = 6 := by
-      have h := intNorm_eq_normForm 0 1
-      have heq : thetaInt = (0 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • thetaInt := by
-        simp
-      rw [← heq] at h
-      exact h
     have hunitnorm := (isUnit_iff_intNorm_eq_one thetaInt).mp hunit
-    rw [hnormθ] at hunitnorm
+    rw [intNorm_thetaInt] at hunitnorm
     norm_num at hunitnorm
   · intro a b hmul
     by_cases ha : IsUnit a
@@ -142,14 +142,8 @@ theorem irreducible_theta : Irreducible thetaInt := by
     by_cases hb : IsUnit b
     · exact Or.inr hb
     exfalso
-    have hNθ : Algebra.norm ℤ thetaInt = 6 := by
-      have h := intNorm_eq_normForm 0 1
-      have heq : thetaInt = (0 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • thetaInt := by
-        simp
-      rw [← heq] at h
-      exact h
     have hmulN : Algebra.norm ℤ a * Algebra.norm ℤ b = 6 := by
-      rw [← map_mul, ← hmul, hNθ]
+      rw [← map_mul, ← hmul, intNorm_thetaInt]
     let A : ℤ := Algebra.norm ℤ a
     let B : ℤ := Algebra.norm ℤ b
     have hAB : A * B = 6 := by simpa [A, B] using hmulN

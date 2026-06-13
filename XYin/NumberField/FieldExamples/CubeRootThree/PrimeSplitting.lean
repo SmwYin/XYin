@@ -1,22 +1,24 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CubeRootThree.NormForm
+import XYin.NumberField.FieldExamples.Common
+
+/-!
+# `ℚ(∛3)` Prime splitting
+
+This file develops the prime splitting part of the `ℚ(∛3)` number field example.
+-/
 
 noncomputable section
 
 open Module Polynomial
+open NumberField.FieldExamples
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CubeRootThree
-
-/-! ## 5. Splitting of primes -/
-
-private theorem map_span_intCast (p : ℤ) :
-    Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {p}) =
-      Ideal.span {(p : 𝓞 K)} := by
-  rw [Ideal.map_span, Set.image_singleton]
-  change Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K)) =
-    Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K))
-  rfl
-
 /-- `3` is totally ramified: `(3) = (θ)³` as ideals of `𝓞 K`, directly from `θ³ = 3`.
 Together with `isPrime_span_theta` this gives ramification index `e = 3`. -/
 theorem span_three_eq : Ideal.span {(3 : 𝓞 K)} = Ideal.span {thetaInt} ^ 3 := by
@@ -59,12 +61,13 @@ theorem inertiaDeg_span_theta :
 theorem ramificationIdx_span_theta :
     (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {thetaInt}) = 3 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast]
+  · rw [Ideal.map_span, Set.image_singleton]
     change Ideal.span {(3 : 𝓞 K)} ≤ Ideal.span {thetaInt} ^ 3
     rw [span_three_eq]
   · intro hle4
-    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle4
-    rw [map_span_intCast] at hdvd
+    have hdvd : Ideal.absNorm (Ideal.span {thetaInt} ^ 4) ∣
+        Ideal.absNorm (Ideal.span {((3 : ℤ) : 𝓞 K)}) := by
+      simpa [Ideal.map_span, Set.image_singleton] using Ideal.absNorm_dvd_absNorm_of_le hle4
     have hnorm3 : Ideal.absNorm (Ideal.span {((3 : ℤ) : 𝓞 K)}) = 27 := by
       change Ideal.absNorm (Ideal.span {(3 : 𝓞 K)}) = 27
       have hfin : Module.finrank ℤ (𝓞 K) = 3 := by
@@ -736,49 +739,13 @@ theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
       intro h0
       rw [h0, pow_zero] at hkeq
       exact hP.ne_top (Ideal.absNorm_eq_one_iff.mp hkeq)
-    have hmap : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) =
-        Ideal.span {((p : ℕ) : 𝓞 K)} := by
-      rw [Ideal.map_span, Set.image_singleton]
-      norm_num
     have hle2' : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
-      rw [hmap]; exact hle2
-    have hno4 : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 4 := by
-      intro h4
-      rw [hmap] at h4
-      have hd := Ideal.absNorm_dvd_absNorm_of_le h4
-      rw [map_pow, habsp, hkeq, ← pow_mul] at hd
-      rw [Nat.pow_dvd_pow_iff_le_right hp.one_lt] at hd
-      omega
-    have hidx : Ideal.ramificationIdx (Ideal.span {((p : ℕ) : ℤ)}) P ≠ 1 := by
-      by_cases h3 : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3
-      · rw [Ideal.ramificationIdx_spec h3 hno4]
-        norm_num
-      · rw [Ideal.ramificationIdx_spec hle2' h3]
-        norm_num
-    have hund : Ideal.under ℤ P = Ideal.span {((p : ℕ) : ℤ)} := by
-      have hmem : ((p : ℕ) : ℤ) ∈ Ideal.under ℤ P := by
-        rw [Ideal.under, Ideal.mem_comap]
-        have : algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) = ((p : ℕ) : 𝓞 K) := by push_cast; rfl
-        rw [this]
-        exact hpmemP
-      have hle : Ideal.span {((p : ℕ) : ℤ)} ≤ Ideal.under ℤ P := by
-        rw [Ideal.span_le, Set.singleton_subset_iff]
-        exact hmem
-      have hprime : (Ideal.span {((p : ℕ) : ℤ)}).IsPrime :=
-        (Ideal.span_singleton_prime (by exact_mod_cast hp.ne_zero)).mpr
-          (Nat.prime_iff_prime_int.mp hp)
-      have hbot : Ideal.span {((p : ℕ) : ℤ)} ≠ ⊥ := by
-        rw [Ne, Ideal.span_singleton_eq_bot]
-        exact_mod_cast hp.ne_zero
-      have hnetop : Ideal.under ℤ P ≠ ⊤ := by
-        intro h
-        have h1 : (1 : ℤ) ∈ Ideal.under ℤ P := h ▸ Submodule.mem_top
-        rw [Ideal.under, Ideal.mem_comap, map_one] at h1
-        exact hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h1 isUnit_one)
-      exact ((hprime.isMaximal hbot).eq_of_le hnetop hle).symm
-    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P := by
-      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hPbot, hund]
-      exact hidx
+      simpa [Ideal.map_span, Set.image_singleton] using hle2
+    have hno4 : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 4 :=
+      not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow hp habsp hkeq hk0
+    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P :=
+      not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ hp hpmemP hPbot hle2'
+        hno4
     have hPdiff : P ∣ differentIdeal ℤ (𝓞 K) := dvd_differentIdeal_iff.mpr hunram
     have habsP243 : Ideal.absNorm P ∣ 243 := by
       have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
@@ -797,14 +764,14 @@ theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
 theorem ramificationIdx_span_theta_sub_one :
     (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {thetaInt - 1}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast, pow_one]
+  · rw [Ideal.map_span, Set.image_singleton, pow_one]
     change Ideal.span {(2 : 𝓞 K)} ≤ Ideal.span {thetaInt - 1}
     rw [span_two_eq]
     exact Ideal.mul_le_right
   · intro hle2
     have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(2 : 𝓞 K)} ≤ P ^ 2 := by
       refine ⟨Ideal.span {thetaInt - 1}, isPrime_span_theta_sub_one, ?_⟩
-      rw [map_span_intCast] at hle2
+      rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
     have h23 := (ramified_iff_eq_three 2 Nat.prime_two).mp hram
     norm_num at h23
@@ -814,7 +781,7 @@ theorem ramificationIdx_span_theta_sq_add_theta_add_one :
     (Ideal.span {(2 : ℤ)}).ramificationIdx
       (Ideal.span {thetaInt ^ 2 + thetaInt + 1}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast, pow_one]
+  · rw [Ideal.map_span, Set.image_singleton, pow_one]
     change Ideal.span {(2 : 𝓞 K)} ≤ Ideal.span {thetaInt ^ 2 + thetaInt + 1}
     rw [span_two_eq]
     exact Ideal.mul_le_left
@@ -822,7 +789,7 @@ theorem ramificationIdx_span_theta_sq_add_theta_add_one :
     have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(2 : 𝓞 K)} ≤ P ^ 2 := by
       refine ⟨Ideal.span {thetaInt ^ 2 + thetaInt + 1},
         isPrime_span_theta_sq_add_theta_add_one, ?_⟩
-      rw [map_span_intCast] at hle2
+      rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
     have h23 := (ramified_iff_eq_three 2 Nat.prime_two).mp hram
     norm_num at h23
@@ -831,13 +798,13 @@ theorem ramificationIdx_span_theta_sq_add_theta_add_one :
 theorem ramificationIdx_span_seven :
     (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {(7 : 𝓞 K)}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast, pow_one]
+  · rw [Ideal.map_span, Set.image_singleton, pow_one]
     change Ideal.span {(7 : 𝓞 K)} ≤ Ideal.span {(7 : 𝓞 K)}
     rfl
   · intro hle2
     have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(7 : 𝓞 K)} ≤ P ^ 2 := by
       refine ⟨Ideal.span {(7 : 𝓞 K)}, isPrime_span_seven, ?_⟩
-      rw [map_span_intCast] at hle2
+      rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
     have h73 := (ramified_iff_eq_three 7 (by norm_num)).mp hram
     norm_num at h73
@@ -846,14 +813,14 @@ theorem ramificationIdx_span_seven :
 theorem ramificationIdx_primeAbove61 (r : ℤ) (hr : r = 4 ∨ r = 5 ∨ r = 52) :
     (Ideal.span {(61 : ℤ)}).ramificationIdx (primeAbove61 r) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast, pow_one]
+  · rw [Ideal.map_span, Set.image_singleton, pow_one]
     change Ideal.span {(61 : 𝓞 K)} ≤ primeAbove61 r
     rw [Ideal.span_le, Set.singleton_subset_iff, primeAbove61]
     exact Ideal.subset_span (Set.mem_insert _ _)
   · intro hle2
     have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(61 : 𝓞 K)} ≤ P ^ 2 := by
       refine ⟨primeAbove61 r, isPrime_primeAbove61 r hr, ?_⟩
-      rw [map_span_intCast] at hle2
+      rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
     have h613 := (ramified_iff_eq_three 61 (by norm_num)).mp hram
     norm_num at h613

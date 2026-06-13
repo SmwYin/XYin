@@ -1,16 +1,49 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
+import XYin.NumberField.FieldExamples.Common
 import XYin.NumberField.FieldExamples.CyclotomicThree.ClassGroup
+
+/-!
+# `ℚ(ζ₃)` Euclidean structure
+
+This file develops the Euclidean structure part of the `ℚ(ζ₃)` number field example.
+-/
 
 noncomputable section
 
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
+open NumberField.FieldExamples
 
 namespace NumberField.CyclotomicThree
 
 private theorem coe_zetaInt : algebraMap OK K zetaInt = ζ := rfl
 
-/-! ## 8. Euclidean structure -/
+private theorem abs_norm_int_lt_of_remainder_eq {b r : OK} {bK : K} {xa xb : ℚ}
+    (hbK : bK = algebraMap OK K b)
+    (hrK :
+      algebraMap OK K r =
+        bK * ((xa - ((round xa : ℤ) : ℚ)) • (1 : K) +
+          (xb - ((round xb : ℤ) : ℚ)) • ζ))
+    (hb_pos : 0 < |Algebra.norm ℚ bK|)
+    (hfrac :
+      |(xa - ((round xa : ℤ) : ℚ)) ^ 2 -
+        (xa - ((round xa : ℤ) : ℚ)) * (xb - ((round xb : ℤ) : ℚ)) +
+        (xb - ((round xb : ℤ) : ℚ)) ^ 2| ≤ 3 / 4) :
+    |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
+  rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
+  change |Algebra.norm ℚ (algebraMap OK K r)| < |Algebra.norm ℚ (algebraMap OK K b)|
+  rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
+  calc |Algebra.norm ℚ bK| *
+      |(xa - ((round xa : ℤ) : ℚ)) ^ 2 -
+        (xa - ((round xa : ℤ) : ℚ)) * (xb - ((round xb : ℤ) : ℚ)) +
+        (xb - ((round xb : ℤ) : ℚ)) ^ 2| ≤ |Algebra.norm ℚ bK| * (3 / 4) :=
+        mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
+    _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
 
 private theorem exists_coords (x : K) :
     ∃ a b : ℚ, x = a • (1 : K) + b • ζ := by
@@ -69,19 +102,8 @@ theorem normEuclidean (a b : OK) (hb : b ≠ 0) :
       sq_nonneg ((xa - ((round xa : ℤ) : ℚ)) - (xb - ((round xb : ℤ) : ℚ)))]
   have hb_pos : 0 < |Algebra.norm ℚ bK| :=
     abs_pos.mpr (Algebra.norm_ne_zero_iff.mpr hbK0)
-  have hlt : |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
-    rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-    change |Algebra.norm ℚ (algebraMap OK K r)| < |Algebra.norm ℚ (algebraMap OK K b)|
-    rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
-    calc |Algebra.norm ℚ bK| *
-        |(xa - ((round xa : ℤ) : ℚ)) ^ 2 -
-          (xa - ((round xa : ℤ) : ℚ)) * (xb - ((round xb : ℤ) : ℚ)) +
-          (xb - ((round xb : ℤ) : ℚ)) ^ 2| ≤ |Algebra.norm ℚ bK| * (3 / 4) :=
-          mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
-      _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
-  have hltZ : |Algebra.norm ℤ r| < |Algebra.norm ℤ b| := by exact_mod_cast hlt
-  rw [Int.abs_eq_natAbs, Int.abs_eq_natAbs] at hltZ
-  exact_mod_cast hltZ
+  have hlt := abs_norm_int_lt_of_remainder_eq hbK hrK hb_pos hfrac
+  exact natAbs_lt_of_abs_ratCast_lt hlt
 
 
 end NumberField.CyclotomicThree

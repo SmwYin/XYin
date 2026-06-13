@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicEight.RingOfIntegers
+
+/-!
+# `ℚ(ζ₈)` Discriminant computations
+
+This file develops the discriminant computations part of the `ℚ(ζ₈)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
-
-/-! ## 3. Discriminant -/
 
 /-- The number-field discriminant of `ℚ(ζ₈)` is `256 = 2⁸`. In particular `2` is the only
 ramified prime, cf. `ramified_iff_eq_two`. -/

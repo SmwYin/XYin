@@ -1,4 +1,15 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CubeRootThree.Units
+
+/-!
+# `ℚ(∛3)` Class group
+
+This file develops the class group part of the `ℚ(∛3)` number field example.
+-/
 
 noncomputable section
 
@@ -6,8 +17,6 @@ open Module Polynomial
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CubeRootThree
-
-/-! ## 7. Class group -/
 
 /-- Numerical bounds for `√243 = 9√3 ≈ 15.588`, used in the Minkowski-bound computation. -/
 theorem sqrt_243_bounds : (15.58 : ℝ) < Real.sqrt 243 ∧ Real.sqrt 243 < 15.59 := by

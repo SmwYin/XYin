@@ -1,22 +1,24 @@
+/-
+Copyright (c) 2026 SmwYin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: SmwYin
+-/
 import XYin.NumberField.FieldExamples.CyclotomicEight.Subfields
+import XYin.NumberField.FieldExamples.Common
+
+/-!
+# `ℚ(ζ₈)` Prime splitting
+
+This file develops the prime splitting part of the `ℚ(ζ₈)` number field example.
+-/
 
 noncomputable section
 
 open Module
+open NumberField.FieldExamples
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
-
-/-! ## 5. Splitting of primes -/
-
-private theorem map_span_intCast (p : ℤ) :
-    Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {p}) =
-      Ideal.span {(p : 𝓞 K)} := by
-  rw [Ideal.map_span, Set.image_singleton]
-  change Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K)) =
-    Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K))
-  rfl
-
 private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
 
 private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
@@ -110,94 +112,108 @@ private theorem intNorm_eq (x : 𝓞 K) (n : ℤ)
   rw [h2] at h3
   exact_mod_cast h3
 
-/-! ### Norm form in the power basis -/
-
 /-- The norm form in the basis `1, ζ, ζ², ζ³`. -/
 def normForm {R : Type*} [CommRing R] (a b c d : R) : R :=
   (a ^ 2 - c ^ 2 + 2 * b * d) ^ 2 + (2 * a * c - b ^ 2 + d ^ 2) ^ 2
+
+private def zetaCoords (a b c d : ℚ) : K :=
+  (a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3
+
+private theorem sig3_zetaCoords (a b c d : ℚ) :
+    sig3 (zetaCoords a b c d) =
+      (a : K) + (d : K) * ζ - (c : K) * ζ ^ 2 + (b : K) * ζ ^ 3 := by
+  simp only [zetaCoords, map_add, map_mul, map_pow, sig3_zeta]
+  rw [show sig3 (a : K) = (a : K) by simp,
+    show sig3 (b : K) = (b : K) by simp,
+    show sig3 (c : K) = (c : K) by simp,
+    show sig3 (d : K) = (d : K) by simp]
+  have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+  have h9 : ζ ^ 9 = ζ := by linear_combination ζ * zeta_pow_eight
+  rw [show (ζ ^ 3) ^ 2 = ζ ^ 6 by ring,
+    show (ζ ^ 3) ^ 3 = ζ ^ 9 by ring, h6, h9]
+  ring_nf
+
+private theorem sig5_zetaCoords (a b c d : ℚ) :
+    sig5 (zetaCoords a b c d) = (a : K) - (b : K) * ζ + (c : K) * ζ ^ 2 -
+      (d : K) * ζ ^ 3 := by
+  simp only [zetaCoords, map_add, map_mul, map_pow, sig5_zeta]
+  rw [show sig5 (a : K) = (a : K) by simp,
+    show sig5 (b : K) = (b : K) by simp,
+    show sig5 (c : K) = (c : K) by simp,
+    show sig5 (d : K) = (d : K) by simp]
+  have h5 : ζ ^ 5 = -ζ := by linear_combination ζ * zeta_pow_four
+  have h10 : ζ ^ 10 = ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_eight
+  have h15 : ζ ^ 15 = -ζ ^ 3 := by
+    have h7 : ζ ^ 7 = -ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_four
+    have h157 : ζ ^ 15 = ζ ^ 7 := by linear_combination ζ ^ 7 * zeta_pow_eight
+    rw [h157, h7]
+  rw [show (ζ ^ 5) ^ 2 = ζ ^ 10 by ring,
+    show (ζ ^ 5) ^ 3 = ζ ^ 15 by ring, h5, h10, h15]
+  ring_nf
+
+private theorem sig7_zetaCoords (a b c d : ℚ) :
+    sig7 (zetaCoords a b c d) =
+      (a : K) - (d : K) * ζ - (c : K) * ζ ^ 2 - (b : K) * ζ ^ 3 := by
+  simp only [zetaCoords, map_add, map_mul, map_pow, sig7_zeta]
+  rw [show sig7 (a : K) = (a : K) by simp,
+    show sig7 (b : K) = (b : K) by simp,
+    show sig7 (c : K) = (c : K) by simp,
+    show sig7 (d : K) = (d : K) by simp]
+  have h7 : ζ ^ 7 = -ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_four
+  have h14 : ζ ^ 14 = -ζ ^ 2 := by
+    have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+    have h146 : ζ ^ 14 = ζ ^ 6 := by linear_combination ζ ^ 6 * zeta_pow_eight
+    rw [h146, h6]
+  have h21 : ζ ^ 21 = -ζ := by
+    have h5 : ζ ^ 5 = -ζ := by linear_combination ζ * zeta_pow_four
+    have h2113 : ζ ^ 21 = ζ ^ 13 := by linear_combination ζ ^ 13 * zeta_pow_eight
+    have h135 : ζ ^ 13 = ζ ^ 5 := by linear_combination ζ ^ 5 * zeta_pow_eight
+    rw [h2113, h135, h5]
+  rw [show (ζ ^ 7) ^ 2 = ζ ^ 14 by ring,
+    show (ζ ^ 7) ^ 3 = ζ ^ 21 by ring, h7, h14, h21]
+  ring_nf
+
+private theorem zetaCoords_mul_sig5 (a b c d : ℚ) :
+    zetaCoords a b c d * ((a : K) - b * ζ + c * ζ ^ 2 - d * ζ ^ 3) =
+      ((a : K) ^ 2 - c ^ 2 + 2 * b * d) + (2 * a * c - b ^ 2 + d ^ 2) * ζ ^ 2 := by
+  have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+  simp only [zetaCoords]
+  ring_nf
+  rw [zeta_pow_four, h6]
+  ring
+
+private theorem sig3_zetaCoords_mul_sig7 (a b c d : ℚ) :
+    ((a : K) + d * ζ - c * ζ ^ 2 + b * ζ ^ 3) *
+      ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3) =
+      ((a : K) ^ 2 - c ^ 2 + 2 * b * d) - (2 * a * c - b ^ 2 + d ^ 2) * ζ ^ 2 := by
+  have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
+  ring_nf
+  rw [zeta_pow_four, h6]
+  ring
 
 /-- The field norm of `a + bζ + cζ² + dζ³`. -/
 theorem norm_eq_normForm (a b c d : ℚ) :
     Algebra.norm ℚ
       (a • (1 : K) + b • ζ + c • ζ ^ 2 + d • ζ ^ 3) = normForm a b c d := by
   have hx : a • (1 : K) + b • ζ + c • ζ ^ 2 + d • ζ ^ 3 =
-      (a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3 := by
-    simp [Algebra.smul_def]
+      zetaCoords a b c d := by
+    simp [zetaCoords, Algebra.smul_def]
   rw [hx]
-  have e3 : sig3 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
-      (a : K) + (d : K) * ζ - (c : K) * ζ ^ 2 + (b : K) * ζ ^ 3 := by
-    simp only [map_add, map_mul, map_pow, sig3_zeta]
-    rw [show sig3 (a : K) = (a : K) by simp,
-      show sig3 (b : K) = (b : K) by simp,
-      show sig3 (c : K) = (c : K) by simp,
-      show sig3 (d : K) = (d : K) by simp]
-    have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
-    have h9 : ζ ^ 9 = ζ := by linear_combination ζ * zeta_pow_eight
-    rw [show (ζ ^ 3) ^ 2 = ζ ^ 6 by ring,
-      show (ζ ^ 3) ^ 3 = ζ ^ 9 by ring, h6, h9]
-    ring_nf
-  have e5 : sig5 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
-      (a : K) - (b : K) * ζ + (c : K) * ζ ^ 2 - (d : K) * ζ ^ 3 := by
-    simp only [map_add, map_mul, map_pow, sig5_zeta]
-    rw [show sig5 (a : K) = (a : K) by simp,
-      show sig5 (b : K) = (b : K) by simp,
-      show sig5 (c : K) = (c : K) by simp,
-      show sig5 (d : K) = (d : K) by simp]
-    have h5 : ζ ^ 5 = -ζ := by linear_combination ζ * zeta_pow_four
-    have h10 : ζ ^ 10 = ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_eight
-    have h15 : ζ ^ 15 = -ζ ^ 3 := by
-      have h7 : ζ ^ 7 = -ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_four
-      have h157 : ζ ^ 15 = ζ ^ 7 := by linear_combination ζ ^ 7 * zeta_pow_eight
-      rw [h157, h7]
-    rw [show (ζ ^ 5) ^ 2 = ζ ^ 10 by ring,
-      show (ζ ^ 5) ^ 3 = ζ ^ 15 by ring, h5, h10, h15]
-    ring_nf
-  have e7 : sig7 ((a : K) + (b : K) * ζ + (c : K) * ζ ^ 2 + (d : K) * ζ ^ 3) =
-      (a : K) - (d : K) * ζ - (c : K) * ζ ^ 2 - (b : K) * ζ ^ 3 := by
-    simp only [map_add, map_mul, map_pow, sig7_zeta]
-    rw [show sig7 (a : K) = (a : K) by simp,
-      show sig7 (b : K) = (b : K) by simp,
-      show sig7 (c : K) = (c : K) by simp,
-      show sig7 (d : K) = (d : K) by simp]
-    have h7 : ζ ^ 7 = -ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_four
-    have h14 : ζ ^ 14 = -ζ ^ 2 := by
-      have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
-      have h146 : ζ ^ 14 = ζ ^ 6 := by linear_combination ζ ^ 6 * zeta_pow_eight
-      rw [h146, h6]
-    have h21 : ζ ^ 21 = -ζ := by
-      have h5 : ζ ^ 5 = -ζ := by linear_combination ζ * zeta_pow_four
-      have h2113 : ζ ^ 21 = ζ ^ 13 := by linear_combination ζ ^ 13 * zeta_pow_eight
-      have h135 : ζ ^ 13 = ζ ^ 5 := by linear_combination ζ ^ 5 * zeta_pow_eight
-      rw [h2113, h135, h5]
-    rw [show (ζ ^ 7) ^ 2 = ζ ^ 14 by ring,
-      show (ζ ^ 7) ^ 3 = ζ ^ 21 by ring, h7, h14, h21]
-    ring_nf
   haveI := IsCyclotomicExtension.isGalois {8} ℚ K
   apply (algebraMap ℚ K).injective
-  rw [Algebra.norm_eq_prod_automorphisms, prod_aut_apply, e3, e5, e7]
-  have hpair1 : ((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
-      ((a : K) - b * ζ + c * ζ ^ 2 - d * ζ ^ 3) =
-      ((a : K) ^ 2 - c ^ 2 + 2 * b * d) + (2 * a * c - b ^ 2 + d ^ 2) * ζ ^ 2 := by
-    have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
-    ring_nf
-    rw [zeta_pow_four, h6]
-    ring
-  have hpair2 : ((a : K) + d * ζ - c * ζ ^ 2 + b * ζ ^ 3) *
-      ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3) =
-      ((a : K) ^ 2 - c ^ 2 + 2 * b * d) - (2 * a * c - b ^ 2 + d ^ 2) * ζ ^ 2 := by
-    have h6 : ζ ^ 6 = -ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_four
-    ring_nf
-    rw [zeta_pow_four, h6]
-    ring
-  rw [show ((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+  rw [Algebra.norm_eq_prod_automorphisms, prod_aut_apply, sig3_zetaCoords,
+    sig5_zetaCoords, sig7_zetaCoords]
+  rw [show zetaCoords a b c d *
       ((a : K) + d * ζ - c * ζ ^ 2 + b * ζ ^ 3) *
       ((a : K) - b * ζ + c * ζ ^ 2 - d * ζ ^ 3) *
       ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3) =
-      (((a : K) + b * ζ + c * ζ ^ 2 + d * ζ ^ 3) *
+      (zetaCoords a b c d *
         ((a : K) - b * ζ + c * ζ ^ 2 - d * ζ ^ 3)) *
       (((a : K) + d * ζ - c * ζ ^ 2 + b * ζ ^ 3) *
-        ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3)) by ring]
-  rw [hpair1, hpair2, normForm]
+        ((a : K) - d * ζ - c * ζ ^ 2 - b * ζ ^ 3)) by
+      simp [zetaCoords]
+      ring]
+  rw [zetaCoords_mul_sig5, sig3_zetaCoords_mul_sig7, normForm]
   push_cast
   ring_nf
   rw [zeta_pow_four]
@@ -411,12 +427,13 @@ theorem inertiaDeg_span_one_sub_zeta :
 theorem ramificationIdx_span_one_sub_zeta :
     (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {1 - zetaInt}) = 4 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
-  · rw [map_span_intCast]
+  · rw [Ideal.map_span, Set.image_singleton]
     change Ideal.span {(2 : 𝓞 K)} ≤ Ideal.span {1 - zetaInt} ^ 4
     rw [span_two_eq]
   · intro hle5
-    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle5
-    rw [map_span_intCast] at hdvd
+    have hdvd : Ideal.absNorm (Ideal.span {1 - zetaInt} ^ 5) ∣
+        Ideal.absNorm (Ideal.span {((2 : ℤ) : 𝓞 K)}) := by
+      simpa [Ideal.map_span, Set.image_singleton] using Ideal.absNorm_dvd_absNorm_of_le hle5
     have hnorm2 : Ideal.absNorm (Ideal.span {((2 : ℤ) : 𝓞 K)}) = 16 := by
       change Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16
       have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
@@ -667,6 +684,129 @@ theorem isPrime_primeAboveSeventeen (r : ℤ) (hr : r = 2 ∨ r = 8 ∨ r = 9 �
   have h := (isMaximal_span_pair 17 r hs).isPrime
   rwa [show ((17 : ℕ) : 𝓞 K) = (17 : 𝓞 K) from by norm_cast] at h
 
+private theorem fintype_card_le_prime_sq_of_pow_prime_sq_fixed {F : Type*} [CommRing F]
+    [IsDomain F] [Fintype F] {p : ℕ} (hp : p.Prime)
+    (hfixed : ∀ x : F, x ^ p ^ 2 = x) :
+    Fintype.card F ≤ p ^ 2 := by
+  classical
+  set g : Polynomial F := Polynomial.X ^ p ^ 2 - Polynomial.X with hgdef
+  have hdeg : g.natDegree = p ^ 2 := by
+    rw [hgdef]
+    rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
+    · exact Polynomial.natDegree_X_pow _
+    · rw [Polynomial.natDegree_X_pow, Polynomial.natDegree_X]
+      exact Nat.one_lt_pow (by norm_num) hp.one_lt
+  have hgne : g ≠ 0 := by
+    intro h0
+    rw [h0, Polynomial.natDegree_zero] at hdeg
+    have := Nat.one_lt_pow (n := 2) (by norm_num : (2 : ℕ) ≠ 0) hp.one_lt
+    omega
+  have hsub : (Finset.univ : Finset F) ⊆ g.roots.toFinset := by
+    intro x _
+    rw [Multiset.mem_toFinset, Polynomial.mem_roots hgne]
+    change g.eval x = 0
+    rw [hgdef]
+    simp [hfixed x]
+  calc Fintype.card F = (Finset.univ : Finset F).card := Finset.card_univ.symm
+    _ ≤ g.roots.toFinset.card := Finset.card_le_card hsub
+    _ ≤ Multiset.card g.roots := g.roots.toFinset_card_le
+    _ ≤ g.natDegree := Polynomial.card_roots' g
+    _ = p ^ 2 := hdeg
+
+private theorem not_isPrime_span_two_natCast :
+    ¬ (Ideal.span {((2 : ℕ) : 𝓞 K)}).IsPrime := by
+  intro hpr
+  rw [show ((2 : ℕ) : 𝓞 K) = (2 : 𝓞 K) by norm_num, span_two_eq] at hpr
+  have hmem : (1 - zetaInt) ^ 4 ∈ Ideal.span {1 - zetaInt} ^ 4 := by
+    rw [Ideal.span_singleton_pow]
+    exact Ideal.mem_span_singleton_self _
+  have h1 : 1 - zetaInt ∈ Ideal.span {1 - zetaInt} ^ 4 := hpr.mem_of_pow_mem 4 hmem
+  have hle : Ideal.span {1 - zetaInt} ≤ Ideal.span {1 - zetaInt} ^ 4 :=
+    (Ideal.span_singleton_le_iff_mem _).mpr h1
+  have hd := Ideal.absNorm_dvd_absNorm_of_le hle
+  rw [map_pow, absNorm_span_one_sub_zeta] at hd
+  norm_num at hd
+
+private theorem quotient_pow_prime_sq_eq_self_of_isPrime_span_natCast_ne_two
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2)
+    (hpr : (Ideal.span {((p : ℕ) : 𝓞 K)}).IsPrime) :
+    ∀ x : (𝓞 K) ⧸ Ideal.span {((p : ℕ) : 𝓞 K)}, x ^ p ^ 2 = x := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  let P : Ideal (𝓞 K) := Ideal.span {((p : ℕ) : 𝓞 K)}
+  change ∀ x : (𝓞 K) ⧸ P, x ^ p ^ 2 = x
+  haveI hPp : P.IsPrime := hpr
+  have hPbot : P ≠ ⊥ := by
+    simpa [P, Ne, Ideal.span_singleton_eq_bot] using (show ((p : ℕ) : 𝓞 K) ≠ 0 by
+      exact_mod_cast hp.ne_zero)
+  haveI hmax : P.IsMaximal := hPp.isMaximal hPbot
+  haveI : Field ((𝓞 K) ⧸ P) := Ideal.Quotient.field P
+  have hp0 : ((p : ℕ) : (𝓞 K) ⧸ P) = 0 := by
+    rw [← map_natCast (Ideal.Quotient.mk P) p, Ideal.Quotient.eq_zero_iff_mem]
+    exact Ideal.mem_span_singleton_self _
+  haveI : CharP ((𝓞 K) ⧸ P) p := by
+    have hd := (ringChar.spec ((𝓞 K) ⧸ P) p).mp hp0
+    rcases (Nat.dvd_prime hp).mp hd with h1 | h1
+    · exfalso
+      have h10 : ((1 : ℕ) : (𝓞 K) ⧸ P) = 0 :=
+        (ringChar.spec ((𝓞 K) ⧸ P) 1).mpr (h1 ▸ dvd_refl _)
+      simp at h10
+    · rw [← h1]
+      exact ringChar.charP _
+  have hz8 : (Ideal.Quotient.mk P zetaInt) ^ 8 = 1 := by
+    rw [← map_pow, show zetaInt ^ 8 = 1 from by
+      linear_combination (zetaInt ^ 4 - 1) * zetaInt_pow_four, map_one]
+  have hp81 : p ^ 2 % 8 = 1 := by
+    obtain ⟨t, ht⟩ := hp.odd_of_ne_two hp2
+    rcases Nat.even_or_odd t with ⟨u, hu⟩ | ⟨u, hu⟩ <;> subst hu <;> subst ht <;>
+      ring_nf <;> omega
+  have hzp : (Ideal.Quotient.mk P zetaInt) ^ p ^ 2 = Ideal.Quotient.mk P zetaInt := by
+    obtain ⟨k, hk⟩ : ∃ k, p ^ 2 = 8 * k + 1 := ⟨p ^ 2 / 8, by omega⟩
+    rw [hk, pow_add, pow_mul, hz8, one_pow, one_mul, pow_one]
+  have hψeq : ∀ w : (𝓞 K) ⧸ P,
+      (((frobenius ((𝓞 K) ⧸ P) p).comp (frobenius ((𝓞 K) ⧸ P) p)).toIntAlgHom) w =
+        w ^ p ^ 2 := by
+    intro w
+    change frobenius _ p (frobenius _ p w) = w ^ p ^ 2
+    rw [frobenius_def, frobenius_def, ← pow_mul, ← pow_two]
+  intro x
+  obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective x
+  obtain ⟨q, -, hq⟩ := zeta_isPrimitiveRoot.integralPowerBasis.exists_eq_aeval y
+  rw [gen_eq_zetaInt] at hq
+  rw [hq]
+  have hcomm := Polynomial.aeval_algHom_apply (Ideal.Quotient.mkₐ ℤ P) zetaInt q
+  rw [Ideal.Quotient.mkₐ_eq_mk] at hcomm
+  rw [← hcomm, ← hψeq, ← Polynomial.aeval_algHom_apply, hψeq, hzp]
+
+private theorem not_isPrime_span_natCast_of_ne_two (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
+    ¬ (Ideal.span {((p : ℕ) : 𝓞 K)}).IsPrime := by
+  intro hpr
+  set P : Ideal (𝓞 K) := Ideal.span {((p : ℕ) : 𝓞 K)} with hPdef
+  haveI hPp : P.IsPrime := by simpa [P] using hpr
+  have hPbot : P ≠ ⊥ := by
+    rw [hPdef, Ne, Ideal.span_singleton_eq_bot]
+    exact_mod_cast hp.ne_zero
+  haveI : P.IsMaximal := hPp.isMaximal hPbot
+  haveI : Field ((𝓞 K) ⧸ P) := Ideal.Quotient.field P
+  have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
+    rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+  have habs : Ideal.absNorm P = p ^ 4 := by
+    rw [hPdef, Ideal.absNorm_span_singleton]
+    have hcast : ((p : ℕ) : 𝓞 K) = algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) := by push_cast; rfl
+    rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
+  haveI : Finite ((𝓞 K) ⧸ P) :=
+    Nat.finite_of_card_ne_zero (by rw [habs]; exact pow_ne_zero 4 hp.ne_zero)
+  haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+  have hcardF : Fintype.card ((𝓞 K) ⧸ P) = p ^ 4 := by
+    rw [← Nat.card_eq_fintype_card]
+    exact habs
+  have hfixed : ∀ x : (𝓞 K) ⧸ P, x ^ p ^ 2 = x := by
+    simpa [P] using quotient_pow_prime_sq_eq_self_of_isPrime_span_natCast_ne_two p hp hp2 hpr
+  have hle : Fintype.card ((𝓞 K) ⧸ P) ≤ p ^ 2 :=
+    fintype_card_le_prime_sq_of_pow_prime_sq_fixed hp hfixed
+  have hlt : p ^ 2 < p ^ 4 := Nat.pow_lt_pow_right hp.one_lt (by norm_num)
+  omega
+
 /-- **No rational prime is inert in `ℚ(ζ₈)`**: the Galois group `(ℤ/8)ˣ` has exponent `2`,
 so every Frobenius has order at most `2` and every residue degree is `≤ 2 < 4`. This is a
 hallmark of non-cyclic abelian extensions. -/
@@ -675,208 +815,136 @@ theorem no_inert_prime (p : ℕ) (hp : p.Prime) :
   intro hpr
   by_cases hp2 : p = 2
   · subst hp2
-    rw [show ((2 : ℕ) : 𝓞 K) = (2 : 𝓞 K) by norm_num, span_two_eq] at hpr
-    have hmem : (1 - zetaInt) ^ 4 ∈ Ideal.span {1 - zetaInt} ^ 4 := by
-      rw [Ideal.span_singleton_pow]
-      exact Ideal.mem_span_singleton_self _
-    have h1 : 1 - zetaInt ∈ Ideal.span {1 - zetaInt} ^ 4 := hpr.mem_of_pow_mem 4 hmem
-    have hle : Ideal.span {1 - zetaInt} ≤ Ideal.span {1 - zetaInt} ^ 4 :=
-      (Ideal.span_singleton_le_iff_mem _).mpr h1
-    have hd := Ideal.absNorm_dvd_absNorm_of_le hle
-    rw [map_pow, absNorm_span_one_sub_zeta] at hd
+    exact not_isPrime_span_two_natCast hpr
+  · exact not_isPrime_span_natCast_of_ne_two p hp hp2 hpr
+
+private theorem orderOf_mk0_eq_eight_of_pow_four_eq_neg_one {p : ℕ} [Fact p.Prime]
+    (hp2 : p ≠ 2) {s : ZMod p} (hs0 : s ≠ 0) (hs4 : s ^ 4 = (-1 : ZMod p)) :
+    orderOf (Units.mk0 s hs0) = 8 := by
+  have hp : p.Prime := Fact.out
+  have hne1 : (-1 : ZMod p) ≠ 1 := by
+    intro h
+    have h2 : ((2 : ℕ) : ZMod p) = 0 := by push_cast; linear_combination -h
+    have hdvd := (CharP.cast_eq_zero_iff (ZMod p) p 2).mp h2
+    exact hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hdvd)
+  have hu8 : (Units.mk0 s hs0) ^ 8 = 1 := by
+    ext
+    change s ^ 8 = 1
+    rw [show (8 : ℕ) = 4 * 2 from rfl, pow_mul, hs4]
+    ring
+  have hu4 : (Units.mk0 s hs0) ^ 4 ≠ 1 := by
+    intro h
+    have hval : s ^ 4 = 1 := by
+      have hc := congrArg Units.val h
+      simpa using hc
+    rw [hs4] at hval
+    exact hne1 hval
+  have hdvd : orderOf (Units.mk0 s hs0) ∣ 8 := orderOf_dvd_of_pow_eq_one hu8
+  have hnd4 : ¬ orderOf (Units.mk0 s hs0) ∣ 4 := fun h =>
+    hu4 (orderOf_dvd_iff_pow_eq_one.mp h)
+  obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
+    (show orderOf (Units.mk0 s hs0) ∣ 2 ^ 3 from hdvd)
+  have hk3 : k = 3 := by
+    by_contra hne
+    exact hnd4 (hkeq ▸ (pow_dvd_pow 2 (by omega) : (2 : ℕ) ^ k ∣ 2 ^ 2))
+  rw [hkeq, hk3]
+  norm_num
+
+private theorem unit_val_pow_four_eq_neg_one_of_orderOf_eq_eight {p : ℕ} [Fact p.Prime]
+    {u : (ZMod p)ˣ} (hu : orderOf u = 8) : (u : ZMod p) ^ 4 = -1 := by
+  have hu8 : u ^ 8 = 1 := by
+    rw [← hu]
+    exact pow_orderOf_eq_one _
+  have hu4ne : u ^ 4 ≠ 1 := by
+    intro h
+    have hd := orderOf_dvd_of_pow_eq_one h
+    rw [hu] at hd
     norm_num at hd
-  · classical
-    haveI : Fact p.Prime := ⟨hp⟩
-    set P : Ideal (𝓞 K) := Ideal.span {((p : ℕ) : 𝓞 K)} with hPdef
-    haveI hPp : P.IsPrime := hpr
-    have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
-      rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
-    have habs : Ideal.absNorm P = p ^ 4 := by
-      rw [hPdef, Ideal.absNorm_span_singleton]
-      have hcast : ((p : ℕ) : 𝓞 K) = algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) := by push_cast; rfl
-      rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
-    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
-    haveI : Finite ((𝓞 K) ⧸ P) :=
-      Nat.finite_of_card_ne_zero (by rw [habs]; exact pow_ne_zero 4 hp.ne_zero)
-    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
-    have hcardF : Fintype.card ((𝓞 K) ⧸ P) = p ^ 4 := by
-      rw [← Nat.card_eq_fintype_card]
-      exact habs
-    have hPbot : P ≠ ⊥ := by
-      rw [hPdef, Ne, Ideal.span_singleton_eq_bot]
-      exact_mod_cast hp.ne_zero
-    haveI hmax : P.IsMaximal := hPp.isMaximal hPbot
-    haveI : Field ((𝓞 K) ⧸ P) := Ideal.Quotient.field P
-    have hp0 : ((p : ℕ) : (𝓞 K) ⧸ P) = 0 := by
-      rw [show ((p : ℕ) : (𝓞 K) ⧸ P) = Ideal.Quotient.mk P ((p : ℕ) : 𝓞 K) from
-        (map_natCast (Ideal.Quotient.mk P) p).symm, Ideal.Quotient.eq_zero_iff_mem]
-      exact Ideal.mem_span_singleton_self _
-    haveI : CharP ((𝓞 K) ⧸ P) p := by
-      have hd := (ringChar.spec ((𝓞 K) ⧸ P) p).mp hp0
-      rcases (Nat.dvd_prime hp).mp hd with h1 | h1
-      · exfalso
-        have h10 : ((1 : ℕ) : (𝓞 K) ⧸ P) = 0 :=
-          (ringChar.spec ((𝓞 K) ⧸ P) 1).mpr (h1 ▸ dvd_refl _)
-        simp at h10
-      · rw [← h1]
-        exact ringChar.charP _
-    have hz8 : (Ideal.Quotient.mk P zetaInt) ^ 8 = 1 := by
-      rw [← map_pow, show zetaInt ^ 8 = 1 from by
-        linear_combination (zetaInt ^ 4 - 1) * zetaInt_pow_four, map_one]
-    have hp81 : p ^ 2 % 8 = 1 := by
-      obtain ⟨t, ht⟩ := hp.odd_of_ne_two hp2
-      rcases Nat.even_or_odd t with ⟨u, hu⟩ | ⟨u, hu⟩ <;> subst hu <;> subst ht <;>
-        ring_nf <;> omega
-    have hzp : (Ideal.Quotient.mk P zetaInt) ^ p ^ 2 = Ideal.Quotient.mk P zetaInt := by
-      obtain ⟨k, hk⟩ : ∃ k, p ^ 2 = 8 * k + 1 := ⟨p ^ 2 / 8, by omega⟩
-      rw [hk, pow_add, pow_mul, hz8, one_pow, one_mul, pow_one]
-    have hψeq : ∀ w : (𝓞 K) ⧸ P,
-        (((frobenius ((𝓞 K) ⧸ P) p).comp (frobenius ((𝓞 K) ⧸ P) p)).toIntAlgHom) w =
-          w ^ p ^ 2 := by
-      intro w
-      change frobenius _ p (frobenius _ p w) = w ^ p ^ 2
-      rw [frobenius_def, frobenius_def, ← pow_mul, ← pow_two]
-    have hfrob : ∀ x : (𝓞 K) ⧸ P, x ^ p ^ 2 = x := by
-      intro x
-      obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective x
-      obtain ⟨q, -, hq⟩ := zeta_isPrimitiveRoot.integralPowerBasis.exists_eq_aeval y
-      rw [gen_eq_zetaInt] at hq
-      rw [hq]
-      have hcomm := Polynomial.aeval_algHom_apply (Ideal.Quotient.mkₐ ℤ P) zetaInt q
-      rw [Ideal.Quotient.mkₐ_eq_mk] at hcomm
-      rw [← hcomm, ← hψeq, ← Polynomial.aeval_algHom_apply, hψeq, hzp]
-    set g : Polynomial ((𝓞 K) ⧸ P) := Polynomial.X ^ p ^ 2 - Polynomial.X with hgdef
-    have hdeg : g.natDegree = p ^ 2 := by
-      rw [hgdef]
-      rw [Polynomial.natDegree_sub_eq_left_of_natDegree_lt]
-      · exact Polynomial.natDegree_X_pow _
-      · rw [Polynomial.natDegree_X_pow, Polynomial.natDegree_X]
-        exact Nat.one_lt_pow (by norm_num) hp.one_lt
-    have hgne : g ≠ 0 := by
-      intro h0
-      rw [h0, Polynomial.natDegree_zero] at hdeg
-      have := Nat.one_lt_pow (n := 2) (by norm_num : (2 : ℕ) ≠ 0) hp.one_lt
-      omega
-    have hsub : (Finset.univ : Finset ((𝓞 K) ⧸ P)) ⊆ g.roots.toFinset := by
-      intro x _
-      rw [Multiset.mem_toFinset, Polynomial.mem_roots hgne]
-      change g.eval x = 0
-      rw [hgdef]
-      simp [hfrob x]
-    have hcontr : p ^ 4 ≤ p ^ 2 := by
-      calc p ^ 4 = Fintype.card ((𝓞 K) ⧸ P) := hcardF.symm
-        _ = (Finset.univ : Finset ((𝓞 K) ⧸ P)).card := Finset.card_univ.symm
-        _ ≤ g.roots.toFinset.card := Finset.card_le_card hsub
-        _ ≤ Multiset.card g.roots := g.roots.toFinset_card_le
-        _ ≤ g.natDegree := Polynomial.card_roots' g
-        _ = p ^ 2 := hdeg
-    have hlt : p ^ 2 < p ^ 4 := Nat.pow_lt_pow_right hp.one_lt (by norm_num)
-    omega
+  have hv8 : (u : ZMod p) ^ 8 = 1 := by
+    have hc := congrArg Units.val hu8
+    simpa using hc
+  have hsq : (u : ZMod p) ^ 4 * (u : ZMod p) ^ 4 = 1 := by
+    rw [← pow_add]
+    exact hv8
+  rcases mul_self_eq_one_iff.mp hsq with h | h
+  · exfalso
+    apply hu4ne
+    ext
+    simpa using h
+  · exact h
+
+private theorem one_mod_eight_of_splits_completely (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+      Ideal.absNorm P = p) → p % 8 = 1 := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  rintro ⟨P, hPprime, hle, habs⟩
+  rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
+  haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [habs]; exact hp.ne_zero)
+  haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by
+    rw [← Nat.card_eq_fintype_card]
+    exact habs
+  let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
+  obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P zetaInt)
+  have hs4 : s ^ 4 = (-1 : ZMod p) := by
+    apply e.injective
+    rw [map_pow, hs, ← map_pow (Ideal.Quotient.mk P), zetaInt_pow_four, map_neg, map_one,
+      map_neg, map_one]
+  have hs0 : s ≠ 0 := by
+    intro h0
+    rw [h0] at hs4
+    exact one_ne_zero (by linear_combination hs4)
+  have horder : orderOf (Units.mk0 s hs0) = 8 :=
+    orderOf_mk0_eq_eight_of_pow_four_eq_neg_one hp2 hs0 hs4
+  have hdvd_card : (8 : ℕ) ∣ p - 1 := by
+    have h := orderOf_dvd_natCard (Units.mk0 s hs0)
+    rw [horder, Nat.card_eq_fintype_card, ZMod.card_units_eq_totient,
+      Nat.totient_prime hp] at h
+    exact h
+  have h2le := hp.two_le
+  obtain ⟨m, hm⟩ := hdvd_card
+  omega
+
+private theorem splits_completely_of_one_mod_eight (p : ℕ) (hp : p.Prime) :
+    p % 8 = 1 →
+      ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+        Ideal.absNorm P = p := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  intro hmod
+  have hcard : Nat.card (ZMod p)ˣ = p - 1 := by
+    rw [Nat.card_eq_fintype_card, ZMod.card_units_eq_totient, Nat.totient_prime hp]
+  obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := (ZMod p)ˣ)
+  have hog : orderOf g = p - 1 := by
+    rw [orderOf_eq_card_of_forall_mem_zpowers hg, hcard]
+  have h2le := hp.two_le
+  obtain ⟨m, hm⟩ : (8 : ℕ) ∣ p - 1 := ⟨(p - 1) / 8, by omega⟩
+  have hm0 : m ≠ 0 := by omega
+  have hou : orderOf (g ^ m) = 8 := by
+    rw [orderOf_pow, hog, hm]
+    have hgcd : Nat.gcd (8 * m) m = m := Nat.gcd_eq_right ⟨8, by ring⟩
+    rw [hgcd, Nat.mul_div_assoc 8 (dvd_refl m), Nat.div_self (show 0 < m by omega), mul_one]
+  have hval4 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 4 = -1 := by
+    exact unit_val_pow_four_eq_neg_one_of_orderOf_eq_eight hou
+  set r : ℤ := (((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ) with hr_def
+  have hr : ((r : ZMod p)) ^ 4 = -1 := by
+    have hcast : ((r : ℤ) : ZMod p) = ((g ^ m : (ZMod p)ˣ) : ZMod p) := by
+      rw [hr_def]
+      push_cast
+      exact ZMod.natCast_rightInverse _
+    rw [hcast]
+    exact hval4
+  refine ⟨Ideal.span {((p : ℕ) : 𝓞 K), zetaInt - (r : 𝓞 K)},
+    (isMaximal_span_pair p r hr).isPrime, ?_, absNorm_span_pair p r hr⟩
+  rw [Ideal.span_le, Set.singleton_subset_iff]
+  exact Ideal.subset_span (by simp)
 
 /-- The splitting law for `ℚ(ζ₈)`: a prime `p` splits completely iff `p ≡ 1 (mod 8)`. -/
 theorem splits_completely_iff (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p) ↔
       p % 8 = 1 := by
-  haveI : Fact p.Prime := ⟨hp⟩
   constructor
-  · rintro ⟨P, hPprime, hle, habs⟩
-    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at habs
-    haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [habs]; exact hp.ne_zero)
-    haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
-    have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by rw [← Nat.card_eq_fintype_card]; exact habs
-    let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
-    obtain ⟨s, hs⟩ := e.surjective (Ideal.Quotient.mk P zetaInt)
-    have hs4 : s ^ 4 = (-1 : ZMod p) := by
-      apply e.injective
-      rw [map_pow, hs, ← map_pow (Ideal.Quotient.mk P), zetaInt_pow_four, map_neg, map_one,
-        map_neg, map_one]
-    have hne1 : (-1 : ZMod p) ≠ 1 := by
-      intro h
-      have h2 : ((2 : ℕ) : ZMod p) = 0 := by push_cast; linear_combination -h
-      have hdvd := (CharP.cast_eq_zero_iff (ZMod p) p 2).mp h2
-      exact hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hdvd)
-    have hs0 : s ≠ 0 := by
-      intro h0
-      rw [h0] at hs4
-      exact one_ne_zero (by linear_combination hs4)
-    have hu8 : (Units.mk0 s hs0) ^ 8 = 1 := by
-      ext
-      change s ^ 8 = 1
-      rw [show (8 : ℕ) = 4 * 2 from rfl, pow_mul, hs4]
-      ring
-    have hu4 : (Units.mk0 s hs0) ^ 4 ≠ 1 := by
-      intro h
-      have hval : s ^ 4 = 1 := by
-        have hc := congrArg Units.val h
-        simpa using hc
-      rw [hs4] at hval
-      exact hne1 hval
-    have horder : orderOf (Units.mk0 s hs0) = 8 := by
-      have hdvd : orderOf (Units.mk0 s hs0) ∣ 8 := orderOf_dvd_of_pow_eq_one hu8
-      have hnd4 : ¬ orderOf (Units.mk0 s hs0) ∣ 4 := fun h =>
-        hu4 (orderOf_dvd_iff_pow_eq_one.mp h)
-      obtain ⟨k, hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
-        (show orderOf (Units.mk0 s hs0) ∣ 2 ^ 3 from hdvd)
-      have hk3 : k = 3 := by
-        by_contra hne
-        exact hnd4 (hkeq ▸ (pow_dvd_pow 2 (by omega) : (2 : ℕ) ^ k ∣ 2 ^ 2))
-      rw [hkeq, hk3]
-      norm_num
-    have hdvd_card : (8 : ℕ) ∣ p - 1 := by
-      have h := orderOf_dvd_natCard (Units.mk0 s hs0)
-      rw [horder, Nat.card_eq_fintype_card, ZMod.card_units_eq_totient,
-        Nat.totient_prime hp] at h
-      exact h
-    have h2le := hp.two_le
-    obtain ⟨m, hm⟩ := hdvd_card
-    omega
-  · intro hmod
-    have hcard : Nat.card (ZMod p)ˣ = p - 1 := by
-      rw [Nat.card_eq_fintype_card, ZMod.card_units_eq_totient, Nat.totient_prime hp]
-    obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := (ZMod p)ˣ)
-    have hog : orderOf g = p - 1 := by
-      rw [orderOf_eq_card_of_forall_mem_zpowers hg, hcard]
-    have h2le := hp.two_le
-    obtain ⟨m, hm⟩ : (8 : ℕ) ∣ p - 1 := ⟨(p - 1) / 8, by omega⟩
-    have hm0 : m ≠ 0 := by omega
-    have hou : orderOf (g ^ m) = 8 := by
-      rw [orderOf_pow, hog, hm]
-      have hgcd : Nat.gcd (8 * m) m = m := Nat.gcd_eq_right ⟨8, by ring⟩
-      rw [hgcd, Nat.mul_div_assoc 8 (dvd_refl m), Nat.div_self (show 0 < m by omega), mul_one]
-    have hu8 : (g ^ m) ^ 8 = 1 := by
-      rw [← hou]
-      exact pow_orderOf_eq_one _
-    have hu4ne : (g ^ m) ^ 4 ≠ 1 := by
-      intro h
-      have hd := orderOf_dvd_of_pow_eq_one h
-      rw [hou] at hd
-      norm_num at hd
-    have hval4 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 4 = -1 := by
-      have hv8 : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 8 = 1 := by
-        have hc := congrArg Units.val hu8
-        simpa using hc
-      have hsq : ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 4 *
-          ((g ^ m : (ZMod p)ˣ) : ZMod p) ^ 4 = 1 := by
-        rw [← pow_add]
-        exact hv8
-      rcases mul_self_eq_one_iff.mp hsq with h | h
-      · exfalso
-        apply hu4ne
-        ext
-        simpa using h
-      · exact h
-    set r : ℤ := (((g ^ m : (ZMod p)ˣ) : ZMod p).val : ℤ) with hr_def
-    have hr : ((r : ZMod p)) ^ 4 = -1 := by
-      have hcast : ((r : ℤ) : ZMod p) = ((g ^ m : (ZMod p)ˣ) : ZMod p) := by
-        rw [hr_def]
-        push_cast
-        exact ZMod.natCast_rightInverse _
-      rw [hcast]
-      exact hval4
-    refine ⟨Ideal.span {((p : ℕ) : 𝓞 K), zetaInt - (r : 𝓞 K)},
-      (isMaximal_span_pair p r hr).isPrime, ?_, absNorm_span_pair p r hr⟩
-    rw [Ideal.span_le, Set.singleton_subset_iff]
-    exact Ideal.subset_span (by simp)
+  · exact one_mod_eight_of_splits_completely p hp hp2
+  · exact splits_completely_of_one_mod_eight p hp
 
 /-- A rational prime `p` ramifies in `ℚ(ζ₈)` iff `p = 2`, i.e. iff `p` divides the
 discriminant `256`. -/
@@ -906,52 +974,13 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
       intro h0
       rw [h0, pow_zero] at hkeq
       exact hP.ne_top (Ideal.absNorm_eq_one_iff.mp hkeq)
-    have hmap : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) =
-        Ideal.span {((p : ℕ) : 𝓞 K)} := by
-      rw [Ideal.map_span, Set.image_singleton]
-      norm_num
     have hle2' : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
-      rw [hmap]; exact hle2
-    have hno5 : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 5 := by
-      intro h5
-      rw [hmap] at h5
-      have hd := Ideal.absNorm_dvd_absNorm_of_le h5
-      rw [map_pow, habsp, hkeq, ← pow_mul] at hd
-      rw [Nat.pow_dvd_pow_iff_le_right hp.one_lt] at hd
-      omega
-    have hidx : Ideal.ramificationIdx (Ideal.span {((p : ℕ) : ℤ)}) P ≠ 1 := by
-      by_cases h3 : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3
-      · by_cases h4 : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 4
-        · rw [Ideal.ramificationIdx_spec h4 hno5]
-          norm_num
-        · rw [Ideal.ramificationIdx_spec h3 h4]
-          norm_num
-      · rw [Ideal.ramificationIdx_spec hle2' h3]
-        norm_num
-    have hund : Ideal.under ℤ P = Ideal.span {((p : ℕ) : ℤ)} := by
-      have hmem : ((p : ℕ) : ℤ) ∈ Ideal.under ℤ P := by
-        rw [Ideal.under, Ideal.mem_comap]
-        have hcast2 : algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) = ((p : ℕ) : 𝓞 K) := by push_cast; rfl
-        rw [hcast2]
-        exact hpmemP
-      have hle : Ideal.span {((p : ℕ) : ℤ)} ≤ Ideal.under ℤ P := by
-        rw [Ideal.span_le, Set.singleton_subset_iff]
-        exact hmem
-      have hprime : (Ideal.span {((p : ℕ) : ℤ)}).IsPrime :=
-        (Ideal.span_singleton_prime (by exact_mod_cast hp.ne_zero)).mpr
-          (Nat.prime_iff_prime_int.mp hp)
-      have hbot : Ideal.span {((p : ℕ) : ℤ)} ≠ ⊥ := by
-        rw [Ne, Ideal.span_singleton_eq_bot]
-        exact_mod_cast hp.ne_zero
-      have hnetop : Ideal.under ℤ P ≠ ⊤ := by
-        intro h
-        have h1 : (1 : ℤ) ∈ Ideal.under ℤ P := h ▸ Submodule.mem_top
-        rw [Ideal.under, Ideal.mem_comap, map_one] at h1
-        exact hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h1 isUnit_one)
-      exact ((hprime.isMaximal hbot).eq_of_le hnetop hle).symm
-    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P := by
-      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hPbot, hund]
-      exact hidx
+      simpa [Ideal.map_span, Set.image_singleton] using hle2
+    have hno5 : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 5 :=
+      not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow hp habsp hkeq hk0
+    have hunram : ¬ Algebra.IsUnramifiedAt ℤ P :=
+      not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ hp hpmemP hPbot hle2'
+        hno5
     have hPdiff : P ∣ differentIdeal ℤ (𝓞 K) := dvd_differentIdeal_iff.mpr hunram
     have habsP256 : Ideal.absNorm P ∣ 256 := by
       have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
