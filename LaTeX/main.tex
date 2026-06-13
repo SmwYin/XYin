@@ -1,0 +1,3629 @@
+% !TEX program = xelatex
+% !TEX root = main.tex
+% Compile with: latexmk main.tex
+\documentclass[UTF8,a4paper,11pt,fontset=fandol]{ctexart}
+
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{fontspec}
+\usepackage{newunicodechar}
+\usepackage{xcolor}
+\usepackage{booktabs,longtable,array}
+\usepackage{pdflscape}
+\usepackage{enumitem}
+\usepackage[bookmarks=false]{hyperref}
+\usepackage{verbatim}
+\usepackage{graphicx}
+
+\setlist[itemize]{leftmargin=2em,itemsep=0.25em}
+\setlist[enumerate]{leftmargin=2em,itemsep=0.25em}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\sloppy
+
+\setmonofont[Scale=0.88]{Menlo}
+\newfontfamily\leanfallback{STIX Two Math}[Scale=0.88]
+\newunicodechar{𝓞}{{\leanfallback 𝓞}}
+\newunicodechar{𝓟}{{\leanfallback 𝓟}}
+\newunicodechar{⊔}{{\leanfallback ⊔}}
+\newunicodechar{⊤}{{\leanfallback ⊤}}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\gok}{\textcolor{green!55!black}{\ensuremath{\checkmark}}}
+\newcommand{\yok}{\textcolor{yellow!45!black}{\ensuremath{\checkmark}}}
+\newcommand{\warnsym}{\textcolor{orange!85!black}{\ensuremath{\triangle}}}
+\newcommand{\bad}{\textcolor{red!70!black}{\ensuremath{\times}}}
+\newcommand{\na}{\textemdash}
+\newcommand{\fieldhead}[1]{\scriptsize #1}
+
+\title{Review of \texttt{XYin.NumberField.FieldExamples}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Coverage matrix}
+
+Legend:\\
+\na{} means mathematically not applicable;\\
+\bad{} means applicable but not explicitly stated in this folder;\\
+\warnsym{} means stated but with \verb|sorry|;\\
+\gok{} means stated without \verb|sorry| and easy/formal API driven;\\
+\yok{} means stated without \verb|sorry| but proof is genuinely involved.
+
+\begin{landscape}
+\begin{table}[p]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.13}
+\begin{tabular}{>{\raggedright\arraybackslash}p{8.3cm}
+>{\centering\arraybackslash}m{1.68cm}
+>{\centering\arraybackslash}m{1.68cm}
+>{\centering\arraybackslash}m{1.68cm}
+>{\centering\arraybackslash}m{1.68cm}
+>{\centering\arraybackslash}m{1.68cm}
+>{\centering\arraybackslash}m{1.68cm}
+>{\centering\arraybackslash}m{1.68cm}}
+\toprule
+Statement/Object &
+\fieldhead{\(\mathbb Q(\sqrt2)\)} &
+\fieldhead{\(\mathbb Q(\sqrt5)\)} &
+\fieldhead{\(\mathbb Q(\sqrt{-6})\)} &
+\fieldhead{\(\mathbb Q(\sqrt[3]{3})\)} &
+\fieldhead{\(\mathbb Q(\zeta_3)\)} &
+\fieldhead{\(\mathbb Q(\zeta_5)\)} &
+\fieldhead{\(\mathbb Q(\zeta_8)\)} \\
+\midrule
+Concrete field model and generator relation & \gok & \gok & \gok & \gok & \gok & \gok & \gok \\
+Alternative presentations/equivalences & \yok & \yok & \gok & \gok & \yok & \gok & \gok \\
+Ring of integers as generated order & \yok & \yok & \yok & \yok & \gok & \gok & \gok \\
+Explicit integral basis & \gok & \yok & \yok & \yok & \gok & \gok & \gok \\
+Discriminant of number field/integral basis & \gok & \yok & \yok & \yok & \gok & \gok & \gok \\
+Norm form and unit criterion & \gok & \gok & \gok & \yok & \gok & \yok & \yok \\
+Concrete splitting of small primes & \yok & \yok & \yok & \yok & \yok & \yok & \yok \\
+General ramification criterion & \yok & \yok & \yok & \yok & \yok & \yok & \yok \\
+General splitting or degree-one criterion & \yok & \yok & \yok & \yok & \yok & \yok & \yok \\
+Torsion units / roots of unity & \yok & \yok & \gok & \gok & \gok & \yok & \yok \\
+Signature and Dirichlet rank & \yok & \yok & \gok & \yok & \gok & \gok & \gok \\
+Displayed fundamental unit generates free part & \yok & \warnsym & \na & \warnsym & \na & \warnsym & \warnsym \\
+Abstract unit group decomposition & \yok & \yok & \gok & \yok & \gok & \yok & \yok \\
+Regulator formula & \warnsym & \warnsym & \gok & \warnsym & \gok & \warnsym & \warnsym \\
+Class number and class group & \gok & \yok & \yok & \yok & \gok & \yok & \yok \\
+Norm-Euclidean or non-Euclidean statement & \yok & \yok & \yok & \warnsym & \yok & \warnsym & \warnsym \\
+Galois group / automorphism enumeration & \gok & \gok & \gok & \yok & \gok & \gok & \yok \\
+Proper quadratic subfields of quartic cyclotomic fields & \na & \na & \na & \na & \na & \yok & \gok \\
+Explicit UFD or non-UFD theorem & \bad & \bad & \yok & \bad & \bad & \bad & \bad \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{landscape}
+
+The file \verb|Common.lean| supplies shared infrastructure rather than one number field.
+
+\begin{verbatim}
+theorem eq_of_le_of_absNorm_eq {R : Type*} [CommRing R] [IsDedekindDomain R]
+    [Module.Free ℤ R] {I J : Ideal R} (hle : I ≤ J) {n : ℕ}
+    (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J
+\end{verbatim}
+
+\begin{theorem}[\texttt{eq\_of\_le\_of\_absNorm\_eq}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+def torsionPowerHom {G : Type*} [Group G] (n : ℕ) [NeZero n] (g : G)
+    (hg : g ^ n = 1) :
+    Multiplicative (ZMod n) →* G
+\end{verbatim}
+
+\begin{definition}[\texttt{torsionPowerHom}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+def rankOnePowerHom {G : Type*} [Group G] (η : G) : Multiplicative (Fin 1 → ℤ) →* G
+\end{verbatim}
+
+\begin{definition}[\texttt{rankOnePowerHom}]
+This declaration constructs a concrete algebra homomorphism or equivalence between two presentations.
+\end{definition}
+
+\begin{verbatim}
+theorem ramificationIdx_ne_one_of_map_le_sq_of_not_le_pow_succ {R S : Type*}
+    [CommRing R] [CommRing S] [Algebra R S] {p : Ideal R} {P : Ideal S} {n : ℕ}
+    (hle2 : Ideal.map (algebraMap R S) p ≤ P ^ 2)
+    (hnle : ¬ Ideal.map (algebraMap R S) p ≤ P ^ (n + 1)) :
+    Ideal.ramificationIdx p P ≠ 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{ramificationIdx\_ne\_one\_of\_map\_le\_sq\_of\_not\_le\_pow\_succ}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow {R : Type*}
+    [CommRing R] [Algebra ℤ R] [IsDedekindDomain R] [Module.Free ℤ R] {P : Ideal R}
+    {p n k : ℕ} (hp : p.Prime)
+    (habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : R)}) = p ^ n)
+    (habsP : Ideal.absNorm P = p ^ k) (hk0 : k ≠ 0) :
+    ¬ Ideal.map (algebraMap ℤ R) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ (n + 1)
+\end{verbatim}
+
+\begin{theorem}[\texttt{not\_map\_span\_natCast\_le\_pow\_succ\_of\_absNorm\_span\_eq\_pow}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Common proof pattern]
+Mathematically, these are reusable lemmas for norm comparisons, finite cyclic torsion generators, rank-one unit powers, and ramification detection from containments such as \((p)\subseteq P^2\). The proofs are order/ideal algebra: absolute norm divisibility, finite cyclic arithmetic in \(\mathbb Z/n\mathbb Z\), and the definition of ramification index as the largest power containment.
+\end{remark}
+
+\section{\(\mathbb Q(\sqrt2)\)}
+
+\subsection{\texttt{Basic.lean}}
+
+\begin{verbatim}
+abbrev QSqrtTwo : Type := QuadraticAlgebra ℚ (2 : ℚ) 0
+\end{verbatim}
+
+\begin{definition}[\texttt{QSqrtTwo}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+abbrev sqrtTwoRoot : QSqrtTwo := QuadraticAlgebra.omega
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtTwoRoot}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem sqrtTwoRoot_sq : sqrtTwoRoot ^ 2 = (2 : QSqrtTwo)
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtTwoRoot\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+abbrev sqrtTwoPolynomial : ℚ[X] := X ^ 2 - C (2 : ℚ)
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtTwoPolynomial}]
+This declaration names the defining polynomial whose root gives the field presentation.
+\end{definition}
+
+\begin{verbatim}
+def sqrtTwoAdjoinRootEquivQuadratic :
+    QSqrtTwoAdjoinRoot ≃ₐ[ℚ] QSqrtTwo
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtTwoAdjoinRootEquivQuadratic}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem degree_eq_two : Module.finrank ℚ QSqrtTwo = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{degree\_eq\_two}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+def sqrtTwoEquivUnitModel : QSqrtTwo ≃ₐ[ℚ] QSqrtTwoUnitModel
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtTwoEquivUnitModel}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{remark}[Subsection note]
+This builds \(\mathbb Q(\sqrt2)\), proves \(\sqrt2^2=2\), identifies the quadratic polynomial, gives the \verb|AdjoinRoot| model, and also the unit-root model \(u^2-2u-1=0\). The proof uses the existing quadratic algebra API and two mutually inverse algebra homomorphisms.
+\end{remark}
+
+\subsection{\texttt{RingOfIntegers.lean}}
+
+\begin{verbatim}
+abbrev O2 : Type := 𝓞 QSqrtTwo
+\end{verbatim}
+
+\begin{definition}[\texttt{O2}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+theorem sqrtTwoRoot_isIntegral : IsIntegral ℤ sqrtTwoRoot
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtTwoRoot\_isIntegral}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem sqrtTwo_minpoly_int :
+    minpoly ℤ sqrtTwoRoot = X ^ 2 - C (2 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtTwo\_minpoly\_int}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem isIntegralClosure_adjoin_sqrtTwoRoot :
+    IsIntegralClosure (Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo)) ℤ QSqrtTwo
+\end{verbatim}
+
+\begin{theorem}[\texttt{isIntegralClosure\_adjoin\_sqrtTwoRoot}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+abbrev sqrtTwoExplicitIntegralBasis : Basis (Fin 2) ℤ O2
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtTwoExplicitIntegralBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+theorem sqrtTwo_numberField_discr : NumberField.discr QSqrtTwo = 8
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtTwo\_numberField\_discr}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is \(\mathbb Z[\sqrt2]\), with basis \(1,\sqrt2\) and discriminant \(8\). The proof is via integrality of the root, Eisenstein/minimal polynomial information, and discriminant computation from the power basis.
+\end{remark}
+
+\subsection{\texttt{NormForm.lean}}
+
+\begin{verbatim}
+theorem norm_eq_normForm (x : QSqrtTwo) :
+    Algebra.norm ℚ x = x.re ^ 2 - 2 * x.im ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{norm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem intNorm_eq_normForm (x y : ℤ) :
+    Algebra.norm ℤ (x • (1 : O2) + y • sqrtTwoInteger) = x ^ 2 - 2 * y ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{intNorm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem isUnit_iff_normForm (x y : ℤ) :
+    IsUnit (x • (1 : O2) + y • sqrtTwoInteger) ↔
+      x ^ 2 - 2 * y ^ 2 = 1 ∨ x ^ 2 - 2 * y ^ 2 = -1
+\end{verbatim}
+
+\begin{theorem}[\texttt{isUnit\_iff\_normForm}]
+Mathematically, this converts the unit condition into the corresponding norm-form equation.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This is the classical norm form \(x^2-2y^2\). The Lean proof expands the algebra norm in the quadratic basis and then uses that an algebraic integer is a unit exactly when its integer norm is \(\pm1\).
+\end{remark}
+
+\subsection{\texttt{PrimeSplitting.lean}}
+
+\begin{verbatim}
+theorem span_two_eq : Ideal.span {(2 : O2)} = Ideal.span {sqrtTwoInteger} ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_two\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_seven_eq :
+    Ideal.span {(7 : O2)} =
+      Ideal.span {3 + sqrtTwoInteger} * Ideal.span {3 - sqrtTwoInteger}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_seven\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrime_span_three : (Ideal.span {(3 : O2)}).IsPrime
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrime\_span\_three}]
+Mathematically, this proves that the displayed ideal or element is prime.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(p : O2)} ≤ P ^ 2) ↔ p = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{ramified\_iff\_eq\_two}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem splits_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
+    (∃ P Q : Ideal O2, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : O2)} = P * Q) ↔ p % 8 = 1 ∨ p % 8 = 7
+\end{verbatim}
+
+\begin{theorem}[\texttt{splits\_iff\_pm\_one\_mod\_eight}]
+Mathematically, this gives a congruence or residue-field criterion for splitting behavior.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Subsection note]
+Mathematically, \(2\) ramifies, \(7\) splits, \(3\) is inert, the only ramified prime is \(2\), and odd primes split exactly for \(p\equiv\pm1\pmod 8\). The proof combines explicit ideal equalities, norm computations, primality from absolute norms, and quadratic residue arithmetic modulo \(8\).
+\end{remark}
+
+\subsection{\texttt{Units.lean}}
+
+\begin{verbatim}
+abbrev sqrtTwoFundamentalUnit : O2ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtTwoFundamentalUnit}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem sqrtTwoFundamentalUnit_generates_unitGroup (u : O2ˣ) :
+    ∃ n : ℤ, u = sqrtTwoFundamentalUnit ^ n ∨
+      u = -(sqrtTwoFundamentalUnit ^ n)
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtTwoFundamentalUnit\_generates\_unitGroup}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem torsionOrder_eq_two : Units.torsionOrder QSqrtTwo = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{torsionOrder\_eq\_two}]
+Mathematically, this describes the roots of unity in the unit group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unitRank_eq_one : Units.rank QSqrtTwo = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitRank\_eq\_one}]
+Mathematically, this is Dirichlet's unit-rank formula specialized to this field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem regulator_eq : Units.regulator QSqrtTwo = Real.log (1 + Real.sqrt 2)
+\end{verbatim}
+
+\begin{theorem}[\texttt{regulator\_eq}]
+Mathematically, this evaluates the regulator as the logarithmic covolume of the unit lattice.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{verbatim}
+theorem unitGroupStructure :
+    Nonempty (O2ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ)))
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitGroupStructure}]
+Mathematically, this is one of the concrete arithmetic statements recorded in this file.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The unit \(1+\sqrt2\) generates all units up to sign, via mathlib's Pell API for \(x^2-2y^2=1\). The torsion is \(\{\pm1\}\), the rank is \(1\), and the abstract group is \(\mu_2\times\mathbb Z\). The regulator formula is stated but still has \verb|sorry|.
+\end{remark}
+
+\subsection{\texttt{ClassGroup.lean}}
+
+\begin{verbatim}
+theorem isPrincipalIdealRing : IsPrincipalIdealRing O2
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrincipalIdealRing}]
+Mathematically, this says the ring of integers is a PID, or in the negative case not a PID.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem classNumber_eq_one : NumberField.classNumber QSqrtTwo = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classNumber\_eq\_one}]
+Mathematically, this computes the class number of the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroupStructure :
+    Nonempty (ClassGroup O2 ≃* Multiplicative (ZMod 1))
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroupStructure}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is a PID and has trivial class group. The formal proof uses the norm-Euclidean statement and the equivalence between class number one and principal ideal ring.
+\end{remark}
+
+\subsection{\texttt{Euclidean.lean}}
+
+\begin{verbatim}
+theorem normEuclidean (a b : O2) (hb : b ≠ 0) :
+    ∃ q r : O2, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs
+\end{verbatim}
+
+\begin{theorem}[\texttt{normEuclidean}]
+Mathematically, this states the norm-Euclidean division property, or its failure in the negative case.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof chooses a nearest integral-coordinate quotient and bounds the norm of the remainder; in the unfinished higher-degree cases this is exactly the missing geometry-of-numbers step.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This formalizes the norm-Euclidean algorithm: divide \(a/b\), round both coordinates in the \(1,\sqrt2\) basis, and bound the norm of the remainder by the rectangle estimate \(\le 1/2\).
+\end{remark}
+
+\subsection{\texttt{Galois.lean}}
+
+\begin{verbatim}
+def sqrtTwoConj : QSqrtTwo ≃ₐ[ℚ] QSqrtTwo
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtTwoConj}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+theorem sqrtTwoConj_root : sqrtTwoConj sqrtTwoRoot = -sqrtTwoRoot
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtTwoConj\_root}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem isGalois : IsGalois ℚ QSqrtTwo
+\end{verbatim}
+
+\begin{theorem}[\texttt{isGalois}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem galoisGroupStructure :
+    Nonempty (Gal(QSqrtTwo/ℚ) ≃* Multiplicative (ZMod 2))
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroupStructure}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The nontrivial automorphism sends \(\sqrt2\mapsto-\sqrt2\). Every automorphism is either identity or conjugation, so the Galois group is \(C_2\).
+\end{remark}
+
+\subsection{Summary for \(\mathbb Q(\sqrt2)\)}
+
+Easy: field construction, integral basis, norm form, class group once Euclideanity is
+known.  Hard but completed: Pell-based concrete unit generation, prime splitting
+criterion modulo \(8\), norm-Euclidean rounding.  Not completed: the regulator formula.
+
+\section{\(\mathbb Q(\sqrt5)\)}
+
+\subsection{\texttt{Basic.lean}}
+
+\begin{verbatim}
+abbrev QSqrtFive : Type := QuadraticAlgebra ℚ (1 : ℚ) (1 : ℚ)
+\end{verbatim}
+
+\begin{definition}[\texttt{QSqrtFive}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+abbrev goldenRoot : QSqrtFive := QuadraticAlgebra.omega
+\end{verbatim}
+
+\begin{definition}[\texttt{goldenRoot}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem goldenRoot_sq : goldenRoot ^ 2 = goldenRoot + 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{goldenRoot\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+abbrev sqrtFiveRoot : QSqrtFive := 2 * goldenRoot - 1
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtFiveRoot}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem sqrtFiveRoot_sq : sqrtFiveRoot ^ 2 = (5 : QSqrtFive)
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtFiveRoot\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+def sqrtFiveRadicalEquivGolden :
+    QSqrtFiveRadical ≃ₐ[ℚ] QSqrtFive
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtFiveRadicalEquivGolden}]
+This declaration constructs a concrete algebra homomorphism or equivalence between two presentations.
+\end{definition}
+
+\begin{remark}[Subsection note]
+The main model is \(\mathbb Q(\varphi)\), \(\varphi^2=\varphi+1\), together with the radical model \(\sqrt5=2\varphi-1\). The proof builds explicit algebra equivalences between the golden-ratio and radical presentations.
+\end{remark}
+
+\subsection{\texttt{RingOfIntegers.lean}}
+
+\begin{verbatim}
+abbrev O5 : Type := QuadraticAlgebra ℤ (1 : ℤ) (1 : ℤ)
+\end{verbatim}
+
+\begin{definition}[\texttt{O5}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+theorem integral_mem_goldenOrderToField_range {x : QSqrtFive}
+    (hx : IsIntegral ℤ x) : ∃ y : O5, algebraMap O5 QSqrtFive y = x
+\end{verbatim}
+
+\begin{theorem}[\texttt{integral\_mem\_goldenOrderToField\_range}]
+Mathematically, this proves that the displayed algebraic element is integral over \(\mathbb Z\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+instance : IsIntegralClosure O5 ℤ QSqrtFive
+\end{verbatim}
+
+\begin{definition}[\texttt{instance}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+theorem ringOfIntegers_eq :
+    integralClosure ℤ QSqrtFive = concreteRingOfIntegers
+\end{verbatim}
+
+\begin{theorem}[\texttt{ringOfIntegers\_eq}]
+Mathematically, this identifies the full ring of integers with the displayed generated order.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+theorem adjoin_sqrtFive_ne_integralClosure :
+    Algebra.adjoin ℤ ({sqrtFiveRoot} : Set QSqrtFive) ≠ integralClosure ℤ QSqrtFive
+\end{verbatim}
+
+\begin{theorem}[\texttt{adjoin\_sqrtFive\_ne\_integralClosure}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+theorem numberField_discr_eq : NumberField.discr QSqrtFive = 5
+\end{verbatim}
+
+\begin{theorem}[\texttt{numberField\_discr\_eq}]
+Mathematically, this computes the discriminant in the displayed basis or for the number field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is \(\mathbb Z[\varphi]\), not \(\mathbb Z[\sqrt5]\), with basis \(1,\varphi\) and discriminant \(5\). The hard step is proving integral elements land in the golden order, using trace/norm congruences.
+\end{remark}
+
+\subsection{\texttt{NormForm.lean}}
+
+\begin{verbatim}
+noncomputable def goldenIntO : 𝓞 QSqrtFive
+\end{verbatim}
+
+\begin{definition}[\texttt{goldenIntO}]
+This declaration constructs a concrete algebra homomorphism or equivalence between two presentations.
+\end{definition}
+
+\begin{verbatim}
+theorem norm_eq_normForm (x y : ℚ) :
+    Algebra.norm ℚ (x • 1 + y • goldenRoot) = x ^ 2 + x * y - y ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{norm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem isUnit_iff_normForm (x y : ℤ) :
+    IsUnit (x • (1 : 𝓞 QSqrtFive) + y • goldenIntO) ↔
+      x ^ 2 + x * y - y ^ 2 = 1 ∨ x ^ 2 + x * y - y ^ 2 = -1
+\end{verbatim}
+
+\begin{theorem}[\texttt{isUnit\_iff\_normForm}]
+Mathematically, this converts the unit condition into the corresponding norm-form equation.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The norm form is \(x^2+xy-y^2\). Units are exactly integral pairs with norm \(\pm1\).
+\end{remark}
+
+\subsection{\texttt{PrimeSplitting.lean}}
+
+\begin{verbatim}
+theorem span_five_eq :
+    Ideal.span {(5 : 𝓞 QSqrtFive)} = Ideal.span {sqrtFiveIntO} ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_five\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 QSqrtFive)}).IsPrime
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrime\_span\_two}]
+Mathematically, this proves that the displayed ideal or element is prime.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 QSqrtFive)}).IsPrime
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrime\_span\_three}]
+Mathematically, this proves that the displayed ideal or element is prime.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_eleven_eq :
+    Ideal.span {(11 : 𝓞 QSqrtFive)} =
+      Ideal.span {3 + goldenIntO} * Ideal.span {4 - goldenIntO}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_eleven\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 QSqrtFive), P.IsPrime ∧
+      Ideal.span {(p : 𝓞 QSqrtFive)} ≤ P ^ 2) ↔ p = 5
+\end{verbatim}
+
+\begin{theorem}[\texttt{ramified\_iff\_eq\_five}]
+Mathematically, this classifies exactly which rational primes ramify in the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem splits_iff_pm_one_mod_five (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    (∃ P Q : Ideal (𝓞 QSqrtFive), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 QSqrtFive)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4
+\end{verbatim}
+
+\begin{theorem}[\texttt{splits\_iff\_pm\_one\_mod\_five}]
+Mathematically, this gives a congruence or residue-field criterion for splitting behavior.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Subsection note]
+Here \(5\) ramifies, \(2\) and \(3\) are inert, \(11\) splits, ramification occurs only at \(5\), and splitting away from \(5\) is \(p\equiv\pm1\pmod5\). The proof uses the explicit norm form and quadratic residue computations.
+\end{remark}
+
+\subsection{\texttt{Units.lean}}
+
+\begin{verbatim}
+noncomputable def fundamentalUnit : (𝓞 QSqrtFive)ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{fundamentalUnit}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem torsionOrder_eq_two : Units.torsionOrder QSqrtFive = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{torsionOrder\_eq\_two}]
+Mathematically, this describes the roots of unity in the unit group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unitRank_eq_one : Units.rank QSqrtFive = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitRank\_eq\_one}]
+Mathematically, this is Dirichlet's unit-rank formula specialized to this field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem fundamentalUnit_generates (u : (𝓞 QSqrtFive)ˣ) :
+    ∃ n : ℤ, u = fundamentalUnit ^ n ∨ u = -(fundamentalUnit ^ n)
+\end{verbatim}
+
+\begin{theorem}[\texttt{fundamentalUnit\_generates}]
+Mathematically, this states that the displayed unit generates the free part of the unit group, up to torsion.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{verbatim}
+theorem regulator_eq :
+    Units.regulator QSqrtFive = Real.log ((1 + Real.sqrt 5) / 2)
+\end{verbatim}
+
+\begin{theorem}[\texttt{regulator\_eq}]
+Mathematically, this evaluates the regulator as the logarithmic covolume of the unit lattice.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The displayed unit is \(\varphi\). Torsion and rank are proved; the concrete statement that every unit is a signed power of \(\varphi\) is stated with \verb|sorry|, as is the regulator. The missing bridge is the Pell/Fibonacci equation \(a^2-5b^2=\pm4\).
+\end{remark}
+
+\subsection{\texttt{ClassGroup.lean}}
+
+\begin{verbatim}
+theorem classNumber_eq_one : NumberField.classNumber QSqrtFive = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classNumber\_eq\_one}]
+Mathematically, this computes the class number of the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 QSqrtFive)
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrincipalIdealRing}]
+Mathematically, this says the ring of integers is a PID, or in the negative case not a PID.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroupStructure :
+    Nonempty (ClassGroup (𝓞 QSqrtFive) ≃* Multiplicative (ZMod 1))
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroupStructure}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{remark}[Subsection note]
+Class number one follows by a Minkowski-bound argument and the small-prime splitting already developed.
+\end{remark}
+
+\subsection{\texttt{Euclidean.lean}}
+
+\begin{verbatim}
+theorem normEuclidean (a b : 𝓞 QSqrtFive) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 QSqrtFive, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs
+\end{verbatim}
+
+\begin{theorem}[\texttt{normEuclidean}]
+Mathematically, this states the norm-Euclidean division property, or its failure in the negative case.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof chooses a nearest integral-coordinate quotient and bounds the norm of the remainder; in the unfinished higher-degree cases this is exactly the missing geometry-of-numbers step.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The Euclidean proof rounds coordinates in the \(1,\varphi\) basis and bounds \(|u^2+uv-v^2|\le 3/4\) for the fractional remainder.
+\end{remark}
+
+\subsection{\texttt{Galois.lean}}
+
+\begin{verbatim}
+noncomputable def conjugation : QSqrtFive ≃ₐ[ℚ] QSqrtFive
+\end{verbatim}
+
+\begin{definition}[\texttt{conjugation}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+theorem conjugation_apply_goldenRoot : conjugation goldenRoot = 1 - goldenRoot
+\end{verbatim}
+
+\begin{theorem}[\texttt{conjugation\_apply\_goldenRoot}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem isGalois : IsGalois ℚ QSqrtFive
+\end{verbatim}
+
+\begin{theorem}[\texttt{isGalois}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem galoisGroupStructure :
+    Nonempty ((QSqrtFive ≃ₐ[ℚ] QSqrtFive) ≃* Multiplicative (ZMod 2))
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroupStructure}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The conjugation is \(\varphi\mapsto1-\varphi\), equivalently \(\sqrt5\mapsto-\sqrt5\), and the Galois group is \(C_2\).
+\end{remark}
+
+\subsection{Summary for \(\mathbb Q(\sqrt5)\)}
+
+Easy: field equivalences, Galois group, norm form.  Hard but completed: proving
+\(\mathbb Z[\varphi]\) is the full ring of integers, splitting modulo \(5\), class
+number one, and norm-Euclideanity.  Missing: concrete generation of all units by
+\(\varphi\) and the regulator formula.
+
+\section{\(\mathbb Q(\sqrt{-6})\)}
+
+\subsection{\texttt{Basic.lean}}
+
+\begin{verbatim}
+abbrev K : Type := QuadraticAlgebra ℚ (-6 : ℚ) 0
+\end{verbatim}
+
+\begin{definition}[\texttt{K}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+abbrev θ : K := QuadraticAlgebra.omega
+\end{verbatim}
+
+\begin{definition}[\texttt{θ}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem theta_sq : θ ^ 2 = -6
+\end{verbatim}
+
+\begin{theorem}[\texttt{theta\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem degree_eq_two : Module.finrank ℚ K = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{degree\_eq\_two}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+noncomputable def adjoinRootEquivQuadratic : KAdjoinRoot ≃ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{adjoinRootEquivQuadratic}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{remark}[Subsection note]
+This is the imaginary quadratic field generated by \(\theta^2=-6\). The model is equivalent to the \verb|AdjoinRoot| model for \(X^2+6\).
+\end{remark}
+
+\subsection{\texttt{RingOfIntegers.lean}}
+
+\begin{verbatim}
+theorem theta_integral : θ ∈ integralClosure ℤ K
+\end{verbatim}
+
+\begin{theorem}[\texttt{theta\_integral}]
+Mathematically, this proves that the displayed algebraic element is integral over \(\mathbb Z\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+noncomputable def thetaInt : 𝓞 K
+\end{verbatim}
+
+\begin{definition}[\texttt{thetaInt}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+theorem sqrtNegSix_minpoly_int_isEisensteinAt_two :
+    (minpoly ℤ θ).IsEisensteinAt 𝓟₂
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtNegSix\_minpoly\_int\_isEisensteinAt\_two}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem sqrtNegSix_minpoly_int_isEisensteinAt_three :
+    (minpoly ℤ θ).IsEisensteinAt 𝓟₃
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrtNegSix\_minpoly\_int\_isEisensteinAt\_three}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers
+\end{verbatim}
+
+\begin{theorem}[\texttt{ringOfIntegers\_eq}]
+Mathematically, this identifies the full ring of integers with the displayed generated order.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+theorem numberField_discr_eq : NumberField.discr K = (-24 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{numberField\_discr\_eq}]
+Mathematically, this computes the discriminant in the displayed basis or for the number field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is \(\mathbb Z[\sqrt{-6}]\), with basis \(1,\theta\) and discriminant \(-24\). Eisenstein information at \(2\) and \(3\) supports the integral basis/discriminant calculations.
+\end{remark}
+
+\subsection{\texttt{NormForm.lean}}
+
+\begin{verbatim}
+theorem norm_eq_normForm (x y : ℚ) :
+    Algebra.norm ℚ (x • (1 : K) + y • θ) = x ^ 2 + 6 * y ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{norm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem isUnit_iff_normForm (x y : ℤ) :
+    IsUnit (x • (1 : 𝓞 K) + y • thetaInt) ↔ x ^ 2 + 6 * y ^ 2 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{isUnit\_iff\_normForm}]
+Mathematically, this converts the unit condition into the corresponding norm-form equation.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem intNorm_ne_two (z : 𝓞 K) : Algebra.norm ℤ z ≠ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{intNorm\_ne\_two}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem intNorm_ne_three (z : 𝓞 K) : Algebra.norm ℤ z ≠ 3
+\end{verbatim}
+
+\begin{theorem}[\texttt{intNorm\_ne\_three}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The positive norm form is \(x^2+6y^2\). It proves the only units are \(\pm1\), and it rules out elements of norms \(2,3,5\), which is crucial for nonprincipal ideals.
+\end{remark}
+
+\subsection{\texttt{PrimeSplitting.lean}}
+
+\begin{verbatim}
+def primeAboveTwo : Ideal (𝓞 K) := Ideal.span {(2 : 𝓞 K), thetaInt}
+\end{verbatim}
+
+\begin{definition}[\texttt{primeAboveTwo}]
+This declaration introduces a concrete ideal used to describe splitting or ideal classes.
+\end{definition}
+
+\begin{verbatim}
+def primeAboveThree : Ideal (𝓞 K) := Ideal.span {(3 : 𝓞 K), thetaInt}
+\end{verbatim}
+
+\begin{definition}[\texttt{primeAboveThree}]
+This declaration introduces a concrete ideal used to describe splitting or ideal classes.
+\end{definition}
+
+\begin{verbatim}
+theorem span_two_eq : Ideal.span {(2 : 𝓞 K)} = primeAboveTwo ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_two\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_three_eq : Ideal.span {(3 : 𝓞 K)} = primeAboveThree ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_three\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem not_isPrincipal_primeAboveTwo : ¬ Submodule.IsPrincipal primeAboveTwo
+\end{verbatim}
+
+\begin{theorem}[\texttt{not\_isPrincipal\_primeAboveTwo}]
+Mathematically, this is one of the concrete arithmetic statements recorded in this file.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_seven_eq :
+    Ideal.span {(7 : 𝓞 K)} = Ideal.span {1 + thetaInt} * Ideal.span {1 - thetaInt}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_seven\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem splits_iff_mod_twentyfour (p : ℕ) (hp : p.Prime)
+    (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
+    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 K)} = P * Q) ↔
+        p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11
+\end{verbatim}
+
+\begin{theorem}[\texttt{splits\_iff\_mod\_twentyfour}]
+Mathematically, this gives a congruence or residue-field criterion for splitting behavior.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem ramified_iff (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 2 ∨ p = 3
+\end{verbatim}
+
+\begin{theorem}[\texttt{ramified\_iff}]
+Mathematically, this classifies exactly which rational primes ramify in the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The primes \(2\) and \(3\) ramify, their ramified prime ideals are nonprincipal, \(7\) and \(5\) split, \(13\) is inert, splitting is classified modulo \(24\), and ramification occurs exactly at \(2,3\). The proof is an explicit ideal/norm analysis.
+\end{remark}
+
+\subsection{\texttt{Units.lean}}
+
+\begin{verbatim}
+theorem isTotallyComplex : NumberField.IsTotallyComplex K
+\end{verbatim}
+
+\begin{theorem}[\texttt{isTotallyComplex}]
+Mathematically, this computes the archimedean signature of the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{torsionOrder\_eq\_two}]
+Mathematically, this describes the roots of unity in the unit group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unit_eq_one_or_neg_one (u : (𝓞 K)ˣ) : u = 1 ∨ u = -1
+\end{verbatim}
+
+\begin{theorem}[\texttt{unit\_eq\_one\_or\_neg\_one}]
+Mathematically, this is one of the concrete arithmetic statements recorded in this file.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unitRank_eq_zero : NumberField.Units.rank K = 0
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitRank\_eq\_zero}]
+Mathematically, this is Dirichlet's unit-rank formula specialized to this field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem regulator_eq_one : NumberField.Units.regulator K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{regulator\_eq\_one}]
+Mathematically, this evaluates the regulator as the logarithmic covolume of the unit lattice.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The field has signature \((0,1)\), rank \(0\), units \(\{\pm1\}\), and regulator \(1\).
+\end{remark}
+
+\subsection{\texttt{ClassGroup.lean}}
+
+\begin{verbatim}
+def ramifiedIdealOverTwo : (Ideal (𝓞 K))⁰
+\end{verbatim}
+
+\begin{definition}[\texttt{ramifiedIdealOverTwo}]
+This declaration introduces a concrete ideal used to describe splitting or ideal classes.
+\end{definition}
+
+\begin{verbatim}
+theorem classGroup_mk0_ramified_ne_one :
+    ClassGroup.mk0 ramifiedIdealOverTwo ≠ 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroup\_mk0\_ramified\_ne\_one}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroup_mk0_ramified_sq_eq_one :
+    ClassGroup.mk0 ramifiedIdealOverTwo ^ 2 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroup\_mk0\_ramified\_sq\_eq\_one}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem classNumber_eq_two : NumberField.classNumber K = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{classNumber\_eq\_two}]
+Mathematically, this computes the class number of the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroupStructure :
+    Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 2))
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroupStructure}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The class group is \(C_2\), generated by the ramified prime over \(2\). The proof uses Minkowski's bound, identifies all possible small-norm ideal classes, and proves the ramified class is nontrivial but has square one.
+\end{remark}
+
+\subsection{\texttt{Euclidean.lean}}
+
+\begin{verbatim}
+theorem not_isPrincipalIdealRing : ¬ IsPrincipalIdealRing (𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{not\_isPrincipalIdealRing}]
+Mathematically, this says the ring of integers is a PID, or in the negative case not a PID.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem not_normEuclidean :
+    ¬ ∀ a b : 𝓞 K, b ≠ 0 →
+      ∃ q r : 𝓞 K, a = b * q + r ∧
+        (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs
+\end{verbatim}
+
+\begin{theorem}[\texttt{not\_normEuclidean}]
+Mathematically, this states the norm-Euclidean division property, or its failure in the negative case.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof chooses a nearest integral-coordinate quotient and bounds the norm of the remainder; in the unfinished higher-degree cases this is exactly the missing geometry-of-numbers step.
+\end{proof}
+
+\begin{remark}[Subsection note]
+Since the ring is not a PID, it is not norm-Euclidean. The second proof also gives a direct obstruction by attempting to divide \(\theta\) by \(2\).
+\end{remark}
+
+\subsection{\texttt{UniqueFactorization.lean}}
+
+\begin{verbatim}
+theorem irreducible_two : Irreducible (2 : 𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{irreducible\_two}]
+Mathematically, this is part of the explicit unique-factorization analysis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem irreducible_three : Irreducible (3 : 𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{irreducible\_three}]
+Mathematically, this is part of the explicit unique-factorization analysis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem irreducible_theta : Irreducible thetaInt
+\end{verbatim}
+
+\begin{theorem}[\texttt{irreducible\_theta}]
+Mathematically, this is part of the explicit unique-factorization analysis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem two_not_prime : ¬ Prime (2 : 𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{two\_not\_prime}]
+Mathematically, this is part of the explicit unique-factorization analysis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem not_uniqueFactorizationMonoid :
+    ¬ UniqueFactorizationMonoid (𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{not\_uniqueFactorizationMonoid}]
+Mathematically, this is part of the explicit unique-factorization analysis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This gives an explicit failure of unique factorization: \(6=-\theta^2\), while \(2\), \(3\), and \(\theta\) are irreducible and \(2\) is not prime.
+\end{remark}
+
+\subsection{\texttt{Galois.lean}}
+
+\begin{verbatim}
+noncomputable def conjugation : K ≃ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{conjugation}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+theorem conjugation_apply_theta : conjugation θ = -θ
+\end{verbatim}
+
+\begin{theorem}[\texttt{conjugation\_apply\_theta}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem isGalois : IsGalois ℚ K
+\end{verbatim}
+
+\begin{theorem}[\texttt{isGalois}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem galoisGroupStructure :
+    Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (ZMod 2))
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroupStructure}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The Galois group is \(C_2\), generated by complex conjugation.
+\end{remark}
+
+\subsection{Summary for \(\mathbb Q(\sqrt{-6})\)}
+
+Easy: units and Galois structure.  Hard but completed: class number \(2\), explicit
+nonprincipal ramified ideals, splitting modulo \(24\), and non-UFD.  Nothing important
+in this folder for this field remains behind \verb|sorry|.
+
+\section{\(\mathbb Q(\sqrt[3]3)\)}
+
+\subsection{\texttt{Basic.lean}}
+
+\begin{verbatim}
+abbrev cubePolynomial : ℚ[X] := X ^ 3 - C (3 : ℚ)
+\end{verbatim}
+
+\begin{definition}[\texttt{cubePolynomial}]
+This declaration names the defining polynomial whose root gives the field presentation.
+\end{definition}
+
+\begin{verbatim}
+abbrev K : Type := AdjoinRoot cubePolynomial
+\end{verbatim}
+
+\begin{definition}[\texttt{K}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+abbrev cubeRootThree : K := AdjoinRoot.root cubePolynomial
+\end{verbatim}
+
+\begin{definition}[\texttt{cubeRootThree}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem cubeRootThree_cube : cubeRootThree ^ 3 = 3
+\end{verbatim}
+
+\begin{theorem}[\texttt{cubeRootThree\_cube}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem degree_eq_three : Module.finrank ℚ K = 3
+\end{verbatim}
+
+\begin{theorem}[\texttt{degree\_eq\_three}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem cubeRootThree_minpoly_rat : minpoly ℚ cubeRootThree = cubePolynomial
+\end{verbatim}
+
+\begin{theorem}[\texttt{cubeRootThree\_minpoly\_rat}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The field is the pure cubic field generated by \(\theta^3=3\). Irreducibility gives degree \(3\), and the \verb|AdjoinRoot| power basis supplies the basic structure.
+\end{remark}
+
+\subsection{\texttt{RingOfIntegers.lean}}
+
+\begin{verbatim}
+theorem cubeRootThree_integral : cubeRootThree ∈ integralClosure ℤ K
+\end{verbatim}
+
+\begin{theorem}[\texttt{cubeRootThree\_integral}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem norm_eq_normForm (x y z : ℚ) :
+    Algebra.norm ℚ (x + yθ + zθ^2) =
+      x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z
+\end{verbatim}
+
+\begin{theorem}[\texttt{norm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem integralClosure_eq_adjoin :
+    integralClosure ℤ K = Algebra.adjoin ℤ ({cubeRootThree} : Set K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{integralClosure\_eq\_adjoin}]
+Mathematically, this identifies the full ring of integers with the displayed generated order.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+noncomputable def concreteIntegralBasis : Basis (Fin 3) ℤ (𝓞 K)
+\end{verbatim}
+
+\begin{definition}[\texttt{concreteIntegralBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers
+\end{verbatim}
+
+\begin{theorem}[\texttt{ringOfIntegers\_eq}]
+Mathematically, this identifies the full ring of integers with the displayed generated order.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is \(\mathbb Z[\sqrt[3]3]\), with basis \(1,\theta,\theta^2\). The proof is more delicate than a quadratic case: a ``peeling'' argument uses the norm form to show an integral element with \(3z\in\mathbb Z[\theta]\) already lies in \(\mathbb Z[\theta]\).
+\end{remark}
+
+\subsection{\texttt{Discriminant.lean}}
+
+\begin{verbatim}
+theorem numberField_discr_eq : NumberField.discr K = (-243 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{numberField\_discr\_eq}]
+Mathematically, this computes the discriminant in the displayed basis or for the number field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+theorem integralBasis_discr :
+    Algebra.discr ℚ (NumberField.integralBasis K) = (-243 : ℚ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{integralBasis\_discr}]
+Mathematically, this identifies the displayed integral basis or compares it with mathlib's canonical integral basis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The discriminant is \(-243=-3^5\). The proof compares the concrete integral basis with mathlib's canonical integral basis.
+\end{remark}
+
+\subsection{\texttt{NormForm.lean}}
+
+\begin{verbatim}
+theorem intNorm_eq_normForm (x y z : ℤ) :
+    Algebra.norm ℤ (x • 1 + y • thetaInt + z • thetaInt ^ 2) =
+      x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z
+\end{verbatim}
+
+\begin{theorem}[\texttt{intNorm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem isUnit_iff_normForm (x y : ℤ) :
+    IsUnit (x • (1 : 𝓞 K) + y • thetaInt) ↔ x ^ 2 + 6 * y ^ 2 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{isUnit\_iff\_normForm}]
+Mathematically, this converts the unit condition into the corresponding norm-form equation.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This packages the cubic norm form for integral elements and the unit criterion.
+\end{remark}
+
+\subsection{\texttt{PrimeSplitting.lean}}
+
+\begin{verbatim}
+theorem span_three_eq : Ideal.span {(3 : 𝓞 K)} = Ideal.span {thetaInt} ^ 3
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_three\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_two_eq :
+    Ideal.span {(2 : 𝓞 K)} =
+      Ideal.span {thetaInt - 1} * Ideal.span {thetaInt ^ 2 + thetaInt + 1}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_two\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrime\_span\_seven}]
+Mathematically, this proves that the displayed ideal or element is prime.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+def primeAbove61 (r : ℤ) : Ideal (𝓞 K)
+\end{verbatim}
+
+\begin{definition}[\texttt{primeAbove61}]
+This declaration introduces a concrete ideal used to describe splitting or ideal classes.
+\end{definition}
+
+\begin{verbatim}
+theorem span_sixtyOne_eq :
+    Ideal.span {(61 : 𝓞 K)} = primeAbove61 4 * primeAbove61 5 * primeAbove61 52
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_sixtyOne\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem exists_degree_one_prime_iff_cube_root_mod_p (p : ℕ) (hp : p.Prime)
+    (hp3 : p ≠ 3) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+      Ideal.absNorm P = p) ↔ ∃ r : ZMod p, r ^ 3 = (3 : ZMod p)
+\end{verbatim}
+
+\begin{theorem}[\texttt{exists\_degree\_one\_prime\_iff\_cube\_root\_mod\_p}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 3
+\end{verbatim}
+
+\begin{theorem}[\texttt{ramified\_iff\_eq\_three}]
+Mathematically, this classifies exactly which rational primes ramify in the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The prime \(3\) is totally ramified, \(2\) has one degree-one and one degree-two prime, \(7\) is inert, \(61\) splits into three degree-one primes, and degree-one primes above \(p\ne3\) are equivalent to \(3\) being a cube modulo \(p\). Ramification occurs only at \(3\).
+\end{remark}
+
+\subsection{\texttt{Units.lean}}
+
+\begin{verbatim}
+theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{torsionOrder\_eq\_two}]
+Mathematically, this describes the roots of unity in the unit group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem not_totallyReal : ¬ NumberField.IsTotallyReal K
+\end{verbatim}
+
+\begin{theorem}[\texttt{not\_totallyReal}]
+Mathematically, this computes the archimedean signature of the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem nrRealPlaces_eq_one : NumberField.InfinitePlace.nrRealPlaces K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{nrRealPlaces\_eq\_one}]
+Mathematically, this computes the archimedean signature of the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem nrComplexPlaces_eq_one : NumberField.InfinitePlace.nrComplexPlaces K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{nrComplexPlaces\_eq\_one}]
+Mathematically, this computes the archimedean signature of the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+noncomputable def fundamentalUnit : (𝓞 K)ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{fundamentalUnit}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem fundamentalUnitSystem_isFundamental :
+    Subgroup.closure (Set.range fundamentalUnitSystem) ⊔
+      NumberField.Units.torsion K = ⊤
+\end{verbatim}
+
+\begin{theorem}[\texttt{fundamentalUnitSystem\_isFundamental}]
+Mathematically, this states that the displayed unit generates the free part of the unit group, up to torsion.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{verbatim}
+theorem regulator_eq :
+    NumberField.Units.regulator K =
+      |Real.log ((3 : ℝ) ^ ((2 : ℝ) / 3) - 2)|
+\end{verbatim}
+
+\begin{theorem}[\texttt{regulator\_eq}]
+Mathematically, this evaluates the regulator as the logarithmic covolume of the unit lattice.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The signature is \((1,1)\), so the unit rank is \(1\), and the proposed unit is \(\theta^2-2\). The concrete fundamental-unit statement and regulator formula are stated with \verb|sorry|.
+\end{remark}
+
+\subsection{\texttt{ClassGroup.lean}}
+
+\begin{verbatim}
+theorem classNumber_eq_one : NumberField.classNumber K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classNumber\_eq\_one}]
+Mathematically, this computes the class number of the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrincipalIdealRing}]
+Mathematically, this says the ring of integers is a PID, or in the negative case not a PID.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroupStructure :
+    Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroupStructure}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{remark}[Subsection note]
+Class number one is proved using the Minkowski bound \((4/\pi)(3!/3^3)\sqrt{243}<5\), reducing to primes \(2,3\), whose prime ideals were already explicitly principal.
+\end{remark}
+
+\subsection{\texttt{Euclidean.lean}}
+
+\begin{verbatim}
+theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 K, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs
+\end{verbatim}
+
+\begin{theorem}[\texttt{normEuclidean}]
+Mathematically, this states the norm-Euclidean division property, or its failure in the negative case.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This classical norm-Euclidean statement is present but still has \verb|sorry|. The missing work is the geometry-of-numbers/nearest-lattice-point estimate for the cubic norm.
+\end{remark}
+
+\subsection{\texttt{Galois.lean}}
+
+\begin{verbatim}
+theorem aut_eq_id (σ : K ≃ₐ[ℚ] K) : σ = idAut
+\end{verbatim}
+
+\begin{theorem}[\texttt{aut\_eq\_id}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem not_isGalois : ¬ IsGalois ℚ K
+\end{verbatim}
+
+\begin{theorem}[\texttt{not\_isGalois}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+abbrev galoisClosure : Type := cubePolynomial.SplittingField
+\end{verbatim}
+
+\begin{definition}[\texttt{galoisClosure}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+theorem galoisClosureGroupStructure :
+    Nonempty ((galoisClosure ≃ₐ[ℚ] galoisClosure) ≃* Equiv.Perm (Fin 3))
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisClosureGroupStructure}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem finrank_galoisClosure : Module.finrank ℚ galoisClosure = 6
+\end{verbatim}
+
+\begin{theorem}[\texttt{finrank\_galoisClosure}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The cubic field itself has only the identity automorphism and is not Galois. Its splitting field has degree \(6\) and Galois group \(S_3\).
+\end{remark}
+
+\subsection{Summary for \(\mathbb Q(\sqrt[3]3)\)}
+
+Easy: basic \verb|AdjoinRoot| construction.  Hard but completed: ring of integers,
+prime splitting, non-Galois/Galois-closure structure, and class number one.  Missing:
+norm-Euclideanity, concrete fundamental-unit generation, and regulator.
+
+\section{\(\mathbb Q(\zeta_3)\)}
+
+\subsection{\texttt{Basic.lean}}
+
+\begin{verbatim}
+abbrev K : Type := CyclotomicField 3 ℚ
+\end{verbatim}
+
+\begin{definition}[\texttt{K}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+abbrev ζ : K := IsCyclotomicExtension.zeta 3 ℚ K
+\end{verbatim}
+
+\begin{definition}[\texttt{ζ}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem zeta_sq_add_zeta_add_one_eq_zero : ζ ^ 2 + ζ + 1 = 0
+\end{verbatim}
+
+\begin{theorem}[\texttt{zeta\_sq\_add\_zeta\_add\_one\_eq\_zero}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem degree_eq_two : Module.finrank ℚ K = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{degree\_eq\_two}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+def sqrtNegThreeEquivCyclotomic : QSqrtNegThree ≃ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtNegThreeEquivCyclotomic}]
+This declaration constructs a concrete algebra homomorphism or equivalence between two presentations.
+\end{definition}
+
+\begin{remark}[Subsection note]
+This is the Eisenstein field, with \(\zeta^2+\zeta+1=0\), degree \(2\), and an explicit equivalence with \(\mathbb Q(\sqrt{-3})\).
+\end{remark}
+
+\subsection{\texttt{RingOfIntegers.lean}}
+
+\begin{verbatim}
+abbrev OK : Type := 𝓞 K
+\end{verbatim}
+
+\begin{definition}[\texttt{OK}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+noncomputable def zetaInt : OK := zeta_isPrimitiveRoot.toInteger
+\end{verbatim}
+
+\begin{definition}[\texttt{zetaInt}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+abbrev integralPowerBasis : PowerBasis ℤ OK
+\end{verbatim}
+
+\begin{definition}[\texttt{integralPowerBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+abbrev zetaExplicitIntegralBasis : Basis (Fin 2) ℤ OK
+\end{verbatim}
+
+\begin{definition}[\texttt{zetaExplicitIntegralBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+theorem isIntegralClosure_adjoin_zeta :
+    IsIntegralClosure (Algebra.adjoin ℤ ({ζ} : Set K)) ℤ K
+\end{verbatim}
+
+\begin{theorem}[\texttt{isIntegralClosure\_adjoin\_zeta}]
+Mathematically, this identifies the full ring of integers with the displayed generated order.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is \(\mathbb Z[\zeta_3]\), with basis \(1,\zeta\). The proof is mostly provided by the cyclotomic integral power basis API.
+\end{remark}
+
+\subsection{\texttt{Discriminant.lean}}
+
+\begin{verbatim}
+theorem numberField_discr_eq : NumberField.discr K = -3
+\end{verbatim}
+
+\begin{theorem}[\texttt{numberField\_discr\_eq}]
+Mathematically, this computes the discriminant in the displayed basis or for the number field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+theorem zetaExplicitIntegralBasis_discr :
+    Algebra.discr ℤ zetaExplicitIntegralBasis = (-3 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{zetaExplicitIntegralBasis\_discr}]
+Mathematically, this identifies the displayed integral basis or compares it with mathlib's canonical integral basis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The discriminant is \(-3\), obtained from the explicit cyclotomic basis.
+\end{remark}
+
+\subsection{\texttt{PrimeSplitting.lean}}
+
+\begin{verbatim}
+theorem intNorm_eq_normForm (x y : ℤ) :
+    Algebra.norm ℤ (x • (1 : OK) + y • zetaInt) = x ^ 2 - x * y + y ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{intNorm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem span_three_eq :
+    Ideal.span {(3 : OK)} = Ideal.span {zetaInt - 1} ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_three\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrime\_span\_two}]
+Mathematically, this proves that the displayed ideal or element is prime.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_seven_eq :
+    Ideal.span {(7 : OK)} =
+      Ideal.span {3 + zetaInt} * Ideal.span {3 + zetaInt ^ 2}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_seven\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem splits_iff_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    (∃ P Q : Ideal OK, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : OK)} = P * Q) ↔ p % 3 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{splits\_iff\_one\_mod\_three}]
+Mathematically, this gives a congruence or residue-field criterion for splitting behavior.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The norm form is \(x^2-xy+y^2\). The prime \(3\) ramifies, \(2\) is inert, \(7\) splits, and \(p\ne3\) splits iff \(p\equiv1\pmod3\).
+\end{remark}
+
+\subsection{\texttt{Units.lean}}
+
+\begin{verbatim}
+abbrev etaUnit : OKˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{etaUnit}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem unit_eq_one_or_neg_one_or_eta (u : OKˣ) :
+    u = 1 ∨ u = -1 ∨ u = etaUnit ∨ u = -etaUnit ∨
+    u = etaUnit ^ 2 ∨ u = -(etaUnit ^ 2)
+\end{verbatim}
+
+\begin{theorem}[\texttt{unit\_eq\_one\_or\_neg\_one\_or\_eta}]
+Mathematically, this is one of the concrete arithmetic statements recorded in this file.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem torsionOrder_eq_six : Units.torsionOrder K = 6
+\end{verbatim}
+
+\begin{theorem}[\texttt{torsionOrder\_eq\_six}]
+Mathematically, this describes the roots of unity in the unit group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unitRank_eq_zero : Units.rank K = 0
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitRank\_eq\_zero}]
+Mathematically, this is Dirichlet's unit-rank formula specialized to this field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unitGroupStructure : Nonempty (OKˣ ≃* Multiplicative (ZMod 6))
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitGroupStructure}]
+Mathematically, this is one of the concrete arithmetic statements recorded in this file.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem regulator_eq_one : Units.regulator K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{regulator\_eq\_one}]
+Mathematically, this evaluates the regulator as the logarithmic covolume of the unit lattice.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{remark}[Subsection note]
+All units are the six roots of unity. Since the rank is \(0\), the regulator is \(1\).
+\end{remark}
+
+\subsection{\texttt{ClassGroup.lean}}
+
+\begin{verbatim}
+theorem isPrincipalIdealRing : IsPrincipalIdealRing OK
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrincipalIdealRing}]
+Mathematically, this says the ring of integers is a PID, or in the negative case not a PID.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem classNumber_eq_one : NumberField.classNumber K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classNumber\_eq\_one}]
+Mathematically, this computes the class number of the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroupStructure : Nonempty (ClassGroup OK ≃* Multiplicative (ZMod 1))
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroupStructure}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The Eisenstein integers have class number one.
+\end{remark}
+
+\subsection{\texttt{Euclidean.lean}}
+
+\begin{verbatim}
+theorem normEuclidean (a b : OK) (hb : b ≠ 0) :
+    ∃ q r : OK, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs
+\end{verbatim}
+
+\begin{theorem}[\texttt{normEuclidean}]
+Mathematically, this states the norm-Euclidean division property, or its failure in the negative case.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof chooses a nearest integral-coordinate quotient and bounds the norm of the remainder; in the unfinished higher-degree cases this is exactly the missing geometry-of-numbers step.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This is the Euclidean algorithm for Eisenstein integers, using coordinate rounding and the hexagonal norm bound \(\le3/4\).
+\end{remark}
+
+\subsection{\texttt{Galois.lean}}
+
+\begin{verbatim}
+theorem isGalois : IsGalois ℚ K
+\end{verbatim}
+
+\begin{theorem}[\texttt{isGalois}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+abbrev galEquivZMod : Gal(K / ℚ) ≃* (ZMod 3)ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{galEquivZMod}]
+This declaration constructs a concrete algebra homomorphism or equivalence between two presentations.
+\end{definition}
+
+\begin{verbatim}
+theorem galoisGroupStructure :
+    Nonempty (Gal(K/ℚ) ≃* Multiplicative (ZMod 2))
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroupStructure}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The Galois group is \((\mathbb Z/3\mathbb Z)^\times\cong C_2\).
+\end{remark}
+
+\subsection{Summary for \(\mathbb Q(\zeta_3)\)}
+
+This is the smoothest example: cyclotomic APIs directly give the field, integral basis,
+Galois group, finite units, and much of the class group structure.  The harder completed
+part is the Euclidean proof and prime splitting criterion.
+
+\section{\(\mathbb Q(\zeta_5)\)}
+
+\subsection{\texttt{Basic.lean}}
+
+\begin{verbatim}
+abbrev K : Type := CyclotomicField 5 ℚ
+\end{verbatim}
+
+\begin{definition}[\texttt{K}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+abbrev ζ : K := IsCyclotomicExtension.zeta 5 ℚ K
+\end{verbatim}
+
+\begin{definition}[\texttt{ζ}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem zeta_pow_five : ζ ^ 5 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{zeta\_pow\_five}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem zeta_sum_eq_zero : 1 + ζ + ζ ^ 2 + ζ ^ 3 + ζ ^ 4 = 0
+\end{verbatim}
+
+\begin{theorem}[\texttt{zeta\_sum\_eq\_zero}]
+Mathematically, this is one of the concrete arithmetic statements recorded in this file.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem degree_eq_four : Module.finrank ℚ K = 4
+\end{verbatim}
+
+\begin{theorem}[\texttt{degree\_eq\_four}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem zetaFivePolynomial_eq_minpoly :
+    zetaFivePolynomial = minpoly ℚ ζ
+\end{verbatim}
+
+\begin{theorem}[\texttt{zetaFivePolynomial\_eq\_minpoly}]
+Mathematically, this identifies the minimal polynomial of the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The field is \(\mathbb Q(\zeta_5)\), degree \(4\), with minimal polynomial \(\Phi_5=X^4+X^3+X^2+X+1\).
+\end{remark}
+
+\subsection{\texttt{RingOfIntegers.lean}}
+
+\begin{verbatim}
+theorem zeta_integral : ζ ∈ integralClosure ℤ K
+\end{verbatim}
+
+\begin{theorem}[\texttt{zeta\_integral}]
+Mathematically, this proves that the displayed algebraic element is integral over \(\mathbb Z\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+noncomputable def zetaInt : 𝓞 K
+\end{verbatim}
+
+\begin{definition}[\texttt{zetaInt}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+abbrev integralPowerBasis : PowerBasis ℤ (𝓞 K)
+\end{verbatim}
+
+\begin{definition}[\texttt{integralPowerBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+def integralBasisVectors : Fin 4 → K := ![1, ζ, ζ ^ 2, ζ ^ 3]
+\end{verbatim}
+
+\begin{definition}[\texttt{integralBasisVectors}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+noncomputable def concreteIntegralBasis : Basis (Fin 4) ℤ (𝓞 K)
+\end{verbatim}
+
+\begin{definition}[\texttt{concreteIntegralBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers
+\end{verbatim}
+
+\begin{theorem}[\texttt{ringOfIntegers\_eq}]
+Mathematically, this identifies the full ring of integers with the displayed generated order.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is \(\mathbb Z[\zeta_5]\), with basis \(1,\zeta,\zeta^2,\zeta^3\). This is again largely powered by the cyclotomic integral basis API.
+\end{remark}
+
+\subsection{\texttt{Discriminant.lean}}
+
+\begin{verbatim}
+theorem numberField_discr_eq : NumberField.discr K = (125 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{numberField\_discr\_eq}]
+Mathematically, this computes the discriminant in the displayed basis or for the number field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (125 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{concreteIntegralBasis\_discr}]
+Mathematically, this identifies the displayed integral basis or compares it with mathlib's canonical integral basis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The discriminant is \(5^3=125\).
+\end{remark}
+
+\subsection{\texttt{PrimeSplitting.lean}}
+
+\begin{verbatim}
+def normForm {R : Type*} [CommRing R] (a b c d : R) : R
+\end{verbatim}
+
+\begin{definition}[\texttt{normForm}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+theorem intNorm_eq_normForm (a b c d : ℤ) :
+    Algebra.norm ℤ (a + bζ + cζ^2 + dζ^3) = normForm a b c d
+\end{verbatim}
+
+\begin{theorem}[\texttt{intNorm\_eq\_normForm}]
+Mathematically, this computes the field norm or integral norm as an explicit polynomial form.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the algebra norm in the chosen basis and then simplifies the resulting polynomial identity.
+\end{proof}
+
+\begin{verbatim}
+theorem span_five_eq :
+    Ideal.span {(5 : 𝓞 K)} = Ideal.span {1 - zetaInt} ^ 4
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_five\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 K)}).IsPrime
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrime\_span\_two}]
+Mathematically, this proves that the displayed ideal or element is prime.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_nineteen_eq :
+    Ideal.span {(19 : 𝓞 K)} =
+      Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 5 * zetaInt + 1} *
+        Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 15 * zetaInt + 1}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_nineteen\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_eleven_eq :
+    Ideal.span {(11 : 𝓞 K)} =
+      Ideal.span {(11 : 𝓞 K), zetaInt - 3} * Ideal.span {(11 : 𝓞 K), zetaInt - 4} *
+        Ideal.span {(11 : 𝓞 K), zetaInt - 5} * Ideal.span {(11 : 𝓞 K), zetaInt - 9}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_eleven\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem splits_completely_iff (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+      Ideal.absNorm P = p) ↔
+      p % 5 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{splits\_completely\_iff}]
+Mathematically, this gives a congruence or residue-field criterion for splitting behavior.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5
+\end{verbatim}
+
+\begin{theorem}[\texttt{ramified\_iff\_eq\_five}]
+Mathematically, this classifies exactly which rational primes ramify in the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The prime \(5\) totally ramifies, \(2\) is inert of residue degree \(4\), \(19\) factors into two degree-two primes, and \(11\) splits completely. In general, \(p\ne5\) splits completely iff \(p\equiv1\pmod5\). The proof has a long explicit quartic norm-form and kernel-of-residue-map computations.
+\end{remark}
+
+\subsection{\texttt{Units.lean}}
+
+\begin{verbatim}
+noncomputable def torsionGenerator : (𝓞 K)ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{torsionGenerator}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem torsionOrder_eq_ten : NumberField.Units.torsionOrder K = 10
+\end{verbatim}
+
+\begin{theorem}[\texttt{torsionOrder\_eq\_ten}]
+Mathematically, this describes the roots of unity in the unit group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unitRank_eq_one : NumberField.Units.rank K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitRank\_eq\_one}]
+Mathematically, this is Dirichlet's unit-rank formula specialized to this field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+noncomputable def fundamentalUnit : (𝓞 K)ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{fundamentalUnit}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem fundamentalUnitSystem_isFundamental :
+    Subgroup.closure (Set.range fundamentalUnitSystem) ⊔
+      NumberField.Units.torsion K = ⊤
+\end{verbatim}
+
+\begin{theorem}[\texttt{fundamentalUnitSystem\_isFundamental}]
+Mathematically, this states that the displayed unit generates the free part of the unit group, up to torsion.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{verbatim}
+theorem regulator_eq :
+    NumberField.Units.regulator K = 2 * Real.log ((1 + Real.sqrt 5) / 2)
+\end{verbatim}
+
+\begin{theorem}[\texttt{regulator\_eq}]
+Mathematically, this evaluates the regulator as the logarithmic covolume of the unit lattice.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The torsion subgroup is \(\mu_{10}\), generated by \(-\zeta\), and the rank is \(1\). The proposed free generator is the cyclotomic unit \(1+\zeta\). Its concrete fundamental-unit theorem and regulator formula are stated with \verb|sorry|.
+\end{remark}
+
+\subsection{\texttt{ClassGroup.lean}}
+
+\begin{verbatim}
+theorem classNumber_eq_one : NumberField.classNumber K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classNumber\_eq\_one}]
+Mathematically, this computes the class number of the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrincipalIdealRing}]
+Mathematically, this says the ring of integers is a PID, or in the negative case not a PID.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroupStructure :
+    Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroupStructure}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{remark}[Subsection note]
+Class number one follows from a Minkowski-bound reduction to small primes plus the explicit splitting/principal ideal computations.
+\end{remark}
+
+\subsection{\texttt{Euclidean.lean}}
+
+\begin{verbatim}
+theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 K, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs
+\end{verbatim}
+
+\begin{theorem}[\texttt{normEuclidean}]
+Mathematically, this states the norm-Euclidean division property, or its failure in the negative case.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This norm-Euclidean statement is present with \verb|sorry|. The missing piece is a quartic lattice rounding/norm estimate.
+\end{remark}
+
+\subsection{\texttt{QuadraticSubfield.lean}}
+
+\begin{verbatim}
+theorem gaussSum_sq : (1 + 2 * ζ + 2 * ζ ^ 4) ^ 2 = 5
+\end{verbatim}
+
+\begin{theorem}[\texttt{gaussSum\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+abbrev sqrtFiveSubfield : Subalgebra ℚ K :=
+    Algebra.adjoin ℚ ({gaussSum} : Set K)
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtFiveSubfield}]
+This declaration identifies the relevant subfield generated by the displayed element.
+\end{definition}
+
+\begin{verbatim}
+noncomputable def sqrtFiveToCyclotomic : QSqrtFive →ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtFiveToCyclotomic}]
+This declaration constructs a concrete algebra homomorphism or equivalence between two presentations.
+\end{definition}
+
+\begin{verbatim}
+noncomputable def sqrtFiveEquivSubfield :
+    QSqrtFive ≃ₐ[ℚ] sqrtFiveSubfield
+\end{verbatim}
+
+\begin{definition}[\texttt{sqrtFiveEquivSubfield}]
+This declaration constructs a concrete algebra homomorphism or equivalence between two presentations.
+\end{definition}
+
+\begin{remark}[Subsection note]
+The quadratic subfield is \(\mathbb Q(\sqrt5)\), generated by the quadratic Gauss sum \(1+2\zeta+2\zeta^4\).
+\end{remark}
+
+\subsection{\texttt{Galois.lean}}
+
+\begin{verbatim}
+noncomputable def sigmaTwo : K ≃ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{sigmaTwo}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+theorem sigmaTwo_apply_zeta : sigmaTwo ζ = ζ ^ 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{sigmaTwo\_apply\_zeta}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem galoisGroupStructure : Nonempty ((K ≃ₐ[ℚ] K) ≃* (ZMod 5)ˣ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroupStructure}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem galoisGroup_isCyclic : IsCyclic (K ≃ₐ[ℚ] K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroup\_isCyclic}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem orderOf_sigmaTwo : orderOf sigmaTwo = 4
+\end{verbatim}
+
+\begin{theorem}[\texttt{orderOf\_sigmaTwo}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The Galois group is \((\mathbb Z/5\mathbb Z)^\times\cong C_4\), generated by \(\zeta\mapsto\zeta^2\).
+\end{remark}
+
+\subsection{Summary for \(\mathbb Q(\zeta_5)\)}
+
+Easy: cyclotomic field, integral basis, Galois group.  Hard but completed: explicit
+quartic norm form, prime splitting, class number one, quadratic subfield.  Missing:
+norm-Euclideanity, concrete cyclotomic-unit generation, and regulator.
+
+\section{\(\mathbb Q(\zeta_8)\)}
+
+\subsection{\texttt{Basic.lean}}
+
+\begin{verbatim}
+abbrev K : Type := CyclotomicField 8 ℚ
+\end{verbatim}
+
+\begin{definition}[\texttt{K}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+abbrev ζ : K := IsCyclotomicExtension.zeta 8 ℚ K
+\end{verbatim}
+
+\begin{definition}[\texttt{ζ}]
+This declaration names the distinguished algebraic generator of the field.
+\end{definition}
+
+\begin{verbatim}
+theorem zeta_pow_eight : ζ ^ 8 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{zeta\_pow\_eight}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem zeta_pow_four : ζ ^ 4 = -1
+\end{verbatim}
+
+\begin{theorem}[\texttt{zeta\_pow\_four}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem degree_eq_four : Module.finrank ℚ K = 4
+\end{verbatim}
+
+\begin{theorem}[\texttt{degree\_eq\_four}]
+Mathematically, this states the degree of the number field over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem zetaEightPolynomial_eq_minpoly :
+    zetaEightPolynomial = minpoly ℚ ζ
+\end{verbatim}
+
+\begin{theorem}[\texttt{zetaEightPolynomial\_eq\_minpoly}]
+Mathematically, this identifies the minimal polynomial of the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The field is \(\mathbb Q(\zeta_8)\), degree \(4\), with minimal polynomial \(X^4+1\).
+\end{remark}
+
+\subsection{\texttt{RingOfIntegers.lean}}
+
+\begin{verbatim}
+noncomputable def zetaInt : 𝓞 K
+\end{verbatim}
+
+\begin{definition}[\texttt{zetaInt}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+abbrev integralPowerBasis : PowerBasis ℤ (𝓞 K)
+\end{verbatim}
+
+\begin{definition}[\texttt{integralPowerBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+def integralBasisVectors : Fin 4 → K := ![1, ζ, ζ ^ 2, ζ ^ 3]
+\end{verbatim}
+
+\begin{definition}[\texttt{integralBasisVectors}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+noncomputable def concreteIntegralBasis : Basis (Fin 4) ℤ (𝓞 K)
+\end{verbatim}
+
+\begin{definition}[\texttt{concreteIntegralBasis}]
+This declaration gives the explicit basis used for coordinates, discriminants, norms, or the ring of integers.
+\end{definition}
+
+\begin{verbatim}
+theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers
+\end{verbatim}
+
+\begin{theorem}[\texttt{ringOfIntegers\_eq}]
+Mathematically, this identifies the full ring of integers with the displayed generated order.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The ring of integers is \(\mathbb Z[\zeta_8]\), with the standard cyclotomic basis.
+\end{remark}
+
+\subsection{\texttt{Discriminant.lean}}
+
+\begin{verbatim}
+theorem numberField_discr_eq : NumberField.discr K = (256 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{numberField\_discr\_eq}]
+Mathematically, this computes the discriminant in the displayed basis or for the number field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{verbatim}
+theorem concreteIntegralBasis_discr :
+    Algebra.discr ℤ concreteIntegralBasis = (256 : ℤ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{concreteIntegralBasis\_discr}]
+Mathematically, this identifies the displayed integral basis or compares it with mathlib's canonical integral basis.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses integrality of the generator, the explicit basis, and discriminant/norm computations to compare the generated order with the integral closure.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The discriminant is \(256\).
+\end{remark}
+
+\subsection{\texttt{Subfields.lean}}
+
+\begin{verbatim}
+theorem sqrt_two_sq : (ζ + ζ ^ 7) ^ 2 = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrt\_two\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem i_sq : (ζ ^ 2) ^ 2 = -1
+\end{verbatim}
+
+\begin{theorem}[\texttt{i\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{verbatim}
+theorem sqrt_neg_two_sq : (ζ - ζ ^ 7) ^ 2 = -2
+\end{verbatim}
+
+\begin{theorem}[\texttt{sqrt\_neg\_two\_sq}]
+Mathematically, this records the defining algebraic relation satisfied by the chosen generator.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof is a direct calculation from the chosen presentation, irreducibility, or the power-basis API.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The three quadratic directions inside \(\mathbb Q(\zeta_8)\) are visible: \(\sqrt2\), \(i\), and \(\sqrt{-2}\).
+\end{remark}
+
+\subsection{\texttt{PrimeSplitting.lean}}
+
+\begin{verbatim}
+def normForm {R : Type*} [CommRing R] (a b c d : R) : R
+\end{verbatim}
+
+\begin{definition}[\texttt{normForm}]
+This declaration fixes the Lean model for the field or an auxiliary presentation used in this file.
+\end{definition}
+
+\begin{verbatim}
+theorem span_two_eq :
+    Ideal.span {(2 : 𝓞 K)} = Ideal.span {1 - zetaInt} ^ 4
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_two\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_three_eq :
+    Ideal.span {(3 : 𝓞 K)} =
+      Ideal.span {(3 : 𝓞 K), zetaInt ^ 2 + zetaInt + 2} *
+        Ideal.span {(3 : 𝓞 K), zetaInt ^ 2 + 2 * zetaInt + 2}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_three\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem span_seventeen_eq :
+    Ideal.span {(17 : 𝓞 K)} =
+      Ideal.span {(17 : 𝓞 K), zetaInt - 2} * Ideal.span {(17 : 𝓞 K), zetaInt - 8} *
+        Ideal.span {(17 : 𝓞 K), zetaInt - 9} * Ideal.span {(17 : 𝓞 K), zetaInt - 15}
+\end{verbatim}
+
+\begin{theorem}[\texttt{span\_seventeen\_eq}]
+Mathematically, this gives an explicit factorization of a rational prime ideal in the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem no_inert_prime (p : ℕ) (hp : p.Prime) :
+    ¬ (Ideal.span {(p : 𝓞 K)}).IsPrime
+\end{verbatim}
+
+\begin{theorem}[\texttt{no\_inert\_prime}]
+Mathematically, this gives a congruence or residue-field criterion for splitting behavior.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem splits_completely_iff (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+      Ideal.absNorm P = p) ↔
+      p % 8 = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{splits\_completely\_iff}]
+Mathematically, this gives a congruence or residue-field criterion for splitting behavior.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{verbatim}
+theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 2
+\end{verbatim}
+
+\begin{theorem}[\texttt{ramified\_iff\_eq\_two}]
+Mathematically, this classifies exactly which rational primes ramify in the field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof expands the relevant ideal generators, computes absolute norms, and uses residue or norm comparisons to prove primality, ramification, and splitting.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The prime \(2\) totally ramifies, \(3\) splits into two degree-two primes, \(17\) splits completely, no rational prime is inert, complete splitting is \(p\equiv1\pmod8\), and ramification occurs only at \(2\).
+\end{remark}
+
+\subsection{\texttt{Units.lean}}
+
+\begin{verbatim}
+noncomputable def torsionGenerator : (𝓞 K)ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{torsionGenerator}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem torsionOrder_eq_eight : NumberField.Units.torsionOrder K = 8
+\end{verbatim}
+
+\begin{theorem}[\texttt{torsionOrder\_eq\_eight}]
+Mathematically, this describes the roots of unity in the unit group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+theorem unitRank_eq_one : NumberField.Units.rank K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{unitRank\_eq\_one}]
+Mathematically, this is Dirichlet's unit-rank formula specialized to this field.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof combines the explicit norm form, the archimedean signature, and Dirichlet-unit infrastructure; concrete generators require the displayed Pell or cyclotomic-unit argument.
+\end{proof}
+
+\begin{verbatim}
+noncomputable def fundamentalUnit : (𝓞 K)ˣ
+\end{verbatim}
+
+\begin{definition}[\texttt{fundamentalUnit}]
+This declaration introduces a concrete unit or a concrete family of torsion units.
+\end{definition}
+
+\begin{verbatim}
+theorem fundamentalUnitSystem_isFundamental :
+    Subgroup.closure (Set.range fundamentalUnitSystem) ⊔
+      NumberField.Units.torsion K = ⊤
+\end{verbatim}
+
+\begin{theorem}[\texttt{fundamentalUnitSystem\_isFundamental}]
+Mathematically, this states that the displayed unit generates the free part of the unit group, up to torsion.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{verbatim}
+theorem regulator_eq :
+    NumberField.Units.regulator K = 2 * Real.log (1 + Real.sqrt 2)
+\end{verbatim}
+
+\begin{theorem}[\texttt{regulator\_eq}]
+Mathematically, this evaluates the regulator as the logarithmic covolume of the unit lattice.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The torsion subgroup is \(\mu_8\), the rank is \(1\), and the proposed generator is \(1+\sqrt2=1+\zeta+\zeta^7\). The concrete generation statement and regulator formula have \verb|sorry|.
+\end{remark}
+
+\subsection{\texttt{ClassGroup.lean}}
+
+\begin{verbatim}
+theorem classNumber_eq_one : NumberField.classNumber K = 1
+\end{verbatim}
+
+\begin{theorem}[\texttt{classNumber\_eq\_one}]
+Mathematically, this computes the class number of the ring of integers.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{verbatim}
+theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{isPrincipalIdealRing}]
+Mathematically, this says the ring of integers is a PID, or in the negative case not a PID.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Lean proof follows the preceding concrete definitions and reduces the claim to explicit algebraic calculation or a standard mathlib API lemma.
+\end{proof}
+
+\begin{verbatim}
+theorem classGroupStructure :
+    Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))
+\end{verbatim}
+
+\begin{theorem}[\texttt{classGroupStructure}]
+Mathematically, this identifies the ideal class group as the displayed finite cyclic group.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof uses Minkowski's bound to reduce to finitely many small ideals, then uses the explicit splitting computations above to identify their ideal classes.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The proof uses Minkowski's bound; only \(2\) lies below the bound, and the ramified prime above \(2\) is principal.
+\end{remark}
+
+\subsection{\texttt{Euclidean.lean}}
+
+\begin{verbatim}
+theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 K, a = b * q + r ∧
+      (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs
+\end{verbatim}
+
+\begin{theorem}[\texttt{normEuclidean}]
+Mathematically, this states the norm-Euclidean division property, or its failure in the negative case.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+This declaration is currently stated in Lean with a remaining \texttt{sorry}; the mathematical proof would require the concrete unit or Euclidean estimate described here.
+\end{proof}
+
+\begin{remark}[Subsection note]
+This norm-Euclidean statement is present with \verb|sorry|.
+\end{remark}
+
+\subsection{\texttt{Galois.lean}}
+
+\begin{verbatim}
+noncomputable def sigmaThree : K ≃ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{sigmaThree}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+noncomputable def sigmaFive : K ≃ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{sigmaFive}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+noncomputable def sigmaSeven : K ≃ₐ[ℚ] K
+\end{verbatim}
+
+\begin{definition}[\texttt{sigmaSeven}]
+This declaration fixes a concrete object used by the following formal statements.
+\end{definition}
+
+\begin{verbatim}
+theorem galoisGroupStructure : Nonempty ((K ≃ₐ[ℚ] K) ≃* (ZMod 8)ˣ)
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroupStructure}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem galoisGroup_klein :
+    Nonempty ((K ≃ₐ[ℚ] K) ≃*
+      (Multiplicative (ZMod 2) × Multiplicative (ZMod 2)))
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroup\_klein}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{verbatim}
+theorem galoisGroup_not_isCyclic : ¬ IsCyclic (K ≃ₐ[ℚ] K)
+\end{verbatim}
+
+\begin{theorem}[\texttt{galoisGroup\_not\_isCyclic}]
+Mathematically, this identifies the relevant automorphism or the Galois group structure.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The proof evaluates automorphisms on the generator and uses the defining polynomial to show that the listed automorphisms exhaust the group.
+\end{proof}
+
+\begin{remark}[Subsection note]
+The Galois group is \((\mathbb Z/8\mathbb Z)^\times\cong C_2\times C_2\), not cyclic; every automorphism squares to the identity.
+\end{remark}
+
+\subsection{Summary for \(\mathbb Q(\zeta_8)\)}
+
+Easy: cyclotomic structure, integral basis, discriminant, subfield identities.  Hard
+but completed: prime splitting, no-inert-prime theorem, class number one, Klein-four
+Galois structure.  Missing: norm-Euclideanity, concrete unit generation, and regulator.
+
+\section{Final summary: current mathlib number field API}
+
+The current API is already strong for low-degree explicit fields.  It supports:
+cyclotomic fields and primitive roots, \verb|AdjoinRoot| models, integral closures and
+integral power bases, algebra norms and discriminants, ideals with absolute norm,
+ramification/inertia, class groups, Minkowski-bound class number proofs, and Galois
+groups.
+
+The most successful patterns in this folder are:
+\begin{itemize}
+\item Cyclotomic ring-of-integers proofs: \verb|IsCyclotomicExtension| gives very direct integral bases.
+\item Quadratic and small cubic norm-form computations: once the basis is explicit, many ideal and unit facts reduce to arithmetic.
+\item Class group proofs: \verb|exists_ideal_in_class_of_norm_le| plus explicit small-prime splitting is powerful enough for class number \(1\) and \(2\) examples.
+\item Galois groups: cyclotomic Galois groups and quadratic conjugation are well supported.
+\end{itemize}
+
+The main rough edges are:
+\begin{itemize}
+\item Concrete Dirichlet units: mathlib has abstract \verb|fundSystem| APIs, but proving a displayed unit is the chosen generator still needs bespoke Pell/cyclotomic-unit work.
+\item Regulators: the analytic equality between a concrete logarithmic embedding and \verb|Units.regulator| is not yet ergonomic.
+\item Norm-Euclidean proofs in degree \(3\) and \(4\): the missing part is mostly reusable geometry-of-numbers or lattice-rounding infrastructure.
+\item Prime splitting proofs are repetitive: many files rebuild residue maps and kernel computations that should be abstracted into a reusable ``factor minimal polynomial mod \(p\) gives ideal factorization'' API.
+\end{itemize}
+
+Promising optimization routes:
+\begin{itemize}
+\item Build a reusable residue-hom/kernel lemma for \(\mathbb Z[\alpha]/(p,f_i(\alpha))\).
+\item Add automation for norm forms from a \verb|PowerBasis| or \verb|Basis|.
+\item Package Minkowski-bound class-number-one proofs into a theorem requiring only the finite list of small principal prime ideals.
+\item Strengthen concrete unit APIs: Pell variants for nonmaximal-looking coordinates, cyclotomic units, and regulator evaluations.
+\item Create Euclidean templates for quadratic, pure cubic, and quartic cyclotomic lattices.
+\end{itemize}
+
+\end{document}
