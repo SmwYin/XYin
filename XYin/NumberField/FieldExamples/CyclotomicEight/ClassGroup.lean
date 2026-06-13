@@ -123,11 +123,6 @@ private theorem span_one_sub_zetaInt_eq_pair :
     · rw [SetLike.mem_coe, Ideal.mem_span_singleton]
       exact ⟨-1, by push_cast; ring⟩
 
-private theorem nrComplexPlaces_eq_two : NumberField.InfinitePlace.nrComplexPlaces K = 2 := by
-  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
-  rw [nrRealPlaces_eq_zero, degree_eq_four] at h
-  omega
-
 /-! ## 7. Class group -/
 
 /-- The class number of `ℚ(ζ₈)` is `1` (the Minkowski bound is `(4/π)² · 4!/4⁴ · √256 ≈ 2.4`,

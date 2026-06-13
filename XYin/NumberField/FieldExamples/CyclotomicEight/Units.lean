@@ -56,11 +56,16 @@ theorem torsionUnits_eq : {u : (𝓞 K)ˣ | IsOfFinOrder u} = torsionUnits := by
 theorem torsionOrder_eq_eight : NumberField.Units.torsionOrder K = 8 :=
   torsionOrder_eq'
 
-/-- `ℚ(ζ₈)` is totally complex: the signature is `(0, 2)`. -/
+/-- `ℚ(ζ₈)` is totally complex. -/
+theorem isTotallyComplex : NumberField.IsTotallyComplex K :=
+  IsCyclotomicExtension.Rat.isTotallyComplex (n := 8) K (by norm_num)
+
+/-- `ℚ(ζ₈)` has no real infinite places. -/
 theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 :=
   IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 8) K (by norm_num)
 
-private theorem nrComplexPlaces_eq_two : NumberField.InfinitePlace.nrComplexPlaces K = 2 := by
+/-- `ℚ(ζ₈)` has exactly two (conjugate pairs of) complex places. -/
+theorem nrComplexPlaces_eq_two : NumberField.InfinitePlace.nrComplexPlaces K = 2 := by
   have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
   rw [nrRealPlaces_eq_zero, degree_eq_four] at h
   omega

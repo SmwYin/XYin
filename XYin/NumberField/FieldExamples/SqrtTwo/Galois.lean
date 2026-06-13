@@ -43,10 +43,13 @@ def sqrtTwoConj : QSqrtTwo ≃ₐ[ℚ] QSqrtTwo where
     change (sqrtTwoConjHom.comp sqrtTwoConjHom) x = (AlgHom.id ℚ QSqrtTwo) x
     rw [hcomp]
 
-example : sqrtTwoConj sqrtTwoRoot = -sqrtTwoRoot :=
+/-- The conjugation equivalence sends `√2` to `-√2`. -/
+theorem sqrtTwoConj_root : sqrtTwoConj sqrtTwoRoot = -sqrtTwoRoot :=
   sqrtTwoConjHom_root
 
-example : IsGalois ℚ QSqrtTwo := by infer_instance
+/-- Quadratic extensions over `ℚ` are Galois: `ℚ(√2)/ℚ` is Galois. -/
+theorem isGalois : IsGalois ℚ QSqrtTwo := by
+  infer_instance
 
 theorem sqrtTwo_gal_eq_id_or_conj (σ : Gal(QSqrtTwo/ℚ)) :
     σ = 1 ∨ σ = sqrtTwoConj := by

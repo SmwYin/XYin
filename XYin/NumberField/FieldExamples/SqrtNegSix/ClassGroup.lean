@@ -59,7 +59,8 @@ private theorem minkowskiBound_lt_four :
   rw [hx, div_lt_iff₀ Real.pi_pos]
   nlinarith [Real.pi_gt_three]
 
-private theorem classGroup_mk0_ramified_ne_one :
+/-- The ramified prime over `2` represents the nontrivial ideal class. -/
+theorem classGroup_mk0_ramified_ne_one :
     ClassGroup.mk0 ramifiedIdealOverTwo ≠ 1 := by
   intro h
   have hprincipal : (ramifiedIdealOverTwo : Ideal (𝓞 K)).IsPrincipal := by
@@ -67,7 +68,27 @@ private theorem classGroup_mk0_ramified_ne_one :
     exact h
   exact not_isPrincipal_primeAboveTwo (by simpa [ramifiedIdealOverTwo] using hprincipal)
 
-private theorem class_mk0_primeAboveThree_eq_ramified :
+/-- The square of the ramified class is trivial, since `(2, θ)^2 = (2)`. -/
+theorem classGroup_mk0_ramified_sq_eq_one :
+    ClassGroup.mk0 ramifiedIdealOverTwo ^ 2 = 1 := by
+  rw [pow_two]
+  have hP2self : ClassGroup.mk0 ramifiedIdealOverTwo =
+      (ClassGroup.mk0 ramifiedIdealOverTwo)⁻¹ := by
+    rw [ClassGroup.mk0_eq_mk0_inv_iff]
+    refine ⟨(2 : 𝓞 K), by norm_num, ?_⟩
+    simpa [ramifiedIdealOverTwo, sq] using span_two_eq.symm
+  nth_rewrite 2 [hP2self]
+  exact mul_inv_cancel _
+
+/-- The ramified prime over `2` has order `2` in the class group. -/
+theorem orderOf_classGroup_mk0_ramified :
+    orderOf (ClassGroup.mk0 ramifiedIdealOverTwo) = 2 := by
+  haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
+  exact orderOf_eq_prime classGroup_mk0_ramified_sq_eq_one
+    classGroup_mk0_ramified_ne_one
+
+/-- The two ramified primes over `2` and `3` represent the same ideal class. -/
+theorem class_mk0_primeAboveThree_eq_ramified :
     ClassGroup.mk0 ramifiedIdealOverThree = ClassGroup.mk0 ramifiedIdealOverTwo := by
   have hP2self : ClassGroup.mk0 ramifiedIdealOverTwo =
       (ClassGroup.mk0 ramifiedIdealOverTwo)⁻¹ := by

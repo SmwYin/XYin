@@ -9,8 +9,13 @@ open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicFive
 
-private theorem zetaInt_sum : 1 + zetaInt + zetaInt ^ 2 + zetaInt ^ 3 + zetaInt ^ 4 = 0 :=
-  Subtype.ext (by push_cast [zetaInt]; exact zeta_sum_eq_zero)
+private theorem map_span_intCast (p : ℤ) :
+    Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {p}) =
+      Ideal.span {(p : 𝓞 K)} := by
+  rw [Ideal.map_span, Set.image_singleton]
+  change Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K)) =
+    Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K))
+  rfl
 
 section PrivateMachinery
 
@@ -119,7 +124,7 @@ private theorem minpoly_gen_eq :
     refine minpoly.isIntegrallyClosed_dvd hint ?_
     rw [gen_eq_zetaInt, hq]
     simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
-    linear_combination zetaInt_sum
+    linear_combination zetaInt_sum_eq_zero
   have hmonic := minpoly.monic hint
   have hdeg : (minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen).natDegree = 4 := by
     rw [zeta_isPrimitiveRoot.integralPowerBasis.natDegree_minpoly,
@@ -437,10 +442,10 @@ theorem isUnit_iff_normForm (a b c d : ℤ) :
 theorem span_five_eq : Ideal.span {(5 : 𝓞 K)} = Ideal.span {1 - zetaInt} ^ 4 := by
   rw [Ideal.span_singleton_pow, Ideal.span_singleton_eq_span_singleton]
   refine ⟨⟨-zetaInt ^ 3 + zetaInt ^ 2 - zetaInt, zetaInt ^ 4 + 2 * zetaInt ^ 3 + zetaInt ^ 2,
-    by linear_combination (-zetaInt ^ 3) * zetaInt_sum + zetaInt_pow_five,
-    by linear_combination (-zetaInt ^ 3) * zetaInt_sum + zetaInt_pow_five⟩, ?_⟩
+    by linear_combination (-zetaInt ^ 3) * zetaInt_sum_eq_zero + zetaInt_pow_five,
+    by linear_combination (-zetaInt ^ 3) * zetaInt_sum_eq_zero + zetaInt_pow_five⟩, ?_⟩
   change (5 : 𝓞 K) * (-zetaInt ^ 3 + zetaInt ^ 2 - zetaInt) = (1 - zetaInt) ^ 4
-  linear_combination -zetaInt_sum
+  linear_combination -zetaInt_sum_eq_zero
 
 private theorem span_one_sub_zetaInt_eq_pair :
     Ideal.span {1 - zetaInt} = Ideal.span {((5 : ℕ) : 𝓞 K), zetaInt - ((1 : ℤ) : 𝓞 K)} := by
@@ -470,8 +475,52 @@ theorem absNorm_span_one_sub_zeta : Ideal.absNorm (Ideal.span {1 - zetaInt}) = 5
   rw [span_one_sub_zetaInt_eq_pair]
   exact absNorm_span_pair 5 1 (by decide)
 
+/-- The ramified prime `(1 - ζ)` lies over `(5)`. -/
+theorem liesOver_span_one_sub_zeta :
+    (Ideal.span {1 - zetaInt}).LiesOver (Ideal.span {(5 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_one_sub_zeta.ne_top
+    (show Prime (5 : ℤ) by norm_num)]
+  change (5 : 𝓞 K) ∈ Ideal.span {1 - zetaInt}
+  have hmem : (5 : 𝓞 K) ∈ Ideal.span {(5 : 𝓞 K)} := Ideal.mem_span_singleton_self _
+  rw [span_five_eq] at hmem
+  exact Ideal.pow_le_self (by norm_num) hmem
+
+/-- The ramified prime `(1 - ζ)` has inertia degree `1` over `5`. -/
+theorem inertiaDeg_span_one_sub_zeta :
+    (Ideal.span {(5 : ℤ)}).inertiaDeg (Ideal.span {1 - zetaInt}) = 1 := by
+  haveI : (Ideal.span {1 - zetaInt}).LiesOver (Ideal.span {(5 : ℤ)}) :=
+    liesOver_span_one_sub_zeta
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {1 - zetaInt})
+    (p := 5) (by norm_num : Nat.Prime 5)
+  rw [absNorm_span_one_sub_zeta] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 5)).mp h.symm).2
+
+/-- The ramified prime `(1 - ζ)` has ramification index `4` over `5`. -/
+theorem ramificationIdx_span_one_sub_zeta :
+    (Ideal.span {(5 : ℤ)}).ramificationIdx (Ideal.span {1 - zetaInt}) = 4 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast]
+    change Ideal.span {(5 : 𝓞 K)} ≤ Ideal.span {1 - zetaInt} ^ 4
+    rw [span_five_eq]
+  · intro hle5
+    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle5
+    rw [map_span_intCast] at hdvd
+    have hnorm5 : Ideal.absNorm (Ideal.span {((5 : ℤ) : 𝓞 K)}) = 625 := by
+      change Ideal.absNorm (Ideal.span {(5 : 𝓞 K)}) = 625
+      have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
+        rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+      rw [Ideal.absNorm_span_singleton,
+        show (5 : 𝓞 K) = algebraMap ℤ (𝓞 K) 5 from (map_ofNat _ 5).symm,
+        Algebra.norm_algebraMap, hfin]
+      rfl
+    have hnormP5 : Ideal.absNorm (Ideal.span {1 - zetaInt} ^ 5) = 3125 := by
+      rw [map_pow, absNorm_span_one_sub_zeta]
+      norm_num
+    rw [hnormP5, hnorm5] at hdvd
+    norm_num at hdvd
+
 /-- The inert prime `(2)` has norm `2⁴ = 16` (residue degree `f = 4`). -/
-private theorem absNorm_span_two' : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16 := by
+theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16 := by
   have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
     rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
   rw [Ideal.absNorm_span_singleton,
@@ -483,21 +532,21 @@ private theorem absNorm_span_two' : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 
 theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 K)}).IsPrime := by
   have htop : Ideal.span {(2 : 𝓞 K)} ≠ ⊤ := by
     intro h
-    have h16 := absNorm_span_two'
+    have h16 := absNorm_span_two
     rw [h, Ideal.absNorm_top] at h16
     norm_num at h16
   obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
   haveI := hMmax
   letI : Field ((𝓞 K) ⧸ M) := Ideal.Quotient.field M
   have hdvd : Ideal.absNorm M ∣ 16 :=
-    absNorm_span_two' ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+    absNorm_span_two ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
   have h2mem : (2 : 𝓞 K) ∈ M := hMle (Ideal.mem_span_singleton_self _)
   set ω : (𝓞 K) ⧸ M := Ideal.Quotient.mk M zetaInt with hω
   have hω5 : ω ^ 5 = 1 := by
     rw [hω, ← map_pow, zetaInt_pow_five, map_one]
   have hω1 : ω ≠ 1 := by
     intro h1
-    have hs := congrArg (Ideal.Quotient.mk M) zetaInt_sum
+    have hs := congrArg (Ideal.Quotient.mk M) zetaInt_sum_eq_zero
     rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow, map_zero,
       show Ideal.Quotient.mk M zetaInt = ω from rfl, h1] at hs
     have h2q : (2 : (𝓞 K) ⧸ M) = 0 := by
@@ -544,20 +593,37 @@ theorem isPrime_span_two : (Ideal.span {(2 : 𝓞 K)}).IsPrime := by
     · norm_num at h5dvd
     · norm_num at h5dvd
     · norm_num
-  have heq := eq_of_le_of_absNorm_eq hMle absNorm_span_two' hM16 (by norm_num)
+  have heq := eq_of_le_of_absNorm_eq hMle absNorm_span_two hM16 (by norm_num)
   rw [heq]
   exact hMmax.isPrime
 
-theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16 :=
-  absNorm_span_two'
+/-- The inert prime `(2)` lies over `(2)`. -/
+theorem liesOver_span_two :
+    (Ideal.span {(2 : 𝓞 K)}).LiesOver (Ideal.span {(2 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_two.ne_top
+    (show Prime (2 : ℤ) by norm_num)]
+  change (2 : 𝓞 K) ∈ Ideal.span {(2 : 𝓞 K)}
+  exact Ideal.mem_span_singleton_self _
+
+/-- The inert prime `(2)` has inertia degree `4`. -/
+theorem inertiaDeg_span_two :
+    (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {(2 : 𝓞 K)}) = 4 := by
+  haveI : (Ideal.span {(2 : 𝓞 K)}).LiesOver (Ideal.span {(2 : ℤ)}) :=
+    liesOver_span_two
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(2 : 𝓞 K)})
+    (p := 2) Nat.prime_two
+  rw [absNorm_span_two] at h
+  change 2 ^ 4 = 2 ^ (Ideal.span {(2 : ℤ)}).inertiaDeg
+    (Ideal.span {(2 : 𝓞 K)}) at h
+  exact Nat.pow_right_injective Nat.prime_two.one_lt h.symm
 
 private theorem nineteen_x_eq : (19 : 𝓞 K) = (zetaInt ^ 2 + 5 * zetaInt + 1) *
     (5 * zetaInt ^ 4 + zetaInt ^ 2 + zetaInt) := by
-  linear_combination (-(5 * zetaInt + 25)) * zetaInt_pow_five - 6 * zetaInt_sum
+  linear_combination (-(5 * zetaInt + 25)) * zetaInt_pow_five - 6 * zetaInt_sum_eq_zero
 
 private theorem nineteen_y_eq : (19 : 𝓞 K) = (zetaInt ^ 2 - 4 * zetaInt + 1) *
     (-(4 * zetaInt ^ 4) + zetaInt ^ 2 + zetaInt) := by
-  linear_combination (4 * zetaInt - 16) * zetaInt_pow_five + 3 * zetaInt_sum
+  linear_combination (4 * zetaInt - 16) * zetaInt_pow_five + 3 * zetaInt_sum_eq_zero
 
 private theorem span_pair_nineteen_left :
     Ideal.span {(19 : 𝓞 K), zetaInt ^ 2 + 5 * zetaInt + 1} =
@@ -662,7 +728,7 @@ private theorem absNorm_ne_nineteen (P : Ideal (𝓞 K)) : Ideal.absNorm P ≠ 1
   have hs5 : 1 + s + s ^ 2 + s ^ 3 + s ^ 4 = (0 : ZMod 19) := by
     apply e.injective
     rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow, hs, map_zero]
-    have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_sum
+    have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_sum_eq_zero
     rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow,
       map_zero] at hmk
     exact hmk
@@ -708,7 +774,7 @@ theorem span_nineteen_eq :
     by linear_combination zetaInt_pow_five⟩, ?_⟩
   change (19 : 𝓞 K) * (-zetaInt ^ 2) =
     (zetaInt ^ 2 + 5 * zetaInt + 1) * (zetaInt ^ 2 - 4 * zetaInt + 1)
-  linear_combination -zetaInt_sum
+  linear_combination -zetaInt_sum_eq_zero
 
 /-- Both primes above `19` are prime ideals of norm `19² = 361`. -/
 theorem isPrime_primesAboveNineteen :
@@ -879,7 +945,7 @@ theorem span_eleven_eq :
     linear_combination (zetaInt ^ 3 + zetaInt ^ 2 + zetaInt + 1) * zetaInt_pow_five
   have hC : (zetaInt ^ 4 - 2 * zetaInt + 2) * (-(2 * zetaInt ^ 4) + zetaInt + 2) =
       (11 : 𝓞 K) := by
-    linear_combination (-(2 * zetaInt ^ 3) + 5) * zetaInt_pow_five - 2 * zetaInt_sum
+    linear_combination (-(2 * zetaInt ^ 3) + 5) * zetaInt_pow_five - 2 * zetaInt_sum_eq_zero
   rw [show (zetaInt ^ 2 + zetaInt - 1) * (zetaInt ^ 4 + zetaInt ^ 3 - 1) *
       (zetaInt ^ 4 + zetaInt ^ 2 - 1) * (zetaInt ^ 3 + zetaInt - 1) = (11 : 𝓞 K) from by
     linear_combination ((zetaInt ^ 4 + zetaInt ^ 2 - 1) * (zetaInt ^ 4 + zetaInt ^ 3 - 1)) * hA +
@@ -917,7 +983,7 @@ theorem splits_completely_iff (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     have hssum : 1 + s + s ^ 2 + s ^ 3 + s ^ 4 = (0 : ZMod p) := by
       apply e.injective
       rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow, hs, map_zero]
-      have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_sum
+      have hmk := congrArg (Ideal.Quotient.mk P) zetaInt_sum_eq_zero
       rw [map_add, map_add, map_add, map_add, map_one, map_pow, map_pow, map_pow,
         map_zero] at hmk
       exact hmk
@@ -1085,5 +1151,18 @@ theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     rw [hcast, span_five_eq]
     exact Ideal.pow_le_pow_right (by norm_num)
 
+/-- The inert prime `(2)` is unramified. -/
+theorem ramificationIdx_span_two :
+    (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {(2 : 𝓞 K)}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    simp
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(2 : 𝓞 K)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {(2 : 𝓞 K)}, isPrime_span_two, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h := (ramified_iff_eq_five 2 Nat.prime_two).mp hram
+    norm_num at h
 
 end NumberField.CyclotomicFive

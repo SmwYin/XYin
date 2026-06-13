@@ -7,9 +7,6 @@ open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicFive
 
-private theorem zetaInt_sum : 1 + zetaInt + zetaInt ^ 2 + zetaInt ^ 3 + zetaInt ^ 4 = 0 :=
-  Subtype.ext (by push_cast [zetaInt]; exact zeta_sum_eq_zero)
-
 private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
 
 /-! ## 6. Ring of units -/
@@ -73,6 +70,10 @@ theorem torsionOrder_eq_ten : NumberField.Units.torsionOrder K = 10 :=
   torsionOrder_eq'
 
 /-- `ℚ(ζ₅)` is totally complex: the signature is `(0, 2)`. -/
+theorem isTotallyComplex : NumberField.IsTotallyComplex K :=
+  IsCyclotomicExtension.Rat.isTotallyComplex (n := 5) K (by norm_num)
+
+/-- `ℚ(ζ₅)` has no real infinite places. -/
 theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 :=
   IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 5) K (by norm_num)
 
@@ -93,8 +94,8 @@ theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by
 noncomputable def fundamentalUnit : (𝓞 K)ˣ where
   val := 1 + zetaInt
   inv := -(zetaInt + zetaInt ^ 3)
-  val_inv := by linear_combination -zetaInt_sum
-  inv_val := by linear_combination -zetaInt_sum
+  val_inv := by linear_combination -zetaInt_sum_eq_zero
+  inv_val := by linear_combination -zetaInt_sum_eq_zero
 
 /-- The system of fundamental units for the rank-`1` unit group: the single unit `1 + ζ`. -/
 noncomputable def fundamentalUnitSystem : Fin (NumberField.Units.rank K) → (𝓞 K)ˣ :=

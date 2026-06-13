@@ -84,6 +84,14 @@ theorem nrComplexPlaces_eq_one : NumberField.InfinitePlace.nrComplexPlaces K = 1
     rw [Ne, NumberField.nrComplexPlaces_eq_zero_iff]; exact not_totallyReal
   omega
 
+/-- `ℚ(∛3)` has exactly one real place. -/
+theorem nrRealPlaces_eq_one : NumberField.InfinitePlace.nrRealPlaces K = 1 := by
+  have hsig : NumberField.InfinitePlace.nrRealPlaces K +
+      2 * NumberField.InfinitePlace.nrComplexPlaces K = 3 := by
+    rw [← degree_eq_three]; exact NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
+  rw [nrComplexPlaces_eq_one] at hsig
+  omega
+
 /-- The Dirichlet unit rank of `ℚ(∛3)` is `1`: the signature is `(r₁, r₂) = (1, 1)`, so the
 rank is `r₁ + r₂ - 1 = 1`. -/
 theorem unitRank_eq_one : NumberField.Units.rank K = 1 := by

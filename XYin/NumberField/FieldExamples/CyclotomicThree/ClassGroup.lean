@@ -10,28 +10,6 @@ namespace NumberField.CyclotomicThree
 
 /-! ## 7. Class group -/
 
-/--
-The convex-body version of the Minkowski bound in mathlib is attached to a fractional
-ideal. For the trivial fractional ideal it is finite and positive.
--/
-abbrev trivialFractionalIdeal : (FractionalIdeal OK⁰ K)ˣ :=
-  1
-
-example : 0 < mixedEmbedding.minkowskiBound K trivialFractionalIdeal :=
-  mixedEmbedding.minkowskiBound_pos K trivialFractionalIdeal
-
-example : mixedEmbedding.minkowskiBound K trivialFractionalIdeal < ⊤ :=
-  mixedEmbedding.minkowskiBound_lt_top K trivialFractionalIdeal
-
-/--
-The class-number API presents the class group as a finite type and provides the map
-from nonzero integral ideals to ideal classes.
--/
-example : Fintype (ClassGroup OK) := by infer_instance
-
-example (C : ClassGroup OK) : ∃ I : (Ideal OK)⁰, ClassGroup.mk0 I = C :=
-  ClassGroup.mk0_surjective C
-
 /-- The ring of integers `ℤ[ζ]` is a principal ideal domain — the ring-theoretic content of
 class number one. -/
 theorem isPrincipalIdealRing : IsPrincipalIdealRing OK :=

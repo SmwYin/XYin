@@ -15,12 +15,6 @@ namespace NumberField.SqrtTwo
 /-- The ring of integers of `ℚ(√2)`. -/
 abbrev O2 : Type := 𝓞 QSqrtTwo
 
-example : CommRing O2 := by infer_instance
-
-example : IsDomain O2 := by infer_instance
-
-example : Algebra O2 QSqrtTwo := by infer_instance
-
 theorem sqrtTwoRoot_isIntegral : IsIntegral ℤ sqrtTwoRoot := by
   refine ⟨X ^ 2 - C (2 : ℤ), ?_, ?_⟩
   · exact monic_X_pow_sub_C (2 : ℤ) (by norm_num : (2 : ℕ) ≠ 0)
@@ -45,9 +39,6 @@ theorem sqrtTwo_minpoly_rat : minpoly ℚ sqrtTwoRoot = sqrtTwoPolynomial := by
     (AdjoinRoot.minpoly_root ((Fact.out : Irreducible sqrtTwoPolynomial).ne_zero) :
       minpoly ℚ (AdjoinRoot.root sqrtTwoPolynomial) =
         sqrtTwoPolynomial * C sqrtTwoPolynomial.leadingCoeff⁻¹)
-
-theorem sqrtTwoPolynomial_eq_minpoly : sqrtTwoPolynomial = minpoly ℚ sqrtTwoRoot := by
-  rw [sqrtTwo_minpoly_rat]
 
 /-- The integral minimal polynomial of `√2`, viewed as an element of the field. -/
 theorem sqrtTwo_minpoly_int : minpoly ℤ sqrtTwoRoot = sqrtTwoIntegerPolynomial := by
@@ -131,7 +122,7 @@ theorem sqrtTwo_integral_mem_adjoin (z : QSqrtTwo) (hz : IsIntegral ℤ z) :
 `ℤ[√2]` is integrally closed in `ℚ(√2)` in the same sense as the cyclotomic
 singleton-adjoin theorem on the `ζ₃` side.
 -/
-example :
+theorem isIntegralClosure_adjoin_sqrtTwoRoot :
     IsIntegralClosure
       (Algebra.adjoin ℤ ({sqrtTwoRoot} : Set QSqrtTwo)) ℤ QSqrtTwo := by
   refine ⟨?_, ?_⟩
@@ -234,9 +225,6 @@ theorem sqrtTwoExplicitIntegralBasis_zero :
   rw [hcoe]
   simp
 
-example : sqrtTwoExplicitIntegralBasis 0 = 1 :=
-  sqrtTwoExplicitIntegralBasis_zero
-
 /-- The second vector in the explicit integral basis is `√2`. -/
 theorem sqrtTwoExplicitIntegralBasis_one :
     sqrtTwoExplicitIntegralBasis 1 = sqrtTwoInteger := by
@@ -247,9 +235,6 @@ theorem sqrtTwoExplicitIntegralBasis_one :
         Fin sqrtTwoExplicitIntegralPowerBasis.dim) : ℕ) = 1 := rfl
   rw [hcoe]
   simp
-
-example : sqrtTwoExplicitIntegralBasis 1 = sqrtTwoInteger :=
-  sqrtTwoExplicitIntegralBasis_one
 
 theorem sqrtTwoInteger_sq : sqrtTwoInteger ^ 2 = (2 : O2) := by
   apply Subtype.ext
@@ -317,22 +302,29 @@ theorem sqrtTwo_numberField_discr :
   exact sqrtTwoExplicitIntegralBasis_discr
 
 attribute [local instance] DivisionRing.toRatAlgebra in
-example : Algebra.discr ℚ (NumberField.integralBasis QSqrtTwo) = (8 : ℚ) := by
+theorem integralBasis_discr :
+    Algebra.discr ℚ (NumberField.integralBasis QSqrtTwo) = (8 : ℚ) := by
   have h := NumberField.coe_discr QSqrtTwo
   rw [sqrtTwo_numberField_discr] at h
   simpa using h.symm
 
-theorem discr_matrix_mulVec_sqrtTwo
+example
     (P : Matrix (Fin sqrtTwoPowerBasis.dim) (Fin sqrtTwoPowerBasis.dim) ℚ) :
     Algebra.discr ℚ (Matrix.mulVec (P.map (algebraMap ℚ QSqrtTwo)) sqrtTwoPowerBasis.basis) =
       P.det ^ 2 * Algebra.discr ℚ sqrtTwoPowerBasis.basis :=
   Algebra.discr_of_matrix_mulVec _ _
 
-example (P : Matrix (Fin sqrtTwoPowerBasis.dim) (Fin sqrtTwoPowerBasis.dim) ℚ)
+example
+    (P : Matrix (Fin sqrtTwoPowerBasis.dim) (Fin sqrtTwoPowerBasis.dim) ℚ)
     (hdet : P.det = 1 ∨ P.det = -1) :
     Algebra.discr ℚ (Matrix.mulVec (P.map (algebraMap ℚ QSqrtTwo)) sqrtTwoPowerBasis.basis) =
       (8 : ℚ) := by
-  rw [discr_matrix_mulVec_sqrtTwo, sqrtTwoPowerBasis_discr]
+  have hdisc :
+      Algebra.discr ℚ
+          (Matrix.mulVec (P.map (algebraMap ℚ QSqrtTwo)) sqrtTwoPowerBasis.basis) =
+        P.det ^ 2 * Algebra.discr ℚ sqrtTwoPowerBasis.basis :=
+    Algebra.discr_of_matrix_mulVec _ _
+  rw [hdisc, sqrtTwoPowerBasis_discr]
   rcases hdet with h | h
   · rw [h]
     norm_num
@@ -343,7 +335,7 @@ example (P : Matrix (Fin sqrtTwoPowerBasis.dim) (Fin sqrtTwoPowerBasis.dim) ℚ)
 Ramification-flavoured analogue of `(ζ - 1) ∣ 3` on the cyclotomic side:
 here the element `√2` divides `2` in `𝓞 ℚ(√2)`.
 -/
-example : sqrtTwoInteger ∣ (2 : O2) := by
+theorem sqrtTwoInteger_dvd_two : sqrtTwoInteger ∣ (2 : O2) := by
   use sqrtTwoInteger
   simpa [pow_two] using sqrtTwoInteger_sq.symm
 

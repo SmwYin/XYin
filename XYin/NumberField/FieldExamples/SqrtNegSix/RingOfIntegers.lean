@@ -40,7 +40,8 @@ private theorem quadraticBasis_one : (QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ
   change (QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)) 1 = (⟨0, 1⟩ : K)
   simp [QuadraticAlgebra.basis, Module.Basis.ofEquivFun, QuadraticAlgebra.linearEquivTuple]
 
-private noncomputable def sqrtNegSixPowerBasis : PowerBasis ℚ K where
+/-- The usual power basis `1, θ`, where `θ = √-6`. -/
+noncomputable def sqrtNegSixPowerBasis : PowerBasis ℚ K where
   gen := θ
   dim := 2
   basis := QuadraticAlgebra.basis (-6 : ℚ) (0 : ℚ)
@@ -50,11 +51,16 @@ private noncomputable def sqrtNegSixPowerBasis : PowerBasis ℚ K where
     · exact quadraticBasis_zero
     · simpa [pow_one] using quadraticBasis_one
 
-private theorem sqrtNegSixPowerBasis_dim : sqrtNegSixPowerBasis.dim = 2 := rfl
+@[simp]
+theorem sqrtNegSixPowerBasis_gen : sqrtNegSixPowerBasis.gen = θ := rfl
 
-private abbrev sqrtNegSixIntegerPolynomial : ℤ[X] := Polynomial.X ^ 2 + Polynomial.C (6 : ℤ)
+theorem sqrtNegSixPowerBasis_dim : sqrtNegSixPowerBasis.dim = 2 := rfl
 
-private theorem sqrtNegSix_minpoly_rat : minpoly ℚ θ = sqrtNegSixPolynomial := by
+/-- The integral polynomial `X² + 6` satisfied by `θ = √-6`. -/
+abbrev sqrtNegSixIntegerPolynomial : ℤ[X] := Polynomial.X ^ 2 + Polynomial.C (6 : ℤ)
+
+/-- The rational minimal polynomial of `θ = √-6`. -/
+theorem sqrtNegSix_minpoly_rat : minpoly ℚ θ = sqrtNegSixPolynomial := by
   symm
   apply minpoly.eq_of_irreducible_of_monic
   · exact (Fact.out : Irreducible sqrtNegSixPolynomial)
@@ -63,7 +69,8 @@ private theorem sqrtNegSix_minpoly_rat : minpoly ℚ θ = sqrtNegSixPolynomial :
     linear_combination theta_sq
   · monicity!
 
-private theorem sqrtNegSix_minpoly_int : minpoly ℤ θ = sqrtNegSixIntegerPolynomial := by
+/-- The integral minimal polynomial of `θ = √-6`, viewed as an element of the field. -/
+theorem sqrtNegSix_minpoly_int : minpoly ℤ θ = sqrtNegSixIntegerPolynomial := by
   apply (Polynomial.map_injective (algebraMap ℤ ℚ) Int.cast_injective)
   rw [← minpoly.isIntegrallyClosed_eq_field_fractions' (K := ℚ) theta_integral,
     sqrtNegSix_minpoly_rat]
@@ -72,7 +79,8 @@ private theorem sqrtNegSix_minpoly_int : minpoly ℤ θ = sqrtNegSixIntegerPolyn
   rw [Polynomial.map_add, Polynomial.map_pow, Polynomial.map_X, Polynomial.map_C]
   rw [show (algebraMap ℤ ℚ) (6 : ℤ) = (6 : ℚ) by norm_num]
 
-private theorem sqrtNegSix_minpoly_int_isEisensteinAt_two :
+/-- The polynomial `X² + 6` is Eisenstein at `2`. -/
+theorem sqrtNegSix_minpoly_int_isEisensteinAt_two :
     (minpoly ℤ θ).IsEisensteinAt 𝓟₂ := by
   rw [sqrtNegSix_minpoly_int]
   refine
@@ -89,7 +97,8 @@ private theorem sqrtNegSix_minpoly_int_isEisensteinAt_two :
     · simp [Ideal.submodule_span_eq]
   · simp [Ideal.submodule_span_eq, Ideal.span_singleton_pow, Ideal.mem_span_singleton]
 
-private theorem sqrtNegSix_minpoly_int_isEisensteinAt_three :
+/-- The polynomial `X² + 6` is Eisenstein at `3`. -/
+theorem sqrtNegSix_minpoly_int_isEisensteinAt_three :
     (minpoly ℤ θ).IsEisensteinAt 𝓟₃ := by
   rw [sqrtNegSix_minpoly_int]
   refine
@@ -111,7 +120,8 @@ private theorem algebraNorm_eq_quadraticNorm (z : K) :
   rw [Algebra.norm_apply, ← QuadraticAlgebra.det_toLinearMap_eq_norm]
   congr 1
 
-private theorem sqrtNegSixPowerBasis_discr :
+/-- The discriminant of the power basis `1, θ` is `-24`. -/
+theorem sqrtNegSixPowerBasis_discr :
     Algebra.discr ℚ sqrtNegSixPowerBasis.basis = (-24 : ℚ) := by
   rw [Algebra.discr_powerBasis_eq_norm]
   have hgen : sqrtNegSixPowerBasis.gen = θ := rfl
@@ -399,6 +409,13 @@ theorem numberField_discr_eq : NumberField.discr K = (-24 : ℤ) := by
 theorem concreteIntegralBasis_discr :
     Algebra.discr ℤ concreteIntegralBasis = (-24 : ℤ) := by
   exact sqrtNegSixExplicitIntegralBasis_discr
+
+/-- The discriminant of mathlib's canonical field integral basis is `-24`. -/
+theorem integralBasis_discr :
+    Algebra.discr ℚ (NumberField.integralBasis K) = (-24 : ℚ) := by
+  have h := NumberField.coe_discr K
+  rw [numberField_discr_eq] at h
+  simpa using h.symm
 
 
 end NumberField.SqrtNegSix

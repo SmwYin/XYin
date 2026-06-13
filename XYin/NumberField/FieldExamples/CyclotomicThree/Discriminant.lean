@@ -35,35 +35,36 @@ theorem zetaExplicitIntegralBasis_discr :
 This bridges the integer-valued field discriminant to the concrete `Algebra.discr ℚ`
 computed from mathlib's canonical `ℚ`-basis of `K`.
 -/
-example : Algebra.discr ℚ (NumberField.integralBasis K) = (-3 : ℚ) := by
+theorem integralBasis_discr :
+    Algebra.discr ℚ (NumberField.integralBasis K) = (-3 : ℚ) := by
   have h := NumberField.coe_discr K
   rw [show NumberField.discr K = -3 from by
         rw [IsCyclotomicExtension.Rat.discr_prime 3 K]; norm_num] at h
   simpa using h.symm
 
-/--
+/-
 `Algebra.discr_of_matrix_mulVec`: replacing basis `b` by `Pb` scales the discriminant by `det(P)²`.
 This is the key formula behind the fact that all `ℤ`-bases of `𝓞 K` yield the same
 `NumberField.discr K`: change-of-basis matrices between them are unimodular (`det = ±1`),
 so `det(P)² = 1` and the discriminant is preserved.
 -/
-theorem discr_matrix_mulVec_K
+example
     (P : Matrix (Free.ChooseBasisIndex ℤ (𝓞 K)) (Free.ChooseBasisIndex ℤ (𝓞 K)) ℚ) :
     Algebra.discr ℚ (Matrix.mulVec (P.map (algebraMap ℚ K)) (NumberField.integralBasis K)) =
       P.det ^ 2 * Algebra.discr ℚ (NumberField.integralBasis K) :=
   Algebra.discr_of_matrix_mulVec _ _
 
-/-- Concretely: a unimodular change of basis preserves the discriminant `-3`. -/
-example (P : Matrix (Free.ChooseBasisIndex ℤ (𝓞 K)) (Free.ChooseBasisIndex ℤ (𝓞 K)) ℚ)
+/- Concretely: a unimodular change of basis preserves the discriminant `-3`. -/
+example
+    (P : Matrix (Free.ChooseBasisIndex ℤ (𝓞 K)) (Free.ChooseBasisIndex ℤ (𝓞 K)) ℚ)
     (hdet : P.det = 1 ∨ P.det = -1) :
     Algebra.discr ℚ (Matrix.mulVec (P.map (algebraMap ℚ K)) (NumberField.integralBasis K)) =
         (-3 : ℚ) := by
-  have hdiscr : Algebra.discr ℚ (NumberField.integralBasis K) = -3 := by
-    have h := NumberField.coe_discr K
-    rw [show NumberField.discr K = -3 from by
-          rw [IsCyclotomicExtension.Rat.discr_prime 3 K]; norm_num] at h
-    simpa using h.symm
-  rw [discr_matrix_mulVec_K, hdiscr]
+  have hdisc :
+      Algebra.discr ℚ (Matrix.mulVec (P.map (algebraMap ℚ K)) (NumberField.integralBasis K)) =
+        P.det ^ 2 * Algebra.discr ℚ (NumberField.integralBasis K) :=
+    Algebra.discr_of_matrix_mulVec _ _
+  rw [hdisc, integralBasis_discr]
   rcases hdet with h | h <;> simp [h]
 
 

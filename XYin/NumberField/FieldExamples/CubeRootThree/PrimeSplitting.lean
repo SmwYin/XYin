@@ -9,6 +9,14 @@ namespace NumberField.CubeRootThree
 
 /-! ## 5. Splitting of primes -/
 
+private theorem map_span_intCast (p : ℤ) :
+    Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {p}) =
+      Ideal.span {(p : 𝓞 K)} := by
+  rw [Ideal.map_span, Set.image_singleton]
+  change Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K)) =
+    Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K))
+  rfl
+
 /-- `3` is totally ramified: `(3) = (θ)³` as ideals of `𝓞 K`, directly from `θ³ = 3`.
 Together with `isPrime_span_theta` this gives ramification index `e = 3`. -/
 theorem span_three_eq : Ideal.span {(3 : 𝓞 K)} = Ideal.span {thetaInt} ^ 3 := by
@@ -26,6 +34,50 @@ theorem isPrime_span_theta : (Ideal.span {thetaInt}).IsPrime := by
   apply Ideal.isPrime_of_irreducible_absNorm
   rw [absNorm_span_theta]
   exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
+
+/-- The ramified prime `(θ)` lies over `(3)`. -/
+theorem liesOver_span_theta :
+    (Ideal.span {thetaInt}).LiesOver (Ideal.span {(3 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_theta.ne_top
+    (show Prime (3 : ℤ) by norm_num)]
+  change (3 : 𝓞 K) ∈ Ideal.span {thetaInt}
+  have hmem : (3 : 𝓞 K) ∈ Ideal.span {(3 : 𝓞 K)} := Ideal.mem_span_singleton_self _
+  rw [span_three_eq] at hmem
+  exact Ideal.pow_le_self (by norm_num) hmem
+
+/-- The ramified prime `(θ)` has inertia degree `1` over `3`. -/
+theorem inertiaDeg_span_theta :
+    (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {thetaInt}) = 1 := by
+  haveI : (Ideal.span {thetaInt}).LiesOver (Ideal.span {(3 : ℤ)}) :=
+    liesOver_span_theta
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {thetaInt})
+    (p := 3) Nat.prime_three
+  rw [absNorm_span_theta] at h
+  exact ((Nat.Prime.pow_eq_iff Nat.prime_three).mp h.symm).2
+
+/-- The ramified prime `(θ)` has ramification index `3` over `3`. -/
+theorem ramificationIdx_span_theta :
+    (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {thetaInt}) = 3 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast]
+    change Ideal.span {(3 : 𝓞 K)} ≤ Ideal.span {thetaInt} ^ 3
+    rw [span_three_eq]
+  · intro hle4
+    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle4
+    rw [map_span_intCast] at hdvd
+    have hnorm3 : Ideal.absNorm (Ideal.span {((3 : ℤ) : 𝓞 K)}) = 27 := by
+      change Ideal.absNorm (Ideal.span {(3 : 𝓞 K)}) = 27
+      have hfin : Module.finrank ℤ (𝓞 K) = 3 := by
+        rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+      rw [Ideal.absNorm_span_singleton,
+        show (3 : 𝓞 K) = algebraMap ℤ (𝓞 K) 3 from (map_ofNat _ 3).symm,
+        Algebra.norm_algebraMap, hfin]
+      rfl
+    have hnormP4 : Ideal.absNorm (Ideal.span {thetaInt} ^ 4) = 81 := by
+      rw [map_pow, absNorm_span_theta]
+      norm_num
+    rw [hnormP4, hnorm3] at hdvd
+    norm_num at hdvd
 
 /-- Any prime of `𝓞 K` containing `3` equals `(θ)`: the prime above `3` is unique. -/
 theorem eq_span_theta_of_three_mem (P : Ideal (𝓞 K)) (hP : P.IsPrime) (h3 : (3 : 𝓞 K) ∈ P) :
@@ -160,6 +212,50 @@ theorem isPrime_span_theta_sq_add_theta_add_one :
   rw [← eq_span_quadFactor_of_mem P hPmax.isPrime hmem]
   exact hPmax.isPrime
 
+/-- The degree-`1` prime `(θ - 1)` lies over `(2)`. -/
+theorem liesOver_span_theta_sub_one :
+    (Ideal.span {thetaInt - 1}).LiesOver (Ideal.span {(2 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_theta_sub_one.ne_top
+    (show Prime (2 : ℤ) by norm_num)]
+  change (2 : 𝓞 K) ∈ Ideal.span {thetaInt - 1}
+  rw [two_eq_mul]
+  exact Ideal.mul_mem_right (thetaInt ^ 2 + thetaInt + 1) (Ideal.span {thetaInt - 1})
+    (Ideal.mem_span_singleton_self (thetaInt - 1))
+
+/-- The degree-`2` prime `(θ² + θ + 1)` lies over `(2)`. -/
+theorem liesOver_span_theta_sq_add_theta_add_one :
+    (Ideal.span {thetaInt ^ 2 + thetaInt + 1}).LiesOver (Ideal.span {(2 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_theta_sq_add_theta_add_one.ne_top
+    (show Prime (2 : ℤ) by norm_num)]
+  change (2 : 𝓞 K) ∈ Ideal.span {thetaInt ^ 2 + thetaInt + 1}
+  rw [show (2 : 𝓞 K) = (thetaInt ^ 2 + thetaInt + 1) * (thetaInt - 1) from by
+    rw [two_eq_mul]
+    ring]
+  exact Ideal.mul_mem_right (thetaInt - 1) (Ideal.span {thetaInt ^ 2 + thetaInt + 1})
+    (Ideal.mem_span_singleton_self (thetaInt ^ 2 + thetaInt + 1))
+
+/-- The split prime `(θ - 1)` has inertia degree `1` over `2`. -/
+theorem inertiaDeg_span_theta_sub_one :
+    (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {thetaInt - 1}) = 1 := by
+  haveI : (Ideal.span {thetaInt - 1}).LiesOver (Ideal.span {(2 : ℤ)}) :=
+    liesOver_span_theta_sub_one
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {thetaInt - 1})
+    (p := 2) Nat.prime_two
+  rw [absNorm_span_theta_sub_one] at h
+  exact ((Nat.Prime.pow_eq_iff Nat.prime_two).mp h.symm).2
+
+/-- The split prime `(θ² + θ + 1)` has inertia degree `2` over `2`. -/
+theorem inertiaDeg_span_theta_sq_add_theta_add_one :
+    (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {thetaInt ^ 2 + thetaInt + 1}) = 2 := by
+  haveI : (Ideal.span {thetaInt ^ 2 + thetaInt + 1}).LiesOver (Ideal.span {(2 : ℤ)}) :=
+    liesOver_span_theta_sq_add_theta_add_one
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {thetaInt ^ 2 + thetaInt + 1})
+    (p := 2) Nat.prime_two
+  rw [absNorm_span_theta_sq_add_theta_add_one] at h
+  change 2 ^ 2 = 2 ^ (Ideal.span {(2 : ℤ)}).inertiaDeg
+    (Ideal.span {thetaInt ^ 2 + thetaInt + 1}) at h
+  exact Nat.pow_right_injective Nat.prime_two.one_lt h.symm
+
 /-- Any prime of `𝓞 K` containing `2` equals `(θ - 1)` or `(θ² + θ + 1)`: the two primes
 above `2` are the only ones, and both are principal. -/
 theorem eq_of_two_mem (P : Ideal (𝓞 K)) (hP : P.IsPrime) (h2 : (2 : 𝓞 K) ∈ P) :
@@ -251,6 +347,26 @@ theorem isPrime_span_seven : (Ideal.span {(7 : 𝓞 K)}).IsPrime := by
   have hIP : I = P := by rw [hC, hCtop, Ideal.mul_top]
   rw [hIP]
   exact hPmax.isPrime
+
+/-- The inert prime `(7)` lies over `(7)`. -/
+theorem liesOver_span_seven :
+    (Ideal.span {(7 : 𝓞 K)}).LiesOver (Ideal.span {(7 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_seven.ne_top
+    (show Prime (7 : ℤ) by norm_num)]
+  change (7 : 𝓞 K) ∈ Ideal.span {(7 : 𝓞 K)}
+  exact Ideal.mem_span_singleton_self _
+
+/-- The inert prime `(7)` has inertia degree `3`. -/
+theorem inertiaDeg_span_seven :
+    (Ideal.span {(7 : ℤ)}).inertiaDeg (Ideal.span {(7 : 𝓞 K)}) = 3 := by
+  haveI : (Ideal.span {(7 : 𝓞 K)}).LiesOver (Ideal.span {(7 : ℤ)}) :=
+    liesOver_span_seven
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(7 : 𝓞 K)})
+    (p := 7) (by norm_num : Nat.Prime 7)
+  rw [absNorm_span_seven] at h
+  change 7 ^ 3 = 7 ^ (Ideal.span {(7 : ℤ)}).inertiaDeg
+    (Ideal.span {(7 : 𝓞 K)}) at h
+  exact Nat.pow_right_injective (by norm_num : 1 < 7) h.symm
 
 /-- The prime `(61, θ - r)` of `𝓞 K` above `61`, for `r` a cube root of `3` mod `61`. The
 roots of `X³ - 3` mod `61` are `4`, `5` and `52`. -/
@@ -359,6 +475,33 @@ theorem isPrime_primeAbove61 (r : ℤ) (hr : r = 4 ∨ r = 5 ∨ r = 52) :
     exact Ideal.isPrime_of_irreducible_absNorm (absNorm_span_gen_five ▸ h61)
   · rw [primeAbove61_fiftytwo_eq]
     exact Ideal.isPrime_of_irreducible_absNorm (absNorm_span_gen_fiftytwo ▸ h61)
+
+/-- Each ideal `(61, θ - r)`, for `r ∈ {4, 5, 52}`, has norm `61`. -/
+theorem absNorm_primeAbove61 (r : ℤ) (hr : r = 4 ∨ r = 5 ∨ r = 52) :
+    Ideal.absNorm (primeAbove61 r) = 61 := by
+  rcases hr with rfl | rfl | rfl
+  · rw [primeAbove61_four_eq, absNorm_span_theta_sub_four]
+  · rw [primeAbove61_five_eq, absNorm_span_gen_five]
+  · rw [primeAbove61_fiftytwo_eq, absNorm_span_gen_fiftytwo]
+
+/-- Each ideal `(61, θ - r)`, for `r ∈ {4, 5, 52}`, lies over `(61)`. -/
+theorem liesOver_primeAbove61 (r : ℤ) (hr : r = 4 ∨ r = 5 ∨ r = 52) :
+    (primeAbove61 r).LiesOver (Ideal.span {(61 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff (isPrime_primeAbove61 r hr).ne_top
+    (show Prime (61 : ℤ) by norm_num)]
+  change (61 : 𝓞 K) ∈ primeAbove61 r
+  rw [primeAbove61]
+  exact Ideal.subset_span (Set.mem_insert _ _)
+
+/-- Each split prime over `61` has inertia degree `1`. -/
+theorem inertiaDeg_primeAbove61 (r : ℤ) (hr : r = 4 ∨ r = 5 ∨ r = 52) :
+    (Ideal.span {(61 : ℤ)}).inertiaDeg (primeAbove61 r) = 1 := by
+  haveI : (primeAbove61 r).LiesOver (Ideal.span {(61 : ℤ)}) :=
+    liesOver_primeAbove61 r hr
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := primeAbove61 r)
+    (p := 61) (by norm_num : Nat.Prime 61)
+  rw [absNorm_primeAbove61 r hr] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 61)).mp h.symm).2
 
 /-- The three primes above `61` are pairwise distinct, so `61` is unramified and splits
 completely. -/
@@ -649,6 +792,71 @@ theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
     have hcast : ((3 : ℕ) : 𝓞 K) = (3 : 𝓞 K) := by norm_num
     rw [hcast, span_three_eq]
     exact Ideal.pow_le_pow_right (by norm_num)
+
+/-- The degree-`1` prime over `2` is unramified. -/
+theorem ramificationIdx_span_theta_sub_one :
+    (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {thetaInt - 1}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(2 : 𝓞 K)} ≤ Ideal.span {thetaInt - 1}
+    rw [span_two_eq]
+    exact Ideal.mul_le_right
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(2 : 𝓞 K)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {thetaInt - 1}, isPrime_span_theta_sub_one, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h23 := (ramified_iff_eq_three 2 Nat.prime_two).mp hram
+    norm_num at h23
+
+/-- The degree-`2` prime over `2` is unramified. -/
+theorem ramificationIdx_span_theta_sq_add_theta_add_one :
+    (Ideal.span {(2 : ℤ)}).ramificationIdx
+      (Ideal.span {thetaInt ^ 2 + thetaInt + 1}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(2 : 𝓞 K)} ≤ Ideal.span {thetaInt ^ 2 + thetaInt + 1}
+    rw [span_two_eq]
+    exact Ideal.mul_le_left
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(2 : 𝓞 K)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {thetaInt ^ 2 + thetaInt + 1},
+        isPrime_span_theta_sq_add_theta_add_one, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h23 := (ramified_iff_eq_three 2 Nat.prime_two).mp hram
+    norm_num at h23
+
+/-- The inert prime `(7)` is unramified. -/
+theorem ramificationIdx_span_seven :
+    (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {(7 : 𝓞 K)}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(7 : 𝓞 K)} ≤ Ideal.span {(7 : 𝓞 K)}
+    rfl
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(7 : 𝓞 K)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {(7 : 𝓞 K)}, isPrime_span_seven, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h73 := (ramified_iff_eq_three 7 (by norm_num)).mp hram
+    norm_num at h73
+
+/-- Each split prime over `61` is unramified. -/
+theorem ramificationIdx_primeAbove61 (r : ℤ) (hr : r = 4 ∨ r = 5 ∨ r = 52) :
+    (Ideal.span {(61 : ℤ)}).ramificationIdx (primeAbove61 r) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(61 : 𝓞 K)} ≤ primeAbove61 r
+    rw [Ideal.span_le, Set.singleton_subset_iff, primeAbove61]
+    exact Ideal.subset_span (Set.mem_insert _ _)
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(61 : 𝓞 K)} ≤ P ^ 2 := by
+      refine ⟨primeAbove61 r, isPrime_primeAbove61 r hr, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h613 := (ramified_iff_eq_three 61 (by norm_num)).mp hram
+    norm_num at h613
 
 
 end NumberField.CubeRootThree

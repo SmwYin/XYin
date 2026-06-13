@@ -268,13 +268,22 @@ theorem norm_one_add_zeta : Algebra.norm ℚ (1 + ζ) = 1 := by
 
 /-! ## 5. Splitting of primes -/
 
+private theorem map_span_intCast (p : ℤ) :
+    Ideal.map (algebraMap ℤ OK) (Ideal.span {p}) = Ideal.span {(p : OK)} := by
+  rw [Ideal.map_span, Set.image_singleton]
+  change Ideal.span ({algebraMap ℤ OK p} : Set OK) =
+    Ideal.span ({algebraMap ℤ OK p} : Set OK)
+  rfl
+
 /-- The element `ζ - 1` is a prime element of the ring of integers. -/
-example : Prime (zeta_isPrimitiveRoot.toInteger - 1 : OK) :=
-  zeta_isPrimitiveRoot.zeta_sub_one_prime'
+theorem zetaInt_sub_one_prime : Prime (zetaInt - 1 : OK) := by
+  rw [zetaInt]
+  exact zeta_isPrimitiveRoot.zeta_sub_one_prime'
 
 /-- In this field, `ζ - 1` lies above `3`: it divides `3` in `𝓞 K`. -/
-example : (zeta_isPrimitiveRoot.toInteger - 1 : OK) ∣ (3 : OK) :=
-  zeta_isPrimitiveRoot.toInteger_sub_one_dvd_prime'
+theorem zetaInt_sub_one_dvd_three : (zetaInt - 1 : OK) ∣ (3 : OK) := by
+  rw [zetaInt]
+  exact zeta_isPrimitiveRoot.toInteger_sub_one_dvd_prime'
 
 /-- `3` is (totally) ramified: `(3) = (ζ - 1)²` as ideals of `𝓞 K`. It is the unique
 ramified prime, matching the discriminant `-3`. -/
@@ -313,7 +322,52 @@ theorem isPrime_span_zetaInt_sub_one : (Ideal.span {zetaInt - 1}).IsPrime := by
   rw [span_zetaInt_sub_one_eq_pair]
   exact (isMaximal_span_pair 3 1 hr).isPrime
 
-private theorem absNorm_span_two' : Ideal.absNorm (Ideal.span {(2 : OK)}) = 4 := by
+/-- The ramified prime `(ζ - 1)` lies over `(3)`. -/
+theorem liesOver_span_zetaInt_sub_one :
+    (Ideal.span {zetaInt - 1}).LiesOver (Ideal.span {(3 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_zetaInt_sub_one.ne_top
+    (show Prime (3 : ℤ) by norm_num)]
+  change (3 : OK) ∈ Ideal.span {zetaInt - 1}
+  have hmem : (3 : OK) ∈ Ideal.span {(3 : OK)} := Ideal.mem_span_singleton_self _
+  rw [span_three_eq] at hmem
+  exact Ideal.pow_le_self (by norm_num) hmem
+
+/-- The ramified prime `(ζ - 1)` has inertia degree `1` over `3`. -/
+theorem inertiaDeg_span_zetaInt_sub_one :
+    (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {zetaInt - 1}) = 1 := by
+  haveI : (Ideal.span {zetaInt - 1}).LiesOver (Ideal.span {(3 : ℤ)}) :=
+    liesOver_span_zetaInt_sub_one
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {zetaInt - 1})
+    (p := 3) Nat.prime_three
+  rw [absNorm_span_zetaInt_sub_one] at h
+  exact ((Nat.Prime.pow_eq_iff Nat.prime_three).mp h.symm).2
+
+/-- The ramified prime `(ζ - 1)` has ramification index `2` over `3`. -/
+theorem ramificationIdx_span_zetaInt_sub_one :
+    (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {zetaInt - 1}) = 2 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast]
+    change Ideal.span {(3 : OK)} ≤ Ideal.span {zetaInt - 1} ^ 2
+    rw [span_three_eq]
+  · intro hle3
+    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle3
+    rw [map_span_intCast] at hdvd
+    have hnorm3 : Ideal.absNorm (Ideal.span {((3 : ℤ) : OK)}) = 9 := by
+      change Ideal.absNorm (Ideal.span {(3 : OK)}) = 9
+      have hfin : Module.finrank ℤ OK = 2 := by
+        rw [Module.finrank_eq_card_basis zetaExplicitIntegralBasis, Fintype.card_fin]
+      rw [Ideal.absNorm_span_singleton,
+        show (3 : OK) = algebraMap ℤ OK 3 from (map_ofNat _ 3).symm,
+        Algebra.norm_algebraMap, hfin]
+      rfl
+    have hnormP3 : Ideal.absNorm (Ideal.span {zetaInt - 1} ^ 3) = 27 := by
+      rw [map_pow, absNorm_span_zetaInt_sub_one]
+      norm_num
+    rw [hnormP3, hnorm3] at hdvd
+    norm_num at hdvd
+
+/-- The inert prime `(2)` has norm `4` (residue degree `f = 2`). -/
+theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : OK)}) = 4 := by
   have hfin : Module.finrank ℤ OK = 2 := by
     rw [Module.finrank_eq_card_basis zetaExplicitIntegralBasis, Fintype.card_fin]
   rw [Ideal.absNorm_span_singleton,
@@ -326,14 +380,14 @@ mod `2`, so `(2)` is itself prime. -/
 theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime := by
   have htop : Ideal.span {(2 : OK)} ≠ ⊤ := by
     intro h
-    have h4 := absNorm_span_two'
+    have h4 := absNorm_span_two
     rw [h, Ideal.absNorm_top] at h4
     norm_num at h4
   obtain ⟨M, hMmax, hMle⟩ := Ideal.exists_le_maximal _ htop
   haveI := hMmax
   letI : Field (OK ⧸ M) := Ideal.Quotient.field M
   have hdvd : Ideal.absNorm M ∣ 4 :=
-    absNorm_span_two' ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
+    absNorm_span_two ▸ Ideal.absNorm_dvd_absNorm_of_le hMle
   have h2mem : (2 : OK) ∈ M := hMle (Ideal.mem_span_singleton_self _)
   set ω : OK ⧸ M := Ideal.Quotient.mk M zetaInt with hω
   have hω3 : ω ^ 3 = 1 := by
@@ -384,13 +438,26 @@ theorem isPrime_span_two : (Ideal.span {(2 : OK)}).IsPrime := by
       norm_num at hM1
     · norm_num at h3dvd
     · norm_num
-  have heq := eq_of_le_of_absNorm_eq hMle absNorm_span_two' hM4 (by norm_num)
+  have heq := eq_of_le_of_absNorm_eq hMle absNorm_span_two hM4 (by norm_num)
   rw [heq]
   exact hMmax.isPrime
 
-/-- The inert prime `(2)` has norm `4` (residue degree `f = 2`). -/
-theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : OK)}) = 4 := by
-  exact absNorm_span_two'
+/-- The inert prime `(2)` lies over `(2)`. -/
+theorem liesOver_span_two : (Ideal.span {(2 : OK)}).LiesOver (Ideal.span {(2 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_two.ne_top
+    (show Prime (2 : ℤ) by norm_num)]
+  change (2 : OK) ∈ Ideal.span {(2 : OK)}
+  exact Ideal.mem_span_singleton_self _
+
+/-- The inert prime `(2)` has inertia degree `2`. -/
+theorem inertiaDeg_span_two :
+    (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {(2 : OK)}) = 2 := by
+  haveI : (Ideal.span {(2 : OK)}).LiesOver (Ideal.span {(2 : ℤ)}) := liesOver_span_two
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(2 : OK)})
+    (p := 2) Nat.prime_two
+  rw [absNorm_span_two] at h
+  change 2 ^ 2 = 2 ^ (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {(2 : OK)}) at h
+  exact Nat.pow_right_injective Nat.prime_two.one_lt h.symm
 
 private theorem seven_eq_mul : (7 : OK) = (3 + zetaInt) * (3 + zetaInt ^ 2) := by
   linear_combination -zetaInt_pow_three - 3 * zetaInt_relation
@@ -413,6 +480,26 @@ theorem isPrime_span_seven_factor : (Ideal.span {3 + zetaInt}).IsPrime := by
   apply Ideal.isPrime_of_irreducible_absNorm
   rw [absNorm_span_seven_factor]
   exact (Nat.irreducible_iff_nat_prime _).mpr (by norm_num)
+
+/-- The prime `(3 + ζ)` lies over `(7)`. -/
+theorem liesOver_span_seven_factor :
+    (Ideal.span {3 + zetaInt}).LiesOver (Ideal.span {(7 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_seven_factor.ne_top
+    (show Prime (7 : ℤ) by norm_num)]
+  change (7 : OK) ∈ Ideal.span {3 + zetaInt}
+  rw [seven_eq_mul]
+  exact Ideal.mul_mem_right (3 + zetaInt ^ 2) (Ideal.span {3 + zetaInt})
+    (Ideal.mem_span_singleton_self (3 + zetaInt))
+
+/-- The split prime `(3 + ζ)` has inertia degree `1` over `7`. -/
+theorem inertiaDeg_span_seven_factor :
+    (Ideal.span {(7 : ℤ)}).inertiaDeg (Ideal.span {3 + zetaInt}) = 1 := by
+  haveI : (Ideal.span {3 + zetaInt}).LiesOver (Ideal.span {(7 : ℤ)}) :=
+    liesOver_span_seven_factor
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {3 + zetaInt})
+    (p := 7) (by norm_num : Nat.Prime 7)
+  rw [absNorm_span_seven_factor] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 7)).mp h.symm).2
 
 /-- The splitting law at ramified primes: a rational prime `p` ramifies in `ℚ(ζ₃)` iff
 `p = 3`, i.e. iff `p` divides the discriminant `-3`. -/
@@ -498,6 +585,36 @@ theorem ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
     refine ⟨Ideal.span {zetaInt - 1}, isPrime_span_zetaInt_sub_one, ?_⟩
     have hcast : ((3 : ℕ) : OK) = (3 : OK) := by norm_num
     rw [hcast, span_three_eq]
+
+/-- The inert prime `(2)` is unramified. -/
+theorem ramificationIdx_span_two :
+    (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {(2 : OK)}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    simp
+  · intro hle2
+    have hram : ∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(2 : OK)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {(2 : OK)}, isPrime_span_two, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h := (ramified_iff_eq_three 2 Nat.prime_two).mp hram
+    norm_num at h
+
+/-- The split prime `(3 + ζ)` over `7` is unramified. -/
+theorem ramificationIdx_span_seven_factor :
+    (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {3 + zetaInt}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(7 : OK)} ≤ Ideal.span {3 + zetaInt}
+    rw [span_seven_eq]
+    exact Ideal.mul_le_right
+  · intro hle2
+    have hram : ∃ P : Ideal OK, P.IsPrime ∧ Ideal.span {(7 : OK)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {3 + zetaInt}, isPrime_span_seven_factor, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h := (ramified_iff_eq_three 7 (by norm_num)).mp hram
+    norm_num at h
 
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : OK)}) = p ^ 2 := by

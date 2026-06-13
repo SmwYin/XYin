@@ -12,20 +12,6 @@ namespace NumberField.SqrtTwo
 
 /-! ## 7. Class group -/
 
-example : Fintype (ClassGroup O2) := by infer_instance
-
-example (C : ClassGroup O2) : ∃ I : (Ideal O2)⁰, ClassGroup.mk0 I = C :=
-  ClassGroup.mk0_surjective C
-
-abbrev trivialFractionalIdealSqrtTwo : (FractionalIdeal O2⁰ QSqrtTwo)ˣ :=
-  1
-
-example : 0 < mixedEmbedding.minkowskiBound QSqrtTwo trivialFractionalIdealSqrtTwo :=
-  mixedEmbedding.minkowskiBound_pos QSqrtTwo trivialFractionalIdealSqrtTwo
-
-example : mixedEmbedding.minkowskiBound QSqrtTwo trivialFractionalIdealSqrtTwo < ⊤ :=
-  mixedEmbedding.minkowskiBound_lt_top QSqrtTwo trivialFractionalIdealSqrtTwo
-
 /-- The ring of integers `ℤ[√2]` is a principal ideal domain — the ring-theoretic content of
 class number one. -/
 theorem isPrincipalIdealRing : IsPrincipalIdealRing O2 := by

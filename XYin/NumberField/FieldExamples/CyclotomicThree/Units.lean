@@ -40,6 +40,10 @@ theorem torsionOrder_eq_six : Units.torsionOrder K = 6 := by
 theorem nrRealPlaces_eq_zero : InfinitePlace.nrRealPlaces K = 0 := by
   exact IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 3) K (by norm_num)
 
+/-- `ℚ(ζ₃)` is totally complex. -/
+theorem isTotallyComplex : IsTotallyComplex K :=
+  IsCyclotomicExtension.Rat.isTotallyComplex (n := 3) K (by norm_num)
+
 /-- The field `ℚ(ζ₃)` has one complex infinite place. -/
 theorem nrComplexPlaces_eq_one : InfinitePlace.nrComplexPlaces K = 1 := by
   rw [IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := 3) K]

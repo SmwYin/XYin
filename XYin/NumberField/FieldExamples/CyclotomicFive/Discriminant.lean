@@ -27,5 +27,12 @@ theorem concreteIntegralBasis_discr :
   simpa [numberField_discr_eq] using
     (NumberField.discr_eq_discr (K := K) concreteIntegralBasis)
 
+/-- The discriminant of mathlib's canonical field integral basis is `125`. -/
+theorem integralBasis_discr :
+    Algebra.discr ℚ (NumberField.integralBasis K) = (125 : ℚ) := by
+  have h := NumberField.coe_discr K
+  rw [numberField_discr_eq] at h
+  simpa using h.symm
+
 
 end NumberField.CyclotomicFive

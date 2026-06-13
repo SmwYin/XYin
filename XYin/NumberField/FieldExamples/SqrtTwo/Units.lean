@@ -311,6 +311,10 @@ theorem nrRealPlaces_eq_two :
   rw [hfin, nrComplexPlaces_eq_zero] at hsig
   omega
 
+/-- `ℚ(√2)` is totally real. -/
+theorem isTotallyReal : NumberField.IsTotallyReal QSqrtTwo :=
+  (NumberField.nrComplexPlaces_eq_zero_iff (K := QSqrtTwo)).mp nrComplexPlaces_eq_zero
+
 /-- The torsion subgroup of `𝓞 ℚ(√2)ˣ` has order `2`: a totally real field has only the
 roots of unity `±1`. -/
 private theorem sqrtTwo_torsion_eq_one_or_neg_one

@@ -51,5 +51,12 @@ theorem numberField_discr_eq : NumberField.discr K = (-243 : ℤ) := by
     exact discr_powerBasis_eq
   exact_mod_cast hQ
 
+/-- The discriminant of mathlib's canonical field integral basis is `-243`. -/
+theorem integralBasis_discr :
+    Algebra.discr ℚ (NumberField.integralBasis K) = (-243 : ℚ) := by
+  have h := NumberField.coe_discr K
+  rw [numberField_discr_eq] at h
+  simpa using h.symm
+
 
 end NumberField.CubeRootThree

@@ -17,6 +17,13 @@ It is the unique ramified prime, matching the discriminant `8 = 2³`. -/
 theorem span_two_eq : Ideal.span {(2 : O2)} = Ideal.span {sqrtTwoInteger} ^ 2 := by
   rw [Ideal.span_singleton_pow, sqrtTwoInteger_sq]
 
+private theorem map_span_intCast (p : ℤ) :
+    Ideal.map (algebraMap ℤ O2) (Ideal.span {p}) = Ideal.span {(p : O2)} := by
+  rw [Ideal.map_span, Set.image_singleton]
+  change Ideal.span ({algebraMap ℤ O2 p} : Set O2) =
+    Ideal.span ({algebraMap ℤ O2 p} : Set O2)
+  rfl
+
 /-- The prime `(√2)` above `2` has norm `2` (residue degree `f = 1`). -/
 theorem absNorm_span_sqrtTwoInteger : Ideal.absNorm (Ideal.span {sqrtTwoInteger}) = 2 := by
   have h := intNorm_eq_normForm 0 1
@@ -32,6 +39,49 @@ theorem isPrime_span_sqrtTwoInteger : (Ideal.span {sqrtTwoInteger}).IsPrime := b
     rw [absNorm_span_sqrtTwoInteger]
     exact Nat.prime_two
   exact Ideal.isPrime_of_irreducible_absNorm h
+
+/-- The ramified prime `(√2)` lies over `(2)`. -/
+theorem liesOver_span_sqrtTwoInteger :
+    (Ideal.span {sqrtTwoInteger}).LiesOver (Ideal.span {(2 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_sqrtTwoInteger.ne_top
+    (show Prime (2 : ℤ) by norm_num)]
+  change (2 : O2) ∈ Ideal.span {sqrtTwoInteger}
+  rw [← sqrtTwoInteger_sq]
+  simpa [pow_two] using
+    Ideal.mul_mem_right sqrtTwoInteger (Ideal.span {sqrtTwoInteger})
+      (Ideal.mem_span_singleton_self sqrtTwoInteger)
+
+/-- The ramified prime `(√2)` has inertia degree `1` over `2`. -/
+theorem inertiaDeg_span_sqrtTwoInteger :
+    (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {sqrtTwoInteger}) = 1 := by
+  haveI : (Ideal.span {sqrtTwoInteger}).LiesOver (Ideal.span {(2 : ℤ)}) :=
+    liesOver_span_sqrtTwoInteger
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {sqrtTwoInteger})
+    (p := 2) Nat.prime_two
+  rw [absNorm_span_sqrtTwoInteger] at h
+  exact ((Nat.Prime.pow_eq_iff Nat.prime_two).mp h.symm).2
+
+/-- The ramified prime `(√2)` has ramification index `2` over `2`. -/
+theorem ramificationIdx_span_sqrtTwoInteger :
+    (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {sqrtTwoInteger}) = 2 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast]
+    change Ideal.span {(2 : O2)} ≤ Ideal.span {sqrtTwoInteger} ^ 2
+    rw [span_two_eq]
+  · intro hle3
+    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle3
+    rw [map_span_intCast] at hdvd
+    have hnorm2 : Ideal.absNorm (Ideal.span {((2 : ℤ) : O2)}) = 4 := by
+      change Ideal.absNorm (Ideal.span {(2 : O2)}) = 4
+      have h := intNorm_eq_normForm 2 0
+      norm_num at h
+      rw [Ideal.absNorm_span_singleton, h]
+      rfl
+    have hnorm3 : Ideal.absNorm (Ideal.span {sqrtTwoInteger} ^ 3) = 8 := by
+      rw [map_pow, absNorm_span_sqrtTwoInteger]
+      norm_num
+    rw [hnorm3, hnorm2] at hdvd
+    norm_num at hdvd
 
 /-- `7 ≡ -1 (mod 8)` splits: `7 = (3 + √2)(3 - √2)` and `(7)` is a product of two distinct
 primes of norm `7`. -/
@@ -59,6 +109,70 @@ theorem isPrime_span_three_add_sqrtTwo : (Ideal.span {3 + sqrtTwoInteger}).IsPri
     rw [absNorm_span_three_add_sqrtTwo]
     exact (Nat.irreducible_iff_nat_prime 7).mpr (by norm_num)
   exact Ideal.isPrime_of_irreducible_absNorm h
+
+/-- The conjugate prime `(3 - √2)` above `7` has norm `7`. -/
+theorem absNorm_span_three_sub_sqrtTwo :
+    Ideal.absNorm (Ideal.span {3 - sqrtTwoInteger}) = 7 := by
+  have h := intNorm_eq_normForm 3 (-1)
+  have h3 : (3 : ℤ) • (1 : O2) + (-1 : ℤ) • sqrtTwoInteger = 3 - sqrtTwoInteger := by
+    simp only [zsmul_eq_mul]
+    push_cast
+    ring
+  rw [h3] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- `(3 - √2)` is the conjugate prime above `7`. -/
+theorem isPrime_span_three_sub_sqrtTwo : (Ideal.span {3 - sqrtTwoInteger}).IsPrime := by
+  have h : Irreducible (Ideal.absNorm (Ideal.span {3 - sqrtTwoInteger})) := by
+    rw [absNorm_span_three_sub_sqrtTwo]
+    exact (Nat.irreducible_iff_nat_prime 7).mpr (by norm_num)
+  exact Ideal.isPrime_of_irreducible_absNorm h
+
+/-- The prime `(3 + √2)` lies over `(7)`. -/
+theorem liesOver_span_three_add_sqrtTwo :
+    (Ideal.span {3 + sqrtTwoInteger}).LiesOver (Ideal.span {(7 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_three_add_sqrtTwo.ne_top
+    (show Prime (7 : ℤ) by norm_num)]
+  change (7 : O2) ∈ Ideal.span {3 + sqrtTwoInteger}
+  rw [show (7 : O2) = (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) from by
+    rw [show (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = 9 - sqrtTwoInteger ^ 2 by ring]
+    rw [sqrtTwoInteger_sq]
+    norm_num]
+  exact Ideal.mul_mem_right _ _ (Ideal.mem_span_singleton_self (3 + sqrtTwoInteger))
+
+/-- The prime `(3 - √2)` lies over `(7)`. -/
+theorem liesOver_span_three_sub_sqrtTwo :
+    (Ideal.span {3 - sqrtTwoInteger}).LiesOver (Ideal.span {(7 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_three_sub_sqrtTwo.ne_top
+    (show Prime (7 : ℤ) by norm_num)]
+  change (7 : O2) ∈ Ideal.span {3 - sqrtTwoInteger}
+  rw [show (7 : O2) = (3 - sqrtTwoInteger) * (3 + sqrtTwoInteger) from by
+    rw [show (3 - sqrtTwoInteger) * (3 + sqrtTwoInteger) = 9 - sqrtTwoInteger ^ 2 by ring]
+    rw [sqrtTwoInteger_sq]
+    norm_num]
+  exact Ideal.mul_mem_right _ _ (Ideal.mem_span_singleton_self (3 - sqrtTwoInteger))
+
+/-- The split prime `(3 + √2)` has inertia degree `1` over `7`. -/
+theorem inertiaDeg_span_three_add_sqrtTwo :
+    (Ideal.span {(7 : ℤ)}).inertiaDeg (Ideal.span {3 + sqrtTwoInteger}) = 1 := by
+  haveI : (Ideal.span {3 + sqrtTwoInteger}).LiesOver (Ideal.span {(7 : ℤ)}) :=
+    liesOver_span_three_add_sqrtTwo
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {3 + sqrtTwoInteger})
+    (p := 7) (by norm_num : Nat.Prime 7)
+  rw [absNorm_span_three_add_sqrtTwo] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 7)).mp h.symm).2
+
+/-- The split prime `(3 - √2)` has inertia degree `1` over `7`. -/
+theorem inertiaDeg_span_three_sub_sqrtTwo :
+    (Ideal.span {(7 : ℤ)}).inertiaDeg (Ideal.span {3 - sqrtTwoInteger}) = 1 := by
+  haveI : (Ideal.span {3 - sqrtTwoInteger}).LiesOver (Ideal.span {(7 : ℤ)}) :=
+    liesOver_span_three_sub_sqrtTwo
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {3 - sqrtTwoInteger})
+    (p := 7) (by norm_num : Nat.Prime 7)
+  rw [absNorm_span_three_sub_sqrtTwo] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 7)).mp h.symm).2
 
 private theorem eq_of_le_of_absNorm_eq {I J : Ideal O2} (hle : I ≤ J) {n : ℕ}
     (hI : Ideal.absNorm I = n) (hJ : Ideal.absNorm J = n) (hn : n ≠ 0) : I = J := by
@@ -130,6 +244,23 @@ theorem absNorm_span_three : Ideal.absNorm (Ideal.span {(3 : O2)}) = 9 := by
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
   rfl
+
+/-- The inert prime `(3)` lies over `(3)`. -/
+theorem liesOver_span_three : (Ideal.span {(3 : O2)}).LiesOver (Ideal.span {(3 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_three.ne_top
+    (show Prime (3 : ℤ) by norm_num)]
+  change (3 : O2) ∈ Ideal.span {(3 : O2)}
+  exact Ideal.mem_span_singleton_self _
+
+/-- The inert prime `(3)` has inertia degree `2`. -/
+theorem inertiaDeg_span_three :
+    (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {(3 : O2)}) = 2 := by
+  haveI : (Ideal.span {(3 : O2)}).LiesOver (Ideal.span {(3 : ℤ)}) := liesOver_span_three
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(3 : O2)})
+    (p := 3) Nat.prime_three
+  rw [absNorm_span_three] at h
+  change 3 ^ 2 = 3 ^ (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {(3 : O2)}) at h
+  exact Nat.pow_right_injective Nat.prime_three.one_lt h.symm
 
 /-- A rational prime generates an ideal of norm `p²` in the quadratic ring `ℤ[√2]`. -/
 private theorem absNorm_span_natCast (p : ℕ) :
@@ -269,6 +400,52 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
     refine ⟨Ideal.span {sqrtTwoInteger}, isPrime_span_sqrtTwoInteger, ?_⟩
     have hcast : ((2 : ℕ) : O2) = (2 : O2) := by norm_num
     rw [hcast, span_two_eq]
+
+/-- Each split prime over `7` is unramified: `(3 + √2)` has ramification index `1`. -/
+theorem ramificationIdx_span_three_add_sqrtTwo :
+    (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {3 + sqrtTwoInteger}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(7 : O2)} ≤ Ideal.span {3 + sqrtTwoInteger}
+    rw [span_seven_eq]
+    exact Ideal.mul_le_right
+  · intro hle2
+    have hram : ∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(7 : O2)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {3 + sqrtTwoInteger}, isPrime_span_three_add_sqrtTwo, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h72 := (ramified_iff_eq_two 7 (by norm_num)).mp hram
+    norm_num at h72
+
+/-- Each split prime over `7` is unramified: `(3 - √2)` has ramification index `1`. -/
+theorem ramificationIdx_span_three_sub_sqrtTwo :
+    (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {3 - sqrtTwoInteger}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(7 : O2)} ≤ Ideal.span {3 - sqrtTwoInteger}
+    rw [span_seven_eq]
+    exact Ideal.mul_le_left
+  · intro hle2
+    have hram : ∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(7 : O2)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {3 - sqrtTwoInteger}, isPrime_span_three_sub_sqrtTwo, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h72 := (ramified_iff_eq_two 7 (by norm_num)).mp hram
+    norm_num at h72
+
+/-- The inert prime `(3)` is unramified: it has ramification index `1`. -/
+theorem ramificationIdx_span_three :
+    (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {(3 : O2)}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    simp
+  · intro hle2
+    have hram : ∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(3 : O2)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {(3 : O2)}, isPrime_span_three, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h32 := (ramified_iff_eq_two 3 Nat.prime_three).mp hram
+    norm_num at h32
 
 private theorem exists_prime_norm_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     (∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(p : O2)} ≤ P ∧ Ideal.absNorm P = p) ↔

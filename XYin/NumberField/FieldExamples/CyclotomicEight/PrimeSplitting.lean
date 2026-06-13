@@ -9,6 +9,14 @@ namespace NumberField.CyclotomicEight
 
 /-! ## 5. Splitting of primes -/
 
+private theorem map_span_intCast (p : ℤ) :
+    Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {p}) =
+      Ideal.span {(p : 𝓞 K)} := by
+  rw [Ideal.map_span, Set.image_singleton]
+  change Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K)) =
+    Ideal.span ({algebraMap ℤ (𝓞 K) p} : Set (𝓞 K))
+  rfl
+
 private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
 
 private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
@@ -378,6 +386,50 @@ theorem isPrime_span_one_sub_zeta : (Ideal.span {1 - zetaInt}).IsPrime := by
 theorem absNorm_span_one_sub_zeta : Ideal.absNorm (Ideal.span {1 - zetaInt}) = 2 := by
   rw [span_one_sub_zetaInt_eq_pair]
   exact absNorm_span_pair 2 1 (by decide)
+
+/-- The ramified prime `(1 - ζ)` lies over `(2)`. -/
+theorem liesOver_span_one_sub_zeta :
+    (Ideal.span {1 - zetaInt}).LiesOver (Ideal.span {(2 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_one_sub_zeta.ne_top
+    (show Prime (2 : ℤ) by norm_num)]
+  change (2 : 𝓞 K) ∈ Ideal.span {1 - zetaInt}
+  have hmem : (2 : 𝓞 K) ∈ Ideal.span {(2 : 𝓞 K)} := Ideal.mem_span_singleton_self _
+  rw [span_two_eq] at hmem
+  exact Ideal.pow_le_self (by norm_num) hmem
+
+/-- The ramified prime `(1 - ζ)` has inertia degree `1` over `2`. -/
+theorem inertiaDeg_span_one_sub_zeta :
+    (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {1 - zetaInt}) = 1 := by
+  haveI : (Ideal.span {1 - zetaInt}).LiesOver (Ideal.span {(2 : ℤ)}) :=
+    liesOver_span_one_sub_zeta
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {1 - zetaInt})
+    (p := 2) Nat.prime_two
+  rw [absNorm_span_one_sub_zeta] at h
+  exact ((Nat.Prime.pow_eq_iff Nat.prime_two).mp h.symm).2
+
+/-- The ramified prime `(1 - ζ)` has ramification index `4` over `2`. -/
+theorem ramificationIdx_span_one_sub_zeta :
+    (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {1 - zetaInt}) = 4 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast]
+    change Ideal.span {(2 : 𝓞 K)} ≤ Ideal.span {1 - zetaInt} ^ 4
+    rw [span_two_eq]
+  · intro hle5
+    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle5
+    rw [map_span_intCast] at hdvd
+    have hnorm2 : Ideal.absNorm (Ideal.span {((2 : ℤ) : 𝓞 K)}) = 16 := by
+      change Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 16
+      have hfin : Module.finrank ℤ (𝓞 K) = 4 := by
+        rw [Module.finrank_eq_card_basis concreteIntegralBasis, Fintype.card_fin]
+      rw [Ideal.absNorm_span_singleton,
+        show (2 : 𝓞 K) = algebraMap ℤ (𝓞 K) 2 from (map_ofNat _ 2).symm,
+        Algebra.norm_algebraMap, hfin]
+      rfl
+    have hnormP5 : Ideal.absNorm (Ideal.span {1 - zetaInt} ^ 5) = 32 := by
+      rw [map_pow, absNorm_span_one_sub_zeta]
+      norm_num
+    rw [hnormP5, hnorm2] at hdvd
+    norm_num at hdvd
 
 private theorem span_pair_three_left :
     Ideal.span {(3 : 𝓞 K), zetaInt ^ 2 + zetaInt + 2} =

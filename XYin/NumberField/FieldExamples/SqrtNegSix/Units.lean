@@ -15,7 +15,8 @@ abbrev torsionGenerator : (𝓞 K)ˣ := -1
 /-- The concrete torsion units `{1, -1}`. -/
 def torsionUnits : Set ((𝓞 K)ˣ) := {u | ∃ k : Fin 2, u = torsionGenerator ^ k.val}
 
-private theorem isTotallyComplex : NumberField.IsTotallyComplex K := by
+/-- `ℚ(√-6)` is totally complex. -/
+theorem isTotallyComplex : NumberField.IsTotallyComplex K := by
   refine ⟨fun v => ?_⟩
   rw [NumberField.InfinitePlace.isComplex_iff]
   intro hreal
@@ -95,15 +96,17 @@ theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 := b
   haveI := isTotallyComplex
   exact NumberField.IsTotallyComplex.nrRealPlaces_eq_zero K
 
+/-- `ℚ(√-6)` has exactly one complex infinite place. -/
+theorem nrComplexPlaces_eq_one : NumberField.InfinitePlace.nrComplexPlaces K = 1 := by
+  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
+  rw [nrRealPlaces_eq_zero, degree_eq_two] at h
+  omega
+
 /-- The Dirichlet unit rank of the imaginary quadratic field `ℚ(√-6)` is `0`: the signature
 is `(0, 1)`, so the rank is `r₁ + r₂ - 1 = 0` and the unit group is finite. -/
 theorem unitRank_eq_zero : NumberField.Units.rank K = 0 := by
-  have hcomplex : NumberField.InfinitePlace.nrComplexPlaces K = 1 := by
-    have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
-    rw [nrRealPlaces_eq_zero, degree_eq_two] at h
-    omega
   rw [NumberField.Units.rank, NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
-    nrRealPlaces_eq_zero, hcomplex]
+    nrRealPlaces_eq_zero, nrComplexPlaces_eq_one]
 
 /-- Every unit of `ℤ[√-6]` is `1` or `-1`: the unit group is exactly the torsion `{±1}`. -/
 theorem unit_eq_one_or_neg_one (u : (𝓞 K)ˣ) : u = 1 ∨ u = -1 := by

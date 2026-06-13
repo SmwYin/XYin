@@ -10,27 +10,15 @@ open Module NumberField Polynomial
 
 namespace NumberField.SqrtFive
 
-private noncomputable def goldenOrderEquivRingOfIntegers : O5 ≃ₐ[ℤ] 𝓞 QSqrtFive :=
-  IsIntegralClosure.equiv ℤ O5 QSqrtFive (𝓞 QSqrtFive)
-
-private noncomputable def concreteIntegralBasis : Basis (Fin 2) ℤ (𝓞 QSqrtFive) :=
-  sqrtFiveExplicitIntegralBasis.map goldenOrderEquivRingOfIntegers.toLinearEquiv
-
-private theorem concreteIntegralBasis_basis_zero :
-    algebraMap (𝓞 QSqrtFive) QSqrtFive (concreteIntegralBasis 0) = 1 := by
-  change algebraMap (𝓞 QSqrtFive) QSqrtFive
-      (goldenOrderEquivRingOfIntegers (sqrtFiveExplicitIntegralBasis 0)) = 1
-  rw [goldenOrderEquivRingOfIntegers, IsIntegralClosure.algebraMap_equiv]
-  exact goldenOrderToField_basis_zero
-
-private theorem concreteIntegralBasis_basis_one :
-    algebraMap (𝓞 QSqrtFive) QSqrtFive (concreteIntegralBasis 1) = goldenRoot := by
-  change algebraMap (𝓞 QSqrtFive) QSqrtFive
-      (goldenOrderEquivRingOfIntegers (sqrtFiveExplicitIntegralBasis 1)) = goldenRoot
-  rw [goldenOrderEquivRingOfIntegers, IsIntegralClosure.algebraMap_equiv]
-  exact goldenOrderToField_basis_one
-
 /-! ## 5. Splitting of primes -/
+
+private theorem map_span_intCast (p : ℤ) :
+    Ideal.map (algebraMap ℤ (𝓞 QSqrtFive)) (Ideal.span {p}) =
+      Ideal.span {(p : 𝓞 QSqrtFive)} := by
+  rw [Ideal.map_span, Set.image_singleton]
+  change Ideal.span ({algebraMap ℤ (𝓞 QSqrtFive) p} : Set (𝓞 QSqrtFive)) =
+    Ideal.span ({algebraMap ℤ (𝓞 QSqrtFive) p} : Set (𝓞 QSqrtFive))
+  rfl
 
 /-- `√5 = 2φ - 1` as an element of `𝓞 QSqrtFive`. -/
 noncomputable def sqrtFiveIntO : 𝓞 QSqrtFive := 2 * goldenIntO - 1
@@ -62,6 +50,55 @@ theorem isPrime_span_sqrtFiveIntO : (Ideal.span {sqrtFiveIntO}).IsPrime := by
   apply Ideal.isPrime_of_irreducible_absNorm
   rw [absNorm_span_sqrtFiveIntO]
   exact (by norm_num : Nat.Prime 5)
+
+/-- The ramified prime `(√5)` lies over `(5)`. -/
+theorem liesOver_span_sqrtFiveIntO :
+    (Ideal.span {sqrtFiveIntO}).LiesOver (Ideal.span {(5 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_sqrtFiveIntO.ne_top
+    (show Prime (5 : ℤ) by norm_num)]
+  change (5 : 𝓞 QSqrtFive) ∈ Ideal.span {sqrtFiveIntO}
+  rw [← show sqrtFiveIntO ^ 2 = (5 : 𝓞 QSqrtFive) from by
+    apply Subtype.ext
+    change (2 * goldenRoot - 1) ^ 2 = (5 : QSqrtFive)
+    exact sqrtFiveRoot_sq]
+  simpa [pow_two] using
+    Ideal.mul_mem_right sqrtFiveIntO (Ideal.span {sqrtFiveIntO})
+      (Ideal.mem_span_singleton_self sqrtFiveIntO)
+
+/-- The ramified prime `(√5)` has inertia degree `1` over `5`. -/
+theorem inertiaDeg_span_sqrtFiveIntO :
+    (Ideal.span {(5 : ℤ)}).inertiaDeg (Ideal.span {sqrtFiveIntO}) = 1 := by
+  haveI : (Ideal.span {sqrtFiveIntO}).LiesOver (Ideal.span {(5 : ℤ)}) :=
+    liesOver_span_sqrtFiveIntO
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {sqrtFiveIntO})
+    (p := 5) (by norm_num : Nat.Prime 5)
+  rw [absNorm_span_sqrtFiveIntO] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 5)).mp h.symm).2
+
+/-- The ramified prime `(√5)` has ramification index `2` over `5`. -/
+theorem ramificationIdx_span_sqrtFiveIntO :
+    (Ideal.span {(5 : ℤ)}).ramificationIdx (Ideal.span {sqrtFiveIntO}) = 2 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast]
+    change Ideal.span {(5 : 𝓞 QSqrtFive)} ≤ Ideal.span {sqrtFiveIntO} ^ 2
+    rw [span_five_eq]
+  · intro hle3
+    have hdvd := Ideal.absNorm_dvd_absNorm_of_le hle3
+    rw [map_span_intCast] at hdvd
+    have hnorm5 : Ideal.absNorm (Ideal.span {((5 : ℤ) : 𝓞 QSqrtFive)}) = 25 := by
+      change Ideal.absNorm (Ideal.span {(5 : 𝓞 QSqrtFive)}) = 25
+      have h := intNorm_eq_normForm 5 0
+      have h5 : (5 : ℤ) • (1 : 𝓞 QSqrtFive) + (0 : ℤ) • goldenIntO =
+          (5 : 𝓞 QSqrtFive) := by simp
+      rw [h5] at h
+      norm_num at h
+      rw [Ideal.absNorm_span_singleton, h]
+      rfl
+    have hnorm3 : Ideal.absNorm (Ideal.span {sqrtFiveIntO} ^ 3) = 125 := by
+      rw [map_pow, absNorm_span_sqrtFiveIntO]
+      norm_num
+    rw [hnorm3, hnorm5] at hdvd
+    norm_num at hdvd
 
 private theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
   Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
@@ -159,6 +196,26 @@ theorem absNorm_span_two : Ideal.absNorm (Ideal.span {(2 : 𝓞 QSqrtFive)}) = 4
   rw [Ideal.absNorm_span_singleton, h]
   rfl
 
+/-- The inert prime `(2)` lies over `(2)`. -/
+theorem liesOver_span_two :
+    (Ideal.span {(2 : 𝓞 QSqrtFive)}).LiesOver (Ideal.span {(2 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_two.ne_top
+    (show Prime (2 : ℤ) by norm_num)]
+  change (2 : 𝓞 QSqrtFive) ∈ Ideal.span {(2 : 𝓞 QSqrtFive)}
+  exact Ideal.mem_span_singleton_self _
+
+/-- The inert prime `(2)` has inertia degree `2`. -/
+theorem inertiaDeg_span_two :
+    (Ideal.span {(2 : ℤ)}).inertiaDeg (Ideal.span {(2 : 𝓞 QSqrtFive)}) = 2 := by
+  haveI : (Ideal.span {(2 : 𝓞 QSqrtFive)}).LiesOver (Ideal.span {(2 : ℤ)}) :=
+    liesOver_span_two
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(2 : 𝓞 QSqrtFive)})
+    (p := 2) Nat.prime_two
+  rw [absNorm_span_two] at h
+  change 2 ^ 2 = 2 ^ (Ideal.span {(2 : ℤ)}).inertiaDeg
+    (Ideal.span {(2 : 𝓞 QSqrtFive)}) at h
+  exact Nat.pow_right_injective Nat.prime_two.one_lt h.symm
+
 /-- `3` is inert in `ℚ(√5)`: `5` is not a square mod `3`, so `(3)` is itself prime (of norm
 `9`). -/
 theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 QSqrtFive)}).IsPrime := by
@@ -193,6 +250,36 @@ theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 QSqrtFive)}).IsPrime := by
   have heq := eq_of_le_of_absNorm_eq hMle habs9 hM9 (by norm_num)
   rw [heq]
   exact hMmax.isPrime
+
+/-- The inert prime `(3)` has norm `9`. -/
+theorem absNorm_span_three : Ideal.absNorm (Ideal.span {(3 : 𝓞 QSqrtFive)}) = 9 := by
+  have h := intNorm_eq_normForm 3 0
+  have h3 : (3 : ℤ) • (1 : 𝓞 QSqrtFive) + (0 : ℤ) • goldenIntO =
+      (3 : 𝓞 QSqrtFive) := by simp
+  rw [h3] at h
+  norm_num at h
+  rw [Ideal.absNorm_span_singleton, h]
+  rfl
+
+/-- The inert prime `(3)` lies over `(3)`. -/
+theorem liesOver_span_three :
+    (Ideal.span {(3 : 𝓞 QSqrtFive)}).LiesOver (Ideal.span {(3 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_three.ne_top
+    (show Prime (3 : ℤ) by norm_num)]
+  change (3 : 𝓞 QSqrtFive) ∈ Ideal.span {(3 : 𝓞 QSqrtFive)}
+  exact Ideal.mem_span_singleton_self _
+
+/-- The inert prime `(3)` has inertia degree `2`. -/
+theorem inertiaDeg_span_three :
+    (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {(3 : 𝓞 QSqrtFive)}) = 2 := by
+  haveI : (Ideal.span {(3 : 𝓞 QSqrtFive)}).LiesOver (Ideal.span {(3 : ℤ)}) :=
+    liesOver_span_three
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(3 : 𝓞 QSqrtFive)})
+    (p := 3) Nat.prime_three
+  rw [absNorm_span_three] at h
+  change 3 ^ 2 = 3 ^ (Ideal.span {(3 : ℤ)}).inertiaDeg
+    (Ideal.span {(3 : 𝓞 QSqrtFive)}) at h
+  exact Nat.pow_right_injective Nat.prime_three.one_lt h.symm
 
 /-- The elementary identity `11 = (3 + φ)(4 - φ)` in `𝓞 QSqrtFive`. -/
 theorem eleven_eq_mul : (11 : 𝓞 QSqrtFive) = (3 + goldenIntO) * (4 - goldenIntO) := by
@@ -244,6 +331,48 @@ theorem isPrime_span_four_sub_golden : (Ideal.span {4 - goldenIntO}).IsPrime := 
   apply Ideal.isPrime_of_irreducible_absNorm
   rw [absNorm_span_four_sub_golden]
   exact (by norm_num : Nat.Prime 11)
+
+/-- The split prime `(3 + φ)` lies over `(11)`. -/
+theorem liesOver_span_three_add_golden :
+    (Ideal.span {3 + goldenIntO}).LiesOver (Ideal.span {(11 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_three_add_golden.ne_top
+    (show Prime (11 : ℤ) by norm_num)]
+  change (11 : 𝓞 QSqrtFive) ∈ Ideal.span {3 + goldenIntO}
+  rw [eleven_eq_mul]
+  exact Ideal.mul_mem_right (4 - goldenIntO) (Ideal.span {3 + goldenIntO})
+    (Ideal.mem_span_singleton_self (3 + goldenIntO))
+
+/-- The split prime `(4 - φ)` lies over `(11)`. -/
+theorem liesOver_span_four_sub_golden :
+    (Ideal.span {4 - goldenIntO}).LiesOver (Ideal.span {(11 : ℤ)}) := by
+  rw [Ideal.liesOver_span_iff isPrime_span_four_sub_golden.ne_top
+    (show Prime (11 : ℤ) by norm_num)]
+  change (11 : 𝓞 QSqrtFive) ∈ Ideal.span {4 - goldenIntO}
+  rw [show (11 : 𝓞 QSqrtFive) = (4 - goldenIntO) * (3 + goldenIntO) from by
+    rw [eleven_eq_mul]
+    ring]
+  exact Ideal.mul_mem_right (3 + goldenIntO) (Ideal.span {4 - goldenIntO})
+    (Ideal.mem_span_singleton_self (4 - goldenIntO))
+
+/-- The split prime `(3 + φ)` has inertia degree `1` over `11`. -/
+theorem inertiaDeg_span_three_add_golden :
+    (Ideal.span {(11 : ℤ)}).inertiaDeg (Ideal.span {3 + goldenIntO}) = 1 := by
+  haveI : (Ideal.span {3 + goldenIntO}).LiesOver (Ideal.span {(11 : ℤ)}) :=
+    liesOver_span_three_add_golden
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {3 + goldenIntO})
+    (p := 11) (by norm_num : Nat.Prime 11)
+  rw [absNorm_span_three_add_golden] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 11)).mp h.symm).2
+
+/-- The split prime `(4 - φ)` has inertia degree `1` over `11`. -/
+theorem inertiaDeg_span_four_sub_golden :
+    (Ideal.span {(11 : ℤ)}).inertiaDeg (Ideal.span {4 - goldenIntO}) = 1 := by
+  haveI : (Ideal.span {4 - goldenIntO}).LiesOver (Ideal.span {(11 : ℤ)}) :=
+    liesOver_span_four_sub_golden
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {4 - goldenIntO})
+    (p := 11) (by norm_num : Nat.Prime 11)
+  rw [absNorm_span_four_sub_golden] at h
+  exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 11)).mp h.symm).2
 
 /-- The two principal primes above `11` are distinct. -/
 theorem primesAboveEleven_ne :
@@ -428,6 +557,70 @@ theorem ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     refine ⟨Ideal.span {sqrtFiveIntO}, isPrime_span_sqrtFiveIntO, ?_⟩
     have hcast : ((5 : ℕ) : 𝓞 QSqrtFive) = (5 : 𝓞 QSqrtFive) := by norm_num
     rw [hcast, span_five_eq]
+
+/-- The inert prime `(2)` is unramified: it has ramification index `1`. -/
+theorem ramificationIdx_span_two :
+    (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {(2 : 𝓞 QSqrtFive)}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    simp
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 QSqrtFive), P.IsPrime ∧
+        Ideal.span {(2 : 𝓞 QSqrtFive)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {(2 : 𝓞 QSqrtFive)}, isPrime_span_two, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h25 := (ramified_iff_eq_five 2 Nat.prime_two).mp hram
+    norm_num at h25
+
+/-- The inert prime `(3)` is unramified: it has ramification index `1`. -/
+theorem ramificationIdx_span_three :
+    (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {(3 : 𝓞 QSqrtFive)}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    simp
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 QSqrtFive), P.IsPrime ∧
+        Ideal.span {(3 : 𝓞 QSqrtFive)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {(3 : 𝓞 QSqrtFive)}, isPrime_span_three, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h35 := (ramified_iff_eq_five 3 Nat.prime_three).mp hram
+    norm_num at h35
+
+/-- Each split prime over `11` is unramified: `(3 + φ)` has ramification index `1`. -/
+theorem ramificationIdx_span_three_add_golden :
+    (Ideal.span {(11 : ℤ)}).ramificationIdx (Ideal.span {3 + goldenIntO}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(11 : 𝓞 QSqrtFive)} ≤ Ideal.span {3 + goldenIntO}
+    rw [span_eleven_eq]
+    exact Ideal.mul_le_right
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 QSqrtFive), P.IsPrime ∧
+        Ideal.span {(11 : 𝓞 QSqrtFive)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {3 + goldenIntO}, isPrime_span_three_add_golden, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h115 := (ramified_iff_eq_five 11 (by norm_num)).mp hram
+    norm_num at h115
+
+/-- Each split prime over `11` is unramified: `(4 - φ)` has ramification index `1`. -/
+theorem ramificationIdx_span_four_sub_golden :
+    (Ideal.span {(11 : ℤ)}).ramificationIdx (Ideal.span {4 - goldenIntO}) = 1 := by
+  refine Ideal.ramificationIdx_spec ?hle ?hgt
+  · rw [map_span_intCast, pow_one]
+    change Ideal.span {(11 : 𝓞 QSqrtFive)} ≤ Ideal.span {4 - goldenIntO}
+    rw [span_eleven_eq]
+    exact Ideal.mul_le_left
+  · intro hle2
+    have hram : ∃ P : Ideal (𝓞 QSqrtFive), P.IsPrime ∧
+        Ideal.span {(11 : 𝓞 QSqrtFive)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {4 - goldenIntO}, isPrime_span_four_sub_golden, ?_⟩
+      rw [map_span_intCast] at hle2
+      exact hle2
+    have h115 := (ramified_iff_eq_five 11 (by norm_num)).mp hram
+    norm_num at h115
 
 /-- The quadratic splitting law for `ℚ(√5)`: a rational prime `p ≠ 5` splits into two
 distinct primes iff `p ≡ ±1 (mod 5)` (i.e. iff `5` is a quadratic residue mod `p`, by

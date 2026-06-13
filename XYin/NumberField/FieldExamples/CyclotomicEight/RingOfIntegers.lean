@@ -20,6 +20,17 @@ noncomputable def zetaInt : 𝓞 K := ⟨ζ, zeta_integral⟩
 theorem zetaInt_pow_four : zetaInt ^ 4 = -1 :=
   Subtype.ext (by push_cast [zetaInt]; exact zeta_pow_four)
 
+/-- Mathlib's integral power basis `1, ζ, ζ², ζ³` of the ring of integers. -/
+abbrev integralPowerBasis : PowerBasis ℤ (𝓞 K) :=
+  zeta_isPrimitiveRoot.integralPowerBasis
+
+/-- The integral power-basis generator is the chosen primitive root of unity in `𝓞 K`. -/
+theorem integralPowerBasis_gen : integralPowerBasis.gen = zeta_isPrimitiveRoot.toInteger := by
+  simp [integralPowerBasis]
+
+theorem integralPowerBasis_dim : integralPowerBasis.dim = 4 :=
+  zeta_isPrimitiveRoot.integralPowerBasis_dim.trans rfl
+
 /-- The displayed integral-basis vectors `1, ζ, ζ², ζ³` (as elements of `K`). -/
 def integralBasisVectors : Fin 4 → K := ![1, ζ, ζ ^ 2, ζ ^ 3]
 
@@ -66,8 +77,7 @@ theorem span_integralBasisVectors_eq :
 
 /-- The integral basis `1, ζ, ζ², ζ³` packaged as a genuine `ℤ`-basis of `𝓞 K`. -/
 noncomputable def concreteIntegralBasis : Basis (Fin 4) ℤ (𝓞 K) :=
-  zeta_isPrimitiveRoot.integralPowerBasis.basis.reindex
-    (finCongr (zeta_isPrimitiveRoot.integralPowerBasis_dim.trans rfl))
+  integralPowerBasis.basis.reindex (finCongr integralPowerBasis_dim)
 
 /-- The packaged integral basis is, vector by vector, the displayed family `1, ζ, ζ², ζ³`. -/
 theorem concreteIntegralBasis_apply (i : Fin 4) :
@@ -94,12 +104,22 @@ theorem span_integralBasisVectors_eq_integralBasis :
 /-- The concrete order `ℤ[ζ]` inside `K`. -/
 abbrev concreteRingOfIntegers : Subalgebra ℤ K := Algebra.adjoin ℤ ({ζ} : Set K)
 
+/-- The order `ℤ[ζ]` is the full ring of integers of `ℚ(ζ₈)`. -/
+theorem isIntegralClosure_adjoin_zeta :
+    IsIntegralClosure (Algebra.adjoin ℤ ({ζ} : Set K)) ℤ K :=
+  IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton zeta_isPrimitiveRoot
+
+/-- The integral power-basis generator generates `𝓞 K` over `ℤ`. -/
+theorem integralPowerBasis_adjoin_gen_eq_top :
+    Algebra.adjoin ℤ ({integralPowerBasis.gen} : Set (𝓞 K)) = ⊤ :=
+  integralPowerBasis.adjoin_gen_eq_top
+
 /-- The full ring of integers of `ℚ(ζ₈)` is `ℤ[ζ]`: cyclotomic fields are monogenic. -/
 theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers := by
   refine le_antisymm (fun x hx => ?_)
     (Algebra.adjoin_le (Set.singleton_subset_iff.mpr zeta_integral))
   obtain ⟨y, hy⟩ := (IsIntegralClosure.isIntegral_iff (self :=
-    IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton zeta_isPrimitiveRoot)).mp hx
+    isIntegralClosure_adjoin_zeta)).mp hx
   exact hy ▸ y.2
 
 
