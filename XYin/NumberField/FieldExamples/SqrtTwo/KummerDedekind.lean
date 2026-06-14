@@ -87,6 +87,20 @@ theorem kummerDedekind_splits_iff_pm_one_mod_eight
   haveI : Fact (Nat.Prime p) := ⟨hp⟩
   simpa [isSquare_iff_exists_sq, eq_comm] using (ZMod.exists_sq_eq_two_iff (p := p) hp2)
 
+/-- The inert cases are the complementary odd residue classes modulo `8`. -/
+theorem kummerDedekind_inert_iff_three_or_five_mod_eight
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
+    Irreducible (sqrtTwoPolynomialMod p) ↔ p % 8 = 3 ∨ p % 8 = 5 := by
+  sorry
+
+/-- Complete Kummer-Dedekind splitting type for unramified rational primes in `ℚ(√2)`. -/
+theorem kummerDedekind_splittingType_mod_eight
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
+    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+        Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 8 = 1 ∨ p % 8 = 7) ∧
+      (Irreducible (sqrtTwoPolynomialMod p) ↔ p % 8 = 3 ∨ p % 8 = 5) := by
+  sorry
+
 /-- The Kummer-Dedekind prediction at `2` matches the concrete factorization `(2)=(√2)^2`. -/
 theorem kummerDedekind_two_matches_concrete_ramification :
     sqrtTwoPolynomialMod 2 = X ^ 2 ∧
