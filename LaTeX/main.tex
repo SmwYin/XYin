@@ -40,6 +40,10 @@
 \newcommand{\bad}{\textcolor{red!70!black}{\ensuremath{\times}}}
 \newcommand{\na}{\textemdash}
 \newcommand{\fieldhead}[1]{\scriptsize #1}
+\newcommand{\covfull}{\textcolor{green!55!black}{\scriptsize\textsf{covered}}}
+\newcommand{\covpart}{\textcolor{orange!85!black}{\scriptsize\textsf{partial}}}
+\newcommand{\covnone}{\textcolor{red!70!black}{\scriptsize\textsf{not yet}}}
+\newcommand{\treefile}[3]{\item \texttt{#1.lean}\quad #2\quad{\footnotesize\textcolor{black!65}{#3}}}
 
 \title{Review of \texttt{XYin.NumberField.FieldExamples}}
 \author{}
@@ -48,7 +52,86 @@
 \begin{document}
 \maketitle
 
-\section{Coverage matrix}
+\section{Coverage overview}
+
+\subsection{Mathlib \texttt{NumberField} tree}
+
+The comments record coverage by the current \texttt{XYin.NumberField.FieldExamples}
+folder, not import dependencies.  Here ``covered'' means that the folder contains
+substantial concrete examples using the corresponding theme or API; ``partial'' means
+that only a narrow slice is exercised or some key declarations still contain
+\texttt{sorry}.
+
+\begin{itemize}[leftmargin=0pt,label={},itemsep=0.12em,topsep=0.25em]
+\item \textbf{\texttt{Mathlib/NumberTheory/NumberField/}}
+  \begin{itemize}[leftmargin=1.8em,itemsep=0.1em,topsep=0.1em]
+  \treefile{AdeleRing}{\covnone}{Adelic objects are not used.}
+  \treefile{Basic}{\covfull}{Concrete field models and \texttt{NumberField} instances throughout.}
+  \treefile{CMField}{\covnone}{No CM-field examples yet.}
+  \item \textbf{\texttt{CanonicalEmbedding/}}
+    \begin{itemize}[leftmargin=1.8em,itemsep=0.08em,topsep=0.08em]
+    \treefile{Basic}{\covnone}{No canonical-embedding examples yet.}
+    \treefile{ConvexBody}{\covnone}{Convex-body geometry is not used.}
+    \treefile{FundamentalCone}{\covnone}{No fundamental-cone coverage.}
+    \treefile{NormLeOne}{\covnone}{No canonical-embedding norm-bound examples.}
+    \treefile{PolarCoord}{\covnone}{No polar-coordinate coverage.}
+    \end{itemize}
+  \treefile{ClassNumber}{\covfull}{Class number \(1\), class number \(2\), and class-group structures.}
+  \item \textbf{\texttt{Completion/}}
+    \begin{itemize}[leftmargin=1.8em,itemsep=0.08em,topsep=0.08em]
+    \treefile{FinitePlace}{\covnone}{Finite completions are not covered.}
+    \treefile{InfinitePlace}{\covnone}{Completion-at-infinity API is not covered.}
+    \treefile{LiesOverInstances}{\covnone}{Lies-over completion instances are not used.}
+    \treefile{Ramification}{\covnone}{Completion-level ramification is not covered.}
+    \end{itemize}
+  \item \textbf{\texttt{Cyclotomic/}}
+    \begin{itemize}[leftmargin=1.8em,itemsep=0.08em,topsep=0.08em]
+    \treefile{Basic}{\covfull}{\(\zeta_3\), \(\zeta_5\), and \(\zeta_8\) models, degrees, primitive roots.}
+    \treefile{Embeddings}{\covpart}{Automorphisms are covered; embedding-specific API only implicitly.}
+    \treefile{Galois}{\covfull}{Cyclotomic Galois groups for \(n=3,5,8\).}
+    \treefile{Ideal}{\covpart}{Integral closures and splitting appear, but not a full ideal survey.}
+    \treefile{PID}{\covpart}{The \(\zeta_3\) PID theorem is used; broader PID API is not.}
+    \treefile{Three}{\covfull}{\(\zeta_3\) units, PID/class number, discriminant, and Galois group.}
+    \end{itemize}
+  \treefile{DedekindZeta}{\covnone}{Dedekind zeta functions are not covered.}
+  \item \textbf{\texttt{Discriminant/}}
+    \begin{itemize}[leftmargin=1.8em,itemsep=0.08em,topsep=0.08em]
+    \treefile{Basic}{\covfull}{All example fields compute discriminants.}
+    \treefile{Defs}{\covfull}{Uses \texttt{discr}, \texttt{coe\_discr}, and basis comparisons.}
+    \treefile{Different}{\covpart}{Used for ramified-prime obstructions via the different.}
+    \end{itemize}
+  \treefile{EquivReindex}{\covnone}{Reindexing equivalences are not singled out.}
+  \treefile{ExistsRamified}{\covnone}{Ramification is concrete; this existence API is not used.}
+  \treefile{FinitePlaces}{\covnone}{Finite-place API is not covered; ideals are used instead.}
+  \treefile{FractionalIdeal}{\covnone}{Fractional ideals are not developed in the examples.}
+  \treefile{House}{\covnone}{The house/height-style API is not covered.}
+  \item \textbf{\texttt{Ideal/}}
+    \begin{itemize}[leftmargin=1.8em,itemsep=0.08em,topsep=0.08em]
+    \treefile{Asymptotics}{\covnone}{Asymptotic ideal counting is not covered.}
+    \treefile{Basic}{\covfull}{Prime ideals, absolute norms, ramification, and splitting.}
+    \treefile{KummerDedekind}{\covnone}{Splitting is reproved by residue kernels; this API remains a gap.}
+    \end{itemize}
+  \treefile{InfiniteAdeleRing}{\covnone}{Infinite adele rings are not used.}
+  \item \textbf{\texttt{InfinitePlace/}}
+    \begin{itemize}[leftmargin=1.8em,itemsep=0.08em,topsep=0.08em]
+    \treefile{Basic}{\covfull}{Signatures and place counts drive the unit-rank examples.}
+    \treefile{Completion}{\covnone}{Infinite-place completions are not covered.}
+    \treefile{Embeddings}{\covpart}{Real/complex embedding facts are used for signatures.}
+    \treefile{Ramification}{\covnone}{Infinite-place ramification is not covered.}
+    \treefile{TotallyRealComplex}{\covfull}{Totally real/complex statements appear in unit files.}
+    \end{itemize}
+  \treefile{Norm}{\covfull}{Explicit norm forms and unit criteria are central examples.}
+  \treefile{ProductFormula}{\covnone}{The product formula is not covered.}
+  \item \textbf{\texttt{Units/}}
+    \begin{itemize}[leftmargin=1.8em,itemsep=0.08em,topsep=0.08em]
+    \treefile{Basic}{\covfull}{Torsion, ranks, and abstract unit decompositions.}
+    \treefile{DirichletTheorem}{\covpart}{\texttt{fundSystem} APIs are used; concrete generators partly remain \texttt{sorry}.}
+    \treefile{Regulator}{\covpart}{Regulator statements are present, but several formulas remain \texttt{sorry}.}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\subsection{Coverage matrix}
 
 Legend:\\
 \na{} means mathematically not applicable;\\

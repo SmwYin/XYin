@@ -515,7 +515,7 @@ private theorem exists_prime_norm_of_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (
     exact (Nat.irreducible_iff_nat_prime p).mpr hp
   exact ⟨P, hPprime, hPle, hNP⟩
 
-private theorem exists_prime_norm_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
+theorem exists_prime_norm_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p) ↔
       p % 8 = 1 ∨ p % 8 = 7 := by
   constructor
