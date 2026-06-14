@@ -21,12 +21,12 @@ open NumberField.FieldExamples
 
 namespace NumberField.CyclotomicThree
 
-private theorem coe_zetaInt : algebraMap OK K zetaInt = ζ := rfl
+private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
 
-private theorem abs_norm_int_lt_of_remainder_eq {b r : OK} {bK : K} {xa xb : ℚ}
-    (hbK : bK = algebraMap OK K b)
+private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 K} {bK : K} {xa xb : ℚ}
+    (hbK : bK = algebraMap (𝓞 K) K b)
     (hrK :
-      algebraMap OK K r =
+      algebraMap (𝓞 K) K r =
         bK * ((xa - ((round xa : ℤ) : ℚ)) • (1 : K) +
           (xb - ((round xb : ℤ) : ℚ)) • ζ))
     (hb_pos : 0 < |Algebra.norm ℚ bK|)
@@ -36,7 +36,7 @@ private theorem abs_norm_int_lt_of_remainder_eq {b r : OK} {bK : K} {xa xb : ℚ
         (xb - ((round xb : ℤ) : ℚ)) ^ 2| ≤ 3 / 4) :
     |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
   rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-  change |Algebra.norm ℚ (algebraMap OK K r)| < |Algebra.norm ℚ (algebraMap OK K b)|
+  change |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| < |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
   rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
   calc |Algebra.norm ℚ bK| *
       |(xa - ((round xa : ℤ) : ℚ)) ^ 2 -
@@ -65,27 +65,27 @@ private theorem exists_coords (x : K) :
 /-- `ℤ[ζ₃]`, the ring of Eisenstein integers, is norm-Euclidean: division with remainder
 with respect to the absolute value of the field norm. This strengthens
 `isPrincipalIdealRing`. -/
-theorem normEuclidean (a b : OK) (hb : b ≠ 0) :
-    ∃ q r : OK, a = b * q + r ∧
+theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 K, a = b * q + r ∧
       (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs := by
-  set aK := algebraMap OK K a with haK
-  set bK := algebraMap OK K b with hbK
+  set aK := algebraMap (𝓞 K) K a with haK
+  set bK := algebraMap (𝓞 K) K b with hbK
   have hbK0 : bK ≠ 0 := by
     intro h0
     rw [hbK] at h0
-    exact hb (IsFractionRing.injective OK K (h0.trans (map_zero _).symm))
+    exact hb (IsFractionRing.injective (𝓞 K) K (h0.trans (map_zero _).symm))
   set x := aK / bK with hxdef
   obtain ⟨xa, xb, hxab⟩ := exists_coords x
-  set q : OK := ((round xa : ℤ) : OK) + ((round xb : ℤ) : OK) * zetaInt with hq
+  set q : 𝓞 K := ((round xa : ℤ) : 𝓞 K) + ((round xb : ℤ) : 𝓞 K) * zetaInt with hq
   refine ⟨q, a - b * q, by ring, ?_⟩
-  set r : OK := a - b * q with hr
+  set r : 𝓞 K := a - b * q with hr
   have hxbK : x * bK = aK := div_mul_cancel₀ aK hbK0
-  have hqK : algebraMap OK K q =
+  have hqK : algebraMap (𝓞 K) K q =
       ((round xa : ℤ) : ℚ) • (1 : K) + ((round xb : ℤ) : ℚ) • ζ := by
     rw [hq, map_add, map_mul, map_intCast, map_intCast, coe_zetaInt,
       Algebra.smul_def, Algebra.smul_def, mul_one, eq_ratCast (algebraMap ℚ K),
       eq_ratCast (algebraMap ℚ K), Rat.cast_intCast, Rat.cast_intCast]
-  have hrK : algebraMap OK K r =
+  have hrK : algebraMap (𝓞 K) K r =
       bK * ((xa - ((round xa : ℤ) : ℚ)) • (1 : K) +
         (xb - ((round xb : ℤ) : ℚ)) • ζ) := by
     rw [hr, map_sub, map_mul, hqK, ← hbK, ← haK, ← hxbK, hxab]

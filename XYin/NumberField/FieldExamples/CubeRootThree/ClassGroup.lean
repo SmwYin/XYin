@@ -75,6 +75,11 @@ theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 K) := by
   rw [← NumberField.classNumber_eq_one_iff]
   exact classNumber_eq_one
 
+/-- The ring of integers `ℤ[θ]` is a unique factorization monoid. -/
+theorem uniqueFactorizationMonoid : UniqueFactorizationMonoid (𝓞 K) := by
+  haveI : IsPrincipalIdealRing (𝓞 K) := isPrincipalIdealRing
+  infer_instance
+
 /-- The class group of `𝓞 K` is trivial. -/
 theorem classGroupStructure : Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1)) := by
   have h1 : Nat.card (ClassGroup (𝓞 K)) = 1 := by

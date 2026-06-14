@@ -23,9 +23,9 @@ open NumberField.FieldExamples
 
 namespace NumberField.SqrtTwo
 
-private theorem abs_norm_int_lt_of_remainder_eq {b r : O2} {bK e : QSqrtTwo} {u v : ℚ}
-    (hbK : bK = algebraMap O2 QSqrtTwo b)
-    (hrK : algebraMap O2 QSqrtTwo r = bK * e)
+private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 K} {bK e : K} {u v : ℚ}
+    (hbK : bK = algebraMap (𝓞 K) K b)
+    (hrK : algebraMap (𝓞 K) K r = bK * e)
     (hb_pos : 0 < |Algebra.norm ℚ bK|)
     (hnorm_e :
       |Algebra.norm ℚ e| =
@@ -34,8 +34,8 @@ private theorem abs_norm_int_lt_of_remainder_eq {b r : O2} {bK e : QSqrtTwo} {u 
       |(u - ((round u : ℤ) : ℚ)) ^ 2 - 2 * (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ 1 / 2) :
     |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
   rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-  change |Algebra.norm ℚ (algebraMap O2 QSqrtTwo r)| <
-    |Algebra.norm ℚ (algebraMap O2 QSqrtTwo b)|
+  change |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| <
+    |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
   rw [hrK, map_mul, abs_mul, ← hbK]
   calc |Algebra.norm ℚ bK| * |Algebra.norm ℚ e| =
         |Algebra.norm ℚ bK| *
@@ -48,32 +48,32 @@ private theorem abs_norm_int_lt_of_remainder_eq {b r : O2} {bK e : QSqrtTwo} {u 
 /-- `ℚ(√2)` is norm-Euclidean: division with remainder in `ℤ[√2]` with respect to the
 absolute value of the field norm. This is the classical Euclidean algorithm for the real
 quadratic field of smallest discriminant, and strengthens `isPrincipalIdealRing`. -/
-theorem normEuclidean (a b : O2) (hb : b ≠ 0) :
-    ∃ q r : O2, a = b * q + r ∧
+theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 K, a = b * q + r ∧
       (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs := by
-  set aK := algebraMap O2 QSqrtTwo a with haK
-  set bK := algebraMap O2 QSqrtTwo b with hbK
+  set aK := algebraMap (𝓞 K) K a with haK
+  set bK := algebraMap (𝓞 K) K b with hbK
   have hbK0 : bK ≠ 0 := by
     intro h0
     rw [hbK] at h0
-    exact hb (IsFractionRing.injective O2 QSqrtTwo (h0.trans (map_zero _).symm))
+    exact hb (IsFractionRing.injective (𝓞 K) K (h0.trans (map_zero _).symm))
   set x := aK / bK with hxdef
   set u := x.re with hu
   set v := x.im with hv
-  set q : O2 := ((round u : ℤ) : O2) + ((round v : ℤ) : O2) * sqrtTwoInteger with hq
+  set q : 𝓞 K := ((round u : ℤ) : 𝓞 K) + ((round v : ℤ) : 𝓞 K) * sqrtTwoInteger with hq
   refine ⟨q, a - b * q, by ring, ?_⟩
-  set r : O2 := a - b * q with hr
+  set r : 𝓞 K := a - b * q with hr
   have hxbK : x * bK = aK := div_mul_cancel₀ aK hbK0
-  have hxcoord : x = u • (1 : QSqrtTwo) + v • sqrtTwoRoot := by
+  have hxcoord : x = u • (1 : K) + v • sqrtTwoRoot := by
     ext <;> simp [u, v, sqrtTwoRoot, Algebra.smul_def]
-  have hqK : algebraMap O2 QSqrtTwo q =
-      ((round u : ℤ) : ℚ) • (1 : QSqrtTwo) +
+  have hqK : algebraMap (𝓞 K) K q =
+      ((round u : ℤ) : ℚ) • (1 : K) +
         ((round v : ℤ) : ℚ) • sqrtTwoRoot := by
     rw [hq]
     simp [sqrtTwoInteger, sqrtTwoRoot, Algebra.smul_def]
-  set e : QSqrtTwo := (u - ((round u : ℤ) : ℚ)) • (1 : QSqrtTwo) +
+  set e : K := (u - ((round u : ℤ) : ℚ)) • (1 : K) +
     (v - ((round v : ℤ) : ℚ)) • sqrtTwoRoot with he
-  have hrK : algebraMap O2 QSqrtTwo r =
+  have hrK : algebraMap (𝓞 K) K r =
       bK * e := by
     rw [hr, map_sub, map_mul, hqK, ← hbK, ← haK, ← hxbK, hxcoord]
     rw [he]

@@ -8,7 +8,7 @@ import Mathlib
 /-!
 # The real quadratic field `ℚ(√2)` via `QuadraticAlgebra`
 
-The real quadratic field `QSqrtTwo = QuadraticAlgebra ℚ 2 0`, i.e. `ℚ(√2)`, compared with the
+The real quadratic field `K = QuadraticAlgebra ℚ 2 0`, i.e. `ℚ(√2)`, compared with the
 corresponding `AdjoinRoot (X ^ 2 - C (2 : ℚ))` presentation, and its main arithmetic
 invariants:
 
@@ -50,15 +50,15 @@ instance : Fact (∀ r : ℚ, r ^ 2 ≠ (2 : ℚ) + (0 : ℚ) * r) := by
   norm_num at hsquare
 
 /-- The real quadratic field `ℚ(√2)`, constructed as a quadratic algebra. -/
-abbrev QSqrtTwo : Type := QuadraticAlgebra ℚ (2 : ℚ) 0
+abbrev K : Type := QuadraticAlgebra ℚ (2 : ℚ) 0
 
-instance : NumberField QSqrtTwo :=
-  NumberField.of_module_finite ℚ QSqrtTwo
+instance : NumberField K :=
+  NumberField.of_module_finite ℚ K
 
 /-- The distinguished square root of `2` in the quadratic-algebra model. -/
-abbrev sqrtTwoRoot : QSqrtTwo := QuadraticAlgebra.omega
+abbrev sqrtTwoRoot : K := QuadraticAlgebra.omega
 
-theorem sqrtTwoRoot_sq : sqrtTwoRoot ^ 2 = (2 : QSqrtTwo) := by
+theorem sqrtTwoRoot_sq : sqrtTwoRoot ^ 2 = (2 : K) := by
   rw [pow_two, sqrtTwoRoot, QuadraticAlgebra.omega_mul_omega_eq_add]
   ext <;> norm_num
 
@@ -84,12 +84,12 @@ instance : Fact (Irreducible sqrtTwoPolynomial) := by
     norm_num at hsquare
 
 /-- The `AdjoinRoot` presentation of `ℚ(√2)`. -/
-abbrev QSqrtTwoAdjoinRoot : Type := AdjoinRoot sqrtTwoPolynomial
+abbrev KAdjoinRoot : Type := AdjoinRoot sqrtTwoPolynomial
 
 /-- The formal square root of `2` in the `AdjoinRoot` presentation. -/
-abbrev sqrtTwoAdjoinRoot : QSqrtTwoAdjoinRoot := AdjoinRoot.root sqrtTwoPolynomial
+abbrev sqrtTwoAdjoinRoot : KAdjoinRoot := AdjoinRoot.root sqrtTwoPolynomial
 
-theorem sqrtTwoAdjoinRoot_sq : sqrtTwoAdjoinRoot ^ 2 = (2 : QSqrtTwoAdjoinRoot) := by
+theorem sqrtTwoAdjoinRoot_sq : sqrtTwoAdjoinRoot ^ 2 = (2 : KAdjoinRoot) := by
   have hroot : sqrtTwoAdjoinRoot ^ 2 - 2 = 0 := by
     simpa [sqrtTwoAdjoinRoot, sqrtTwoPolynomial] using
       (AdjoinRoot.eval₂_root sqrtTwoPolynomial)
@@ -97,10 +97,10 @@ theorem sqrtTwoAdjoinRoot_sq : sqrtTwoAdjoinRoot ^ 2 = (2 : QSqrtTwoAdjoinRoot) 
     sqrtTwoAdjoinRoot ^ 2 = sqrtTwoAdjoinRoot ^ 2 - 2 + 2 := by ring
     _ = 2 := by rw [hroot]; ring
 
-def sqrtTwoAdjoinRootToQuadratic : QSqrtTwoAdjoinRoot →ₐ[ℚ] QSqrtTwo :=
-  AdjoinRoot.liftAlgHom sqrtTwoPolynomial (Algebra.ofId ℚ QSqrtTwo) sqrtTwoRoot (by
+def sqrtTwoAdjoinRootToQuadratic : KAdjoinRoot →ₐ[ℚ] K :=
+  AdjoinRoot.liftAlgHom sqrtTwoPolynomial (Algebra.ofId ℚ K) sqrtTwoRoot (by
     calc
-      sqrtTwoPolynomial.eval₂ (Algebra.ofId ℚ QSqrtTwo) sqrtTwoRoot =
+      sqrtTwoPolynomial.eval₂ (Algebra.ofId ℚ K) sqrtTwoRoot =
           sqrtTwoRoot ^ 2 - 2 := by
         simp [sqrtTwoPolynomial]
       _ = 0 := by rw [sqrtTwoRoot_sq]; ring)
@@ -109,9 +109,9 @@ def sqrtTwoAdjoinRootToQuadratic : QSqrtTwoAdjoinRoot →ₐ[ℚ] QSqrtTwo :=
 theorem sqrtTwoAdjoinRootToQuadratic_root :
     sqrtTwoAdjoinRootToQuadratic sqrtTwoAdjoinRoot = sqrtTwoRoot := by
   rw [sqrtTwoAdjoinRootToQuadratic, sqrtTwoAdjoinRoot]
-  exact AdjoinRoot.liftAlgHom_root sqrtTwoPolynomial (Algebra.ofId ℚ QSqrtTwo) sqrtTwoRoot _
+  exact AdjoinRoot.liftAlgHom_root sqrtTwoPolynomial (Algebra.ofId ℚ K) sqrtTwoRoot _
 
-def sqrtTwoQuadraticToAdjoinRoot : QSqrtTwo →ₐ[ℚ] QSqrtTwoAdjoinRoot :=
+def sqrtTwoQuadraticToAdjoinRoot : K →ₐ[ℚ] KAdjoinRoot :=
   (QuadraticAlgebra.lift (R := ℚ) (a := (2 : ℚ)) (b := 0)) ⟨sqrtTwoAdjoinRoot, by
     rw [← pow_two, sqrtTwoAdjoinRoot_sq]
     simp⟩
@@ -121,13 +121,13 @@ theorem sqrtTwoQuadraticToAdjoinRoot_root :
     sqrtTwoQuadraticToAdjoinRoot sqrtTwoRoot = sqrtTwoAdjoinRoot := by
   simp [sqrtTwoQuadraticToAdjoinRoot, sqrtTwoRoot]
 
-def sqrtTwoAdjoinRootEquivQuadratic : QSqrtTwoAdjoinRoot ≃ₐ[ℚ] QSqrtTwo where
+def sqrtTwoAdjoinRootEquivQuadratic : KAdjoinRoot ≃ₐ[ℚ] K where
   __ := sqrtTwoAdjoinRootToQuadratic
   invFun := sqrtTwoQuadraticToAdjoinRoot
   left_inv x := by
     have hcomp :
         sqrtTwoQuadraticToAdjoinRoot.comp sqrtTwoAdjoinRootToQuadratic =
-          AlgHom.id ℚ QSqrtTwoAdjoinRoot := by
+          AlgHom.id ℚ KAdjoinRoot := by
       apply AdjoinRoot.algHom_ext
       change sqrtTwoQuadraticToAdjoinRoot
           (sqrtTwoAdjoinRootToQuadratic sqrtTwoAdjoinRoot) = sqrtTwoAdjoinRoot
@@ -136,7 +136,7 @@ def sqrtTwoAdjoinRootEquivQuadratic : QSqrtTwoAdjoinRoot ≃ₐ[ℚ] QSqrtTwo wh
   right_inv x := by
     have hcomp :
         sqrtTwoAdjoinRootToQuadratic.comp sqrtTwoQuadraticToAdjoinRoot =
-          AlgHom.id ℚ QSqrtTwo := by
+          AlgHom.id ℚ K := by
       apply QuadraticAlgebra.algHom_ext
       change sqrtTwoAdjoinRootToQuadratic
           (sqrtTwoQuadraticToAdjoinRoot sqrtTwoRoot) = sqrtTwoRoot
@@ -144,11 +144,11 @@ def sqrtTwoAdjoinRootEquivQuadratic : QSqrtTwoAdjoinRoot ≃ₐ[ℚ] QSqrtTwo wh
     exact DFunLike.congr_fun hcomp x
 
 /-- The usual power basis `1, √2`. -/
-abbrev sqrtTwoAdjoinRootPowerBasis : PowerBasis ℚ QSqrtTwoAdjoinRoot :=
+abbrev sqrtTwoAdjoinRootPowerBasis : PowerBasis ℚ KAdjoinRoot :=
   AdjoinRoot.powerBasis (f := sqrtTwoPolynomial)
     ((Fact.out : Irreducible sqrtTwoPolynomial).ne_zero)
 
-abbrev sqrtTwoPowerBasis : PowerBasis ℚ QSqrtTwo :=
+abbrev sqrtTwoPowerBasis : PowerBasis ℚ K :=
   sqrtTwoAdjoinRootPowerBasis.map sqrtTwoAdjoinRootEquivQuadratic
 
 @[simp]
@@ -157,7 +157,7 @@ theorem sqrtTwoPowerBasis_gen : sqrtTwoPowerBasis.gen = sqrtTwoRoot := by
   exact sqrtTwoAdjoinRootToQuadratic_root
 
 /-- The field is generated by the single element `√2`. -/
-theorem adjoin_sqrtTwoRoot_eq_top : Algebra.adjoin ℚ ({sqrtTwoRoot} : Set QSqrtTwo) = ⊤ := by
+theorem adjoin_sqrtTwoRoot_eq_top : Algebra.adjoin ℚ ({sqrtTwoRoot} : Set K) = ⊤ := by
   rw [← sqrtTwoPowerBasis_gen]
   exact sqrtTwoPowerBasis.adjoin_gen_eq_top
 
@@ -167,11 +167,11 @@ theorem sqrtTwoPowerBasis_dim : sqrtTwoPowerBasis.dim = 2 := by
   rw [sqrtTwoPolynomial, natDegree_X_pow_sub_C]
 
 /-- The extension degree of `ℚ(√2)` over `ℚ` is `2`. -/
-theorem degree_eq_two : Module.finrank ℚ QSqrtTwo = 2 := by
+theorem degree_eq_two : Module.finrank ℚ K = 2 := by
   rw [PowerBasis.finrank sqrtTwoPowerBasis]
   exact sqrtTwoPowerBasis_dim
 
-instance : Algebra.IsQuadraticExtension ℚ QSqrtTwo where
+instance : Algebra.IsQuadraticExtension ℚ K where
   finrank_eq_two' := degree_eq_two
 
 /--
@@ -196,10 +196,10 @@ instance : Fact (Irreducible sqrtTwoUnitPolynomial) := by
     norm_num at hsquare
 
 /-- The same field, now generated by a root of `X^2 - 2X - 1`. -/
-abbrev QSqrtTwoUnitModel : Type := AdjoinRoot sqrtTwoUnitPolynomial
+abbrev KUnitModel : Type := AdjoinRoot sqrtTwoUnitPolynomial
 
 /-- The formal root corresponding to `1 + √2`. -/
-abbrev sqrtTwoUnitRoot : QSqrtTwoUnitModel := AdjoinRoot.root sqrtTwoUnitPolynomial
+abbrev sqrtTwoUnitRoot : KUnitModel := AdjoinRoot.root sqrtTwoUnitPolynomial
 
 theorem sqrtTwoUnitRoot_relation :
     sqrtTwoUnitRoot ^ 2 - 2 * sqrtTwoUnitRoot - 1 = 0 := by
@@ -207,11 +207,11 @@ theorem sqrtTwoUnitRoot_relation :
     (AdjoinRoot.eval₂_root sqrtTwoUnitPolynomial)
 
 /-- The map from `ℚ(√2)` to the `1 + √2` presentation sends `√2` to `β - 1`. -/
-def sqrtTwoToUnitModel : QSqrtTwo →ₐ[ℚ] QSqrtTwoUnitModel :=
+def sqrtTwoToUnitModel : K →ₐ[ℚ] KUnitModel :=
   (QuadraticAlgebra.lift (R := ℚ) (a := (2 : ℚ)) (b := 0))
     ⟨sqrtTwoUnitRoot - 1, by
       calc
-        _ = (2 : QSqrtTwoUnitModel) := by
+        _ = (2 : KUnitModel) := by
           calc
             _ = sqrtTwoUnitRoot ^ 2 - 2 * sqrtTwoUnitRoot + 1 := by ring
             _ = 2 := by
@@ -226,11 +226,11 @@ theorem sqrtTwoToUnitModel_root :
   simp [sqrtTwoToUnitModel, sqrtTwoRoot]
 
 /-- The inverse map sends the shifted generator to `√2 + 1`. -/
-def unitModelToSqrtTwo : QSqrtTwoUnitModel →ₐ[ℚ] QSqrtTwo :=
-  AdjoinRoot.liftAlgHom sqrtTwoUnitPolynomial (Algebra.ofId ℚ QSqrtTwo)
+def unitModelToSqrtTwo : KUnitModel →ₐ[ℚ] K :=
+  AdjoinRoot.liftAlgHom sqrtTwoUnitPolynomial (Algebra.ofId ℚ K)
     (sqrtTwoRoot + 1) (by
       calc
-        sqrtTwoUnitPolynomial.eval₂ (Algebra.ofId ℚ QSqrtTwo) (sqrtTwoRoot + 1)
+        sqrtTwoUnitPolynomial.eval₂ (Algebra.ofId ℚ K) (sqrtTwoRoot + 1)
             = (sqrtTwoRoot + 1) ^ 2 + -(2 * (sqrtTwoRoot + 1)) + -1 := by
               simp [sqrtTwoUnitPolynomial]
         _ = sqrtTwoRoot ^ 2 - 2 := by ring
@@ -240,33 +240,33 @@ def unitModelToSqrtTwo : QSqrtTwoUnitModel →ₐ[ℚ] QSqrtTwo :=
 theorem unitModelToSqrtTwo_root :
     unitModelToSqrtTwo sqrtTwoUnitRoot = sqrtTwoRoot + 1 := by
   rw [unitModelToSqrtTwo, sqrtTwoUnitRoot]
-  exact AdjoinRoot.liftAlgHom_root sqrtTwoUnitPolynomial (Algebra.ofId ℚ QSqrtTwo)
+  exact AdjoinRoot.liftAlgHom_root sqrtTwoUnitPolynomial (Algebra.ofId ℚ K)
     (sqrtTwoRoot + 1) _
 
 /-- The two `AdjoinRoot` presentations of `ℚ(√2)` are equivalent. -/
-def sqrtTwoEquivUnitModel : QSqrtTwo ≃ₐ[ℚ] QSqrtTwoUnitModel where
+def sqrtTwoEquivUnitModel : K ≃ₐ[ℚ] KUnitModel where
   __ := sqrtTwoToUnitModel
   invFun := unitModelToSqrtTwo
   left_inv x := by
     have hcomp :
-        unitModelToSqrtTwo.comp sqrtTwoToUnitModel = AlgHom.id ℚ QSqrtTwo := by
+        unitModelToSqrtTwo.comp sqrtTwoToUnitModel = AlgHom.id ℚ K := by
       apply QuadraticAlgebra.algHom_ext
       change unitModelToSqrtTwo (sqrtTwoToUnitModel sqrtTwoRoot) = sqrtTwoRoot
       rw [sqrtTwoToUnitModel_root]
       simp only [map_sub, map_one, unitModelToSqrtTwo_root]
       ring
-    change (unitModelToSqrtTwo.comp sqrtTwoToUnitModel) x = (AlgHom.id ℚ QSqrtTwo) x
+    change (unitModelToSqrtTwo.comp sqrtTwoToUnitModel) x = (AlgHom.id ℚ K) x
     rw [hcomp]
   right_inv x := by
     have hcomp :
-        sqrtTwoToUnitModel.comp unitModelToSqrtTwo = AlgHom.id ℚ QSqrtTwoUnitModel := by
+        sqrtTwoToUnitModel.comp unitModelToSqrtTwo = AlgHom.id ℚ KUnitModel := by
       apply AdjoinRoot.algHom_ext
       change sqrtTwoToUnitModel (unitModelToSqrtTwo sqrtTwoUnitRoot) = sqrtTwoUnitRoot
       rw [unitModelToSqrtTwo_root]
       simp only [map_add, map_one, sqrtTwoToUnitModel_root]
       ring
     change (sqrtTwoToUnitModel.comp unitModelToSqrtTwo) x =
-      (AlgHom.id ℚ QSqrtTwoUnitModel) x
+      (AlgHom.id ℚ KUnitModel) x
     rw [hcomp]
 
 theorem sqrtTwoEquivUnitModel_root :

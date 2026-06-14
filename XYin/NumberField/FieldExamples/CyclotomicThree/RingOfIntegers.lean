@@ -19,17 +19,14 @@ open Module NumberField Polynomial
 
 namespace NumberField.CyclotomicThree
 
-/-- The ring of integers of `K`. -/
-abbrev OK : Type := 𝓞 K
-
 /-- `ζ` as an element of the ring of integers `𝓞 K`. -/
-noncomputable def zetaInt : OK := zeta_isPrimitiveRoot.toInteger
+noncomputable def zetaInt : 𝓞 K := zeta_isPrimitiveRoot.toInteger
 
 /--
 For cyclotomic fields, a primitive root of unity gives an explicit integral power basis
 of the ring of integers.
 -/
-abbrev integralPowerBasis : PowerBasis ℤ OK :=
+abbrev integralPowerBasis : PowerBasis ℤ (𝓞 K) :=
   zeta_isPrimitiveRoot.integralPowerBasis
 
 /-- The integral power-basis generator is the chosen primitive root of unity in `𝓞 K`. -/
@@ -40,7 +37,7 @@ theorem integralPowerBasis_dim : integralPowerBasis.dim = 2 := by
   simp [integralPowerBasis, Nat.totient_prime Nat.prime_three]
 
 /-- The explicit `Fin 2` integral basis `[1, ζ]`. -/
-abbrev zetaExplicitIntegralBasis : Basis (Fin 2) ℤ OK :=
+abbrev zetaExplicitIntegralBasis : Basis (Fin 2) ℤ (𝓞 K) :=
   integralPowerBasis.basis.reindex (finCongr integralPowerBasis_dim)
 
 theorem zetaExplicitIntegralBasis_zero :

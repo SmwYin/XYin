@@ -23,12 +23,12 @@ open NumberField.FieldExamples
 
 namespace NumberField.SqrtFive
 
-private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 QSqrtFive} {bK : QSqrtFive}
+private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 K} {bK : K}
     {u v : ℚ}
-    (hbK : bK = algebraMap (𝓞 QSqrtFive) QSqrtFive b)
+    (hbK : bK = algebraMap (𝓞 K) K b)
     (hrK :
-      algebraMap (𝓞 QSqrtFive) QSqrtFive r =
-        bK * ((u - ((round u : ℤ) : ℚ)) • (1 : QSqrtFive) +
+      algebraMap (𝓞 K) K r =
+        bK * ((u - ((round u : ℤ) : ℚ)) • (1 : K) +
           (v - ((round v : ℤ) : ℚ)) • goldenRoot))
     (hb_pos : 0 < |Algebra.norm ℚ bK|)
     (hfrac :
@@ -37,8 +37,8 @@ private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 QSqrtFive} {bK : QSq
         (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ 3 / 4) :
     |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
   rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-  change |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive r)| <
-    |Algebra.norm ℚ (algebraMap (𝓞 QSqrtFive) QSqrtFive b)|
+  change |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| <
+    |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
   rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
   calc |Algebra.norm ℚ bK| *
       |(u - ((round u : ℤ) : ℚ)) ^ 2 +
@@ -49,31 +49,31 @@ private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 QSqrtFive} {bK : QSq
 
 /-- `ℚ(√5)` is norm-Euclidean: division with remainder in `ℤ[φ]` with respect to the
 absolute value of the field norm. This strengthens `isPrincipalIdealRing`. -/
-theorem normEuclidean (a b : 𝓞 QSqrtFive) (hb : b ≠ 0) :
-    ∃ q r : 𝓞 QSqrtFive, a = b * q + r ∧
+theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
+    ∃ q r : 𝓞 K, a = b * q + r ∧
       (Algebra.norm ℤ r).natAbs < (Algebra.norm ℤ b).natAbs := by
-  set aK := algebraMap (𝓞 QSqrtFive) QSqrtFive a with haK
-  set bK := algebraMap (𝓞 QSqrtFive) QSqrtFive b with hbK
+  set aK := algebraMap (𝓞 K) K a with haK
+  set bK := algebraMap (𝓞 K) K b with hbK
   have hbK0 : bK ≠ 0 := by
     intro h0
     rw [hbK] at h0
-    exact hb (IsFractionRing.injective (𝓞 QSqrtFive) QSqrtFive (h0.trans (map_zero _).symm))
+    exact hb (IsFractionRing.injective (𝓞 K) K (h0.trans (map_zero _).symm))
   set x := aK / bK with hxdef
   set u := x.re with hu
   set v := x.im with hv
-  set q : 𝓞 QSqrtFive := ((round u : ℤ) : 𝓞 QSqrtFive) +
-    ((round v : ℤ) : 𝓞 QSqrtFive) * goldenIntO with hq
+  set q : 𝓞 K := ((round u : ℤ) : 𝓞 K) +
+    ((round v : ℤ) : 𝓞 K) * goldenIntO with hq
   refine ⟨q, a - b * q, by ring, ?_⟩
-  set r : 𝓞 QSqrtFive := a - b * q with hr
+  set r : 𝓞 K := a - b * q with hr
   have hxbK : x * bK = aK := div_mul_cancel₀ aK hbK0
-  have hxcoord : x = u • (1 : QSqrtFive) + v • goldenRoot := by
+  have hxcoord : x = u • (1 : K) + v • goldenRoot := by
     ext <;> simp [u, v]
-  have hqK : algebraMap (𝓞 QSqrtFive) QSqrtFive q =
-      ((round u : ℤ) : ℚ) • (1 : QSqrtFive) + ((round v : ℤ) : ℚ) • goldenRoot := by
+  have hqK : algebraMap (𝓞 K) K q =
+      ((round u : ℤ) : ℚ) • (1 : K) + ((round v : ℤ) : ℚ) • goldenRoot := by
     rw [hq]
     simp [goldenIntO, Algebra.smul_def]
-  have hrK : algebraMap (𝓞 QSqrtFive) QSqrtFive r =
-      bK * ((u - ((round u : ℤ) : ℚ)) • (1 : QSqrtFive) +
+  have hrK : algebraMap (𝓞 K) K r =
+      bK * ((u - ((round u : ℤ) : ℚ)) • (1 : K) +
         (v - ((round v : ℤ) : ℚ)) • goldenRoot) := by
     rw [hr, map_sub, map_mul, hqK, ← hbK, ← haK, ← hxbK, hxcoord]
     simp only [Algebra.smul_def, map_sub]

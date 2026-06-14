@@ -25,12 +25,12 @@ namespace NumberField.SqrtTwo
 
 /-- `2` is (totally) ramified: `(2) = (√2)²` as ideals of `𝓞 K`, directly from `(√2)² = 2`.
 It is the unique ramified prime, matching the discriminant `8 = 2³`. -/
-theorem span_two_eq : Ideal.span {(2 : O2)} = Ideal.span {sqrtTwoInteger} ^ 2 := by
+theorem span_two_eq : Ideal.span {(2 : 𝓞 K)} = Ideal.span {sqrtTwoInteger} ^ 2 := by
   rw [Ideal.span_singleton_pow, sqrtTwoInteger_sq]
 /-- The prime `(√2)` above `2` has norm `2` (residue degree `f = 1`). -/
 theorem absNorm_span_sqrtTwoInteger : Ideal.absNorm (Ideal.span {sqrtTwoInteger}) = 2 := by
   have h := intNorm_eq_normForm 0 1
-  have hs : (0 : ℤ) • (1 : O2) + (1 : ℤ) • sqrtTwoInteger = sqrtTwoInteger := by simp
+  have hs : (0 : ℤ) • (1 : 𝓞 K) + (1 : ℤ) • sqrtTwoInteger = sqrtTwoInteger := by simp
   rw [hs] at h
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
@@ -48,7 +48,7 @@ theorem liesOver_span_sqrtTwoInteger :
     (Ideal.span {sqrtTwoInteger}).LiesOver (Ideal.span {(2 : ℤ)}) := by
   rw [Ideal.liesOver_span_iff isPrime_span_sqrtTwoInteger.ne_top
     (show Prime (2 : ℤ) by norm_num)]
-  change (2 : O2) ∈ Ideal.span {sqrtTwoInteger}
+  change (2 : 𝓞 K) ∈ Ideal.span {sqrtTwoInteger}
   rw [← sqrtTwoInteger_sq]
   simpa [pow_two] using
     Ideal.mul_mem_right sqrtTwoInteger (Ideal.span {sqrtTwoInteger})
@@ -69,14 +69,14 @@ theorem ramificationIdx_span_sqrtTwoInteger :
     (Ideal.span {(2 : ℤ)}).ramificationIdx (Ideal.span {sqrtTwoInteger}) = 2 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
   · rw [Ideal.map_span, Set.image_singleton]
-    change Ideal.span {(2 : O2)} ≤ Ideal.span {sqrtTwoInteger} ^ 2
+    change Ideal.span {(2 : 𝓞 K)} ≤ Ideal.span {sqrtTwoInteger} ^ 2
     rw [span_two_eq]
   · intro hle3
     have hdvd : Ideal.absNorm (Ideal.span {sqrtTwoInteger} ^ 3) ∣
-        Ideal.absNorm (Ideal.span {((2 : ℤ) : O2)}) := by
+        Ideal.absNorm (Ideal.span {((2 : ℤ) : 𝓞 K)}) := by
       simpa [Ideal.map_span, Set.image_singleton] using Ideal.absNorm_dvd_absNorm_of_le hle3
-    have hnorm2 : Ideal.absNorm (Ideal.span {((2 : ℤ) : O2)}) = 4 := by
-      change Ideal.absNorm (Ideal.span {(2 : O2)}) = 4
+    have hnorm2 : Ideal.absNorm (Ideal.span {((2 : ℤ) : 𝓞 K)}) = 4 := by
+      change Ideal.absNorm (Ideal.span {(2 : 𝓞 K)}) = 4
       have h := intNorm_eq_normForm 2 0
       norm_num at h
       rw [Ideal.absNorm_span_singleton, h]
@@ -90,10 +90,10 @@ theorem ramificationIdx_span_sqrtTwoInteger :
 /-- `7 ≡ -1 (mod 8)` splits: `7 = (3 + √2)(3 - √2)` and `(7)` is a product of two distinct
 primes of norm `7`. -/
 theorem span_seven_eq :
-    Ideal.span {(7 : O2)} =
+    Ideal.span {(7 : 𝓞 K)} =
       Ideal.span {3 + sqrtTwoInteger} * Ideal.span {3 - sqrtTwoInteger} := by
   rw [Ideal.span_singleton_mul_span_singleton]
-  have h : (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = (7 : O2) := by
+  have h : (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = (7 : 𝓞 K) := by
     calc
       (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = 9 - sqrtTwoInteger ^ 2 := by ring
       _ = 7 := by rw [sqrtTwoInteger_sq]; norm_num
@@ -118,7 +118,7 @@ theorem isPrime_span_three_add_sqrtTwo : (Ideal.span {3 + sqrtTwoInteger}).IsPri
 theorem absNorm_span_three_sub_sqrtTwo :
     Ideal.absNorm (Ideal.span {3 - sqrtTwoInteger}) = 7 := by
   have h := intNorm_eq_normForm 3 (-1)
-  have h3 : (3 : ℤ) • (1 : O2) + (-1 : ℤ) • sqrtTwoInteger = 3 - sqrtTwoInteger := by
+  have h3 : (3 : ℤ) • (1 : 𝓞 K) + (-1 : ℤ) • sqrtTwoInteger = 3 - sqrtTwoInteger := by
     simp only [zsmul_eq_mul]
     push_cast
     ring
@@ -139,8 +139,8 @@ theorem liesOver_span_three_add_sqrtTwo :
     (Ideal.span {3 + sqrtTwoInteger}).LiesOver (Ideal.span {(7 : ℤ)}) := by
   rw [Ideal.liesOver_span_iff isPrime_span_three_add_sqrtTwo.ne_top
     (show Prime (7 : ℤ) by norm_num)]
-  change (7 : O2) ∈ Ideal.span {3 + sqrtTwoInteger}
-  rw [show (7 : O2) = (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) from by
+  change (7 : 𝓞 K) ∈ Ideal.span {3 + sqrtTwoInteger}
+  rw [show (7 : 𝓞 K) = (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) from by
     rw [show (3 + sqrtTwoInteger) * (3 - sqrtTwoInteger) = 9 - sqrtTwoInteger ^ 2 by ring]
     rw [sqrtTwoInteger_sq]
     norm_num]
@@ -151,8 +151,8 @@ theorem liesOver_span_three_sub_sqrtTwo :
     (Ideal.span {3 - sqrtTwoInteger}).LiesOver (Ideal.span {(7 : ℤ)}) := by
   rw [Ideal.liesOver_span_iff isPrime_span_three_sub_sqrtTwo.ne_top
     (show Prime (7 : ℤ) by norm_num)]
-  change (7 : O2) ∈ Ideal.span {3 - sqrtTwoInteger}
-  rw [show (7 : O2) = (3 - sqrtTwoInteger) * (3 + sqrtTwoInteger) from by
+  change (7 : 𝓞 K) ∈ Ideal.span {3 - sqrtTwoInteger}
+  rw [show (7 : 𝓞 K) = (3 - sqrtTwoInteger) * (3 + sqrtTwoInteger) from by
     rw [show (3 - sqrtTwoInteger) * (3 + sqrtTwoInteger) = 9 - sqrtTwoInteger ^ 2 by ring]
     rw [sqrtTwoInteger_sq]
     norm_num]
@@ -178,15 +178,15 @@ theorem inertiaDeg_span_three_sub_sqrtTwo :
   rw [absNorm_span_three_sub_sqrtTwo] at h
   exact ((Nat.Prime.pow_eq_iff (by norm_num : Nat.Prime 7)).mp h.symm).2
 /-- There is no prime of `𝓞 K` with residue field `𝔽₃`: `X² - 2` has no root mod `3`. -/
-private theorem absNorm_ne_three (P : Ideal O2) : Ideal.absNorm P ≠ 3 := by
+private theorem absNorm_ne_three (P : Ideal (𝓞 K)) : Ideal.absNorm P ≠ 3 := by
   intro hcard
   rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
-  haveI : Finite (O2 ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
-  haveI : Fintype (O2 ⧸ P) := Fintype.ofFinite _
-  have hcard' : Fintype.card (O2 ⧸ P) = 3 := by
+  haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; norm_num)
+  haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 K) ⧸ P) = 3 := by
     rw [← Nat.card_eq_fintype_card]
     exact hcard
-  let e := ZMod.ringEquivOfPrime (O2 ⧸ P) (by norm_num) hcard'
+  let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) (by norm_num) hcard'
   obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P sqrtTwoInteger)
   have ht2 : t ^ 2 = 2 := by
     apply e.injective
@@ -198,16 +198,16 @@ private theorem absNorm_ne_three (P : Ideal O2) : Ideal.absNorm P ≠ 3 := by
 
 /-- `3` is inert in `ℚ(√2)`: `2` is not a square mod `3`, so `X² - 2` is irreducible mod `3`
 and `(3)` is itself prime. -/
-theorem isPrime_span_three : (Ideal.span {(3 : O2)}).IsPrime := by
-  have habs9 : Ideal.absNorm (Ideal.span {(3 : O2)}) = 9 := by
+theorem isPrime_span_three : (Ideal.span {(3 : 𝓞 K)}).IsPrime := by
+  have habs9 : Ideal.absNorm (Ideal.span {(3 : 𝓞 K)}) = 9 := by
     have h := intNorm_eq_normForm 3 0
-    have h3 : (3 : ℤ) • (1 : O2) + (0 : ℤ) • sqrtTwoInteger = 3 := by
+    have h3 : (3 : ℤ) • (1 : 𝓞 K) + (0 : ℤ) • sqrtTwoInteger = 3 := by
       simp
     rw [h3] at h
     norm_num at h
     rw [Ideal.absNorm_span_singleton, h]
     rfl
-  have htop : Ideal.span {(3 : O2)} ≠ ⊤ := by
+  have htop : Ideal.span {(3 : 𝓞 K)} ≠ ⊤ := by
     intro h
     rw [h, Ideal.absNorm_top] at habs9
     norm_num at habs9
@@ -232,41 +232,41 @@ theorem isPrime_span_three : (Ideal.span {(3 : O2)}).IsPrime := by
   exact hMmax.isPrime
 
 /-- The inert prime `(3)` has norm `9` (residue degree `f = 2`). -/
-theorem absNorm_span_three : Ideal.absNorm (Ideal.span {(3 : O2)}) = 9 := by
+theorem absNorm_span_three : Ideal.absNorm (Ideal.span {(3 : 𝓞 K)}) = 9 := by
   have h := intNorm_eq_normForm 3 0
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
   rfl
 
 /-- The inert prime `(3)` lies over `(3)`. -/
-theorem liesOver_span_three : (Ideal.span {(3 : O2)}).LiesOver (Ideal.span {(3 : ℤ)}) := by
+theorem liesOver_span_three : (Ideal.span {(3 : 𝓞 K)}).LiesOver (Ideal.span {(3 : ℤ)}) := by
   rw [Ideal.liesOver_span_iff isPrime_span_three.ne_top
     (show Prime (3 : ℤ) by norm_num)]
-  change (3 : O2) ∈ Ideal.span {(3 : O2)}
+  change (3 : 𝓞 K) ∈ Ideal.span {(3 : 𝓞 K)}
   exact Ideal.mem_span_singleton_self _
 
 /-- The inert prime `(3)` has inertia degree `2`. -/
 theorem inertiaDeg_span_three :
-    (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {(3 : O2)}) = 2 := by
-  haveI : (Ideal.span {(3 : O2)}).LiesOver (Ideal.span {(3 : ℤ)}) := liesOver_span_three
-  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(3 : O2)})
+    (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {(3 : 𝓞 K)}) = 2 := by
+  haveI : (Ideal.span {(3 : 𝓞 K)}).LiesOver (Ideal.span {(3 : ℤ)}) := liesOver_span_three
+  have h := Ideal.absNorm_eq_pow_inertiaDeg' (P := Ideal.span {(3 : 𝓞 K)})
     (p := 3) Nat.prime_three
   rw [absNorm_span_three] at h
-  change 3 ^ 2 = 3 ^ (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {(3 : O2)}) at h
+  change 3 ^ 2 = 3 ^ (Ideal.span {(3 : ℤ)}).inertiaDeg (Ideal.span {(3 : 𝓞 K)}) at h
   exact Nat.pow_right_injective Nat.prime_three.one_lt h.symm
 
 /-- A rational prime generates an ideal of norm `p²` in the quadratic ring `ℤ[√2]`. -/
 private theorem absNorm_span_natCast (p : ℕ) :
-    Ideal.absNorm (Ideal.span {((p : ℕ) : O2)}) = p ^ 2 := by
+    Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
   have h := intNorm_eq_normForm (p : ℤ) 0
-  have hps : ((p : ℤ)) • (1 : O2) + (0 : ℤ) • sqrtTwoInteger = ((p : ℕ) : O2) := by
+  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • sqrtTwoInteger = ((p : ℕ) : 𝓞 K) := by
     simp
   rw [hps] at h
   norm_num at h
   rw [Ideal.absNorm_span_singleton, h]
   simp [Int.natAbs_pow]
 
-private theorem li_one_sqrtTwo : LinearIndependent ℤ ![(1 : O2), sqrtTwoInteger] := by
+private theorem li_one_sqrtTwo : LinearIndependent ℤ ![(1 : 𝓞 K), sqrtTwoInteger] := by
   rw [Fintype.linearIndependent_iff]
   intro g hg
   rw [Fin.sum_univ_two] at hg
@@ -276,8 +276,8 @@ private theorem li_one_sqrtTwo : LinearIndependent ℤ ![(1 : O2), sqrtTwoIntege
     exact hg
   exact Fintype.linearIndependent_iff.mp sqrtTwoExplicitIntegralBasis.linearIndependent g hsum
 
-private theorem exists_o2_coords (z : O2) :
-    ∃ A B : ℤ, z = A • (1 : O2) + B • sqrtTwoInteger := by
+private theorem exists_o2_coords (z : 𝓞 K) :
+    ∃ A B : ℤ, z = A • (1 : 𝓞 K) + B • sqrtTwoInteger := by
   let A : ℤ := sqrtTwoExplicitIntegralBasis.repr z 0
   let B : ℤ := sqrtTwoExplicitIntegralBasis.repr z 1
   refine ⟨A, B, ?_⟩
@@ -289,15 +289,15 @@ private theorem exists_o2_coords (z : O2) :
 /-- An element `A + B√2` with `B = ±1` is never divisible by a rational prime `p ≥ 2`. -/
 private theorem unit_sqrtTwo_coeff_not_mem (p : ℕ) (hp : 2 ≤ p) (A B : ℤ)
     (hB : B = 1 ∨ B = -1) :
-    ((A : ℤ) : O2) + ((B : ℤ) : O2) * sqrtTwoInteger ∉
-      Ideal.span {((p : ℕ) : O2)} := by
+    ((A : ℤ) : 𝓞 K) + ((B : ℤ) : 𝓞 K) * sqrtTwoInteger ∉
+      Ideal.span {((p : ℕ) : 𝓞 K)} := by
   intro hmem
   rw [Ideal.mem_span_singleton] at hmem
   obtain ⟨z, hz⟩ := hmem
   obtain ⟨A', m, hzdec⟩ := exists_o2_coords z
   rw [hzdec] at hz
   have hsum : ∑ i : Fin 2,
-      (![A - p * A', B - p * m] i) • (![(1 : O2), sqrtTwoInteger] i) = 0 := by
+      (![A - p * A', B - p * m] i) • (![(1 : 𝓞 K), sqrtTwoInteger] i) = 0 := by
     rw [Fin.sum_univ_two]
     simp only [Matrix.cons_val_zero, Matrix.cons_val_one, zsmul_eq_mul] at hz ⊢
     push_cast at hz ⊢
@@ -315,19 +315,19 @@ private theorem unit_sqrtTwo_coeff_not_mem (p : ℕ) (hp : 2 ≤ p) (A B : ℤ)
 /-- The splitting law at ramified primes: a rational prime `p` ramifies in `ℚ(√2)` iff
 `p = 2`, i.e. iff `p` divides the discriminant `8`. -/
 theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
-    (∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(p : O2)} ≤ P ^ 2) ↔ p = 2 := by
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 2 := by
   constructor
   · rintro ⟨P, hP, hle2⟩
     haveI : P.IsPrime := hP
-    have hple : Ideal.span {((p : ℕ) : O2)} ≤ P :=
+    have hple : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ P :=
       hle2.trans (Ideal.pow_le_self (by norm_num))
-    have hpmemP : ((p : ℕ) : O2) ∈ P := hple (Ideal.mem_span_singleton_self _)
-    have hpne : ((p : ℕ) : O2) ≠ 0 := Nat.cast_ne_zero.mpr hp.ne_zero
+    have hpmemP : ((p : ℕ) : 𝓞 K) ∈ P := hple (Ideal.mem_span_singleton_self _)
+    have hpne : ((p : ℕ) : 𝓞 K) ≠ 0 := Nat.cast_ne_zero.mpr hp.ne_zero
     have hPbot : P ≠ ⊥ := by
       intro h
       rw [h] at hpmemP
       exact hpne (Ideal.mem_bot.mp hpmemP)
-    have habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : O2)}) = p ^ 2 :=
+    have habsp : Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 :=
       absNorm_span_natCast p
     have habsPp2 : Ideal.absNorm P ∣ p ^ 2 :=
       habsp ▸ Ideal.absNorm_dvd_absNorm_of_le hple
@@ -336,17 +336,17 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
       intro h0
       rw [h0, pow_zero] at hkeq
       exact hP.ne_top (Ideal.absNorm_eq_one_iff.mp hkeq)
-    have hle2' : Ideal.map (algebraMap ℤ O2) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
+    have hle2' : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 2 := by
       simpa [Ideal.map_span, Set.image_singleton] using hle2
-    have hno3 : ¬ Ideal.map (algebraMap ℤ O2) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3 :=
+    have hno3 : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((p : ℕ) : ℤ)}) ≤ P ^ 3 :=
       not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow hp habsp hkeq hk0
     have hunram : ¬ Algebra.IsUnramifiedAt ℤ P :=
       not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ hp hpmemP hPbot hle2'
         hno3
-    have hPdiff : P ∣ differentIdeal ℤ O2 := dvd_differentIdeal_iff.mpr hunram
+    have hPdiff : P ∣ differentIdeal ℤ (𝓞 K) := dvd_differentIdeal_iff.mpr hunram
     have habsP8 : Ideal.absNorm P ∣ 8 := by
       have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
-      rw [NumberField.absNorm_differentIdeal (K := QSqrtTwo), sqrtTwo_numberField_discr] at h
+      rw [NumberField.absNorm_differentIdeal (K := K), sqrtTwo_numberField_discr] at h
       simpa using h
     have hpdvd : p ∣ 8 := (hkeq ▸ dvd_pow_self p hk0).trans habsP8
     have hpdiv2 : p ∣ 2 := by
@@ -355,7 +355,7 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
     exact (Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hpdiv2
   · rintro rfl
     refine ⟨Ideal.span {sqrtTwoInteger}, isPrime_span_sqrtTwoInteger, ?_⟩
-    have hcast : ((2 : ℕ) : O2) = (2 : O2) := by norm_num
+    have hcast : ((2 : ℕ) : 𝓞 K) = (2 : 𝓞 K) := by norm_num
     rw [hcast, span_two_eq]
 
 /-- Each split prime over `7` is unramified: `(3 + √2)` has ramification index `1`. -/
@@ -363,11 +363,11 @@ theorem ramificationIdx_span_three_add_sqrtTwo :
     (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {3 + sqrtTwoInteger}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
   · rw [Ideal.map_span, Set.image_singleton, pow_one]
-    change Ideal.span {(7 : O2)} ≤ Ideal.span {3 + sqrtTwoInteger}
+    change Ideal.span {(7 : 𝓞 K)} ≤ Ideal.span {3 + sqrtTwoInteger}
     rw [span_seven_eq]
     exact Ideal.mul_le_right
   · intro hle2
-    have hram : ∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(7 : O2)} ≤ P ^ 2 := by
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(7 : 𝓞 K)} ≤ P ^ 2 := by
       refine ⟨Ideal.span {3 + sqrtTwoInteger}, isPrime_span_three_add_sqrtTwo, ?_⟩
       rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
@@ -379,11 +379,11 @@ theorem ramificationIdx_span_three_sub_sqrtTwo :
     (Ideal.span {(7 : ℤ)}).ramificationIdx (Ideal.span {3 - sqrtTwoInteger}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
   · rw [Ideal.map_span, Set.image_singleton, pow_one]
-    change Ideal.span {(7 : O2)} ≤ Ideal.span {3 - sqrtTwoInteger}
+    change Ideal.span {(7 : 𝓞 K)} ≤ Ideal.span {3 - sqrtTwoInteger}
     rw [span_seven_eq]
     exact Ideal.mul_le_left
   · intro hle2
-    have hram : ∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(7 : O2)} ≤ P ^ 2 := by
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(7 : 𝓞 K)} ≤ P ^ 2 := by
       refine ⟨Ideal.span {3 - sqrtTwoInteger}, isPrime_span_three_sub_sqrtTwo, ?_⟩
       rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
@@ -392,48 +392,48 @@ theorem ramificationIdx_span_three_sub_sqrtTwo :
 
 /-- The inert prime `(3)` is unramified: it has ramification index `1`. -/
 theorem ramificationIdx_span_three :
-    (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {(3 : O2)}) = 1 := by
+    (Ideal.span {(3 : ℤ)}).ramificationIdx (Ideal.span {(3 : 𝓞 K)}) = 1 := by
   refine Ideal.ramificationIdx_spec ?hle ?hgt
   · rw [Ideal.map_span, Set.image_singleton, pow_one]
     simp
   · intro hle2
-    have hram : ∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(3 : O2)} ≤ P ^ 2 := by
-      refine ⟨Ideal.span {(3 : O2)}, isPrime_span_three, ?_⟩
+    have hram : ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(3 : 𝓞 K)} ≤ P ^ 2 := by
+      refine ⟨Ideal.span {(3 : 𝓞 K)}, isPrime_span_three, ?_⟩
       rw [Ideal.map_span, Set.image_singleton] at hle2
       exact hle2
     have h32 := (ramified_iff_eq_two 3 Nat.prime_three).mp hram
     norm_num at h32
 
 private theorem absNorm_span_prime_sqrtTwo_sub_of_mul (p : ℕ) (hp : p.Prime) (c k : ℤ)
-    (hprod : (sqrtTwoInteger - (c : O2)) * (sqrtTwoInteger + (c : O2)) =
-      ((p : ℕ) : O2) * (k : O2)) :
-    Ideal.absNorm (Ideal.span {((p : ℕ) : O2), sqrtTwoInteger - (c : O2)}) = p := by
-  let P : Ideal O2 := Ideal.span {((p : ℕ) : O2), sqrtTwoInteger - (c : O2)}
+    (hprod : (sqrtTwoInteger - (c : 𝓞 K)) * (sqrtTwoInteger + (c : 𝓞 K)) =
+      ((p : ℕ) : 𝓞 K) * (k : 𝓞 K)) :
+    Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K), sqrtTwoInteger - (c : 𝓞 K)}) = p := by
+  let P : Ideal (𝓞 K) := Ideal.span {((p : ℕ) : 𝓞 K), sqrtTwoInteger - (c : 𝓞 K)}
   change Ideal.absNorm P = p
-  have hp_memP : ((p : ℕ) : O2) ∈ P := Ideal.subset_span (Set.mem_insert _ _)
-  have hsc_memP : sqrtTwoInteger - (c : O2) ∈ P :=
+  have hp_memP : ((p : ℕ) : 𝓞 K) ∈ P := Ideal.subset_span (Set.mem_insert _ _)
+  have hsc_memP : sqrtTwoInteger - (c : 𝓞 K) ∈ P :=
     Ideal.subset_span (Set.mem_insert_of_mem _ rfl)
-  have hPle : Ideal.span {((p : ℕ) : O2)} ≤ P :=
+  have hPle : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ P :=
     (Ideal.span_singleton_le_iff_mem _).mpr hp_memP
   have hPnot1 : Ideal.absNorm P ≠ 1 := by
     rw [Ne, Ideal.absNorm_eq_one_iff]
     intro htop
-    have h1 : (1 : O2) ∈ P := htop ▸ Submodule.mem_top
-    change (1 : O2) ∈ Ideal.span {((p : ℕ) : O2), sqrtTwoInteger - (c : O2)} at h1
+    have h1 : (1 : 𝓞 K) ∈ P := htop ▸ Submodule.mem_top
+    change (1 : 𝓞 K) ∈ Ideal.span {((p : ℕ) : 𝓞 K), sqrtTwoInteger - (c : 𝓞 K)} at h1
     rw [Ideal.mem_span_pair] at h1
     obtain ⟨α, β, hαβ⟩ := h1
-    have hsc' : sqrtTwoInteger + (c : O2) ∈ Ideal.span {((p : ℕ) : O2)} := by
+    have hsc' : sqrtTwoInteger + (c : 𝓞 K) ∈ Ideal.span {((p : ℕ) : 𝓞 K)} := by
       rw [Ideal.mem_span_singleton]
-      refine ⟨α * (sqrtTwoInteger + (c : O2)) + β * (k : O2), ?_⟩
-      calc sqrtTwoInteger + (c : O2)
-          = (α * ((p : ℕ) : O2) + β * (sqrtTwoInteger - (c : O2))) *
-              (sqrtTwoInteger + (c : O2)) := by
+      refine ⟨α * (sqrtTwoInteger + (c : 𝓞 K)) + β * (k : 𝓞 K), ?_⟩
+      calc sqrtTwoInteger + (c : 𝓞 K)
+          = (α * ((p : ℕ) : 𝓞 K) + β * (sqrtTwoInteger - (c : 𝓞 K))) *
+              (sqrtTwoInteger + (c : 𝓞 K)) := by
             rw [hαβ, one_mul]
-        _ = ((p : ℕ) : O2) * (α * (sqrtTwoInteger + (c : O2)) + β * (k : O2)) := by
+        _ = ((p : ℕ) : 𝓞 K) * (α * (sqrtTwoInteger + (c : 𝓞 K)) + β * (k : 𝓞 K)) := by
             linear_combination β * hprod
     refine unit_sqrtTwo_coeff_not_mem p hp.two_le c 1 (Or.inl rfl) ?_
-    rw [show ((c : ℤ) : O2) + ((1 : ℤ) : O2) * sqrtTwoInteger =
-      sqrtTwoInteger + (c : O2) by
+    rw [show ((c : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * sqrtTwoInteger =
+      sqrtTwoInteger + (c : 𝓞 K) by
         push_cast
         ring]
     exact hsc'
@@ -442,8 +442,8 @@ private theorem absNorm_span_prime_sqrtTwo_sub_of_mul (p : ℕ) (hp : p.Prime) (
     have heq := eq_of_le_of_absNorm_eq hPle (absNorm_span_natCast p) hNP
       (pow_ne_zero 2 hp.pos.ne')
     refine unit_sqrtTwo_coeff_not_mem p hp.two_le (-c) 1 (Or.inl rfl) ?_
-    rw [show (((-c : ℤ) : O2) + ((1 : ℤ) : O2) * sqrtTwoInteger) =
-      sqrtTwoInteger - (c : O2) by
+    rw [show (((-c : ℤ) : 𝓞 K) + ((1 : ℤ) : 𝓞 K) * sqrtTwoInteger) =
+      sqrtTwoInteger - (c : 𝓞 K) by
         push_cast
         ring]
     rw [heq]
@@ -452,19 +452,19 @@ private theorem absNorm_span_prime_sqrtTwo_sub_of_mul (p : ℕ) (hp : p.Prime) (
     ((absNorm_span_natCast p) ▸ Ideal.absNorm_dvd_absNorm_of_le hPle) hPnot1 hPnotsq
 
 private theorem pm_one_mod_eight_of_prime_norm (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    (∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(p : O2)} ≤ P ∧ Ideal.absNorm P = p) →
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p) →
       p % 8 = 1 ∨ p % 8 = 7 := by
   haveI : Fact (Nat.Prime p) := ⟨hp⟩
   rintro ⟨P, hPprime, hPle, hNP⟩
-  have hcard : Nat.card (O2 ⧸ P) = p := by
+  have hcard : Nat.card ((𝓞 K) ⧸ P) = p := by
     rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hNP
     exact hNP
-  haveI : Finite (O2 ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; exact hp.pos.ne')
-  haveI : Fintype (O2 ⧸ P) := Fintype.ofFinite _
-  have hcard' : Fintype.card (O2 ⧸ P) = p := by
+  haveI : Finite ((𝓞 K) ⧸ P) := Nat.finite_of_card_ne_zero (by rw [hcard]; exact hp.pos.ne')
+  haveI : Fintype ((𝓞 K) ⧸ P) := Fintype.ofFinite _
+  have hcard' : Fintype.card ((𝓞 K) ⧸ P) = p := by
     rw [← Nat.card_eq_fintype_card]
     exact hcard
-  let e := ZMod.ringEquivOfPrime (O2 ⧸ P) hp hcard'
+  let e := ZMod.ringEquivOfPrime ((𝓞 K) ⧸ P) hp hcard'
   obtain ⟨t, ht⟩ := e.surjective (Ideal.Quotient.mk P sqrtTwoInteger)
   have ht2 : t ^ 2 = 2 := by
     apply e.injective
@@ -477,7 +477,7 @@ private theorem pm_one_mod_eight_of_prime_norm (p : ℕ) (hp : p.Prime) (hp2 : p
 
 private theorem exists_prime_norm_of_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     p % 8 = 1 ∨ p % 8 = 7 →
-      ∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(p : O2)} ≤ P ∧ Ideal.absNorm P = p := by
+      ∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p := by
   haveI : Fact (Nat.Prime p) := ⟨hp⟩
   intro hmod
   have hsq2 : IsSquare ((2 : ℕ) : ZMod p) :=
@@ -495,18 +495,18 @@ private theorem exists_prime_norm_of_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (
     have hs' : s * s = 2 := by simpa [pow_two] using hs.symm
     linear_combination -hs'
   obtain ⟨k, hk⟩ := hdvd
-  have hkO2 : (2 : O2) - (c : O2) * (c : O2) = ((p : ℕ) : O2) * (k : O2) := by
-    have h := congrArg (fun n : ℤ => ((n : ℤ) : O2)) hk
+  have hkRing : (2 : 𝓞 K) - (c : 𝓞 K) * (c : 𝓞 K) = ((p : ℕ) : 𝓞 K) * (k : 𝓞 K) := by
+    have h := congrArg (fun n : ℤ => ((n : ℤ) : 𝓞 K)) hk
     push_cast at h
     exact h
-  have hprod : (sqrtTwoInteger - (c : O2)) * (sqrtTwoInteger + (c : O2)) =
-      ((p : ℕ) : O2) * (k : O2) := by
-    calc (sqrtTwoInteger - (c : O2)) * (sqrtTwoInteger + (c : O2)) =
-          sqrtTwoInteger ^ 2 - (c : O2) * (c : O2) := by ring
-      _ = (2 : O2) - (c : O2) * (c : O2) := by rw [sqrtTwoInteger_sq]
-      _ = ((p : ℕ) : O2) * (k : O2) := hkO2
-  let P : Ideal O2 := Ideal.span {((p : ℕ) : O2), sqrtTwoInteger - (c : O2)}
-  have hPle : Ideal.span {((p : ℕ) : O2)} ≤ P :=
+  have hprod : (sqrtTwoInteger - (c : 𝓞 K)) * (sqrtTwoInteger + (c : 𝓞 K)) =
+      ((p : ℕ) : 𝓞 K) * (k : 𝓞 K) := by
+    calc (sqrtTwoInteger - (c : 𝓞 K)) * (sqrtTwoInteger + (c : 𝓞 K)) =
+          sqrtTwoInteger ^ 2 - (c : 𝓞 K) * (c : 𝓞 K) := by ring
+      _ = (2 : 𝓞 K) - (c : 𝓞 K) * (c : 𝓞 K) := by rw [sqrtTwoInteger_sq]
+      _ = ((p : ℕ) : 𝓞 K) * (k : 𝓞 K) := hkRing
+  let P : Ideal (𝓞 K) := Ideal.span {((p : ℕ) : 𝓞 K), sqrtTwoInteger - (c : 𝓞 K)}
+  have hPle : Ideal.span {((p : ℕ) : 𝓞 K)} ≤ P :=
     (Ideal.span_singleton_le_iff_mem _).mpr (Ideal.subset_span (Set.mem_insert _ _))
   have hNP : Ideal.absNorm P = p := absNorm_span_prime_sqrtTwo_sub_of_mul p hp c k hprod
   have hPprime : P.IsPrime := by
@@ -516,17 +516,17 @@ private theorem exists_prime_norm_of_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (
   exact ⟨P, hPprime, hPle, hNP⟩
 
 private theorem exists_prime_norm_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    (∃ P : Ideal O2, P.IsPrime ∧ Ideal.span {(p : O2)} ≤ P ∧ Ideal.absNorm P = p) ↔
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p) ↔
       p % 8 = 1 ∨ p % 8 = 7 := by
   constructor
   · exact pm_one_mod_eight_of_prime_norm p hp hp2
   · exact exists_prime_norm_of_pm_one_mod_eight p hp hp2
 
 private theorem pm_one_mod_eight_of_splits (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    (∃ P Q : Ideal O2, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-      Ideal.span {(p : O2)} = P * Q) → p % 8 = 1 ∨ p % 8 = 7 := by
+    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 K)} = P * Q) → p % 8 = 1 ∨ p % 8 = 7 := by
   rintro ⟨P, Q, hPprime, hQprime, hPQne, hspan⟩
-  have hPle : Ideal.span {(p : O2)} ≤ P := by
+  have hPle : Ideal.span {(p : 𝓞 K)} ≤ P := by
     rw [hspan]
     exact Ideal.mul_le_right
   have hPnorm_dvd : Ideal.absNorm P ∣ p ^ 2 :=
@@ -537,7 +537,7 @@ private theorem pm_one_mod_eight_of_splits (p : ℕ) (hp : p.Prime) (hp2 : p ≠
     rw [h0, pow_zero] at hPnorm
     exact hPprime.ne_top (Ideal.absNorm_eq_one_iff.mp hPnorm)
   have hmul := _root_.map_mul Ideal.absNorm P Q
-  have hspan' : Ideal.span {((p : ℕ) : O2)} = P * Q := by
+  have hspan' : Ideal.span {((p : ℕ) : 𝓞 K)} = P * Q := by
     simpa using hspan
   rw [← hspan', absNorm_span_natCast] at hmul
   have hQnorm_ne_one : Ideal.absNorm Q ≠ 1 := by
@@ -558,15 +558,15 @@ private theorem pm_one_mod_eight_of_splits (p : ℕ) (hp : p.Prime) (hp2 : p ≠
 
 private theorem splits_of_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     p % 8 = 1 ∨ p % 8 = 7 →
-      ∃ P Q : Ideal O2, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-        Ideal.span {(p : O2)} = P * Q := by
+      ∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+        Ideal.span {(p : 𝓞 K)} = P * Q := by
   intro hmod
   obtain ⟨P, hPprime, hPle, hPnorm⟩ :=
     (exists_prime_norm_iff_pm_one_mod_eight p hp hp2).mpr hmod
   obtain ⟨Q, hspan⟩ := Ideal.dvd_iff_le.mpr hPle
   have hQnorm : Ideal.absNorm Q = p := by
     have hmul := _root_.map_mul Ideal.absNorm P Q
-    have hspan' : Ideal.span {((p : ℕ) : O2)} = P * Q := by
+    have hspan' : Ideal.span {((p : ℕ) : 𝓞 K)} = P * Q := by
       simpa using hspan
     rw [← hspan', absNorm_span_natCast, hPnorm] at hmul
     rw [pow_two] at hmul
@@ -577,7 +577,7 @@ private theorem splits_of_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠
     exact (Nat.irreducible_iff_nat_prime p).mpr hp
   have hPQ : P ≠ Q := by
     intro h
-    have hram : ∃ R : Ideal O2, R.IsPrime ∧ Ideal.span {(p : O2)} ≤ R ^ 2 := by
+    have hram : ∃ R : Ideal (𝓞 K), R.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ R ^ 2 := by
       refine ⟨P, hPprime, ?_⟩
       rw [hspan, h, sq]
     exact hp2 ((ramified_iff_eq_two p hp).mp hram)
@@ -587,8 +587,8 @@ private theorem splits_of_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠
 distinct primes iff `p ≡ ±1 (mod 8)` (i.e. iff `2` is a quadratic residue mod `p`, by the
 second supplement to quadratic reciprocity), and is inert otherwise. -/
 theorem splits_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    (∃ P Q : Ideal O2, P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-      Ideal.span {(p : O2)} = P * Q) ↔ p % 8 = 1 ∨ p % 8 = 7 := by
+    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 8 = 1 ∨ p % 8 = 7 := by
   constructor
   · exact pm_one_mod_eight_of_splits p hp hp2
   · exact splits_of_pm_one_mod_eight p hp hp2

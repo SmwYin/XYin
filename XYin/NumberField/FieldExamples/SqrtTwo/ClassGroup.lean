@@ -23,16 +23,16 @@ namespace NumberField.SqrtTwo
 
 /-- The ring of integers `ℤ[√2]` is a principal ideal domain — the ring-theoretic content of
 class number one. -/
-theorem isPrincipalIdealRing : IsPrincipalIdealRing O2 := by
+theorem isPrincipalIdealRing : IsPrincipalIdealRing (𝓞 K) := by
   apply RingOfIntegers.isPrincipalIdealRing_of_abs_discr_lt
   rw [sqrtTwo_numberField_discr]
-  have hfin : Module.finrank ℚ QSqrtTwo = 2 := by
+  have hfin : Module.finrank ℚ K = 2 := by
     rw [PowerBasis.finrank sqrtTwoPowerBasis]
     exact sqrtTwoPowerBasis_dim
   rw [hfin]
-  have hsig := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := QSqrtTwo)
+  have hsig := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
   rw [hfin] at hsig
-  have hnle : NumberField.InfinitePlace.nrComplexPlaces QSqrtTwo ≤ 1 := by omega
+  have hnle : NumberField.InfinitePlace.nrComplexPlaces K ≤ 1 := by omega
   rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hnle with hn | hn
   · rw [hn]
     norm_num
@@ -40,19 +40,24 @@ theorem isPrincipalIdealRing : IsPrincipalIdealRing O2 := by
     ring_nf
     nlinarith [Real.pi_gt_three]
 
+/-- The ring of integers `ℤ[√2]` is a unique factorization monoid. -/
+theorem uniqueFactorizationMonoid : UniqueFactorizationMonoid (𝓞 K) := by
+  haveI : IsPrincipalIdealRing (𝓞 K) := isPrincipalIdealRing
+  infer_instance
+
 /-- The class number of `ℚ(√2)` is `1`. The Minkowski bound is `(1/2)·√8 ≈ 1.41`, so every
 ideal class contains an ideal of norm `1` and the class group is trivial outright. -/
-theorem classNumber_eq_one : NumberField.classNumber QSqrtTwo = 1 := by
+theorem classNumber_eq_one : NumberField.classNumber K = 1 := by
   exact NumberField.classNumber_eq_one_iff.mpr isPrincipalIdealRing
 
 /-- The class group of `𝓞 ℚ(√2)` is trivial. -/
-theorem classGroupStructure : Nonempty (ClassGroup O2 ≃* Multiplicative (ZMod 1)) := by
+theorem classGroupStructure : Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1)) := by
   classical
-  have hcard : Fintype.card (ClassGroup O2) = 1 := by
+  have hcard : Fintype.card (ClassGroup (𝓞 K)) = 1 := by
     simpa [NumberField.classNumber] using classNumber_eq_one
-  haveI : Subsingleton (ClassGroup O2) :=
+  haveI : Subsingleton (ClassGroup (𝓞 K)) :=
     Fintype.card_le_one_iff_subsingleton.mp (by omega)
-  exact ⟨MulEquiv.ofBijective (1 : ClassGroup O2 →* Multiplicative (ZMod 1)) (by
+  exact ⟨MulEquiv.ofBijective (1 : ClassGroup (𝓞 K) →* Multiplicative (ZMod 1)) (by
     constructor
     · intro a b h
       exact Subsingleton.elim _ _
@@ -60,15 +65,15 @@ theorem classGroupStructure : Nonempty (ClassGroup O2 ≃* Multiplicative (ZMod 
       exact ⟨1, Subsingleton.elim _ _⟩)⟩
 
 /-- The unit ideal as the concrete representative of the unique ideal class. -/
-abbrev unitIdealRepresentative : (Ideal O2)⁰ := ⟨(⊤ : Ideal O2), by simp⟩
+abbrev unitIdealRepresentative : (Ideal (𝓞 K))⁰ := ⟨(⊤ : Ideal (𝓞 K)), by simp⟩
 
 /-- Every ideal class is represented by the unit ideal. -/
-theorem classGroupRepresentative (C : ClassGroup O2) :
+theorem classGroupRepresentative (C : ClassGroup (𝓞 K)) :
     C = ClassGroup.mk0 unitIdealRepresentative := by
   classical
-  have hcard : Fintype.card (ClassGroup O2) = 1 := by
+  have hcard : Fintype.card (ClassGroup (𝓞 K)) = 1 := by
     simpa [NumberField.classNumber] using classNumber_eq_one
-  haveI : Subsingleton (ClassGroup O2) :=
+  haveI : Subsingleton (ClassGroup (𝓞 K)) :=
     Fintype.card_le_one_iff_subsingleton.mp (by omega)
   exact Subsingleton.elim _ _
 

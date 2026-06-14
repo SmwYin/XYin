@@ -1,9 +1,9 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2026.2.28)  13 JUN 2026 19:52
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2026.2.28)  14 JUN 2026 16:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**main.tex
-(./main.tex
+**/Users/dfa25dxu/Projects/Lean/XYin/LaTeX/main.tex
+(/Users/dfa25dxu/Projects/Lean/XYin/LaTeX/main.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (/usr/local/texlive/2025/texmf-dist/tex/latex/ctex/ctexart.cls
@@ -587,46 +587,19 @@ Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
 )
 
 Package fontspec Info: 
-(fontspec)             Menlo scale = 0.88.
-
-
-Package fontspec Info: 
-(fontspec)             Menlo scale = 0.88.
-
-
-Package fontspec Info: 
-(fontspec)             Menlo/B scale = 0.88.
-
-
-Package fontspec Info: 
-(fontspec)             Menlo/I scale = 0.88.
-
-
-Package fontspec Info: 
-(fontspec)             Menlo/BI scale = 0.88.
-
-
-Package fontspec Info: 
 (fontspec)             Font family 'Menlo(0)' created for font 'Menlo' with
 (fontspec)             options
 (fontspec)             [WordSpace={1,0,0},HyphenChar=None,PunctuationSpace=Word
-Space,Scale=0.88].
+Space].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS
 (fontspec)             series/shapes:
 (fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.:
-(fontspec)             <->s*[0.88]"Menlo/AAT"
-(fontspec)             - 'bold' (b/n) with NFSS spec.:
-(fontspec)             <->s*[0.88]"Menlo/B/AAT"
-(fontspec)             - 'italic' (m/it) with NFSS spec.:
-(fontspec)             <->s*[0.88]"Menlo/I/AAT"
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"Menlo/AAT"
+(fontspec)             - 'bold' (b/n) with NFSS spec.: <->"Menlo/B/AAT"
+(fontspec)             - 'italic' (m/it) with NFSS spec.: <->"Menlo/I/AAT"
 (fontspec)             - 'bold italic' (b/it) with NFSS spec.:
-(fontspec)             <->s*[0.88]"Menlo/BI/AAT"
-
-
-Package fontspec Info: 
-(fontspec)             STIX Two Math scale = 0.88.
+(fontspec)             <->"Menlo/BI/AAT"
 
 
 Package fontspec Info: 
@@ -645,17 +618,13 @@ Package fontspec Info:
 
 
 Package fontspec Info: 
-(fontspec)             STIX Two Math scale = 0.88.
-
-
-Package fontspec Info: 
 (fontspec)             Font family 'STIXTwoMath(0)' created for font 'STIX Two
-(fontspec)             Math' with options [Scale=0.88].
+(fontspec)             Math' with options [].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS
 (fontspec)             series/shapes:
 (fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[0.88]"STIX Two
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"STIX Two
 (fontspec)             Math/OT:script=latn;language=dflt;"
 
 \c@definition=\count337
@@ -783,8 +752,6 @@ Package fontspec Info:
 (fontspec)             it is okay then ignore this warning. Otherwise a
 (fontspec)             different font should be chosen.
 
-LaTeX Font Info:    Font shape `TU/Menlo(0)/m/n' will be
-(Font)              scaled to size 9.63605pt on input line 50.
 
 Package fontspec Info: 
 (fontspec)             Font family 'FandolFang-Regular(0)' created for font
@@ -798,8 +765,6 @@ Package fontspec Info:
 (fontspec)             <->"[FandolFang-Regular.otf]/OT:script=hani;language=dfl
 t;"
 
-LaTeX Font Info:    Font shape `TU/Menlo(0)/m/n' will be
-(Font)              scaled to size 15.20648pt on input line 50.
 LaTeX Font Info:    Trying to load font information for U+msa on input line 50.
 
 (/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd
@@ -817,26 +782,20 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ]
 
 [2]
-Underfull \hbox (badness 1983) in paragraph at lines 151--152
-[][]\TU/lmr/bx/n/10.95 Theorem 1.4 \TU/lmr/m/n/10.95 (\TU/Menlo(0)/m/n/10.95 ra
-mificationIdx_ne_one_of_map_le_sq_of_not_le_pow_succ\TU/lmr/m/n/10.95 )\TU/lmr/
-bx/n/10.95 . []\TU/lmr/m/n/10.95 Mathematically,
- []
-
-
 
 [3
 
 
 ]
-LaTeX Font Info:    Font shape `TU/Menlo(0)/b/n' will be
-(Font)              scaled to size 10.56006pt on input line 181.
+Underfull \hbox (badness 1931) in paragraph at lines 176--177
+[][]\TU/lmr/bx/n/10.95 Theorem 1.4 \TU/lmr/m/n/10.95 (\TU/Menlo(0)/m/n/10.95 ra
+mificationIdx_ne_one_of_map_le_sq_of_not_le_pow_succ\TU/lmr/m/n/10.95 )\TU/lmr/
+bx/n/10.95 . []\TU/lmr/m/n/10.95 Mathe-
+ []
+
 
 
 [4]
-LaTeX Font Info:    Font shape `TU/STIXTwoMath(0)/m/n' will be
-(Font)              scaled to size 9.63605pt on input line 255.
-
 
 [5]
 
@@ -849,6 +808,13 @@ LaTeX Font Info:    Font shape `TU/STIXTwoMath(0)/m/n' will be
 [9]
 
 [10]
+Underfull \hbox (badness 2837) in paragraph at lines 595--596
+[][]\TU/lmr/bx/n/10.95 Theorem 2.29 \TU/lmr/m/n/10.95 (\TU/Menlo(0)/m/n/10.95 s
+qrtTwoFundamentalUnit_generates_unitGroup\TU/lmr/m/n/10.95 )\TU/lmr/bx/n/10.95 
+. []\TU/lmr/m/n/10.95 Mathematically, this
+ []
+
+
 
 [11]
 
@@ -875,6 +841,13 @@ LaTeX Font Info:    Font shape `TU/STIXTwoMath(0)/m/n' will be
 [22]
 
 [23]
+Underfull \hbox (badness 1019) in paragraph at lines 1444--1445
+[][]\TU/lmr/bx/n/10.95 Theorem 4.10 \TU/lmr/m/n/10.95 (\TU/Menlo(0)/m/n/10.95 s
+qrtNegSix_minpoly_int_isEisensteinAt_three\TU/lmr/m/n/10.95 )\TU/lmr/bx/n/10.95
+ . []\TU/lmr/m/n/10.95 Mathematically, this
+ []
+
+
 
 [24]
 
@@ -887,17 +860,24 @@ LaTeX Font Info:    Font shape `TU/STIXTwoMath(0)/m/n' will be
 [28]
 
 [29]
+Underfull \hbox (badness 1331) in paragraph at lines 1825--1826
+[][]\TU/lmr/bx/n/10.95 Theorem 4.44 \TU/lmr/m/n/10.95 (\TU/Menlo(0)/m/n/10.95 i
+rreducible_three\TU/lmr/m/n/10.95 )\TU/lmr/bx/n/10.95 . []\TU/lmr/m/n/10.95 Mat
+hematically, this is part of the explicit unique-
+ []
+
+
+Underfull \hbox (badness 1331) in paragraph at lines 1837--1838
+[][]\TU/lmr/bx/n/10.95 Theorem 4.45 \TU/lmr/m/n/10.95 (\TU/Menlo(0)/m/n/10.95 i
+rreducible_theta\TU/lmr/m/n/10.95 )\TU/lmr/bx/n/10.95 . []\TU/lmr/m/n/10.95 Mat
+hematically, this is part of the explicit unique-
+ []
+
+
 
 [30]
 
 [31]
-Underfull \hbox (badness 2213) in paragraph at lines 2083--2084
-[][]\TU/lmr/bx/n/10.95 Remark 5.39 \TU/lmr/m/n/10.95 (Subsection note)\TU/lmr/b
-x/n/10.95 . []\TU/lmr/m/n/10.95 Class number one is proved using the Minkowski 
-bound
- []
-
-
 
 [32]
 
@@ -906,10 +886,24 @@ bound
 [34]
 
 [35]
+Underfull \hbox (badness 1019) in paragraph at lines 2206--2207
+[][]\TU/lmr/bx/n/10.95 Theorem 5.25 \TU/lmr/m/n/10.95 (\TU/Menlo(0)/m/n/10.95 e
+xists_degree_one_prime_iff_cube_root_mod_p\TU/lmr/m/n/10.95 )\TU/lmr/bx/n/10.95
+ . []\TU/lmr/m/n/10.95 Mathematically, this
+ []
+
+
 
 [36]
 
 [37]
+Underfull \hbox (badness 2213) in paragraph at lines 2382--2383
+[][]\TU/lmr/bx/n/10.95 Remark 5.40 \TU/lmr/m/n/10.95 (Subsection note)\TU/lmr/b
+x/n/10.95 . []\TU/lmr/m/n/10.95 Class number one is proved using the Minkowski 
+bound
+ []
+
+
 
 [38]
 
@@ -947,7 +941,25 @@ bound
 
 [55]
 
-[56] (./main.aux)
+[56]
+
+[57]
+
+[58]
+
+[59]
+
+[60]
+
+[61]
+
+[62]
+
+[63]
+
+[64]
+
+[65] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2022/07/14>
@@ -955,11 +967,11 @@ L3 programming layer <2022/07/14>
  ) 
 Here is how much of TeX's memory you used:
  17043 strings out of 473832
- 360710 string characters out of 5729481
- 800721 words of memory out of 5000000
- 39832 multiletter control sequences out of 15000+600000
+ 360778 string characters out of 5729481
+ 800649 words of memory out of 5000000
+ 39831 multiletter control sequences out of 15000+600000
  570897 words of font info for 119 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 93i,17n,112p,541b,943s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 93i,17n,112p,582b,949s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on main.xdv (56 pages, 1124080 bytes).
+Output written on main.xdv (65 pages, 1268432 bytes).

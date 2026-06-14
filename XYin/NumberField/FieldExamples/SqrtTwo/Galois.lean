@@ -22,7 +22,7 @@ open Module NumberField Polynomial
 namespace NumberField.SqrtTwo
 
 /-- The nontrivial conjugation automorphism sends `√2` to `-√2`. -/
-def sqrtTwoConjHom : QSqrtTwo →ₐ[ℚ] QSqrtTwo :=
+def sqrtTwoConjHom : K →ₐ[ℚ] K :=
   (QuadraticAlgebra.lift (R := ℚ) (a := (2 : ℚ)) (b := 0)) ⟨-sqrtTwoRoot, by
     rw [← pow_two, neg_sq, sqrtTwoRoot_sq]
     ext <;> norm_num⟩
@@ -32,24 +32,24 @@ theorem sqrtTwoConjHom_root : sqrtTwoConjHom sqrtTwoRoot = -sqrtTwoRoot := by
   simp [sqrtTwoConjHom, sqrtTwoRoot]
 
 /-- The conjugation map is an involutive `ℚ`-algebra equivalence. -/
-def sqrtTwoConj : QSqrtTwo ≃ₐ[ℚ] QSqrtTwo where
+def sqrtTwoConj : K ≃ₐ[ℚ] K where
   __ := sqrtTwoConjHom
   invFun := sqrtTwoConjHom
   left_inv x := by
-    have hcomp : sqrtTwoConjHom.comp sqrtTwoConjHom = AlgHom.id ℚ QSqrtTwo := by
+    have hcomp : sqrtTwoConjHom.comp sqrtTwoConjHom = AlgHom.id ℚ K := by
       apply QuadraticAlgebra.algHom_ext
       change sqrtTwoConjHom (sqrtTwoConjHom sqrtTwoRoot) = sqrtTwoRoot
       rw [sqrtTwoConjHom_root]
       simp only [map_neg, sqrtTwoConjHom_root, neg_neg]
-    change (sqrtTwoConjHom.comp sqrtTwoConjHom) x = (AlgHom.id ℚ QSqrtTwo) x
+    change (sqrtTwoConjHom.comp sqrtTwoConjHom) x = (AlgHom.id ℚ K) x
     rw [hcomp]
   right_inv x := by
-    have hcomp : sqrtTwoConjHom.comp sqrtTwoConjHom = AlgHom.id ℚ QSqrtTwo := by
+    have hcomp : sqrtTwoConjHom.comp sqrtTwoConjHom = AlgHom.id ℚ K := by
       apply QuadraticAlgebra.algHom_ext
       change sqrtTwoConjHom (sqrtTwoConjHom sqrtTwoRoot) = sqrtTwoRoot
       rw [sqrtTwoConjHom_root]
       simp only [map_neg, sqrtTwoConjHom_root, neg_neg]
-    change (sqrtTwoConjHom.comp sqrtTwoConjHom) x = (AlgHom.id ℚ QSqrtTwo) x
+    change (sqrtTwoConjHom.comp sqrtTwoConjHom) x = (AlgHom.id ℚ K) x
     rw [hcomp]
 
 /-- The conjugation equivalence sends `√2` to `-√2`. -/
@@ -57,14 +57,14 @@ theorem sqrtTwoConj_root : sqrtTwoConj sqrtTwoRoot = -sqrtTwoRoot :=
   sqrtTwoConjHom_root
 
 /-- Quadratic extensions over `ℚ` are Galois: `ℚ(√2)/ℚ` is Galois. -/
-theorem isGalois : IsGalois ℚ QSqrtTwo := by
+theorem isGalois : IsGalois ℚ K := by
   infer_instance
 
-theorem sqrtTwo_gal_eq_id_or_conj (σ : Gal(QSqrtTwo/ℚ)) :
+theorem sqrtTwo_gal_eq_id_or_conj (σ : Gal(K/ℚ)) :
     σ = 1 ∨ σ = sqrtTwoConj := by
-  have hsq : (σ sqrtTwoRoot) ^ 2 = (2 : QSqrtTwo) := by
+  have hsq : (σ sqrtTwoRoot) ^ 2 = (2 : K) := by
     rw [← map_pow, sqrtTwoRoot_sq]
-    change σ (algebraMap ℚ QSqrtTwo (2 : ℚ)) = algebraMap ℚ QSqrtTwo (2 : ℚ)
+    change σ (algebraMap ℚ K (2 : ℚ)) = algebraMap ℚ K (2 : ℚ)
     exact σ.commutes 2
   have hfactor : (σ sqrtTwoRoot - sqrtTwoRoot) * (σ sqrtTwoRoot + sqrtTwoRoot) = 0 := by
     calc
@@ -74,13 +74,13 @@ theorem sqrtTwo_gal_eq_id_or_conj (σ : Gal(QSqrtTwo/ℚ)) :
       _ = 0 := by norm_num
   rcases mul_eq_zero.mp hfactor with h | h
   · left
-    have hσ : (σ : QSqrtTwo →ₐ[ℚ] QSqrtTwo) = AlgHom.id ℚ QSqrtTwo := by
+    have hσ : (σ : K →ₐ[ℚ] K) = AlgHom.id ℚ K := by
       apply QuadraticAlgebra.algHom_ext
       change σ sqrtTwoRoot = sqrtTwoRoot
       exact sub_eq_zero.mp h
     exact DFunLike.ext _ _ fun x => DFunLike.congr_fun hσ x
   · right
-    have hσ : (σ : QSqrtTwo →ₐ[ℚ] QSqrtTwo) = sqrtTwoConj.toAlgHom := by
+    have hσ : (σ : K →ₐ[ℚ] K) = sqrtTwoConj.toAlgHom := by
       apply QuadraticAlgebra.algHom_ext
       calc
         σ sqrtTwoRoot = -sqrtTwoRoot := eq_neg_iff_add_eq_zero.mpr h
@@ -90,29 +90,29 @@ theorem sqrtTwo_gal_eq_id_or_conj (σ : Gal(QSqrtTwo/ℚ)) :
     exact DFunLike.ext _ _ fun x => DFunLike.congr_fun hσ x
 
 /-- The conjugation automorphism is not the identity, so the Galois group has order `2`. -/
-private theorem sqrtTwoConj_ne_one : sqrtTwoConj ≠ (1 : Gal(QSqrtTwo/ℚ)) := by
+private theorem sqrtTwoConj_ne_one : sqrtTwoConj ≠ (1 : Gal(K/ℚ)) := by
   intro h
   have hroot : -sqrtTwoRoot = sqrtTwoRoot := by
     calc
       -sqrtTwoRoot = sqrtTwoConj sqrtTwoRoot := sqrtTwoConjHom_root.symm
-      _ = (1 : Gal(QSqrtTwo/ℚ)) sqrtTwoRoot := by rw [h]
+      _ = (1 : Gal(K/ℚ)) sqrtTwoRoot := by rw [h]
       _ = sqrtTwoRoot := rfl
   have hzero : sqrtTwoRoot = 0 := by
-    have hmul : (2 : QSqrtTwo) * sqrtTwoRoot = 0 := by
+    have hmul : (2 : K) * sqrtTwoRoot = 0 := by
       calc
-        (2 : QSqrtTwo) * sqrtTwoRoot = sqrtTwoRoot + sqrtTwoRoot := by ring
+        (2 : K) * sqrtTwoRoot = sqrtTwoRoot + sqrtTwoRoot := by ring
         _ = -sqrtTwoRoot + sqrtTwoRoot := by rw [hroot]
         _ = 0 := by ring
-    have htwo : (2 : QSqrtTwo) ≠ 0 := by norm_num
+    have htwo : (2 : K) ≠ 0 := by norm_num
     exact (mul_eq_zero.mp hmul).resolve_left htwo
-  have htwo_zero : (2 : QSqrtTwo) = 0 := by
+  have htwo_zero : (2 : K) = 0 := by
     rw [← sqrtTwoRoot_sq, hzero]
     ring
   norm_num at htwo_zero
 
-theorem gal_natCard_eq_two : Nat.card (Gal(QSqrtTwo/ℚ)) = 2 := by
+theorem gal_natCard_eq_two : Nat.card (Gal(K/ℚ)) = 2 := by
   rw [Nat.card_eq_two_iff]
-  refine ⟨(1 : Gal(QSqrtTwo/ℚ)), sqrtTwoConj, ?_, ?_⟩
+  refine ⟨(1 : Gal(K/ℚ)), sqrtTwoConj, ?_, ?_⟩
   · exact sqrtTwoConj_ne_one.symm
   · ext σ
     simp [sqrtTwo_gal_eq_id_or_conj σ]
@@ -122,7 +122,7 @@ private abbrev CyclicTwo : Type := Multiplicative (ZMod 2)
 
 /-- In additive notation, the Galois group is generated by conjugation. -/
 private theorem sqrtTwoGal_additive_generator :
-    ∀ σ : Additive (Gal(QSqrtTwo/ℚ)),
+    ∀ σ : Additive (Gal(K/ℚ)),
       σ ∈ AddSubgroup.zmultiples (Additive.ofMul sqrtTwoConj) := by
   intro σ
   rcases sqrtTwo_gal_eq_id_or_conj σ.toMul with h | h
@@ -135,17 +135,17 @@ private theorem sqrtTwoGal_additive_generator :
 The explicit isomorphism from the concrete cyclic group of order `2` to the Galois
 group, sending the nonzero class of `ZMod 2` to conjugation.
 -/
-private noncomputable abbrev cyclicTwoEquivSqrtTwoGal : CyclicTwo ≃* Gal(QSqrtTwo/ℚ) :=
+private noncomputable abbrev cyclicTwoEquivSqrtTwoGal : CyclicTwo ≃* Gal(K/ℚ) :=
   AddEquiv.toMultiplicativeLeft <|
     zmodAddEquivOfGenerator sqrtTwoGal_additive_generator gal_natCard_eq_two
 
 /-- The Galois group of `ℚ(√2)/ℚ` is explicitly `C₂`. -/
-private noncomputable abbrev sqrtTwoGalEquivCyclicTwo : Gal(QSqrtTwo/ℚ) ≃* CyclicTwo :=
+private noncomputable abbrev sqrtTwoGalEquivCyclicTwo : Gal(K/ℚ) ≃* CyclicTwo :=
   cyclicTwoEquivSqrtTwoGal.symm
 
 /-- The Galois group of `ℚ(√2)/ℚ` is cyclic of order `2`, generated by the conjugation
 `√2 ↦ -√2`. -/
-theorem galoisGroupStructure : Nonempty (Gal(QSqrtTwo/ℚ) ≃* Multiplicative (ZMod 2)) := by
+theorem galoisGroupStructure : Nonempty (Gal(K/ℚ) ≃* Multiplicative (ZMod 2)) := by
   exact ⟨sqrtTwoGalEquivCyclicTwo⟩
 
 

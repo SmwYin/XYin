@@ -1,10 +1,11 @@
 # Fdb version 4
-["xdvipdfmx"] 1781376763.21927 "main.xdv" "main.pdf" "main" 1781376763.54744 0
-  "main.xdv" 1781376763.18197 1124080 fadb4d0313f4bcb21c9f0ebb56ec3190 "xelatex"
+["xdvipdfmx"] 1781451129.21306 "main.xdv" "main.pdf" "main" 1781451129.60867 0
+  "main.xdv" 1781451129.17296 1268432 3f702d632ad37b3887cadb8b1a4fa02e "xelatex"
   (generated)
   "main.pdf"
   (rewritten before read)
-["xelatex"] 1781376761.99206 "main.tex" "main.xdv" "main" 1781376763.54669 0
+["xelatex"] 1781451127.84692 "/Users/dfa25dxu/Projects/Lean/XYin/LaTeX/main.tex" "main.xdv" "main" 1781451129.60768 0
+  "/Users/dfa25dxu/Projects/Lean/XYin/LaTeX/main.tex" 1781450937.94658 150126 d4e994e6c6049c5dd11edcf21e2b788b ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1136768653 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -116,8 +117,8 @@
   "/usr/local/texlive/2025/texmf-dist/web2c/texmf.cnf" 1739380943 42148 61becc7c670cd061bb319c643c27fdd4 ""
   "/usr/local/texlive/2025/texmf-var/web2c/xetex/xelatex.fmt" 1772237532 5639796 04e829b21aa6d4da2e2dc6786ba0d9c1 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "main.aux" 1781376763.17982 10267 cc0280ab75d486e7b5e4f511c91f4ecb "xelatex"
-  "main.tex" 1781376752.32508 133397 8f77b0685b9b02d0a2de43a7ba18da27 ""
+  "main.aux" 1781451129.17073 10269 f0ceaa9697cb8a800532211fba5f5e34 "xelatex"
+  "main.tex" 1781450937.94658 150126 d4e994e6c6049c5dd11edcf21e2b788b ""
   (generated)
   "main.aux"
   "main.log"
