@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
 import Mathlib.Algebra.Polynomial.SpecificDegree
-import XYin.NumberField.FieldExamples.SqrtFive.Discriminant
+import XYin.NumberField.FieldExamples.SqrtFive.RingOfIntegers
 import XYin.NumberField.FieldExamples.Common
 
 /-!
@@ -114,8 +114,6 @@ theorem ramificationIdx_span_sqrtFiveIntO :
     rw [hnorm3, hnorm5] at hdvd
     norm_num at hdvd
 
-private theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
-  Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
 private theorem absNorm_ne_two (P : Ideal (𝓞 K)) : Ideal.absNorm P ≠ 2 := by
   intro hcard
   rw [Ideal.absNorm_apply, Submodule.cardQuot_apply] at hcard
@@ -410,13 +408,7 @@ theorem primesAboveEleven_ne :
 
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
-  have h := intNorm_eq_normForm (p : ℤ) 0
-  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • goldenIntO =
-      ((p : ℕ) : 𝓞 K) := by simp
-  rw [hps] at h
-  norm_num at h
-  rw [Ideal.absNorm_span_singleton, h]
-  simp [Int.natAbs_pow]
+  rw [Ideal.absNorm_span_natCast, NumberField.RingOfIntegers.rank, degree_eq_two]
 
 private theorem concreteIntegralBasis_zero_eq_one :
     concreteIntegralBasis 0 = (1 : 𝓞 K) := by

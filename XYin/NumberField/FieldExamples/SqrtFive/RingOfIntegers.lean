@@ -483,6 +483,10 @@ namespace NumberField.SqrtFive
 /-- `φ` as an element of the abstract ring of integers `𝓞 K`. -/
 noncomputable def goldenIntO : 𝓞 K := ⟨goldenRoot, goldenRoot_isIntegral⟩
 
+/-- The golden ratio satisfies `φ² = φ + 1` in the ring of integers. -/
+theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
+  Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
+
 /-- The norm form of `ℚ(√5)` in the basis `1, φ`: the field norm of `x + yφ` is the binary
 quadratic form `x² + xy - y²`. -/
 theorem norm_eq_normForm (x y : ℚ) :

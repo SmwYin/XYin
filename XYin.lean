@@ -76,7 +76,6 @@ import XYin.NumberField.FieldExamples.SqrtFive.Basic
 import XYin.NumberField.FieldExamples.SqrtFive.Galois
 import XYin.NumberField.FieldExamples.SqrtFive.Embeddings
 import XYin.NumberField.FieldExamples.SqrtFive.RingOfIntegers
-import XYin.NumberField.FieldExamples.SqrtFive.Discriminant
 import XYin.NumberField.FieldExamples.SqrtFive.PrimeSplitting
 import XYin.NumberField.FieldExamples.SqrtFive.ClassGroup
 import XYin.NumberField.FieldExamples.SqrtFive.Units
@@ -87,7 +86,6 @@ import XYin.NumberField.FieldExamples.SqrtNegSix.Galois
 import XYin.NumberField.FieldExamples.SqrtNegSix.Embeddings
 import XYin.NumberField.FieldExamples.SqrtNegSix.CMField
 import XYin.NumberField.FieldExamples.SqrtNegSix.RingOfIntegers
-import XYin.NumberField.FieldExamples.SqrtNegSix.Discriminant
 import XYin.NumberField.FieldExamples.SqrtNegSix.PrimeSplitting
 import XYin.NumberField.FieldExamples.SqrtNegSix.ClassGroup
 import XYin.NumberField.FieldExamples.SqrtNegSix.Units
@@ -98,7 +96,6 @@ import XYin.NumberField.FieldExamples.SqrtTwo.Basic
 import XYin.NumberField.FieldExamples.SqrtTwo.Galois
 import XYin.NumberField.FieldExamples.SqrtTwo.Embeddings
 import XYin.NumberField.FieldExamples.SqrtTwo.RingOfIntegers
-import XYin.NumberField.FieldExamples.SqrtTwo.Discriminant
 import XYin.NumberField.FieldExamples.SqrtTwo.PrimeSplitting
 import XYin.NumberField.FieldExamples.SqrtTwo.ClassGroup
 import XYin.NumberField.FieldExamples.SqrtTwo.Units

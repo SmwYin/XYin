@@ -156,90 +156,25 @@ private theorem minpoly_gen_eq :
   rw [hc, Polynomial.eq_one_of_monic_natDegree_zero hcmonic hdegc, mul_one]
 
 /-- Reduction `𝓞 K → 𝔽_p` sending `ζ ↦ r`, for `r` a root of `Φ₅` mod `p`. -/
-private noncomputable def residueHom (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    𝓞 K →ₐ[ℤ] ZMod p :=
-  zeta_isPrimitiveRoot.integralPowerBasis.lift ((r : ℤ) : ZMod p)
-    (by
-      rw [minpoly_gen_eq]
-      simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
-      linear_combination hr)
-
-private theorem residueHom_zetaInt (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    residueHom p r hr zetaInt = (r : ZMod p) := by
-  rw [← gen_eq_zetaInt]
-  exact zeta_isPrimitiveRoot.integralPowerBasis.lift_gen ((r : ℤ) : ZMod p) _
-
-private theorem ker_residueHom (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    RingHom.ker (residueHom p r hr).toRingHom =
-      Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)} := by
-  refine le_antisymm (fun x hx => ?_) ?_
-  · rw [RingHom.mem_ker] at hx
-    obtain ⟨q, -, hq⟩ := zeta_isPrimitiveRoot.integralPowerBasis.exists_eq_aeval x
-    rw [gen_eq_zetaInt] at hq
-    have key : x - ((q.eval r : ℤ) : 𝓞 K) ∈ Ideal.span {zetaInt - (r : 𝓞 K)} := by
-      rw [Ideal.mem_span_singleton, hq]
-      have hdvd := Polynomial.sub_dvd_eval_sub zetaInt ((r : ℤ) : 𝓞 K)
-        (q.map (algebraMap ℤ (𝓞 K)))
-      have e1 : (q.map (algebraMap ℤ (𝓞 K))).eval zetaInt = Polynomial.aeval zetaInt q := by
-        rw [Polynomial.eval_map, ← Polynomial.aeval_def]
-      have e2 : (q.map (algebraMap ℤ (𝓞 K))).eval ((r : ℤ) : 𝓞 K) = ((q.eval r : ℤ) : 𝓞 K) := by
-        have hcast : ((r : ℤ) : 𝓞 K) = algebraMap ℤ (𝓞 K) r := by
-          simp [algebraMap_int_eq]
-        rw [Polynomial.eval_map, hcast, Polynomial.eval₂_at_apply]
-        simp [algebraMap_int_eq]
-      rw [e1, e2] at hdvd
-      exact hdvd
-    obtain ⟨d, hd⟩ := Ideal.mem_span_singleton.mp key
-    have hphi : ((q.eval r : ℤ) : ZMod p) = 0 := by
-      have h1 : residueHom p r hr (x - ((q.eval r : ℤ) : 𝓞 K)) = 0 := by
-        rw [hd, map_mul, map_sub, residueHom_zetaInt, map_intCast, sub_self, zero_mul]
-      rw [map_sub, map_intCast, show residueHom p r hr x = 0 from hx, zero_sub,
-        neg_eq_zero] at h1
-      exact h1
-    obtain ⟨m, hm⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hphi
-    have hx_eq : x = (zetaInt - (r : 𝓞 K)) * d + (p : 𝓞 K) * ((m : ℤ) : 𝓞 K) := by
-      have h2 : x = (zetaInt - (r : 𝓞 K)) * d + ((q.eval r : ℤ) : 𝓞 K) := by
-        rw [← hd]; ring
-      rw [h2, hm]
-      push_cast
-      ring
-    rw [hx_eq]
-    refine Ideal.add_mem _ (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
-      (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
-    · simp
-    · simp
-  · rw [Ideal.span_le]
-    rintro y (rfl | rfl)
-    · rw [SetLike.mem_coe, RingHom.mem_ker]
-      simp
-    · rw [SetLike.mem_coe, RingHom.mem_ker]
-      have h0 : (residueHom p r hr) (zetaInt - (r : 𝓞 K)) = 0 := by
-        rw [map_sub, residueHom_zetaInt, map_intCast, sub_self]
-      exact h0
-
-private theorem residueHom_surjective (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    Function.Surjective (residueHom p r hr) := by
-  intro z
-  obtain ⟨m, hm⟩ := ZMod.intCast_surjective z
-  exact ⟨((m : ℤ) : 𝓞 K), by rw [map_intCast]; exact hm⟩
-
 private theorem isMaximal_span_pair (p : ℕ) [Fact p.Prime] (r : ℤ)
     (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
     (Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)}).IsMaximal := by
-  rw [← ker_residueHom p r hr]
-  exact RingHom.ker_isMaximal_of_surjective _ (residueHom_surjective p r hr)
+  rw [← gen_eq_zetaInt]
+  exact NumberField.FieldExamples.isMaximal_span_gen_sub
+    zeta_isPrimitiveRoot.integralPowerBasis p r
+    (by rw [minpoly_gen_eq]
+        simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
+        linear_combination hr)
 
 private theorem absNorm_span_pair (p : ℕ) (r : ℤ)
     (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
     Ideal.absNorm (Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)}) = p := by
-  rw [← ker_residueHom p r hr, Ideal.absNorm_apply, Submodule.cardQuot_apply]
-  rw [Nat.card_congr (RingHom.quotientKerEquivOfSurjective
-    (residueHom_surjective p r hr)).toEquiv]
-  exact Nat.card_zmod p
+  rw [← gen_eq_zetaInt]
+  exact NumberField.FieldExamples.absNorm_span_gen_sub
+    zeta_isPrimitiveRoot.integralPowerBasis p r
+    (by rw [minpoly_gen_eq]
+        simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
+        linear_combination hr)
 
 end PrivateMachinery
 
@@ -1162,127 +1097,6 @@ theorem ramificationIdx_span_two :
       exact hle2
     have h := (ramified_iff_eq_five 2 Nat.prime_two).mp hram
     norm_num at h
-
-end NumberField.CyclotomicFive
-
-/-!
-## Kummer-Dedekind
--/
-
-noncomputable section
-
-open scoped NumberField nonZeroDivisors Real ENNReal
-
-open Module NumberField Polynomial
-open Polynomial
-
-namespace NumberField.CyclotomicFive
-
-/-- The reduction of the fifth cyclotomic polynomial modulo `p`. -/
-abbrev zetaFivePolynomialMod (p : ℕ) : (ZMod p)[X] :=
-  X ^ 4 + X ^ 3 + X ^ 2 + X + C (1 : ZMod p)
-
-private theorem orderOf_unitOfCoprime_five_eq_four_iff
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) (hcop : p.Coprime 5) :
-    orderOf (ZMod.unitOfCoprime p hcop) = 4 ↔ p % 5 = 2 ∨ p % 5 = 3 := by
-  have hcases : p % 5 = 0 ∨ p % 5 = 1 ∨ p % 5 = 2 ∨ p % 5 = 3 ∨ p % 5 = 4 := by
-    omega
-  have hne0 : p % 5 ≠ 0 := by
-    intro h0
-    exact hp5 (((Nat.prime_dvd_prime_iff_eq (by norm_num : Nat.Prime 5) hp).mp
-      (Nat.dvd_of_mod_eq_zero h0)).symm)
-  rcases hcases with h0 | h1 | h2 | h3 | h4
-  · exact absurd h0 hne0
-  · constructor
-    · intro h
-      exfalso
-      have hu : ZMod.unitOfCoprime p hcop = 1 := by
-        ext
-        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 1 by
-          rw [← ZMod.natCast_mod p 5, h1]
-          norm_num]
-      rw [hu, orderOf_one] at h
-      norm_num at h
-    · intro h
-      omega
-  · constructor
-    · intro _
-      exact Or.inl h2
-    · intro _
-      have hu : ZMod.unitOfCoprime p hcop =
-          ZMod.unitOfCoprime 2 (by decide : Nat.Coprime 2 5) := by
-        ext
-        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 2 by
-          rw [← ZMod.natCast_mod p 5, h2]
-          norm_num]
-      rw [hu]
-      rw [orderOf_eq_iff (by norm_num : 0 < 4)]
-      constructor
-      · ext
-        decide
-      · intro m hm hm0 hpow
-        interval_cases m
-        · have hc := congrArg Units.val hpow
-          norm_num [ZMod.coe_unitOfCoprime] at hc
-          exact (by decide : ¬ ((2 : ZMod 5) = 1)) hc
-        · have hc := congrArg Units.val hpow
-          norm_num [ZMod.coe_unitOfCoprime] at hc
-          exact (by decide : ¬ ((4 : ZMod 5) = 1)) hc
-        · have hc := congrArg Units.val hpow
-          norm_num [ZMod.coe_unitOfCoprime] at hc
-          exact (by decide : ¬ ((8 : ZMod 5) = 1)) hc
-  · constructor
-    · intro _
-      exact Or.inr h3
-    · intro _
-      have hu : ZMod.unitOfCoprime p hcop =
-          ZMod.unitOfCoprime 3 (by decide : Nat.Coprime 3 5) := by
-        ext
-        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 3 by
-          rw [← ZMod.natCast_mod p 5, h3]
-          norm_num]
-      rw [hu]
-      rw [orderOf_eq_iff (by norm_num : 0 < 4)]
-      constructor
-      · ext
-        decide
-      · intro m hm hm0 hpow
-        interval_cases m
-        · have hc := congrArg Units.val hpow
-          norm_num [ZMod.coe_unitOfCoprime] at hc
-          exact (by decide : ¬ ((3 : ZMod 5) = 1)) hc
-        · have hc := congrArg Units.val hpow
-          norm_num [ZMod.coe_unitOfCoprime] at hc
-          exact (by decide : ¬ ((9 : ZMod 5) = 1)) hc
-        · have hc := congrArg Units.val hpow
-          norm_num [ZMod.coe_unitOfCoprime] at hc
-          exact (by decide : ¬ ((27 : ZMod 5) = 1)) hc
-  · constructor
-    · intro h
-      exfalso
-      have hu : ZMod.unitOfCoprime p hcop =
-          ZMod.unitOfCoprime 4 (by decide : Nat.Coprime 4 5) := by
-        ext
-        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 4 by
-          rw [← ZMod.natCast_mod p 5, h4]
-          norm_num]
-      rw [hu] at h
-      have hpow : (ZMod.unitOfCoprime 4 (by decide : Nat.Coprime 4 5)) ^ 2 = 1 := by
-        ext
-        decide
-      have hdvd : orderOf (ZMod.unitOfCoprime 4 (by decide : Nat.Coprime 4 5)) ∣ 2 :=
-        orderOf_dvd_iff_pow_eq_one.mpr hpow
-      rw [h] at hdvd
-      norm_num at hdvd
-    · intro h
-      omega
-
-private theorem zetaFivePolynomialMod_eq_cyclotomic (p : ℕ) :
-    zetaFivePolynomialMod p = Polynomial.cyclotomic 5 (ZMod p) := by
-  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
-  rw [zetaFivePolynomialMod, Polynomial.cyclotomic_prime]
-  norm_num [Finset.sum_range_succ]
-  ring
 
 end NumberField.CyclotomicFive
 

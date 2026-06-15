@@ -42,15 +42,10 @@ private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 K} {bK : K} {xa xb :
         (xa - ((round xa : ℤ) : ℚ)) * (xb - ((round xb : ℤ) : ℚ)) +
         (xb - ((round xb : ℤ) : ℚ)) ^ 2| ≤ 3 / 4) :
     |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
-  rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-  change |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| < |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
-  rw [hrK, map_mul, norm_eq_normForm, abs_mul, ← hbK]
-  calc |Algebra.norm ℚ bK| *
-      |(xa - ((round xa : ℤ) : ℚ)) ^ 2 -
-        (xa - ((round xa : ℤ) : ℚ)) * (xb - ((round xb : ℤ) : ℚ)) +
-        (xb - ((round xb : ℤ) : ℚ)) ^ 2| ≤ |Algebra.norm ℚ bK| * (3 / 4) :=
-        mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
-    _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
+  refine abs_intNorm_lt_of_abs_norm_le hbK hrK hb_pos
+    (show (3 : ℚ) / 4 < 1 by norm_num) ?_
+  rw [norm_eq_normForm]
+  exact hfrac
 
 private theorem exists_coords (x : K) :
     ∃ a b : ℚ, x = a • (1 : K) + b • ζ := by

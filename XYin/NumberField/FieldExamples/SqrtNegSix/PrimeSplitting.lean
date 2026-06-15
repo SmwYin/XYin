@@ -3,7 +3,7 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtNegSix.Discriminant
+import XYin.NumberField.FieldExamples.SqrtNegSix.RingOfIntegers
 import XYin.NumberField.FieldExamples.Common
 import Mathlib.Algebra.Polynomial.SpecificDegree
 
@@ -34,13 +34,7 @@ namespace NumberField.SqrtNegSix
 /-- A rational prime generates an ideal of norm `p²` in `𝓞 K`. -/
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
-  have h := intNorm_eq_normForm (p : ℤ) 0
-  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • thetaInt = ((p : ℕ) : 𝓞 K) := by
-    simp
-  rw [hps] at h
-  norm_num at h
-  rw [Ideal.absNorm_span_singleton, h]
-  simp [Int.natAbs_pow]
+  rw [Ideal.absNorm_span_natCast, NumberField.RingOfIntegers.rank, degree_eq_two]
 
 /-- An element `A + Bθ` with `B = ±1` is never divisible by a rational prime `p ≥ 2`. -/
 private theorem unit_theta_coeff_not_mem (p : ℕ) (hp : 2 ≤ p) (A B : ℤ)

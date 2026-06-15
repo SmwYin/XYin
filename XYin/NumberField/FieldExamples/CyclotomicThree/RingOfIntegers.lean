@@ -32,6 +32,10 @@ namespace NumberField.CyclotomicThree
 /-- `ζ` as an element of the ring of integers `𝓞 K`. -/
 noncomputable def zetaInt : 𝓞 K := zeta_isPrimitiveRoot.toInteger
 
+/-- The chosen primitive cube root of unity satisfies `ζ³ = 1`. -/
+theorem zeta_pow_three : ζ ^ 3 = 1 :=
+  zeta_isPrimitiveRoot.pow_eq_one
+
 /--
 For cyclotomic fields, a primitive root of unity gives an explicit integral power basis
 of the ring of integers.

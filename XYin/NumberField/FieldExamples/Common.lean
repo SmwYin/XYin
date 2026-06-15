@@ -4,9 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
 import Mathlib.Data.ZMod.Basic
+import Mathlib.NumberTheory.NumberField.Norm
 import Mathlib.NumberTheory.RamificationInertia.Ramification
 import Mathlib.NumberTheory.RamificationInertia.Unramified
 import Mathlib.RingTheory.Ideal.Norm.AbsNorm
+import Mathlib.RingTheory.PowerBasis
 
 /-!
 # Common lemmas for number field examples
@@ -144,5 +146,110 @@ theorem not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow {R : Type*}
   rw [Nat.pow_dvd_pow_iff_le_right hp.one_lt] at hd
   have hkpos : 0 < k := Nat.pos_of_ne_zero hk0
   nlinarith
+
+/-- Euclidean-step inequality. If, under the embedding `𝓞 K ↪ K`, a remainder factors as
+`r = b * e` with `0 < |N(b)|` and `|N(e)| ≤ c < 1` (where `N` is the field norm to `ℚ`), then
+the integer norms satisfy `|N(r)| < |N(b)|`. This is the contraction step behind
+norm-Euclideanity of a ring of integers. -/
+theorem abs_intNorm_lt_of_abs_norm_le {K : Type*} [Field K] [NumberField K]
+    {b r : 𝓞 K} {bK e : K} {c : ℚ}
+    (hbK : bK = algebraMap (𝓞 K) K b)
+    (hrK : algebraMap (𝓞 K) K r = bK * e)
+    (hb_pos : 0 < |Algebra.norm ℚ bK|)
+    (hc : c < 1)
+    (hnorm_e : |Algebra.norm ℚ e| ≤ c) :
+    |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
+  rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
+  change |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| < |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
+  rw [hrK, map_mul, abs_mul, ← hbK]
+  calc |Algebra.norm ℚ bK| * |Algebra.norm ℚ e| ≤ |Algebra.norm ℚ bK| * c :=
+        mul_le_mul_of_nonneg_left hnorm_e (abs_nonneg _)
+    _ < |Algebra.norm ℚ bK| := mul_lt_of_lt_one_right hb_pos hc
+
+/-!
+## Generic reduction-mod-`p` (Kummer–Dedekind) machinery
+
+For a ring of integers `𝓞 K` with an integral power basis `pb` and a prime `p`, a root `r`
+of the generator's minimal polynomial mod `p` produces a surjection `𝓞 K → ZMod p` whose
+kernel is the maximal ideal `(p, pb.gen - r)` of absolute norm `p`. This packages the
+per-field "residue map" machinery used to read off the splitting of `p`.
+-/
+
+section ResidueHom
+
+variable {K : Type*} [Field K] (pb : PowerBasis ℤ (𝓞 K)) (p : ℕ) (r : ℤ)
+  (hr : (Polynomial.aeval ((r : ZMod p))) (minpoly ℤ pb.gen) = 0)
+
+include hr
+
+/-- The reduction homomorphism `𝓞 K → ZMod p` sending the power-basis generator to the
+residue `r`, where `r` is a root of the generator's minimal polynomial mod `p`. -/
+noncomputable def genResidueHom : 𝓞 K →ₐ[ℤ] ZMod p :=
+  pb.lift ((r : ZMod p)) hr
+
+theorem genResidueHom_gen : genResidueHom pb p r hr pb.gen = (r : ZMod p) :=
+  pb.lift_gen _ _
+
+theorem genResidueHom_surjective : Function.Surjective (genResidueHom pb p r hr) := by
+  intro z
+  obtain ⟨m, hm⟩ := ZMod.intCast_surjective z
+  exact ⟨((m : ℤ) : 𝓞 K), by rw [map_intCast]; exact hm⟩
+
+theorem ker_genResidueHom :
+    RingHom.ker (genResidueHom pb p r hr).toRingHom =
+      Ideal.span {(p : 𝓞 K), pb.gen - (r : 𝓞 K)} := by
+  refine le_antisymm (fun x hx => ?_) ?_
+  · rw [RingHom.mem_ker] at hx
+    obtain ⟨q, -, hq⟩ := pb.exists_eq_aeval x
+    have key : x - ((q.eval r : ℤ) : 𝓞 K) ∈ Ideal.span {pb.gen - (r : 𝓞 K)} := by
+      rw [Ideal.mem_span_singleton, hq]
+      have hdvd := Polynomial.sub_dvd_eval_sub pb.gen ((r : ℤ) : 𝓞 K)
+        (q.map (algebraMap ℤ (𝓞 K)))
+      have e1 : (q.map (algebraMap ℤ (𝓞 K))).eval pb.gen = Polynomial.aeval pb.gen q := by
+        rw [Polynomial.eval_map, ← Polynomial.aeval_def]
+      have e2 : (q.map (algebraMap ℤ (𝓞 K))).eval ((r : ℤ) : 𝓞 K)
+          = ((q.eval r : ℤ) : 𝓞 K) := by
+        have hcast : ((r : ℤ) : 𝓞 K) = algebraMap ℤ (𝓞 K) r := by simp [algebraMap_int_eq]
+        rw [Polynomial.eval_map, hcast, Polynomial.eval₂_at_apply]
+        simp [algebraMap_int_eq]
+      rw [e1, e2] at hdvd
+      exact hdvd
+    obtain ⟨d, hd⟩ := Ideal.mem_span_singleton.mp key
+    have hphi : ((q.eval r : ℤ) : ZMod p) = 0 := by
+      have h1 : genResidueHom pb p r hr (x - ((q.eval r : ℤ) : 𝓞 K)) = 0 := by
+        rw [hd, map_mul, map_sub, genResidueHom_gen, map_intCast, sub_self, zero_mul]
+      rw [map_sub, map_intCast, show genResidueHom pb p r hr x = 0 from hx, zero_sub,
+        neg_eq_zero] at h1
+      exact h1
+    obtain ⟨m, hm⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hphi
+    have hx_eq : x = (pb.gen - (r : 𝓞 K)) * d + (p : 𝓞 K) * ((m : ℤ) : 𝓞 K) := by
+      have h2 : x = (pb.gen - (r : 𝓞 K)) * d + ((q.eval r : ℤ) : 𝓞 K) := by rw [← hd]; ring
+      rw [h2, hm]; push_cast; ring
+    rw [hx_eq]
+    refine Ideal.add_mem _ (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
+      (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
+    · simp
+    · simp
+  · rw [Ideal.span_le]
+    rintro y (rfl | rfl)
+    · rw [SetLike.mem_coe, RingHom.mem_ker]; simp
+    · rw [SetLike.mem_coe, RingHom.mem_ker]
+      have h0 : (genResidueHom pb p r hr) (pb.gen - (r : 𝓞 K)) = 0 := by
+        rw [map_sub, genResidueHom_gen, map_intCast, sub_self]
+      exact h0
+
+theorem isMaximal_span_gen_sub [Fact p.Prime] :
+    (Ideal.span {(p : 𝓞 K), pb.gen - (r : 𝓞 K)}).IsMaximal := by
+  rw [← ker_genResidueHom pb p r hr]
+  exact RingHom.ker_isMaximal_of_surjective _ (genResidueHom_surjective pb p r hr)
+
+theorem absNorm_span_gen_sub [NumberField K] :
+    Ideal.absNorm (Ideal.span {(p : 𝓞 K), pb.gen - (r : 𝓞 K)}) = p := by
+  rw [← ker_genResidueHom pb p r hr, Ideal.absNorm_apply, Submodule.cardQuot_apply]
+  rw [Nat.card_congr (RingHom.quotientKerEquivOfSurjective
+    (genResidueHom_surjective pb p r hr)).toEquiv]
+  exact Nat.card_zmod p
+
+end ResidueHom
 
 end NumberField.FieldExamples

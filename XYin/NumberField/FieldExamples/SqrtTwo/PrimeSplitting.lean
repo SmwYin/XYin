@@ -3,7 +3,7 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtTwo.Discriminant
+import XYin.NumberField.FieldExamples.SqrtTwo.RingOfIntegers
 import XYin.NumberField.FieldExamples.Common
 
 /-!
@@ -268,13 +268,7 @@ theorem inertiaDeg_span_three :
 /-- A rational prime generates an ideal of norm `p²` in the quadratic ring `ℤ[√2]`. -/
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
-  have h := intNorm_eq_normForm (p : ℤ) 0
-  have hps : ((p : ℤ)) • (1 : 𝓞 K) + (0 : ℤ) • sqrtTwoInteger = ((p : ℕ) : 𝓞 K) := by
-    simp
-  rw [hps] at h
-  norm_num at h
-  rw [Ideal.absNorm_span_singleton, h]
-  simp [Int.natAbs_pow]
+  rw [Ideal.absNorm_span_natCast, NumberField.RingOfIntegers.rank, degree_eq_two]
 
 private theorem li_one_sqrtTwo : LinearIndependent ℤ ![(1 : 𝓞 K), sqrtTwoInteger] := by
   rw [Fintype.linearIndependent_iff]

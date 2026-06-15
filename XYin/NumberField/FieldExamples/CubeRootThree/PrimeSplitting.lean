@@ -608,85 +608,22 @@ private theorem thetaInt_minpoly_eq : minpoly ℤ thetaInt = X ^ 3 - C (3 : ℤ)
   exact Polynomial.map_injective (algebraMap ℤ ℚ)
     (show Function.Injective (algebraMap ℤ ℚ) from Int.cast_injective) hmap
 
-private noncomputable def residueHom (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
-    (𝓞 K) →ₐ[ℤ] ZMod p :=
-  thetaIntPowerBasis.lift ((r : ℤ) : ZMod p) (by
-    rw [thetaIntPowerBasis_gen, thetaInt_minpoly_eq]
-    simp only [map_sub, map_pow, aeval_X, map_ofNat]
-    exact sub_eq_zero.mpr hr)
-
-private theorem residueHom_thetaInt (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
-    residueHom p r hr thetaInt = (r : ZMod p) := by
-  rw [← thetaIntPowerBasis_gen]
-  exact thetaIntPowerBasis.lift_gen ((r : ℤ) : ZMod p) _
-
-private theorem ker_residueHom (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
-    RingHom.ker (residueHom p r hr).toRingHom =
-      Ideal.span {(p : 𝓞 K), thetaInt - (r : 𝓞 K)} := by
-  refine le_antisymm (fun x hx => ?_) ?_
-  · rw [RingHom.mem_ker] at hx
-    obtain ⟨q, -, hq⟩ := thetaIntPowerBasis.exists_eq_aeval x
-    rw [thetaIntPowerBasis_gen] at hq
-    have key : x - ((q.eval r : ℤ) : 𝓞 K) ∈ Ideal.span {thetaInt - (r : 𝓞 K)} := by
-      rw [Ideal.mem_span_singleton, hq]
-      have hdvd := Polynomial.sub_dvd_eval_sub thetaInt ((r : ℤ) : 𝓞 K)
-        (q.map (algebraMap ℤ (𝓞 K)))
-      have e1 : (q.map (algebraMap ℤ (𝓞 K))).eval thetaInt =
-          Polynomial.aeval thetaInt q := by
-        rw [Polynomial.eval_map, ← Polynomial.aeval_def]
-      have e2 : (q.map (algebraMap ℤ (𝓞 K))).eval ((r : ℤ) : 𝓞 K) =
-          ((q.eval r : ℤ) : 𝓞 K) := by
-        have hcast : ((r : ℤ) : 𝓞 K) = algebraMap ℤ (𝓞 K) r := by
-          simp [algebraMap_int_eq]
-        rw [Polynomial.eval_map, hcast, Polynomial.eval₂_at_apply]
-        simp [algebraMap_int_eq]
-      rw [e1, e2] at hdvd
-      exact hdvd
-    obtain ⟨d, hd⟩ := Ideal.mem_span_singleton.mp key
-    have hphi : ((q.eval r : ℤ) : ZMod p) = 0 := by
-      have h1 : residueHom p r hr (x - ((q.eval r : ℤ) : 𝓞 K)) = 0 := by
-        rw [hd, map_mul, map_sub, residueHom_thetaInt, map_intCast, sub_self, zero_mul]
-      rw [map_sub, map_intCast, show residueHom p r hr x = 0 from hx, zero_sub,
-        neg_eq_zero] at h1
-      exact h1
-    obtain ⟨m, hm⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hphi
-    have hx_eq : x = (thetaInt - (r : 𝓞 K)) * d + (p : 𝓞 K) * ((m : ℤ) : 𝓞 K) := by
-      have h2 : x = (thetaInt - (r : 𝓞 K)) * d + ((q.eval r : ℤ) : 𝓞 K) := by
-        rw [← hd]
-        ring
-      rw [h2, hm]
-      push_cast
-      ring
-    rw [hx_eq]
-    refine Ideal.add_mem _ (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
-      (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_)) <;> simp
-  · rw [Ideal.span_le]
-    rintro y (rfl | rfl)
-    · rw [SetLike.mem_coe, RingHom.mem_ker]
-      simp
-    · rw [SetLike.mem_coe, RingHom.mem_ker]
-      have h0 : (residueHom p r hr) (thetaInt - (r : 𝓞 K)) = 0 := by
-        rw [map_sub, residueHom_thetaInt, map_intCast, sub_self]
-      exact h0
-
-private theorem residueHom_surjective (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
-    Function.Surjective (residueHom p r hr) := by
-  intro z
-  obtain ⟨m, hm⟩ := ZMod.intCast_surjective z
-  exact ⟨((m : ℤ) : 𝓞 K), by rw [map_intCast]; exact hm⟩
-
 private theorem isMaximal_span_pair (p : ℕ) [Fact p.Prime] (r : ℤ)
     (hr : ((r : ZMod p)) ^ 3 = 3) :
     (Ideal.span {(p : 𝓞 K), thetaInt - (r : 𝓞 K)}).IsMaximal := by
-  rw [← ker_residueHom p r hr]
-  exact RingHom.ker_isMaximal_of_surjective _ (residueHom_surjective p r hr)
+  rw [← thetaIntPowerBasis_gen]
+  exact NumberField.FieldExamples.isMaximal_span_gen_sub thetaIntPowerBasis p r
+    (by rw [thetaIntPowerBasis_gen, thetaInt_minpoly_eq]
+        simp only [map_sub, map_pow, aeval_X, map_ofNat]
+        exact sub_eq_zero.mpr hr)
 
 private theorem absNorm_span_pair (p : ℕ) (r : ℤ) (hr : ((r : ZMod p)) ^ 3 = 3) :
     Ideal.absNorm (Ideal.span {(p : 𝓞 K), thetaInt - (r : 𝓞 K)}) = p := by
-  rw [← ker_residueHom p r hr, Ideal.absNorm_apply, Submodule.cardQuot_apply]
-  rw [Nat.card_congr (RingHom.quotientKerEquivOfSurjective
-    (residueHom_surjective p r hr)).toEquiv]
-  exact Nat.card_zmod p
+  rw [← thetaIntPowerBasis_gen]
+  exact NumberField.FieldExamples.absNorm_span_gen_sub thetaIntPowerBasis p r
+    (by rw [thetaIntPowerBasis_gen, thetaInt_minpoly_eq]
+        simp only [map_sub, map_pow, aeval_X, map_ofNat]
+        exact sub_eq_zero.mpr hr)
 
 /-- General degree-one splitting criterion: away from the ramified prime `3`, a rational
 prime has a residue-degree-one prime above it iff `X³ - 3` has a root modulo `p`. -/

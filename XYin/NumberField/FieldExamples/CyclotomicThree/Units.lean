@@ -31,9 +31,6 @@ open NumberField.FieldExamples
 
 namespace NumberField.CyclotomicThree
 
-private theorem zeta_pow_three : ζ ^ 3 = 1 :=
-  zeta_isPrimitiveRoot.pow_eq_one
-
 /-- The unit corresponding to `ζ`. -/
 abbrev etaUnit : (𝓞 K)ˣ :=
   (zeta_isPrimitiveRoot.toInteger_isPrimitiveRoot.isUnit (by decide)).unit

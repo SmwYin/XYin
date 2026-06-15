@@ -33,9 +33,6 @@ open NumberField.FieldExamples
 
 namespace NumberField.SqrtFive
 
-private theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
-  Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
-
 /-- The golden ratio `φ` is a unit of `𝓞 K`, with inverse `φ - 1 = 1/φ`: this is the
 fundamental unit of `ℚ(√5)`, the smallest fundamental unit of any real quadratic field. -/
 noncomputable def fundamentalUnit : (𝓞 K)ˣ where

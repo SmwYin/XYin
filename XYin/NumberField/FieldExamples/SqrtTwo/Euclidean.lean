@@ -41,18 +41,9 @@ private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 K} {bK e : K} {u v :
         |(u - ((round u : ℤ) : ℚ)) ^ 2 - 2 * (v - ((round v : ℤ) : ℚ)) ^ 2|)
     (hfrac :
       |(u - ((round u : ℤ) : ℚ)) ^ 2 - 2 * (v - ((round v : ℤ) : ℚ)) ^ 2| ≤ 1 / 2) :
-    |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| := by
-  rw [Algebra.coe_norm_int, Algebra.coe_norm_int]
-  change |Algebra.norm ℚ (algebraMap (𝓞 K) K r)| <
-    |Algebra.norm ℚ (algebraMap (𝓞 K) K b)|
-  rw [hrK, map_mul, abs_mul, ← hbK]
-  calc |Algebra.norm ℚ bK| * |Algebra.norm ℚ e| =
-        |Algebra.norm ℚ bK| *
-          |(u - ((round u : ℤ) : ℚ)) ^ 2 - 2 * (v - ((round v : ℤ) : ℚ)) ^ 2| := by
-        rw [hnorm_e]
-    _ ≤ |Algebra.norm ℚ bK| * (1 / 2) :=
-        mul_le_mul_of_nonneg_left hfrac (abs_nonneg _)
-    _ < |Algebra.norm ℚ bK| := by linarith [hb_pos]
+    |((Algebra.norm ℤ r : ℤ) : ℚ)| < |((Algebra.norm ℤ b : ℤ) : ℚ)| :=
+  abs_intNorm_lt_of_abs_norm_le hbK hrK hb_pos
+    (show (1 : ℚ) / 2 < 1 by norm_num) (hnorm_e.trans_le hfrac)
 
 /-- `ℚ(√2)` is norm-Euclidean: division with remainder in `ℤ[√2]` with respect to the
 absolute value of the field norm. This is the classical Euclidean algorithm for the real

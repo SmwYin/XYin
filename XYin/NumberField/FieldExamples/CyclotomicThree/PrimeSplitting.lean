@@ -33,9 +33,6 @@ namespace NumberField.CyclotomicThree
 
 section PrivateMachinery
 
-private theorem zeta_pow_three : ζ ^ 3 = 1 :=
-  zeta_isPrimitiveRoot.pow_eq_one
-
 private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
   rw [zeta_isPrimitiveRoot.integralPowerBasis_gen]
   rfl
@@ -83,22 +80,6 @@ private theorem prod_aut_apply (x : K) :
   rw [huniv, Finset.prod_pair hne]
   rfl
 
-private theorem intNorm_eq (x : 𝓞 K) (n : ℤ)
-    (h : algebraMap (𝓞 K) K x * sig2 (algebraMap (𝓞 K) K x) = (n : K)) :
-    Algebra.norm ℤ x = n := by
-  haveI := IsCyclotomicExtension.isGalois {3} ℚ K
-  have h1 : algebraMap ℚ K (Algebra.norm ℚ (algebraMap (𝓞 K) K x)) = ((n : ℚ) : K) := by
-    rw [Algebra.norm_eq_prod_automorphisms, prod_aut_apply, h]
-    push_cast
-    ring
-  have h2 : Algebra.norm ℚ (algebraMap (𝓞 K) K x) = (n : ℚ) := by
-    apply (algebraMap ℚ K).injective
-    rw [h1, eq_ratCast (algebraMap ℚ K) (n : ℚ)]
-  have h3 : ((Algebra.norm ℤ x : ℤ) : ℚ) = Algebra.norm ℚ (algebraMap (𝓞 K) K x) :=
-    Algebra.coe_norm_int x
-  rw [h2] at h3
-  exact_mod_cast h3
-
 private theorem minpoly_gen_eq :
     minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen =
       Polynomial.X ^ 2 + Polynomial.X + Polynomial.C 1 := by
@@ -129,91 +110,21 @@ private theorem minpoly_gen_eq :
     omega
   rw [hc, Polynomial.eq_one_of_monic_natDegree_zero hcmonic hdegc, mul_one]
 
-private noncomputable def residueHom (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    𝓞 K →ₐ[ℤ] ZMod p :=
-  zeta_isPrimitiveRoot.integralPowerBasis.lift ((r : ℤ) : ZMod p)
-    (by
-      rw [minpoly_gen_eq]
-      simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
-      exact hr)
-
-private theorem residueHom_zetaInt (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    residueHom p r hr zetaInt = (r : ZMod p) := by
-  rw [← gen_eq_zetaInt]
-  exact zeta_isPrimitiveRoot.integralPowerBasis.lift_gen ((r : ℤ) : ZMod p) _
-
-private theorem ker_residueHom (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    RingHom.ker (residueHom p r hr).toRingHom =
-      Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)} := by
-  refine le_antisymm (fun x hx => ?_) ?_
-  · rw [RingHom.mem_ker] at hx
-    obtain ⟨q, -, hq⟩ := zeta_isPrimitiveRoot.integralPowerBasis.exists_eq_aeval x
-    rw [gen_eq_zetaInt] at hq
-    have key : x - ((q.eval r : ℤ) : 𝓞 K) ∈ Ideal.span {zetaInt - (r : 𝓞 K)} := by
-      rw [Ideal.mem_span_singleton, hq]
-      have hdvd := Polynomial.sub_dvd_eval_sub zetaInt ((r : ℤ) : 𝓞 K)
-        (q.map (algebraMap ℤ (𝓞 K)))
-      have e1 : (q.map (algebraMap ℤ (𝓞 K))).eval zetaInt = Polynomial.aeval zetaInt q := by
-        rw [Polynomial.eval_map, ← Polynomial.aeval_def]
-      have e2 : (q.map (algebraMap ℤ (𝓞 K))).eval ((r : ℤ) : 𝓞 K) = ((q.eval r : ℤ) : 𝓞 K) := by
-        have hcast : ((r : ℤ) : 𝓞 K) = algebraMap ℤ (𝓞 K) r := by
-          simp [algebraMap_int_eq]
-        rw [Polynomial.eval_map, hcast, Polynomial.eval₂_at_apply]
-        simp [algebraMap_int_eq]
-      rw [e1, e2] at hdvd
-      exact hdvd
-    obtain ⟨d, hd⟩ := Ideal.mem_span_singleton.mp key
-    have hphi : ((q.eval r : ℤ) : ZMod p) = 0 := by
-      have h1 : residueHom p r hr (x - ((q.eval r : ℤ) : 𝓞 K)) = 0 := by
-        rw [hd, map_mul, map_sub, residueHom_zetaInt, map_intCast, sub_self, zero_mul]
-      rw [map_sub, map_intCast, show residueHom p r hr x = 0 from hx, zero_sub,
-        neg_eq_zero] at h1
-      exact h1
-    obtain ⟨m, hm⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hphi
-    have hx_eq : x = (zetaInt - (r : 𝓞 K)) * d + (p : 𝓞 K) * ((m : ℤ) : 𝓞 K) := by
-      have h2 : x = (zetaInt - (r : 𝓞 K)) * d + ((q.eval r : ℤ) : 𝓞 K) := by
-        rw [← hd]
-        ring
-      rw [h2, hm]
-      push_cast
-      ring
-    rw [hx_eq]
-    refine Ideal.add_mem _ (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
-      (Ideal.mul_mem_right _ _ (Ideal.subset_span ?_))
-    · simp
-    · simp
-  · rw [Ideal.span_le]
-    rintro y (rfl | rfl)
-    · rw [SetLike.mem_coe, RingHom.mem_ker]
-      simp
-    · rw [SetLike.mem_coe, RingHom.mem_ker]
-      have h0 : (residueHom p r hr) (zetaInt - (r : 𝓞 K)) = 0 := by
-        rw [map_sub, residueHom_zetaInt, map_intCast, sub_self]
-      exact h0
-
-private theorem residueHom_surjective (p : ℕ) (r : ℤ)
-    (hr : ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
-    Function.Surjective (residueHom p r hr) := by
-  intro z
-  obtain ⟨m, hm⟩ := ZMod.intCast_surjective z
-  exact ⟨((m : ℤ) : 𝓞 K), by rw [map_intCast]; exact hm⟩
-
 private theorem isMaximal_span_pair (p : ℕ) [Fact p.Prime] (r : ℤ)
     (hr : ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
     (Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)}).IsMaximal := by
-  rw [← ker_residueHom p r hr]
-  exact RingHom.ker_isMaximal_of_surjective _ (residueHom_surjective p r hr)
+  rw [← gen_eq_zetaInt]
+  exact NumberField.FieldExamples.isMaximal_span_gen_sub
+    zeta_isPrimitiveRoot.integralPowerBasis p r
+    (by rw [minpoly_gen_eq]; simp only [map_add, map_pow, Polynomial.aeval_X, map_one]; exact hr)
 
 private theorem absNorm_span_pair (p : ℕ) (r : ℤ)
     (hr : ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
     Ideal.absNorm (Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)}) = p := by
-  rw [← ker_residueHom p r hr, Ideal.absNorm_apply, Submodule.cardQuot_apply]
-  rw [Nat.card_congr (RingHom.quotientKerEquivOfSurjective
-    (residueHom_surjective p r hr)).toEquiv]
-  exact Nat.card_zmod p
+  rw [← gen_eq_zetaInt]
+  exact NumberField.FieldExamples.absNorm_span_gen_sub
+    zeta_isPrimitiveRoot.integralPowerBasis p r
+    (by rw [minpoly_gen_eq]; simp only [map_add, map_pow, Polynomial.aeval_X, map_one]; exact hr)
 end PrivateMachinery
 
 /-- The norm form of `ℚ(ζ₃)` in the basis `1, ζ`: the field norm of `x + yζ` is the binary
@@ -586,13 +497,7 @@ theorem ramificationIdx_span_seven_factor :
 
 private theorem absNorm_span_natCast (p : ℕ) :
     Ideal.absNorm (Ideal.span {((p : ℕ) : 𝓞 K)}) = p ^ 2 := by
-  have hfin : Module.finrank ℤ (𝓞 K) = 2 := by
-    rw [Module.finrank_eq_card_basis zetaExplicitIntegralBasis, Fintype.card_fin]
-  rw [Ideal.absNorm_span_singleton]
-  have hcast : ((p : ℕ) : 𝓞 K) = algebraMap ℤ (𝓞 K) ((p : ℕ) : ℤ) := by
-    push_cast
-    rfl
-  rw [hcast, Algebra.norm_algebraMap, hfin, Int.natAbs_pow, Int.natAbs_natCast]
+  rw [Ideal.absNorm_span_natCast, NumberField.RingOfIntegers.rank, degree_eq_two]
 
 private theorem one_mod_three_of_prime_norm (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧ Ideal.absNorm P = p) →
@@ -755,78 +660,6 @@ theorem splits_iff_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
   constructor
   · exact one_mod_three_of_splits p hp hp3
   · exact splits_of_one_mod_three p hp hp3
-
-end NumberField.CyclotomicThree
-
-/-!
-## Kummer-Dedekind
--/
-
-noncomputable section
-
-open scoped NumberField nonZeroDivisors Real ENNReal
-
-open Module NumberField Polynomial
-open Polynomial
-
-namespace NumberField.CyclotomicThree
-
-/-- The reduction of the third cyclotomic polynomial modulo `p`. -/
-abbrev zetaThreePolynomialMod (p : ℕ) : (ZMod p)[X] :=
-  X ^ 2 + X + C (1 : ZMod p)
-
-private theorem not_dvd_three_of_prime_ne_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
-    ¬ p ∣ 3 := by
-  intro h
-  have hcases := Nat.prime_three.eq_one_or_self_of_dvd p h
-  rcases hcases with hp1 | hp_eq3
-  · exact hp.ne_one hp1
-  · exact hp3 hp_eq3
-
-private theorem zetaThreePolynomialMod_eq_cyclotomic (p : ℕ) :
-    zetaThreePolynomialMod p = cyclotomic 3 (ZMod p) := by
-  rw [zetaThreePolynomialMod, cyclotomic_three]
-  simp
-
-private theorem orderOf_unitOfCoprime_eq_two_of_mod_three_eq_two
-    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) (hmod : p % 3 = 2) :
-    orderOf (ZMod.unitOfCoprime p
-      (hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3))) = 2 := by
-  let hcop : p.Coprime 3 :=
-    hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3)
-  let u : (ZMod 3)ˣ := ZMod.unitOfCoprime p hcop
-  change orderOf u = 2
-  apply orderOf_eq_prime
-  · ext
-    change ((p : ZMod 3) ^ 2 : ZMod 3) = 1
-    rw [show (p : ZMod 3) = (2 : ZMod 3) by
-      change (p : ZMod 3) = ((2 : ℕ) : ZMod 3)
-      rw [ZMod.natCast_eq_natCast_iff']
-      simp [hmod]]
-    decide
-  · intro hu
-    have hval : (p : ZMod 3) = 1 := by
-      simpa [u] using congrArg Units.val hu
-    have hpmod1 : p % 3 = 1 := by
-      have hval' : (p : ZMod 3) = ((1 : ℕ) : ZMod 3) := by simpa using hval
-      rw [ZMod.natCast_eq_natCast_iff'] at hval'
-      simpa using hval'
-    omega
-
-private theorem orderOf_unitOfCoprime_eq_one_of_mod_three_eq_one
-    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) (hmod : p % 3 = 1) :
-    orderOf (ZMod.unitOfCoprime p
-      (hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3))) = 1 := by
-  let hcop : p.Coprime 3 :=
-    hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3)
-  let u : (ZMod 3)ˣ := ZMod.unitOfCoprime p hcop
-  change orderOf u = 1
-  rw [orderOf_eq_one_iff]
-  ext
-  change (p : ZMod 3) = 1
-  change (p : ZMod 3) = ((1 : ℕ) : ZMod 3)
-  rw [ZMod.natCast_eq_natCast_iff']
-  simp [hmod]
 
 end NumberField.CyclotomicThree
 
