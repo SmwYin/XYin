@@ -237,11 +237,70 @@ theorem unitGroupStructure :
   have hbij : Function.Bijective ψ := unitGroupStructure_bijective i₀ η hη htg8 htg_tor
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
+set_option linter.style.longLine false in
 /-- The regulator of `ℚ(ζ₈)` is `2·log(1 + √2) ≈ 1.7627`: the complex place contributes
 weight `2`, and `|1 + ζ + ζ⁷| = 1 + √2` at one of the two places. -/
 theorem regulator_eq :
     NumberField.Units.regulator K = 2 * Real.log (1 + Real.sqrt 2) := by
-  sorry
+  classical
+  obtain ⟨σ, hσ⟩ := exists_complexEmbedding_zeta
+  let wR : NumberField.InfinitePlace K := NumberField.InfinitePlace.mk σ
+  have hwRcomplex : NumberField.InfinitePlace.IsComplex wR := infinitePlace_isComplex wR
+  have hz : algebraMap (𝓞 K) K zetaInt = ζ :=
+    NumberField.RingOfIntegers.map_mk ζ zeta_integral
+  -- analytic value of the fundamental unit at the complex place
+  have hσu : σ (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) = ((1 + Real.sqrt 2 : ℝ) : ℂ) := by
+    have hval : ((fundamentalUnit : (𝓞 K)ˣ) : 𝓞 K) = 1 + zetaInt + zetaInt ^ 7 := rfl
+    rw [hval]
+    simp only [map_add, map_one, map_pow, hz, hσ]
+    have hξ : Complex.exp (2 * Real.pi * Complex.I / 8) = Complex.exp ((Real.pi/4 : ℝ) * Complex.I) := by
+      congr 1; push_cast; ring
+    rw [hξ, ← Complex.exp_nat_mul]
+    have e7 : (7 : ℕ) * ((Real.pi/4 : ℝ) * Complex.I) = (-(Real.pi/4 : ℝ) * Complex.I) + 2 * Real.pi * Complex.I := by
+      push_cast; ring
+    rw [e7, Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+    have hcos : Complex.exp ((Real.pi/4 : ℝ) * Complex.I) + Complex.exp (-(Real.pi/4 : ℝ) * Complex.I)
+        = 2 * Complex.cos (Real.pi/4 : ℝ) := (Complex.two_cos _).symm
+    have h2 : (1 : ℂ) + Complex.exp ((Real.pi/4 : ℝ) * Complex.I) + Complex.exp (-(Real.pi/4 : ℝ) * Complex.I)
+        = 1 + 2 * Complex.cos (Real.pi/4 : ℝ) := by rw [add_assoc, hcos]
+    rw [h2, ← Complex.ofReal_cos, Real.cos_pi_div_four]
+    push_cast; ring
+  have hsqrt_pos : (0 : ℝ) < 1 + Real.sqrt 2 := by positivity
+  have hwRu : wR (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) = 1 + Real.sqrt 2 := by
+    change ‖σ (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K))‖ = 1 + Real.sqrt 2
+    rw [hσu, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hsqrt_pos]
+  obtain ⟨wC, hwCne⟩ := Fintype.exists_ne_of_one_lt_card
+    (by rw [infinitePlace_card_eq_two]; norm_num) wR
+  have hwRne : wR ≠ wC := hwCne.symm
+  have hcard_sub : Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} = 1 := by
+    rw [show Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} =
+        Fintype.card {w : NumberField.InfinitePlace K // ¬ w = wC} from rfl]
+    rw [Fintype.card_subtype_compl (fun w : NumberField.InfinitePlace K => w = wC)]
+    rw [Fintype.card_subtype_eq, infinitePlace_card_eq_two]
+  let e : {w : NumberField.InfinitePlace K // w ≠ wC} ≃ Fin (NumberField.Units.rank K) :=
+    Fintype.equivOfCardEq (by rw [hcard_sub, Fintype.card_fin, unitRank_eq_one])
+  have hreg : NumberField.Units.regulator K =
+      NumberField.Units.regOfFamily
+        (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit) := by
+    have hdiv := NumberField.Units.regOfFamily_div_regulator (K := K)
+      (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit)
+    have htop : Subgroup.closure
+        (Set.range (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit)) ⊔
+          NumberField.Units.torsion K = ⊤ := by
+      simpa [fundamentalUnitSystem] using fundamentalUnitSystem_isFundamental
+    rw [htop, Subgroup.index_top] at hdiv
+    field_simp [NumberField.Units.regulator_ne_zero K] at hdiv
+    simpa using hdiv.symm
+  rw [hreg]
+  rw [NumberField.Units.regOfFamily_eq_det
+    (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit) wC e]
+  haveI : Subsingleton {w : NumberField.InfinitePlace K // w ≠ wC} :=
+    Fintype.card_le_one_iff_subsingleton.mp (by rw [hcard_sub])
+  rw [Matrix.det_eq_elem_of_subsingleton _ ⟨wR, hwRne⟩]
+  simp only [Matrix.of_apply, NumberField.InfinitePlace.mult_isComplex ⟨wR, hwRcomplex⟩, hwRu,
+    Nat.cast_ofNat]
+  rw [abs_of_nonneg (mul_nonneg (by norm_num)
+    (Real.log_nonneg (by linarith [Real.sqrt_nonneg 2])))]
 
 end NumberField.CyclotomicEight
 

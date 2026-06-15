@@ -252,7 +252,75 @@ theorem unitGroupStructure :
 places each contribute weight `2`, and `|1 + ζ| = φ` at one of them. -/
 theorem regulator_eq :
     NumberField.Units.regulator K = 2 * Real.log ((1 + Real.sqrt 5) / 2) := by
-  sorry
+  classical
+  obtain ⟨σ, hσ⟩ := exists_complexEmbedding_zeta
+  let wR : NumberField.InfinitePlace K := NumberField.InfinitePlace.mk σ
+  have hwRcomplex : NumberField.InfinitePlace.IsComplex wR := infinitePlace_isComplex wR
+  have hwRu : wR (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) = (1 + Real.sqrt 5) / 2 := by
+    have hval : (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) = 1 + ζ := by
+      simp [fundamentalUnit, map_add, map_one, zetaInt]
+    rw [hval]
+    change ‖σ (1 + ζ)‖ = (1 + Real.sqrt 5) / 2
+    rw [map_add, map_one, hσ]
+    have hrw : (2 * (Real.pi : ℂ) * Complex.I / 5) =
+        ((2 * Real.pi / 5 : ℝ) : ℂ) * Complex.I := by push_cast; ring
+    rw [hrw, Complex.norm_def, Complex.normSq_apply]
+    simp only [Complex.add_re, Complex.add_im, Complex.one_re, Complex.one_im,
+      Complex.exp_ofReal_mul_I_re, Complex.exp_ofReal_mul_I_im]
+    have hcos2 : Real.cos (2 * Real.pi / 5) = 2 * Real.cos (Real.pi / 5) ^ 2 - 1 := by
+      rw [show (2 * Real.pi / 5) = 2 * (Real.pi / 5) by ring, Real.cos_two_mul]
+    have hsin : Real.sin (2 * Real.pi / 5) ^ 2 = 1 - Real.cos (2 * Real.pi / 5) ^ 2 := by
+      have := Real.sin_sq_add_cos_sq (2 * Real.pi / 5); linarith
+    have hsqrt5 : Real.sqrt 5 ^ 2 = 5 := Real.sq_sqrt (by norm_num)
+    have hphi : (0 : ℝ) ≤ (1 + Real.sqrt 5) / 2 := by positivity
+    rw [show (1 + Real.cos (2 * Real.pi / 5)) * (1 + Real.cos (2 * Real.pi / 5)) +
+          (0 + Real.sin (2 * Real.pi / 5)) * (0 + Real.sin (2 * Real.pi / 5))
+        = 2 + 2 * Real.cos (2 * Real.pi / 5) +
+          (Real.sin (2 * Real.pi / 5) ^ 2 - (1 - Real.cos (2 * Real.pi / 5) ^ 2)) by ring]
+    rw [hsin]
+    simp only [sub_self, add_zero]
+    rw [hcos2, Real.cos_pi_div_five]
+    rw [show (2 + 2 * (2 * ((1 + Real.sqrt 5) / 4) ^ 2 - 1)) = ((1 + Real.sqrt 5) / 2) ^ 2 by
+      field_simp; nlinarith [hsqrt5]]
+    exact Real.sqrt_sq hphi
+  obtain ⟨wC, hwCne⟩ := Fintype.exists_ne_of_one_lt_card
+    (by rw [infinitePlace_card_eq_two]; norm_num) wR
+  have hwRne : wR ≠ wC := hwCne.symm
+  have hcard_sub : Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} = 1 := by
+    rw [show Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} =
+        Fintype.card {w : NumberField.InfinitePlace K // ¬ w = wC} from rfl]
+    rw [Fintype.card_subtype_compl (fun w : NumberField.InfinitePlace K => w = wC)]
+    rw [Fintype.card_subtype_eq, infinitePlace_card_eq_two]
+  let e : {w : NumberField.InfinitePlace K // w ≠ wC} ≃ Fin (NumberField.Units.rank K) :=
+    Fintype.equivOfCardEq (by rw [hcard_sub, Fintype.card_fin, unitRank_eq_one])
+  have hreg : NumberField.Units.regulator K =
+      NumberField.Units.regOfFamily
+        (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit) := by
+    have hdiv := NumberField.Units.regOfFamily_div_regulator (K := K)
+      (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit)
+    have htop : Subgroup.closure
+        (Set.range (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit)) ⊔
+          NumberField.Units.torsion K = ⊤ := by
+      simpa [fundamentalUnitSystem] using fundamentalUnitSystem_isFundamental
+    rw [htop, Subgroup.index_top] at hdiv
+    field_simp [NumberField.Units.regulator_ne_zero K] at hdiv
+    simpa using hdiv.symm
+  rw [hreg]
+  rw [NumberField.Units.regOfFamily_eq_det
+    (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit) wC e]
+  haveI : Subsingleton {w : NumberField.InfinitePlace K // w ≠ wC} :=
+    Fintype.card_le_one_iff_subsingleton.mp (by rw [hcard_sub])
+  rw [Matrix.det_eq_elem_of_subsingleton _ ⟨wR, hwRne⟩]
+  simp only [Matrix.of_apply, NumberField.InfinitePlace.mult_isComplex ⟨wR, hwRcomplex⟩, hwRu]
+  have hlog : (0 : ℝ) ≤ Real.log ((1 + Real.sqrt 5) / 2) := by
+    apply Real.log_nonneg
+    have h1 : (1 : ℝ) ≤ Real.sqrt 5 := by
+      rw [show (1 : ℝ) = Real.sqrt 1 by rw [Real.sqrt_one]]
+      exact Real.sqrt_le_sqrt (by norm_num)
+    nlinarith
+  rw [show ((2 : ℕ) : ℝ) * Real.log ((1 + Real.sqrt 5) / 2) =
+      2 * Real.log ((1 + Real.sqrt 5) / 2) by push_cast; ring]
+  rw [abs_of_nonneg (by positivity)]
 
 end NumberField.CyclotomicFive
 

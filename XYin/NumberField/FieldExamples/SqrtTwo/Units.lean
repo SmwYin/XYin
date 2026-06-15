@@ -406,7 +406,65 @@ theorem mem_torsion_iff_eq_one_or_neg_one (u : (𝓞 K)ˣ) :
 /-- The regulator of `ℚ(√2)` is `log(1 + √2) ≈ 0.8814`, the covolume of the unit lattice.
 This is the analytic restatement that `1 + √2` is a fundamental unit. -/
 theorem regulator_eq : Units.regulator K = Real.log (1 + Real.sqrt 2) := by
-  sorry
+  classical
+  let fu : (𝓞 K)ˣ := sqrtTwoFundamentalUnit
+  -- The fundamental-unit family generates the units modulo torsion.
+  have htop : Subgroup.closure
+      (Set.range (fun _ : Fin (NumberField.Units.rank K) => fu)) ⊔
+        NumberField.Units.torsion K = ⊤ := by
+    rw [eq_top_iff]
+    rintro u -
+    rw [Subgroup.mem_sup]
+    have hfu_mem : fu ∈ Subgroup.closure
+        (Set.range (fun _ : Fin (NumberField.Units.rank K) => fu)) :=
+      Subgroup.subset_closure
+        ⟨⟨0, by rw [unitRank_eq_one]; exact Nat.zero_lt_one⟩, rfl⟩
+    obtain ⟨n, hn | hn⟩ := sqrtTwoFundamentalUnit_generates_unitGroup u
+    · exact ⟨fu ^ n, Subgroup.zpow_mem _ hfu_mem n, 1, Subgroup.one_mem _,
+        by rw [hn, mul_one]⟩
+    · exact ⟨fu ^ n, Subgroup.zpow_mem _ hfu_mem n, -1, neg_one_mem_torsion,
+        by rw [hn, mul_neg_one]⟩
+  -- Choose the (real) infinite place coming from any embedding.
+  obtain ⟨σ, hσ⟩ := exists_realEmbedding_pos
+  let φ : K →+* ℂ := Complex.ofRealHom.comp σ.toRingHom
+  let wR : NumberField.InfinitePlace K := NumberField.InfinitePlace.mk φ
+  have hwRreal : NumberField.InfinitePlace.IsReal wR := infinitePlace_isReal wR
+  have hfuval : algebraMap (𝓞 K) K (fu : 𝓞 K) = sqrtTwoRoot + 1 := rfl
+  have hpos : (0 : ℝ) < 1 + Real.sqrt 2 := by positivity
+  have hσu : σ (algebraMap (𝓞 K) K (fu : 𝓞 K)) = 1 + Real.sqrt 2 := by
+    rw [hfuval, map_add, map_one, hσ]; ring
+  have hwRu : wR (algebraMap (𝓞 K) K (fu : 𝓞 K)) = 1 + Real.sqrt 2 := by
+    change ‖φ (algebraMap (𝓞 K) K (fu : 𝓞 K))‖ = 1 + Real.sqrt 2
+    rw [show φ (algebraMap (𝓞 K) K (fu : 𝓞 K)) =
+        ((σ (algebraMap (𝓞 K) K (fu : 𝓞 K)) : ℝ) : ℂ) from rfl]
+    rw [hσu, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hpos]
+  obtain ⟨wC, hwCne⟩ := Fintype.exists_ne_of_one_lt_card
+    (by rw [infinitePlace_card_eq_two]; norm_num) wR
+  have hwRne : wR ≠ wC := hwCne.symm
+  have hcard_sub : Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} = 1 := by
+    rw [show Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} =
+        Fintype.card {w : NumberField.InfinitePlace K // ¬ w = wC} from rfl]
+    rw [Fintype.card_subtype_compl (fun w : NumberField.InfinitePlace K => w = wC)]
+    rw [Fintype.card_subtype_eq, infinitePlace_card_eq_two]
+  let e : {w : NumberField.InfinitePlace K // w ≠ wC} ≃ Fin (NumberField.Units.rank K) :=
+    Fintype.equivOfCardEq (by rw [hcard_sub, Fintype.card_fin, unitRank_eq_one])
+  have hreg : NumberField.Units.regulator K =
+      NumberField.Units.regOfFamily
+        (fun _ : Fin (NumberField.Units.rank K) => fu) := by
+    have hdiv := NumberField.Units.regOfFamily_div_regulator (K := K)
+      (fun _ : Fin (NumberField.Units.rank K) => fu)
+    rw [htop, Subgroup.index_top] at hdiv
+    field_simp [NumberField.Units.regulator_ne_zero K] at hdiv
+    simpa using hdiv.symm
+  rw [hreg]
+  rw [NumberField.Units.regOfFamily_eq_det
+    (fun _ : Fin (NumberField.Units.rank K) => fu) wC e]
+  haveI : Subsingleton {w : NumberField.InfinitePlace K // w ≠ wC} :=
+    Fintype.card_le_one_iff_subsingleton.mp (by rw [hcard_sub])
+  rw [Matrix.det_eq_elem_of_subsingleton _ ⟨wR, hwRne⟩]
+  rw [Matrix.of_apply, NumberField.InfinitePlace.mult_isReal ⟨wR, hwRreal⟩, hwRu]
+  rw [Nat.cast_one, one_mul,
+    abs_of_nonneg (Real.log_nonneg (by linarith [Real.sqrt_nonneg 2]))]
 
 private theorem unitGroupStructure_bijective
     (i₀ : Fin (NumberField.Units.rank K)) (η : (𝓞 K)ˣ)
