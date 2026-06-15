@@ -1188,7 +1188,7 @@ theorem kummerDedekind_splitsCompletely_iff_one_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
       Ideal.absNorm P = p) ↔ p % 5 = 1 := by
-  sorry
+  exact splits_completely_iff p hp hp5
 
 theorem kummerDedekind_two_quadratic_primes_iff_four_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
@@ -1204,7 +1204,7 @@ theorem kummerDedekind_inert_iff_two_or_three_mod_five
 
 theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
-  sorry
+  exact ramified_iff_eq_five p hp
 
 theorem kummerDedekind_splittingType_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
@@ -1214,7 +1214,9 @@ theorem kummerDedekind_splittingType_mod_five
         Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
           Ideal.absNorm Q = p ^ 2) ↔ p % 5 = 4) ∧
       (Irreducible (zetaFivePolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3) := by
-  sorry
+  exact ⟨kummerDedekind_splitsCompletely_iff_one_mod_five p hp hp5,
+    kummerDedekind_two_quadratic_primes_iff_four_mod_five p hp hp5,
+    kummerDedekind_inert_iff_two_or_three_mod_five p hp hp5⟩
 
 end NumberField.CyclotomicFive
 
@@ -1233,7 +1235,8 @@ namespace NumberField.CyclotomicFive
 
 theorem absNorm_differentIdeal_eq_oneHundredTwentyFive :
     Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 125 := by
-  sorry
+  rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq]
+  norm_num
 
 theorem prime_dvd_differentIdeal_iff_eq_span_one_sub_zeta
     (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :

@@ -261,6 +261,6 @@ namespace NumberField.CyclotomicEight
 
 theorem regulator_eq_two_mul_log_one_add_sqrtTwo :
     NumberField.Units.regulator K = 2 * Real.log (1 + Real.sqrt 2) := by
-  sorry
+  exact regulator_eq
 
 end NumberField.CyclotomicEight

@@ -36,15 +36,20 @@ abbrev ramifiedPrimeFractionalIdeal : FractionalIdeal (𝓞 K)⁰ K :=
 
 theorem cubeRootThree_mem_fractionalIdeal :
     cubeRootThree ∈ cubeRootThreeFractionalIdeal := by
-  sorry
+  exact FractionalIdeal.mem_spanSingleton_self (𝓞 K)⁰ cubeRootThree
 
 theorem cubeRootThreeFractionalIdeal_absNorm :
     FractionalIdeal.absNorm cubeRootThreeFractionalIdeal = |Algebra.norm ℚ cubeRootThree| := by
-  sorry
+  exact FractionalIdeal.absNorm_span_singleton (R := 𝓞 K) cubeRootThree
 
 theorem ramifiedPrimeFractionalIdeal_ne_zero :
     ramifiedPrimeFractionalIdeal ≠ 0 := by
-  sorry
+  change ((Ideal.span {thetaInt} : Ideal (𝓞 K)) : FractionalIdeal (𝓞 K)⁰ K) ≠ 0
+  rw [FractionalIdeal.coeIdeal_ne_zero]
+  intro h
+  have hnorm := absNorm_span_theta
+  rw [h, Ideal.absNorm_bot] at hnorm
+  norm_num at hnorm
 
 end NumberField.CubeRootThree
 

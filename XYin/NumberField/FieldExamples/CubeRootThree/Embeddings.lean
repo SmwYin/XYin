@@ -96,19 +96,35 @@ namespace NumberField.CubeRootThree
 
 theorem infinitePlace_card_eq_two :
     Fintype.card (NumberField.InfinitePlace K) = 2 := by
-  sorry
+  rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces]
+  rw [nrRealPlaces_eq_one, nrComplexPlaces_eq_one]
 
 theorem infinitePlace_signature :
     NumberField.InfinitePlace.nrRealPlaces K = 1 ∧
       NumberField.InfinitePlace.nrComplexPlaces K = 1 := by
-  sorry
+  exact ⟨nrRealPlaces_eq_one, nrComplexPlaces_eq_one⟩
 
 theorem exists_realEmbedding_cubeRootThree :
     ∃ σ : K →ₐ[ℚ] ℝ, σ cubeRootThree = (3 : ℝ) ^ ((1 : ℝ) / 3) := by
-  sorry
+  have hpow : ((3 : ℝ) ^ ((3 : ℝ)⁻¹)) ^ (3 : ℕ) = 3 := by
+    rw [← Real.rpow_natCast ((3 : ℝ) ^ ((3 : ℝ)⁻¹)) 3,
+      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 3)]
+    norm_num
+  refine ⟨AdjoinRoot.liftAlgHom cubePolynomial (Algebra.ofId ℚ ℝ)
+    ((3 : ℝ) ^ ((1 : ℝ) / 3)) ?_, ?_⟩
+  · simp [cubePolynomial]
+    nlinarith
+  · exact AdjoinRoot.liftAlgHom_root _ _ _ _
 
 theorem exists_complexEmbedding_cubeRootThree :
     ∃ σ : K →+* ℂ, σ cubeRootThree ^ 3 = 3 := by
-  sorry
+  obtain ⟨σ, hσ⟩ := exists_realEmbedding_cubeRootThree
+  refine ⟨Complex.ofRealHom.comp σ.toRingHom, ?_⟩
+  simp [hσ]
+  have hpow : ((3 : ℝ) ^ ((1 : ℝ) / 3)) ^ (3 : ℕ) = 3 := by
+    rw [← Real.rpow_natCast ((3 : ℝ) ^ ((1 : ℝ) / 3)) 3,
+      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 3)]
+    norm_num
+  norm_num [← Complex.ofReal_pow, hpow]
 
 end NumberField.CubeRootThree

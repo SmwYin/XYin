@@ -778,27 +778,120 @@ namespace NumberField.CyclotomicThree
 abbrev zetaThreePolynomialMod (p : ℕ) : (ZMod p)[X] :=
   X ^ 2 + X + C (1 : ZMod p)
 
+private theorem not_dvd_three_of_prime_ne_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    ¬ p ∣ 3 := by
+  intro h
+  have hcases := Nat.prime_three.eq_one_or_self_of_dvd p h
+  rcases hcases with hp1 | hp_eq3
+  · exact hp.ne_one hp1
+  · exact hp3 hp_eq3
+
+private theorem zetaThreePolynomialMod_eq_cyclotomic (p : ℕ) :
+    zetaThreePolynomialMod p = cyclotomic 3 (ZMod p) := by
+  rw [zetaThreePolynomialMod, cyclotomic_three]
+  simp
+
+private theorem orderOf_unitOfCoprime_eq_two_of_mod_three_eq_two
+    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) (hmod : p % 3 = 2) :
+    orderOf (ZMod.unitOfCoprime p
+      (hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3))) = 2 := by
+  let hcop : p.Coprime 3 :=
+    hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3)
+  let u : (ZMod 3)ˣ := ZMod.unitOfCoprime p hcop
+  change orderOf u = 2
+  apply orderOf_eq_prime
+  · ext
+    change ((p : ZMod 3) ^ 2 : ZMod 3) = 1
+    rw [show (p : ZMod 3) = (2 : ZMod 3) by
+      change (p : ZMod 3) = ((2 : ℕ) : ZMod 3)
+      rw [ZMod.natCast_eq_natCast_iff']
+      simp [hmod]]
+    decide
+  · intro hu
+    have hval : (p : ZMod 3) = 1 := by
+      simpa [u] using congrArg Units.val hu
+    have hpmod1 : p % 3 = 1 := by
+      have hval' : (p : ZMod 3) = ((1 : ℕ) : ZMod 3) := by simpa using hval
+      rw [ZMod.natCast_eq_natCast_iff'] at hval'
+      simpa using hval'
+    omega
+
+private theorem orderOf_unitOfCoprime_eq_one_of_mod_three_eq_one
+    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) (hmod : p % 3 = 1) :
+    orderOf (ZMod.unitOfCoprime p
+      (hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3))) = 1 := by
+  let hcop : p.Coprime 3 :=
+    hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3)
+  let u : (ZMod 3)ˣ := ZMod.unitOfCoprime p hcop
+  change orderOf u = 1
+  rw [orderOf_eq_one_iff]
+  ext
+  change (p : ZMod 3) = 1
+  change (p : ZMod 3) = ((1 : ℕ) : ZMod 3)
+  rw [ZMod.natCast_eq_natCast_iff']
+  simp [hmod]
+
 theorem kummerDedekind_splits_iff_one_mod_three
     (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
       Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 3 = 1 := by
-  sorry
+  exact splits_iff_one_mod_three p hp hp3
 
 theorem kummerDedekind_inert_iff_two_mod_three
     (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     Irreducible (zetaThreePolynomialMod p) ↔ p % 3 = 2 := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  constructor
+  · intro hirr
+    have hcop : p.Coprime 3 :=
+      hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3)
+    have hdeg : (zetaThreePolynomialMod p).natDegree =
+        orderOf (ZMod.unitOfCoprime p hcop) := by
+      rw [zetaThreePolynomialMod_eq_cyclotomic] at hirr ⊢
+      simpa [pow_one] using
+        (Polynomial.natDegree_of_dvd_cyclotomic_of_irreducible (K := ZMod p) (p := p)
+          (f := 1) (n := 3) (by rw [ZMod.card, pow_one]) hcop (dvd_refl _) hirr)
+    have hnat : (zetaThreePolynomialMod p).natDegree = 2 := by
+      rw [zetaThreePolynomialMod]
+      compute_degree!
+    have horder : orderOf (ZMod.unitOfCoprime p hcop) = 2 := by
+      rw [hnat] at hdeg
+      exact hdeg.symm
+    have hnot0 : p % 3 ≠ 0 := by
+      intro h0
+      have h3dvd : 3 ∣ p := Nat.dvd_of_mod_eq_zero h0
+      have hcases := hp.eq_one_or_self_of_dvd 3 h3dvd
+      rcases hcases with h31 | h3p
+      · norm_num at h31
+      · exact hp3 h3p.symm
+    have hnot1 : p % 3 ≠ 1 := by
+      intro h1
+      have horder1 := orderOf_unitOfCoprime_eq_one_of_mod_three_eq_one p hp hp3 h1
+      rw [show hcop = hp.coprime_iff_not_dvd.mpr
+          (not_dvd_three_of_prime_ne_three p hp hp3) by rfl] at horder
+      omega
+    have hlt : p % 3 < 3 := Nat.mod_lt p (by norm_num)
+    interval_cases p % 3 <;> omega
+  · intro hmod
+    rw [zetaThreePolynomialMod_eq_cyclotomic]
+    exact ZMod.irreducible_of_dvd_cyclotomic_of_natDegree (p := p) (n := 3)
+      (not_dvd_three_of_prime_ne_three p hp hp3) (dvd_refl _)
+      (by
+        rw [orderOf_unitOfCoprime_eq_two_of_mod_three_eq_two p hp hp3 hmod]
+        rw [cyclotomic_three]
+        compute_degree!)
 
 theorem kummerDedekind_ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 3 := by
-  sorry
+  exact ramified_iff_eq_three p hp
 
 theorem kummerDedekind_splittingType_mod_three
     (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
         Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 3 = 1) ∧
       (Irreducible (zetaThreePolynomialMod p) ↔ p % 3 = 2) := by
-  sorry
+  exact ⟨kummerDedekind_splits_iff_one_mod_three p hp hp3,
+    kummerDedekind_inert_iff_two_mod_three p hp hp3⟩
 
 end NumberField.CyclotomicThree
 
@@ -815,13 +908,74 @@ open IsDedekindDomain
 
 namespace NumberField.CyclotomicThree
 
+private theorem span_zetaInt_sub_one_dvd_differentIdeal :
+    Ideal.span {zetaInt - 1} ∣ differentIdeal ℤ (𝓞 K) := by
+  have hP : (Ideal.span {zetaInt - 1} : Ideal (𝓞 K)).IsPrime :=
+    isPrime_span_zetaInt_sub_one
+  haveI : (Ideal.span {zetaInt - 1} : Ideal (𝓞 K)).IsPrime := hP
+  rw [dvd_differentIdeal_iff]
+  have hpmemP : ((3 : ℕ) : 𝓞 K) ∈ Ideal.span {zetaInt - 1} := by
+    have hmem : (3 : 𝓞 K) ∈ Ideal.span {(3 : 𝓞 K)} := Ideal.mem_span_singleton_self _
+    rw [span_three_eq] at hmem
+    exact Ideal.pow_le_self (by norm_num) hmem
+  have hPbot : (Ideal.span {zetaInt - 1} : Ideal (𝓞 K)) ≠ ⊥ := by
+    intro hbot
+    exact zetaInt_sub_one_prime.ne_zero (Ideal.span_singleton_eq_bot.mp hbot)
+  have hle2 : Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((3 : ℕ) : ℤ)}) ≤
+      (Ideal.span {zetaInt - 1} : Ideal (𝓞 K)) ^ 2 := by
+    rw [Ideal.map_span, Set.image_singleton]
+    change Ideal.span {(3 : 𝓞 K)} ≤ Ideal.span {zetaInt - 1} ^ 2
+    rw [span_three_eq]
+  have habsp : Ideal.absNorm (Ideal.span {((3 : ℕ) : 𝓞 K)}) = 3 ^ 2 := by
+    change Ideal.absNorm (Ideal.span {(3 : 𝓞 K)}) = 3 ^ 2
+    have hfin : Module.finrank ℤ (𝓞 K) = 2 := by
+      rw [Module.finrank_eq_card_basis zetaExplicitIntegralBasis, Fintype.card_fin]
+    rw [Ideal.absNorm_span_singleton,
+      show (3 : 𝓞 K) = algebraMap ℤ (𝓞 K) 3 from (map_ofNat _ 3).symm,
+      Algebra.norm_algebraMap, hfin]
+    rfl
+  have hkeq : Ideal.absNorm (Ideal.span {zetaInt - 1} : Ideal (𝓞 K)) = 3 ^ 1 := by
+    rw [absNorm_span_zetaInt_sub_one]
+    rfl
+  have hnle : ¬ Ideal.map (algebraMap ℤ (𝓞 K)) (Ideal.span {((3 : ℕ) : ℤ)}) ≤
+      (Ideal.span {zetaInt - 1} : Ideal (𝓞 K)) ^ (1 + 2) :=
+    NumberField.FieldExamples.not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow
+      Nat.prime_three habsp hkeq (by norm_num : 1 ≠ 0)
+  exact
+    NumberField.FieldExamples.not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ
+      Nat.prime_three hpmemP hPbot hle2 hnle
+
 theorem absNorm_differentIdeal_eq_three :
     Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 3 := by
-  sorry
+  rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq]
+  norm_num
 
 theorem prime_dvd_differentIdeal_iff_eq_span_zeta_sub_one
     (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
     P ∣ differentIdeal ℤ (𝓞 K) ↔ P = Ideal.span {zetaInt - 1} := by
-  sorry
+  constructor
+  · intro hdiv
+    haveI : P.IsPrime := _hP
+    have hnormdvd : Ideal.absNorm P ∣ 3 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hdiv)
+      rw [absNorm_differentIdeal_eq_three] at h
+      exact h
+    have hnorm_eq : Ideal.absNorm P = 3 := by
+      rcases (Nat.dvd_prime Nat.prime_three).mp hnormdvd with h1 | h3
+      · exfalso
+        exact _hP.ne_top (Ideal.absNorm_eq_one_iff.mp h1)
+      · exact h3
+    have hthree_mem : (3 : 𝓞 K) ∈ P := by
+      simpa [hnorm_eq] using P.absNorm_mem
+    haveI : P.LiesOver (Ideal.span {(3 : ℤ)}) := by
+      rw [Ideal.liesOver_span_iff _hP.ne_top (show Prime (3 : ℤ) by norm_num)]
+      change (3 : 𝓞 K) ∈ P
+      exact hthree_mem
+    have huniq := IsCyclotomicExtension.Rat.eq_span_zeta_sub_one_of_liesOver'
+      (p := 3) (K := K) zeta_isPrimitiveRoot P
+    simpa [zetaInt] using huniq
+  · intro h
+    rw [h]
+    exact span_zetaInt_sub_one_dvd_differentIdeal
 
 end NumberField.CyclotomicThree

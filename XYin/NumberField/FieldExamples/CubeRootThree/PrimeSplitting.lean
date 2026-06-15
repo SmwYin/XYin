@@ -860,13 +860,30 @@ theorem kummerDedekind_degree_one_prime_iff_cube_root_mod_p
     (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
       Ideal.absNorm P = p) ↔ ∃ r : ZMod p, r ^ 3 = (3 : ZMod p) := by
-  sorry
+  exact exists_degree_one_prime_iff_cube_root_mod_p p hp hp3
 
 theorem kummerDedekind_irreducible_iff_no_cube_root_mod_p
     (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
     Irreducible (cubeRootThreePolynomialMod p) ↔
       ¬ ∃ r : ZMod p, r ^ 3 = (3 : ZMod p) := by
-  sorry
+  have _hp3 : p ≠ 3 := hp3
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hdeg : (cubeRootThreePolynomialMod p).natDegree = 3 := by
+    unfold cubeRootThreePolynomialMod
+    exact natDegree_X_pow_sub_C
+  have hdeg2 : 2 ≤ (cubeRootThreePolynomialMod p).natDegree := by
+    rw [hdeg]
+    norm_num
+  have hdeg3 : (cubeRootThreePolynomialMod p).natDegree ≤ 3 := by
+    rw [hdeg]
+  have hpoly_ne : cubeRootThreePolynomialMod p ≠ 0 := by
+    intro h
+    have := congrArg Polynomial.natDegree h
+    rw [hdeg, Polynomial.natDegree_zero] at this
+    norm_num at this
+  rw [Polynomial.irreducible_iff_roots_eq_zero_of_degree_le_three hdeg2 hdeg3]
+  rw [Multiset.eq_zero_iff_forall_notMem]
+  simp [Polynomial.mem_roots hpoly_ne, cubeRootThreePolynomialMod, sub_eq_zero]
 
 theorem kummerDedekind_splitsCompletely_iff_three_roots_mod_p
     (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
@@ -879,7 +896,7 @@ theorem kummerDedekind_splitsCompletely_iff_three_roots_mod_p
 
 theorem kummerDedekind_ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 3 := by
-  sorry
+  exact ramified_iff_eq_three p hp
 
 end NumberField.CubeRootThree
 
@@ -898,11 +915,36 @@ namespace NumberField.CubeRootThree
 
 theorem absNorm_differentIdeal_eq_twoHundredFortyThree :
     Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 243 := by
-  sorry
+  rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq]
+  norm_num
 
 theorem prime_dvd_differentIdeal_iff_eq_span_theta
     (P : Ideal (𝓞 K)) (hP : P.IsPrime) (hP0 : P ≠ ⊥) :
     P ∣ differentIdeal ℤ (𝓞 K) ↔ P = Ideal.span {thetaInt} := by
-  sorry
+  constructor
+  · intro hPdiff
+    have hdvd : Ideal.absNorm P ∣ 243 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hPdiff)
+      rw [absNorm_differentIdeal_eq_twoHundredFortyThree] at h
+      exact h
+    rw [show (243 : ℕ) = 3 ^ 5 by norm_num] at hdvd
+    obtain ⟨k, _hk, hkeq⟩ := (Nat.dvd_prime_pow (by norm_num : Nat.Prime 3)).mp hdvd
+    have hmem_norm := Ideal.absNorm_mem P
+    rw [hkeq] at hmem_norm
+    have hpow_mem : (3 : 𝓞 K) ^ k ∈ P := by
+      simpa [Nat.cast_pow] using hmem_norm
+    have h3mem : (3 : 𝓞 K) ∈ P := hP.mem_of_pow_mem k hpow_mem
+    exact eq_span_theta_of_three_mem P hP h3mem
+  · intro h
+    rw [h]
+    haveI : (Ideal.span {thetaInt}).IsPrime := isPrime_span_theta
+    rw [dvd_differentIdeal_iff]
+    have hbot : Ideal.span {thetaInt} ≠ ⊥ := by
+      rw [← h]
+      exact hP0
+    rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hbot]
+    rw [← liesOver_span_theta.over]
+    rw [ramificationIdx_span_theta]
+    norm_num
 
 end NumberField.CubeRootThree

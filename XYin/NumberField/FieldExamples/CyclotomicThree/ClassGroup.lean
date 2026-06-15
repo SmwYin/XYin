@@ -36,15 +36,21 @@ abbrev ramifiedPrimeFractionalIdeal : FractionalIdeal (𝓞 K)⁰ K :=
 
 theorem zeta_mem_fractionalIdeal :
     ζ ∈ zetaFractionalIdeal := by
-  sorry
+  exact FractionalIdeal.mem_spanSingleton_self (𝓞 K)⁰ ζ
 
 theorem zetaFractionalIdeal_absNorm :
     FractionalIdeal.absNorm zetaFractionalIdeal = |Algebra.norm ℚ ζ| := by
-  sorry
+  rw [zetaFractionalIdeal, FractionalIdeal.absNorm_span_singleton]
 
 theorem ramifiedPrimeFractionalIdeal_ne_zero :
     ramifiedPrimeFractionalIdeal ≠ 0 := by
-  sorry
+  haveI : IsCyclotomicExtension {3 ^ (0 + 1)} ℚ K := by
+    simpa using (inferInstance : IsCyclotomicExtension {3} ℚ K)
+  have hζ : IsPrimitiveRoot ζ (3 ^ (0 + 1)) := by
+    change IsPrimitiveRoot ζ 3
+    exact zeta_isPrimitiveRoot
+  exact FractionalIdeal.coeIdeal_ne_zero.mpr
+    (IsCyclotomicExtension.Rat.span_zeta_sub_one_ne_bot (p := 3) (k := 0) hζ)
 
 end NumberField.CyclotomicThree
 

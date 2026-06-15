@@ -272,6 +272,6 @@ namespace NumberField.CyclotomicFive
 
 theorem regulator_eq_two_mul_log_goldenRatio :
     NumberField.Units.regulator K = 2 * Real.log ((1 + Real.sqrt 5) / 2) := by
-  sorry
+  exact regulator_eq
 
 end NumberField.CyclotomicFive

@@ -56,14 +56,30 @@ namespace NumberField.CyclotomicEight
 
 theorem infinitePlace_card_eq_two :
     Fintype.card (NumberField.InfinitePlace K) = 2 := by
-  sorry
+  rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    nrRealPlaces_eq_zero, nrComplexPlaces_eq_two]
 
 theorem infinitePlace_isComplex (v : NumberField.InfinitePlace K) :
     NumberField.InfinitePlace.IsComplex v := by
-  sorry
+  exact isTotallyComplex.isComplex v
 
 theorem exists_complexEmbedding_zeta :
     ∃ σ : K →+* ℂ, σ ζ = Complex.exp (2 * Real.pi * Complex.I / 8) := by
-  sorry
+  let ξ : ℂ := Complex.exp (2 * Real.pi * Complex.I / 8)
+  have hξprim : IsPrimitiveRoot ξ 8 := by
+    simpa [ξ] using Complex.isPrimitiveRoot_exp 8 (by norm_num)
+  have hξroot : zetaEightPolynomial.eval₂ (Algebra.ofId ℚ ℂ) ξ = 0 := by
+    rw [zetaEightPolynomial]
+    simp only [Algebra.toRingHom_ofId, map_one, Polynomial.eval₂_add, Polynomial.eval₂_X_pow,
+      Polynomial.eval₂_one]
+    have hξ4 : ξ ^ 4 = -1 :=
+      (hξprim.pow (by norm_num) (rfl : 8 = 4 * 2)).eq_neg_one_of_two_right
+    linear_combination hξ4
+  refine ⟨((AdjoinRoot.liftAlgHom zetaEightPolynomial (Algebra.ofId ℚ ℂ) ξ hξroot).comp
+    adjoinRootEquivCyclotomic.symm.toAlgHom).toRingHom, ?_⟩
+  change (AdjoinRoot.liftAlgHom zetaEightPolynomial (Algebra.ofId ℚ ℂ) ξ hξroot)
+    (adjoinRootEquivCyclotomic.symm ζ) = ξ
+  rw [← adjoinRootEquivCyclotomic_root]
+  simp
 
 end NumberField.CyclotomicEight

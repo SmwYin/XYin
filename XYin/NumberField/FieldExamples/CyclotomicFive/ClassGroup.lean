@@ -36,15 +36,24 @@ abbrev ramifiedPrimeFractionalIdeal : FractionalIdeal (𝓞 K)⁰ K :=
 
 theorem zeta_mem_fractionalIdeal :
     ζ ∈ zetaFractionalIdeal := by
-  sorry
+  exact FractionalIdeal.mem_spanSingleton_self (𝓞 K)⁰ ζ
 
 theorem zetaFractionalIdeal_absNorm :
     FractionalIdeal.absNorm zetaFractionalIdeal = |Algebra.norm ℚ ζ| := by
-  sorry
+  rw [zetaFractionalIdeal, FractionalIdeal.absNorm_span_singleton]
 
 theorem ramifiedPrimeFractionalIdeal_ne_zero :
     ramifiedPrimeFractionalIdeal ≠ 0 := by
-  sorry
+  exact FractionalIdeal.coeIdeal_ne_zero.mpr (by
+    rw [ne_eq, Ideal.span_singleton_eq_bot]
+    intro h
+    have hK : (1 : K) - ζ = 0 := by
+      have hmap := congrArg (algebraMap (𝓞 K) K) h
+      simpa [zetaInt] using hmap
+    have hζ : ζ = 1 := by linear_combination -hK
+    have horder : orderOf ζ = 1 := by simp [hζ]
+    have horder5 : orderOf ζ = 5 := zeta_isPrimitiveRoot.eq_orderOf.symm
+    omega)
 
 end NumberField.CyclotomicFive
 

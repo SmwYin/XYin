@@ -55,14 +55,26 @@ namespace NumberField.CyclotomicThree
 
 theorem infinitePlace_card_eq_one :
     Fintype.card (NumberField.InfinitePlace K) = 1 := by
-  sorry
+  rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces, nrRealPlaces_eq_zero,
+    nrComplexPlaces_eq_one]
 
 theorem infinitePlace_isComplex (v : NumberField.InfinitePlace K) :
     NumberField.InfinitePlace.IsComplex v := by
-  sorry
+  exact isTotallyComplex.isComplex v
 
 theorem exists_complexEmbedding_zeta :
     ∃ σ : K →+* ℂ, σ ζ = Complex.exp (2 * Real.pi * Complex.I / 3) := by
-  sorry
+  let ξ : ℂ := Complex.exp (2 * Real.pi * Complex.I / 3)
+  have hξprim : IsPrimitiveRoot ξ 3 := by
+    simpa [ξ] using Complex.isPrimitiveRoot_exp 3 (by norm_num)
+  have hξroot : zetaThreePolynomial.eval₂ (Algebra.ofId ℚ ℂ) ξ = 0 := by
+    rw [zetaThreePolynomial, ← cyclotomic_three ℚ]
+    simpa [IsRoot, Polynomial.aeval_def] using hξprim.isRoot_cyclotomic (by norm_num : 0 < 3)
+  refine ⟨((AdjoinRoot.liftAlgHom zetaThreePolynomial (Algebra.ofId ℚ ℂ) ξ hξroot).comp
+    adjoinRootEquivCyclotomic.symm.toAlgHom).toRingHom, ?_⟩
+  change (AdjoinRoot.liftAlgHom zetaThreePolynomial (Algebra.ofId ℚ ℂ) ξ hξroot)
+    (adjoinRootEquivCyclotomic.symm ζ) = ξ
+  rw [← adjoinRootEquivCyclotomic_root]
+  simp
 
 end NumberField.CyclotomicThree

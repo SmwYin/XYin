@@ -24,18 +24,20 @@ open scoped NumberField nonZeroDivisors Real ENNReal
 namespace NumberField.CyclotomicFive
 
 theorem isCMField : NumberField.IsCMField K := by
-  sorry
+  exact IsCyclotomicExtension.Rat.isCMField K (S := {5}) ⟨5, by simp, by norm_num⟩
 
 theorem cmField_isTotallyComplex : NumberField.IsTotallyComplex K := by
-  sorry
+  exact isTotallyComplex
 
 theorem cmField_quadratic_over_maximalRealSubfield :
     Algebra.IsQuadraticExtension (NumberField.maximalRealSubfield K) K := by
-  sorry
+  haveI : NumberField.IsCMField K := isCMField
+  infer_instance
 
 theorem cmField_unitsRank_eq_maximalRealSubfield :
     NumberField.Units.rank (NumberField.maximalRealSubfield K) =
       NumberField.Units.rank K := by
-  sorry
+  haveI : NumberField.IsCMField K := isCMField
+  exact NumberField.IsCMField.units_rank_eq_units_rank K
 
 end NumberField.CyclotomicFive

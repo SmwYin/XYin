@@ -142,6 +142,6 @@ namespace NumberField.CyclotomicThree
 
 theorem regulator_eq_one_statement :
     NumberField.Units.regulator K = 1 := by
-  sorry
+  exact regulator_eq_one
 
 end NumberField.CyclotomicThree

@@ -600,6 +600,18 @@ theorem isPrime_primesAboveThree :
   · rw [span_pair_three_right]
     exact isPrime_of_absNorm_nine absNorm_span_g2
 
+/-- The left prime above `3` has norm `3²`. -/
+theorem absNorm_primeAboveThreeLeft :
+    Ideal.absNorm (Ideal.span {(3 : 𝓞 K), zetaInt ^ 2 + zetaInt + 2}) = 9 := by
+  rw [span_pair_three_left]
+  exact absNorm_span_g1
+
+/-- The right prime above `3` has norm `3²`. -/
+theorem absNorm_primeAboveThreeRight :
+    Ideal.absNorm (Ideal.span {(3 : 𝓞 K), zetaInt ^ 2 + 2 * zetaInt + 2}) = 9 := by
+  rw [span_pair_three_right]
+  exact absNorm_span_g2
+
 private theorem seventeen_mem_span_two :
     (17 : 𝓞 K) ∈ Ideal.span {zetaInt - 2} := by
   rw [Ideal.mem_span_singleton]
@@ -1031,7 +1043,7 @@ theorem kummerDedekind_splitsCompletely_iff_one_mod_eight
     (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
       Ideal.absNorm P = p) ↔ p % 8 = 1 := by
-  sorry
+  exact splits_completely_iff p hp hp2
 
 theorem kummerDedekind_two_quadratic_primes_iff_not_one_mod_eight
     (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
@@ -1046,7 +1058,7 @@ theorem kummerDedekind_no_inert_prime (p : ℕ) (hp : p.Prime) :
 
 theorem kummerDedekind_ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 2 := by
-  sorry
+  exact ramified_iff_eq_two p hp
 
 theorem kummerDedekind_splittingType_mod_eight
     (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
@@ -1055,7 +1067,8 @@ theorem kummerDedekind_splittingType_mod_eight
       ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
         Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
           Ideal.absNorm Q = p ^ 2) ↔ p % 8 = 3 ∨ p % 8 = 5 ∨ p % 8 = 7) := by
-  sorry
+  exact ⟨kummerDedekind_splitsCompletely_iff_one_mod_eight p hp hp2,
+    kummerDedekind_two_quadratic_primes_iff_not_one_mod_eight p hp hp2⟩
 
 end NumberField.CyclotomicEight
 
@@ -1074,11 +1087,50 @@ namespace NumberField.CyclotomicEight
 
 theorem absNorm_differentIdeal_eq_twoHundredFiftySix :
     Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 256 := by
-  sorry
+  rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq]
+  norm_num
 
 theorem prime_dvd_differentIdeal_iff_eq_span_one_sub_zeta
     (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
     P ∣ differentIdeal ℤ (𝓞 K) ↔ P = Ideal.span {1 - zetaInt} := by
-  sorry
+  constructor
+  · intro hdiv
+    haveI : P.IsPrime := _hP
+    have hnormdvd : Ideal.absNorm P ∣ 256 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hdiv)
+      rw [absNorm_differentIdeal_eq_twoHundredFiftySix] at h
+      exact h
+    rw [show (256 : ℕ) = 2 ^ 8 by norm_num] at hnormdvd
+    obtain ⟨k, _hk, hkeq⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp hnormdvd
+    have hmem_norm := Ideal.absNorm_mem P
+    rw [hkeq] at hmem_norm
+    have hpow_mem : (2 : 𝓞 K) ^ k ∈ P := by
+      simpa [Nat.cast_pow] using hmem_norm
+    have h2mem : (2 : 𝓞 K) ∈ P := _hP.mem_of_pow_mem k hpow_mem
+    have hle : Ideal.span {(2 : 𝓞 K)} ≤ P := (Ideal.span_singleton_le_iff_mem _).mpr h2mem
+    have h4 : (1 - zetaInt) ^ 4 ∈ P := by
+      apply hle
+      rw [span_two_eq, Ideal.span_singleton_pow]
+      exact Ideal.mem_span_singleton_self _
+    have h1 : 1 - zetaInt ∈ P := _hP.mem_of_pow_mem 4 h4
+    have hmax : (Ideal.span {1 - zetaInt}).IsMaximal := by
+      rw [span_one_sub_zetaInt_eq_pair]
+      exact isMaximal_span_pair 2 1 (by decide)
+    exact (hmax.eq_of_le _hP.ne_top ((Ideal.span_singleton_le_iff_mem _).mpr h1)).symm
+  · intro h
+    rw [h]
+    have hpow :
+        Ideal.span {1 - zetaInt} ^ (4 - 1) ∣ differentIdeal ℤ (𝓞 K) := by
+      haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
+      haveI : (Ideal.span {(2 : ℤ)}).IsMaximal := Int.ideal_span_isMaximal_of_prime 2
+      refine pow_sub_one_dvd_differentIdeal (A := ℤ) (B := 𝓞 K)
+        (p := Ideal.span {(2 : ℤ)}) (P := Ideal.span {1 - zetaInt}) 4 ?_ ?_
+      · intro hbot
+        have hzero : (2 : ℤ) = 0 := Ideal.span_singleton_eq_bot.mp hbot
+        norm_num at hzero
+      · rw [Ideal.map_span, Set.image_singleton]
+        change Ideal.span {1 - zetaInt} ^ 4 ∣ Ideal.span {(2 : 𝓞 K)}
+        rw [span_two_eq]
+    exact (dvd_pow_self (Ideal.span {1 - zetaInt}) (by norm_num : 4 - 1 ≠ 0)).trans hpow
 
 end NumberField.CyclotomicEight

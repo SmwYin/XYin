@@ -226,30 +226,75 @@ of the unit lattice. This is the analytic restatement that `θ² - 2` is a funda
 the regulator equals the absolute logarithm of its image under the real embedding. -/
 theorem regulator_eq :
     NumberField.Units.regulator K = |Real.log ((3 : ℝ) ^ ((2 : ℝ) / 3) - 2)| := by
-  sorry
-
-
-end NumberField.CubeRootThree
-
-
-/-!
-## Regulator
--/
-
-noncomputable section
-
-open scoped NumberField nonZeroDivisors Real ENNReal
-
-namespace NumberField.CubeRootThree
-
-theorem regulator_eq_regOfFamily_fundamentalUnit :
-    NumberField.Units.regulator K =
+  classical
+  obtain ⟨σ, hσ⟩ := exists_realEmbedding_cubeRootThree
+  let φ : K →+* ℂ := Complex.ofRealHom.comp σ.toRingHom
+  let wR : NumberField.InfinitePlace K := NumberField.InfinitePlace.mk φ
+  have hφreal : NumberField.ComplexEmbedding.IsReal φ := by
+    rw [NumberField.ComplexEmbedding.isReal_iff]
+    apply RingHom.ext
+    intro x
+    change star ((σ x : ℝ) : ℂ) = ((σ x : ℝ) : ℂ)
+    simp
+  have hwRreal : NumberField.InfinitePlace.IsReal wR := by
+    rw [NumberField.InfinitePlace.isReal_mk_iff]
+    exact hφreal
+  have ht : algebraMap (𝓞 K) K thetaInt = cubeRootThree :=
+    NumberField.RingOfIntegers.map_mk cubeRootThree cubeRootThree_integral
+  have hσu : σ (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) =
+      (3 : ℝ) ^ ((2 : ℝ) / 3) - 2 := by
+    change σ (algebraMap (𝓞 K) K (thetaInt ^ 2 - 2)) =
+      (3 : ℝ) ^ ((2 : ℝ) / 3) - 2
+    simp only [map_sub, map_pow, map_ofNat, ht, hσ]
+    rw [← Real.rpow_natCast ((3 : ℝ) ^ ((1 : ℝ) / 3)) 2,
+      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 3)]
+    norm_num
+  have htarget_pos : 0 < (3 : ℝ) ^ ((2 : ℝ) / 3) - 2 := by
+    have hpow : (3 : ℝ) ^ ((2 : ℝ) / 3) = (9 : ℝ) ^ ((3 : ℝ)⁻¹) := by
+      rw [show ((2 : ℝ) / 3) = ((2 : ℕ) : ℝ) * (3 : ℝ)⁻¹ by norm_num]
+      rw [Real.rpow_natCast_mul (by norm_num : (0 : ℝ) ≤ 3) 2 ((3 : ℝ)⁻¹)]
+      norm_num
+    have hlt : (2 : ℝ) < (9 : ℝ) ^ ((3 : ℝ)⁻¹) := by
+      rw [Real.lt_rpow_inv_iff_of_pos (by norm_num : (0 : ℝ) ≤ 2)
+        (by norm_num : (0 : ℝ) ≤ 9) (by norm_num : (0 : ℝ) < 3)]
+      norm_num
+    nlinarith
+  have hwRu : wR (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) =
+      (3 : ℝ) ^ ((2 : ℝ) / 3) - 2 := by
+    change ‖φ (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K))‖ =
+      (3 : ℝ) ^ ((2 : ℝ) / 3) - 2
+    rw [show φ (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) =
+        ((σ (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) : ℝ) : ℂ) from rfl]
+    rw [hσu, Complex.norm_real, Real.norm_eq_abs, abs_of_pos htarget_pos]
+  obtain ⟨wC, hwCne⟩ := Fintype.exists_ne_of_one_lt_card
+    (by rw [infinitePlace_card_eq_two]; norm_num) wR
+  have hwRne : wR ≠ wC := hwCne.symm
+  have hcard_sub : Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} = 1 := by
+    rw [show Fintype.card {w : NumberField.InfinitePlace K // w ≠ wC} =
+        Fintype.card {w : NumberField.InfinitePlace K // ¬ w = wC} from rfl]
+    rw [Fintype.card_subtype_compl (fun w : NumberField.InfinitePlace K => w = wC)]
+    rw [Fintype.card_subtype_eq, infinitePlace_card_eq_two]
+  let e : {w : NumberField.InfinitePlace K // w ≠ wC} ≃ Fin (NumberField.Units.rank K) :=
+    Fintype.equivOfCardEq (by rw [hcard_sub, Fintype.card_fin, unitRank_eq_one])
+  have hreg : NumberField.Units.regulator K =
       NumberField.Units.regOfFamily
         (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit) := by
-  sorry
+    have hdiv := NumberField.Units.regOfFamily_div_regulator (K := K)
+      (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit)
+    have htop : Subgroup.closure
+        (Set.range (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit)) ⊔
+          NumberField.Units.torsion K = ⊤ := by
+      simpa [fundamentalUnitSystem] using fundamentalUnitSystem_isFundamental
+    rw [htop, Subgroup.index_top] at hdiv
+    field_simp [NumberField.Units.regulator_ne_zero K] at hdiv
+    simpa using hdiv.symm
+  rw [hreg]
+  rw [NumberField.Units.regOfFamily_eq_det
+    (fun _ : Fin (NumberField.Units.rank K) => fundamentalUnit) wC e]
+  haveI : Subsingleton {w : NumberField.InfinitePlace K // w ≠ wC} :=
+    Fintype.card_le_one_iff_subsingleton.mp (by rw [hcard_sub])
+  rw [Matrix.det_eq_elem_of_subsingleton _ ⟨wR, hwRne⟩]
+  simp [NumberField.InfinitePlace.mult_isReal ⟨wR, hwRreal⟩, hwRu]
 
-theorem regulator_eq_real_log_statement :
-    NumberField.Units.regulator K = |Real.log ((3 : ℝ) ^ ((2 : ℝ) / 3) - 2)| := by
-  sorry
 
 end NumberField.CubeRootThree
