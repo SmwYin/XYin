@@ -111,27 +111,27 @@ def heightOneSixtyOneFiftyTwo : HeightOneSpectrum (𝓞 K) where
 abbrev vThree : NumberField.FinitePlace K :=
   NumberField.FinitePlace.mk heightOneThree
 
-theorem vThree_ramificationIdx :
+example :
     (Ideal.span {(3 : ℤ)}).ramificationIdx heightOneThree.asIdeal = 3 := by
   exact ramificationIdx_span_theta
 
-theorem vThree_inertiaDeg :
+example :
     (Ideal.span {(3 : ℤ)}).inertiaDeg heightOneThree.asIdeal = 1 := by
   exact inertiaDeg_span_theta
 
-theorem vTwoLinear_inertiaDeg :
+example :
     (Ideal.span {(2 : ℤ)}).inertiaDeg heightOneTwoLinear.asIdeal = 1 := by
   exact inertiaDeg_span_theta_sub_one
 
-theorem vTwoQuadratic_inertiaDeg :
+example :
     (Ideal.span {(2 : ℤ)}).inertiaDeg heightOneTwoQuadratic.asIdeal = 2 := by
   exact inertiaDeg_span_theta_sq_add_theta_add_one
 
-theorem vSeven_inertiaDeg :
+example :
     (Ideal.span {(7 : ℤ)}).inertiaDeg heightOneSeven.asIdeal = 3 := by
   exact inertiaDeg_span_seven
 
-theorem vSixtyOne_inertiaDegs :
+example :
     (Ideal.span {(61 : ℤ)}).inertiaDeg heightOneSixtyOneFour.asIdeal = 1 ∧
       (Ideal.span {(61 : ℤ)}).inertiaDeg heightOneSixtyOneFive.asIdeal = 1 ∧
         (Ideal.span {(61 : ℤ)}).inertiaDeg heightOneSixtyOneFiftyTwo.asIdeal = 1 := by
@@ -140,7 +140,6 @@ theorem vSixtyOne_inertiaDegs :
     inertiaDeg_primeAbove61 52 (Or.inr (Or.inr rfl))⟩
 
 end NumberField.CubeRootThree
-
 
 /-!
 ## Completions
@@ -156,13 +155,7 @@ namespace NumberField.CubeRootThree
 abbrev CompletionAtThree : Type :=
   heightOneThree.adicCompletion K
 
-theorem completionAtThree_contains_cubeRootThree :
-    ∃ x : CompletionAtThree,
-      x = NumberField.FinitePlace.embedding (K := K) heightOneThree cubeRootThree := by
-  exact ⟨_, rfl⟩
-
 end NumberField.CubeRootThree
-
 
 /-!
 ## Infinite Completions
@@ -177,18 +170,17 @@ namespace NumberField.CubeRootThree
 abbrev InfiniteCompletion (v : NumberField.InfinitePlace K) : Type :=
   v.Completion
 
-theorem infiniteCompletion_equiv_real_of_isReal
+example
     (v : NumberField.InfinitePlace K) (hv : NumberField.InfinitePlace.IsReal v) :
     Nonempty (InfiniteCompletion v ≃+* ℝ) := by
   exact ⟨NumberField.InfinitePlace.Completion.ringEquivRealOfIsReal hv⟩
 
-theorem infiniteCompletion_equiv_complex_of_isComplex
+example
     (v : NumberField.InfinitePlace K) (hv : NumberField.InfinitePlace.IsComplex v) :
     Nonempty (InfiniteCompletion v ≃+* ℂ) := by
   exact ⟨NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex hv⟩
 
 end NumberField.CubeRootThree
-
 
 /-!
 ## Product Formula
@@ -210,7 +202,7 @@ theorem product_formula_cubeRootThree :
     norm_num at hcube
   exact NumberField.prod_abs_eq_one (K := K) (x := cubeRootThree) (h_x_nezero := hne)
 
-theorem product_formula_fundamentalUnit :
+example :
     ((∏ w : NumberField.InfinitePlace K,
           w (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K,
@@ -224,7 +216,6 @@ theorem product_formula_fundamentalUnit :
     (x := algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) (h_x_nezero := hne)
 
 end NumberField.CubeRootThree
-
 
 /-!
 ## Infinite Adele Ring
@@ -245,16 +236,15 @@ abbrev infinitePrincipalAdele_cubeRootThree : CubeRootThreeInfiniteAdeleRing :=
 abbrev infinitePrincipalAdele_fundamentalUnit : CubeRootThreeInfiniteAdeleRing :=
   algebraMap K CubeRootThreeInfiniteAdeleRing (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K))
 
-theorem infiniteAdele_norm_cubeRootThree :
+example :
     ‖infinitePrincipalAdele_cubeRootThree‖ = |Algebra.norm ℚ cubeRootThree| := by
   exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm cubeRootThree
 
-theorem infiniteAdele_denseRange :
+example :
     DenseRange (algebraMap K CubeRootThreeInfiniteAdeleRing) := by
   exact NumberField.InfiniteAdeleRing.denseRange_algebraMap (K := K)
 
 end NumberField.CubeRootThree
-
 
 /-!
 ## Canonical Embedding
@@ -265,10 +255,6 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 namespace NumberField.CubeRootThree
-
-theorem canonicalEmbedding_apply_cubeRootThree (σ : K →+* ℂ) :
-    NumberField.canonicalEmbedding K cubeRootThree σ = σ cubeRootThree := by
-  rfl
 
 theorem canonicalEmbedding_thetaInt_mem_integerLattice :
     NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K thetaInt) ∈
@@ -292,17 +278,17 @@ namespace NumberField.CubeRootThree
 abbrev mixedEmbedding_cubeRootThree : NumberField.mixedEmbedding.mixedSpace K :=
   NumberField.mixedEmbedding K cubeRootThree
 
-theorem mixedEmbedding_cubeRootThree_mem_convexBodyLT
+example
     (f : NumberField.InfinitePlace K → NNReal)
     (hf : ∀ w : NumberField.InfinitePlace K, w cubeRootThree < f w) :
     mixedEmbedding_cubeRootThree ∈ NumberField.mixedEmbedding.convexBodyLT K f := by
   exact (NumberField.mixedEmbedding.convexBodyLT_mem (K := K) (f := f) (x := cubeRootThree)).mpr hf
 
-theorem measurableSet_fundamentalCone :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone K) := by
   exact NumberField.mixedEmbedding.measurableSet_fundamentalCone K
 
-theorem measurableSet_normLeOne :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone.normLeOne K) := by
   exact NumberField.mixedEmbedding.fundamentalCone.measurableSet_normLeOne K
 
@@ -311,7 +297,6 @@ theorem polarSpace_nonempty :
   infer_instance
 
 end NumberField.CubeRootThree
-
 
 /-!
 ## House
@@ -340,7 +325,6 @@ theorem house_thetaInt_pos :
   exact house_cubeRootThree_pos
 
 end NumberField.CubeRootThree
-
 
 /-!
 ## Adele Ring
@@ -384,7 +368,6 @@ theorem principalAdele_fundamentalUnit_is_unit_everywhere :
 
 end NumberField.CubeRootThree
 
-
 /-!
 ## Dedekind Zeta
 -/
@@ -401,11 +384,11 @@ abbrev cubeRootThreeDedekindZeta (s : ℂ) : ℂ :=
 abbrev cubeRootThreeDedekindZetaResidue : ℝ :=
   NumberField.dedekindZeta_residue K
 
-theorem dedekindZeta_residue_pos :
+example :
     0 < cubeRootThreeDedekindZetaResidue := by
   exact NumberField.dedekindZeta_residue_pos K
 
-theorem dedekindZeta_residue_class_number_formula :
+example :
     cubeRootThreeDedekindZetaResidue =
       (2 ^ NumberField.InfinitePlace.nrRealPlaces K *
           (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *

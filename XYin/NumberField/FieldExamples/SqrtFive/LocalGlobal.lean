@@ -53,23 +53,21 @@ def heightOneFive : HeightOneSpectrum (𝓞 K) where
 abbrev vFive : NumberField.FinitePlace K :=
   NumberField.FinitePlace.mk heightOneFive
 
-theorem vFive_ramificationIdx :
+example :
     (Ideal.span {(5 : ℤ)}).ramificationIdx heightOneFive.asIdeal = 2 := by
   exact ramificationIdx_span_sqrtFiveIntO
 
-theorem vFive_inertiaDeg :
+example :
     (Ideal.span {(5 : ℤ)}).inertiaDeg heightOneFive.asIdeal = 1 := by
   exact inertiaDeg_span_sqrtFiveIntO
 
 end NumberField.SqrtFive
-
 
 /-!
 ## Completions
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -79,20 +77,13 @@ namespace NumberField.SqrtFive
 abbrev CompletionAtFive : Type :=
   heightOneFive.adicCompletion K
 
-theorem completionAtFive_contains_goldenRoot :
-    ∃ x : CompletionAtFive,
-      x = NumberField.FinitePlace.embedding (K := K) heightOneFive goldenRoot := by
-  exact ⟨NumberField.FinitePlace.embedding (K := K) heightOneFive goldenRoot, rfl⟩
-
 end NumberField.SqrtFive
-
 
 /-!
 ## Infinite Completions
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -101,16 +92,11 @@ namespace NumberField.SqrtFive
 abbrev InfiniteCompletion (v : NumberField.InfinitePlace K) : Type :=
   v.Completion
 
-theorem infiniteCompletion_equiv_real (v : NumberField.InfinitePlace K) :
+example (v : NumberField.InfinitePlace K) :
     Nonempty (InfiniteCompletion v ≃+* ℝ) := by
   exact ⟨NumberField.InfinitePlace.Completion.ringEquivRealOfIsReal (infinitePlace_isReal v)⟩
 
-theorem infiniteCompletion_goldenRoot_norm (v : NumberField.InfinitePlace K) :
-    ∃ r : ℝ, ‖(algebraMap K (InfiniteCompletion v) goldenRoot)‖ = r := by
-  exact ⟨‖(algebraMap K (InfiniteCompletion v) goldenRoot)‖, rfl⟩
-
 end NumberField.SqrtFive
-
 
 /-!
 ## Product Formula
@@ -118,12 +104,11 @@ end NumberField.SqrtFive
 
 noncomputable section
 
-
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 namespace NumberField.SqrtFive
 
-theorem product_formula_goldenRoot :
+example :
     ((∏ w : NumberField.InfinitePlace K, w goldenRoot ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K, v goldenRoot) = 1 := by
   exact NumberField.prod_abs_eq_one (K := K) (x := goldenRoot) (by
@@ -132,7 +117,7 @@ theorem product_formula_goldenRoot :
     rw [h] at hsq
     norm_num at hsq)
 
-theorem product_formula_fundamentalUnit :
+example :
     ((∏ w : NumberField.InfinitePlace K,
           w (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K,
@@ -144,13 +129,11 @@ theorem product_formula_fundamentalUnit :
 
 end NumberField.SqrtFive
 
-
 /-!
 ## Infinite Adele Ring
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -165,16 +148,15 @@ abbrev infinitePrincipalAdele_goldenRoot : SqrtFiveInfiniteAdeleRing :=
 abbrev infinitePrincipalAdele_fundamentalUnit : SqrtFiveInfiniteAdeleRing :=
   algebraMap K SqrtFiveInfiniteAdeleRing (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K))
 
-theorem infiniteAdele_norm_goldenRoot :
+example :
     ‖infinitePrincipalAdele_goldenRoot‖ = |Algebra.norm ℚ goldenRoot| := by
   exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm goldenRoot
 
-theorem infiniteAdele_denseRange :
+example :
     DenseRange (algebraMap K SqrtFiveInfiniteAdeleRing) := by
   exact NumberField.InfiniteAdeleRing.denseRange_algebraMap K
 
 end NumberField.SqrtFive
-
 
 /-!
 ## Canonical Embedding
@@ -182,25 +164,14 @@ end NumberField.SqrtFive
 
 noncomputable section
 
-
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 namespace NumberField.SqrtFive
-
-theorem canonicalEmbedding_apply_goldenRoot (σ : K →+* ℂ) :
-    NumberField.canonicalEmbedding K goldenRoot σ = σ goldenRoot := by
-  rfl
 
 theorem canonicalEmbedding_goldenIntO_mem_integerLattice :
     NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K goldenIntO) ∈
       NumberField.canonicalEmbedding.integerLattice K := by
   simp [NumberField.canonicalEmbedding.integerLattice]
-
-theorem canonicalEmbedding_fundamentalUnit_coordinates :
-    ∃ x : (K →+* ℂ) → ℂ,
-      x = NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) := by
-  exact ⟨NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)),
-    rfl⟩
 
 end NumberField.SqrtFive
 
@@ -209,7 +180,6 @@ end NumberField.SqrtFive
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -237,11 +207,11 @@ theorem mixedEmbedding_goldenRoot_mem_convexBodyLT
       NumberField.InfinitePlace.not_isReal_iff_isComplex.mpr ha
     exact False.elim (hnot hreal)
 
-theorem measurableSet_fundamentalCone :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone K) := by
   exact NumberField.mixedEmbedding.measurableSet_fundamentalCone K
 
-theorem measurableSet_normLeOne :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone.normLeOne K) := by
   exact NumberField.mixedEmbedding.fundamentalCone.measurableSet_normLeOne K
 
@@ -251,19 +221,17 @@ theorem polarSpace_nonempty :
 
 end NumberField.SqrtFive
 
-
 /-!
 ## House
 -/
 
 noncomputable section
 
-
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 namespace NumberField.SqrtFive
 
-theorem house_goldenRoot_pos :
+example :
     0 < NumberField.house goldenRoot := by
   exact lt_of_lt_of_le zero_lt_one
     (NumberField.one_le_house_of_isIntegral goldenRoot_isIntegral (by
@@ -328,13 +296,11 @@ theorem house_fundamentalUnit :
 
 end NumberField.SqrtFive
 
-
 /-!
 ## Adele Ring
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -381,13 +347,11 @@ theorem principalAdele_fundamentalUnit_is_unit_everywhere :
 
 end NumberField.SqrtFive
 
-
 /-!
 ## Dedekind Zeta
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -399,11 +363,11 @@ abbrev sqrtFiveDedekindZeta (s : ℂ) : ℂ :=
 abbrev sqrtFiveDedekindZetaResidue : ℝ :=
   NumberField.dedekindZeta_residue K
 
-theorem dedekindZeta_residue_pos :
+example :
     0 < sqrtFiveDedekindZetaResidue := by
   exact NumberField.dedekindZeta_residue_pos K
 
-theorem dedekindZeta_residue_class_number_formula :
+example :
     sqrtFiveDedekindZetaResidue =
       (2 ^ NumberField.InfinitePlace.nrRealPlaces K *
           (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *

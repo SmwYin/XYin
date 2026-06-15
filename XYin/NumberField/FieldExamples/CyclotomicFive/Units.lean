@@ -30,8 +30,6 @@ open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicFive
 
-private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
-
 /-- A torsion generator of `𝓞 Kˣ`: the primitive tenth root of unity `-ζ`, with explicit
 inverse `-ζ⁴` (since `(-ζ)(-ζ⁴) = ζ⁵ = 1`). -/
 noncomputable def torsionGenerator : (𝓞 K)ˣ where
@@ -208,7 +206,7 @@ private theorem unitGroupStructure_bijective
         simpa [Units.val_pow_eq_pow_val] using hval
       have hK : (-ζ : K) ^ (Multiplicative.toAdd a).val = 1 := by
         have hmap := congrArg (algebraMap (𝓞 K) K) hOK
-        simpa [map_pow, map_neg, coe_zetaInt] using hmap
+        simpa [map_pow, map_neg, zetaInt] using hmap
       have hdvd := (IsPrimitiveRoot.pow_eq_one_iff_dvd neg_zeta_isPrimitiveRoot _).mp hK
       have hlt : (Multiplicative.toAdd a).val < 10 := ZMod.val_lt _
       omega
@@ -256,9 +254,7 @@ theorem regulator_eq :
     NumberField.Units.regulator K = 2 * Real.log ((1 + Real.sqrt 5) / 2) := by
   sorry
 
-
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Regulator
@@ -269,9 +265,5 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 namespace NumberField.CyclotomicFive
-
-theorem regulator_eq_two_mul_log_goldenRatio :
-    NumberField.Units.regulator K = 2 * Real.log ((1 + Real.sqrt 5) / 2) := by
-  exact regulator_eq
 
 end NumberField.CyclotomicFive

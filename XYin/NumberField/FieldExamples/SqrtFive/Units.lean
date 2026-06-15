@@ -396,9 +396,7 @@ theorem unitGroupStructure :
   have hbij : Function.Bijective ψ := unitGroupStructure_bijective i₀ η hη hneg_tor
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
-
 end NumberField.SqrtFive
-
 
 /-!
 ## Regulator
@@ -406,13 +404,8 @@ end NumberField.SqrtFive
 
 noncomputable section
 
-
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 namespace NumberField.SqrtFive
-
-theorem regulator_eq_log_goldenRatio :
-    NumberField.Units.regulator K = Real.log ((1 + Real.sqrt 5) / 2) := by
-  exact regulator_eq
 
 end NumberField.SqrtFive

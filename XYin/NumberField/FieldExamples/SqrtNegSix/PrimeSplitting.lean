@@ -1273,7 +1273,6 @@ theorem ramificationIdx_span_thirteen :
 
 end NumberField.SqrtNegSix
 
-
 /-!
 ## Kummer-Dedekind
 -/
@@ -1377,44 +1376,7 @@ private theorem sqrtNegSixPolynomialMod_no_root_iff_inert_mod_twentyfour
     have hsplit := (isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mp hsquare
     rcases hmod with h | h | h | h <;> rcases hsplit with h' | h' | h' | h' <;> omega
 
-theorem kummerDedekind_splits_iff_mod_twentyfour
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
-    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-      Ideal.span {(p : 𝓞 K)} = P * Q) ↔
-        p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11 := by
-  exact splits_iff_mod_twentyfour p hp hp2 hp3
-
-theorem kummerDedekind_inert_iff_mod_twentyfour
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
-    Irreducible (sqrtNegSixPolynomialMod p) ↔
-      p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23 := by
-  haveI : Fact p.Prime := ⟨hp⟩
-  have hdeg2 : 2 ≤ (sqrtNegSixPolynomialMod p).natDegree := by
-    rw [sqrtNegSixPolynomialMod_natDegree]
-  have hdeg3 : (sqrtNegSixPolynomialMod p).natDegree ≤ 3 := by
-    rw [sqrtNegSixPolynomialMod_natDegree]
-    norm_num
-  rw [Polynomial.irreducible_iff_roots_eq_zero_of_degree_le_three hdeg2 hdeg3,
-    sqrtNegSixPolynomialMod_roots_eq_zero_iff_no_root p,
-    sqrtNegSixPolynomialMod_no_root_iff_inert_mod_twentyfour p hp hp2 hp3]
-
-theorem kummerDedekind_ramified_iff_two_or_three (p : ℕ) (hp : p.Prime) :
-    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔
-      p = 2 ∨ p = 3 := by
-  exact ramified_iff p hp
-
-theorem kummerDedekind_splittingType_mod_twentyfour
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
-    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-        Ideal.span {(p : 𝓞 K)} = P * Q) ↔
-        p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11) ∧
-      (Irreducible (sqrtNegSixPolynomialMod p) ↔
-        p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23) := by
-  exact ⟨kummerDedekind_splits_iff_mod_twentyfour p hp hp2 hp3,
-    kummerDedekind_inert_iff_mod_twentyfour p hp hp2 hp3⟩
-
 end NumberField.SqrtNegSix
-
 
 /-!
 ## Different

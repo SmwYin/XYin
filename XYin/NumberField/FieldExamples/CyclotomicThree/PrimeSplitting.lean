@@ -36,8 +36,6 @@ section PrivateMachinery
 private theorem zeta_pow_three : ζ ^ 3 = 1 :=
   zeta_isPrimitiveRoot.pow_eq_one
 
-private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
-
 private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
   rw [zeta_isPrimitiveRoot.integralPowerBasis_gen]
   rfl
@@ -239,8 +237,8 @@ theorem intNorm_eq_normForm (x y : ℤ) :
     Algebra.coe_norm_int _
   have h2 : algebraMap (𝓞 K) K (x • (1 : 𝓞 K) + y • zetaInt) =
       (x : ℚ) • (1 : K) + (y : ℚ) • ζ := by
-    rw [map_add, map_zsmul, map_zsmul, map_one, coe_zetaInt]
-    rw [Int.cast_smul_eq_zsmul ℚ x (1 : K), Int.cast_smul_eq_zsmul ℚ y ζ]
+    rw [map_add, map_zsmul, map_zsmul, map_one]
+    simp [zetaInt, Algebra.smul_def]
   rw [h2, norm_eq_normForm] at h1
   exact_mod_cast h1
 
@@ -760,7 +758,6 @@ theorem splits_iff_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
 
 end NumberField.CyclotomicThree
 
-
 /-!
 ## Kummer-Dedekind
 -/
@@ -831,70 +828,7 @@ private theorem orderOf_unitOfCoprime_eq_one_of_mod_three_eq_one
   rw [ZMod.natCast_eq_natCast_iff']
   simp [hmod]
 
-theorem kummerDedekind_splits_iff_one_mod_three
-    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
-    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-      Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 3 = 1 := by
-  exact splits_iff_one_mod_three p hp hp3
-
-theorem kummerDedekind_inert_iff_two_mod_three
-    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
-    Irreducible (zetaThreePolynomialMod p) ↔ p % 3 = 2 := by
-  haveI : Fact p.Prime := ⟨hp⟩
-  constructor
-  · intro hirr
-    have hcop : p.Coprime 3 :=
-      hp.coprime_iff_not_dvd.mpr (not_dvd_three_of_prime_ne_three p hp hp3)
-    have hdeg : (zetaThreePolynomialMod p).natDegree =
-        orderOf (ZMod.unitOfCoprime p hcop) := by
-      rw [zetaThreePolynomialMod_eq_cyclotomic] at hirr ⊢
-      simpa [pow_one] using
-        (Polynomial.natDegree_of_dvd_cyclotomic_of_irreducible (K := ZMod p) (p := p)
-          (f := 1) (n := 3) (by rw [ZMod.card, pow_one]) hcop (dvd_refl _) hirr)
-    have hnat : (zetaThreePolynomialMod p).natDegree = 2 := by
-      rw [zetaThreePolynomialMod]
-      compute_degree!
-    have horder : orderOf (ZMod.unitOfCoprime p hcop) = 2 := by
-      rw [hnat] at hdeg
-      exact hdeg.symm
-    have hnot0 : p % 3 ≠ 0 := by
-      intro h0
-      have h3dvd : 3 ∣ p := Nat.dvd_of_mod_eq_zero h0
-      have hcases := hp.eq_one_or_self_of_dvd 3 h3dvd
-      rcases hcases with h31 | h3p
-      · norm_num at h31
-      · exact hp3 h3p.symm
-    have hnot1 : p % 3 ≠ 1 := by
-      intro h1
-      have horder1 := orderOf_unitOfCoprime_eq_one_of_mod_three_eq_one p hp hp3 h1
-      rw [show hcop = hp.coprime_iff_not_dvd.mpr
-          (not_dvd_three_of_prime_ne_three p hp hp3) by rfl] at horder
-      omega
-    have hlt : p % 3 < 3 := Nat.mod_lt p (by norm_num)
-    interval_cases p % 3 <;> omega
-  · intro hmod
-    rw [zetaThreePolynomialMod_eq_cyclotomic]
-    exact ZMod.irreducible_of_dvd_cyclotomic_of_natDegree (p := p) (n := 3)
-      (not_dvd_three_of_prime_ne_three p hp hp3) (dvd_refl _)
-      (by
-        rw [orderOf_unitOfCoprime_eq_two_of_mod_three_eq_two p hp hp3 hmod]
-        rw [cyclotomic_three]
-        compute_degree!)
-
-theorem kummerDedekind_ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
-    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 3 := by
-  exact ramified_iff_eq_three p hp
-
-theorem kummerDedekind_splittingType_mod_three
-    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
-    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-        Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 3 = 1) ∧
-      (Irreducible (zetaThreePolynomialMod p) ↔ p % 3 = 2) := by
-  exact ⟨kummerDedekind_splits_iff_one_mod_three p hp hp3,
-    kummerDedekind_inert_iff_two_mod_three p hp hp3⟩
-
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Different

@@ -210,12 +210,6 @@ abbrev sqrtTwoExplicitIntegralPowerBasis : PowerBasis ℤ (𝓞 K) :=
     (Algebra.IsIntegral.isIntegral sqrtTwoInteger)
     sqrtTwoInteger_adjoin_eq_top
 
-theorem sqrtTwoExplicitIntegralPowerBasis_gen :
-    sqrtTwoExplicitIntegralPowerBasis.gen = sqrtTwoInteger := by
-  exact PowerBasis.ofAdjoinEqTop'_gen
-    (Algebra.IsIntegral.isIntegral sqrtTwoInteger)
-    sqrtTwoInteger_adjoin_eq_top
-
 theorem sqrtTwoExplicitIntegralPowerBasis_dim :
     sqrtTwoExplicitIntegralPowerBasis.dim = 2 := by
   rw [sqrtTwoExplicitIntegralPowerBasis, PowerBasis.ofAdjoinEqTop'_dim,
@@ -347,16 +341,13 @@ theorem sqrtTwoInteger_dvd_two : sqrtTwoInteger ∣ (2 : 𝓞 K) := by
   use sqrtTwoInteger
   simpa [pow_two] using sqrtTwoInteger_sq.symm
 
-
 end NumberField.SqrtTwo
-
 
 /-!
 ## Norm Form
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -409,6 +400,5 @@ theorem isUnit_iff_normForm (x y : ℤ) :
   · rintro (h | h)
     · exact Or.inl (by exact_mod_cast h)
     · exact Or.inr (by exact_mod_cast h)
-
 
 end NumberField.SqrtTwo

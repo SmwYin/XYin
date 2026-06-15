@@ -603,16 +603,13 @@ theorem splits_iff_pm_one_mod_eight (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
   · exact pm_one_mod_eight_of_splits p hp hp2
   · exact splits_of_pm_one_mod_eight p hp hp2
 
-
 end NumberField.SqrtTwo
-
 
 /-!
 ## Kummer-Dedekind
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -716,91 +713,13 @@ theorem exists_root_mod_iff_exists_prime_norm
         Ideal.absNorm P = p) :=
       (exists_prime_norm_iff_pm_one_mod_eight p hp hp2).symm
 
-/-- Kummer-Dedekind's splitting condition agrees with the existing `±1 mod 8` law. -/
-theorem kummerDedekind_splits_iff_pm_one_mod_eight
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    (∃ c : ZMod p, c ^ 2 = (2 : ZMod p)) ↔ p % 8 = 1 ∨ p % 8 = 7 := by
-  haveI : Fact (Nat.Prime p) := ⟨hp⟩
-  simpa [isSquare_iff_exists_sq, eq_comm] using (ZMod.exists_sq_eq_two_iff (p := p) hp2)
-
-/-- The inert cases are the complementary odd residue classes modulo `8`. -/
-theorem kummerDedekind_inert_iff_three_or_five_mod_eight
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    Irreducible (sqrtTwoPolynomialMod p) ↔ p % 8 = 3 ∨ p % 8 = 5 := by
-  haveI : Fact (Nat.Prime p) := ⟨hp⟩
-  have hdeg : (sqrtTwoPolynomialMod p).natDegree = 2 := by
-    rw [sqrtTwoPolynomialMod, natDegree_X_pow_sub_C]
-  have hroot_iff (c : ZMod p) :
-      (sqrtTwoPolynomialMod p).IsRoot c ↔ c ^ 2 = (2 : ZMod p) := by
-    simpa [sqrtTwoPolynomialMod, pow_two] using
-      (sub_eq_zero : c * c - (2 : ZMod p) = 0 ↔ c * c = (2 : ZMod p))
-  have hirr_iff_not_sq : Irreducible (sqrtTwoPolynomialMod p) ↔
-      ¬ ∃ c : ZMod p, c ^ 2 = (2 : ZMod p) := by
-    constructor
-    · intro hirr hs
-      obtain ⟨c, hc⟩ := hs
-      exact hirr.not_isRoot_of_natDegree_ne_one (by rw [hdeg]; norm_num)
-        ((hroot_iff c).2 hc)
-    · intro hnot
-      apply Polynomial.irreducible_of_degree_le_three_of_not_isRoot
-      · rw [Finset.mem_Icc, hdeg]
-        norm_num
-      · intro c hc
-        exact hnot ⟨c, (hroot_iff c).1 hc⟩
-  have hsq_iff : (∃ c : ZMod p, c ^ 2 = (2 : ZMod p)) ↔
-      p % 8 = 1 ∨ p % 8 = 7 := by
-    simpa [isSquare_iff_exists_sq, eq_comm] using
-      (ZMod.exists_sq_eq_two_iff (p := p) hp2)
-  have hodd : p % 2 = 1 := by
-    simpa [Nat.odd_iff] using hp.odd_of_ne_two hp2
-  have hmod2 : p % 8 % 2 = 1 := by
-    rw [Nat.mod_mod_of_dvd p (by norm_num : 2 ∣ 8), hodd]
-  have hnot_pm_one_iff :
-      ¬ (p % 8 = 1 ∨ p % 8 = 7) ↔ p % 8 = 3 ∨ p % 8 = 5 := by
-    constructor
-    · intro h
-      have hlt : p % 8 < 8 := Nat.mod_lt p (by norm_num)
-      interval_cases hcase : p % 8 <;> omega
-    · intro h hpm
-      omega
-  calc
-    Irreducible (sqrtTwoPolynomialMod p) ↔
-        ¬ ∃ c : ZMod p, c ^ 2 = (2 : ZMod p) := hirr_iff_not_sq
-    _ ↔ ¬ (p % 8 = 1 ∨ p % 8 = 7) := not_congr hsq_iff
-    _ ↔ p % 8 = 3 ∨ p % 8 = 5 := hnot_pm_one_iff
-
-/-- Complete Kummer-Dedekind splitting type for unramified rational primes in `ℚ(√2)`. -/
-theorem kummerDedekind_splittingType_mod_eight
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-        Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 8 = 1 ∨ p % 8 = 7) ∧
-      (Irreducible (sqrtTwoPolynomialMod p) ↔ p % 8 = 3 ∨ p % 8 = 5) := by
-  exact ⟨splits_iff_pm_one_mod_eight p hp hp2,
-    kummerDedekind_inert_iff_three_or_five_mod_eight p hp hp2⟩
-
-/-- The Kummer-Dedekind prediction at `2` matches the concrete factorization `(2)=(√2)^2`. -/
-theorem kummerDedekind_two_matches_concrete_ramification :
-    sqrtTwoPolynomialMod 2 = X ^ 2 ∧
-      Ideal.span {(2 : 𝓞 K)} = Ideal.span {sqrtTwoInteger} ^ 2 := by
-  exact ⟨sqrtTwoPolynomialMod_two, span_two_eq⟩
-
-/-- The Kummer-Dedekind prediction at `7` matches the concrete split ideal factorization. -/
-theorem kummerDedekind_seven_matches_concrete_factorization :
-    sqrtTwoPolynomialMod 7 =
-        (X - C (3 : ZMod 7)) * (X + C (3 : ZMod 7)) ∧
-      Ideal.span {(7 : 𝓞 K)} =
-        Ideal.span {3 + sqrtTwoInteger} * Ideal.span {3 - sqrtTwoInteger} := by
-  exact ⟨sqrtTwoPolynomialMod_seven_factor, span_seven_eq⟩
-
 end NumberField.SqrtTwo
-
 
 /-!
 ## Different
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 

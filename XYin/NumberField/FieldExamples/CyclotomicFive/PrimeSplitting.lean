@@ -32,8 +32,6 @@ open scoped NumberField nonZeroDivisors
 namespace NumberField.CyclotomicFive
 section PrivateMachinery
 
-private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
-
 private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
   rw [zeta_isPrimitiveRoot.integralPowerBasis_gen]; rfl
 
@@ -444,7 +442,7 @@ theorem intNorm_eq_normForm (a b c d : ℤ) :
   change Algebra.norm ℤ x = normForm a b c d
   have hx : algebraMap (𝓞 K) K x =
       (a : ℚ) • (1 : K) + (b : ℚ) • ζ + (c : ℚ) • ζ ^ 2 + (d : ℚ) • ζ ^ 3 := by
-    simp [x, coe_zetaInt, Algebra.smul_def]
+    simp [x, zetaInt, Algebra.smul_def]
   have hcoe : ((Algebra.norm ℤ x : ℤ) : ℚ) =
       Algebra.norm ℚ (algebraMap (𝓞 K) K x) :=
     Algebra.coe_norm_int x
@@ -693,7 +691,7 @@ private theorem absNorm_span_x :
   have hn : Algebra.norm ℤ (zetaInt ^ 2 + 5 * zetaInt + 1) = 361 := by
     apply intNorm_eq
     have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 + 5 * zetaInt + 1) = ζ ^ 2 + 5 * ζ + 1 := by
-      simp [map_add, map_mul, map_pow, map_one, map_ofNat, coe_zetaInt]
+      simp [map_add, map_mul, map_pow, map_one, map_ofNat, zetaInt]
     rw [e0]
     have e2 : sig2 (ζ ^ 2 + 5 * ζ + 1) = ζ ^ 4 + 5 * ζ ^ 2 + 1 := by
       simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sig2_zeta]
@@ -725,7 +723,7 @@ private theorem absNorm_span_y :
   have hn : Algebra.norm ℤ (zetaInt ^ 2 - 4 * zetaInt + 1) = 361 := by
     apply intNorm_eq
     have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 - 4 * zetaInt + 1) = ζ ^ 2 - 4 * ζ + 1 := by
-      simp [map_add, map_sub, map_mul, map_pow, map_one, map_ofNat, coe_zetaInt]
+      simp [map_add, map_sub, map_mul, map_pow, map_one, map_ofNat, zetaInt]
     rw [e0]
     have e2 : sig2 (ζ ^ 2 - 4 * ζ + 1) = ζ ^ 4 - 4 * ζ ^ 2 + 1 := by
       simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sig2_zeta]
@@ -851,7 +849,7 @@ private theorem absNorm_span_u3 :
     Ideal.absNorm (Ideal.span {zetaInt ^ 2 + zetaInt - 1}) = 11 := by
   refine norm_eleven_orbit ?_
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 + zetaInt - 1) = ζ ^ 2 + ζ - 1 := by
-    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+    simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
   have e2 : sig2 (ζ ^ 2 + ζ - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
     simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
@@ -869,7 +867,7 @@ private theorem absNorm_span_u4 :
     Ideal.absNorm (Ideal.span {zetaInt ^ 4 + zetaInt ^ 3 - 1}) = 11 := by
   refine norm_eleven_orbit ?_
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 4 + zetaInt ^ 3 - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
-    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+    simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
   have e2 : sig2 (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 3 + ζ - 1 := by
     simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
@@ -887,7 +885,7 @@ private theorem absNorm_span_u5 :
     Ideal.absNorm (Ideal.span {zetaInt ^ 4 + zetaInt ^ 2 - 1}) = 11 := by
   refine norm_eleven_orbit ?_
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 4 + zetaInt ^ 2 - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
-    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+    simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
   have e2 : sig2 (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
     simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
@@ -905,7 +903,7 @@ private theorem absNorm_span_u9 :
     Ideal.absNorm (Ideal.span {zetaInt ^ 3 + zetaInt - 1}) = 11 := by
   refine norm_eleven_orbit ?_
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 3 + zetaInt - 1) = ζ ^ 3 + ζ - 1 := by
-    simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+    simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
   have e2 : sig2 (ζ ^ 3 + ζ - 1) = ζ ^ 2 + ζ - 1 := by
     simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
@@ -1167,7 +1165,6 @@ theorem ramificationIdx_span_two :
 
 end NumberField.CyclotomicFive
 
-
 /-!
 ## Kummer-Dedekind
 -/
@@ -1287,67 +1284,7 @@ private theorem zetaFivePolynomialMod_eq_cyclotomic (p : ℕ) :
   norm_num [Finset.sum_range_succ]
   ring
 
-theorem kummerDedekind_splitsCompletely_iff_one_mod_five
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
-    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
-      Ideal.absNorm P = p) ↔ p % 5 = 1 := by
-  exact splits_completely_iff p hp hp5
-
-theorem kummerDedekind_two_quadratic_primes_iff_four_mod_five
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
-    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-      Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
-        Ideal.absNorm Q = p ^ 2) ↔ p % 5 = 4 := by
-  sorry
-
-theorem kummerDedekind_inert_iff_two_or_three_mod_five
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
-    Irreducible (zetaFivePolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3 := by
-  haveI : Fact p.Prime := ⟨hp⟩
-  have hnotdvd : ¬ p ∣ 5 := by
-    intro hpdvd
-    exact hp5 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num : Nat.Prime 5)).mp hpdvd)
-  have hcop : p.Coprime 5 := hp.coprime_iff_not_dvd.mpr hnotdvd
-  have hpoly : zetaFivePolynomialMod p = Polynomial.cyclotomic 5 (ZMod p) :=
-    zetaFivePolynomialMod_eq_cyclotomic p
-  have hdiv : zetaFivePolynomialMod p ∣ Polynomial.cyclotomic 5 (ZMod p) := by
-    rw [← hpoly]
-  have hdeg : (zetaFivePolynomialMod p).natDegree = 4 := by
-    rw [zetaFivePolynomialMod]
-    compute_degree!
-  constructor
-  · intro hirr
-    have hdeg_order := Polynomial.natDegree_of_dvd_cyclotomic_of_irreducible
-      (K := ZMod p) (p := p) (f := 1) (n := 5) (P := zetaFivePolynomialMod p)
-      (by simp) hcop hdiv hirr
-    have horder : orderOf (ZMod.unitOfCoprime p hcop) = 4 := by
-      rw [hdeg] at hdeg_order
-      simpa [pow_one] using hdeg_order.symm
-    exact (orderOf_unitOfCoprime_five_eq_four_iff p hp hp5 hcop).mp horder
-  · intro hmod
-    have horder : orderOf (ZMod.unitOfCoprime p hcop) = 4 :=
-      (orderOf_unitOfCoprime_five_eq_four_iff p hp hp5 hcop).mpr hmod
-    exact ZMod.irreducible_of_dvd_cyclotomic_of_natDegree (p := p) (n := 5)
-      (P := zetaFivePolynomialMod p) hnotdvd hdiv (by rw [hdeg, horder])
-
-theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
-    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
-  exact ramified_iff_eq_five p hp
-
-theorem kummerDedekind_splittingType_mod_five
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
-    ((∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
-        Ideal.absNorm P = p) ↔ p % 5 = 1) ∧
-      ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-        Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
-          Ideal.absNorm Q = p ^ 2) ↔ p % 5 = 4) ∧
-      (Irreducible (zetaFivePolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3) := by
-  exact ⟨kummerDedekind_splitsCompletely_iff_one_mod_five p hp hp5,
-    kummerDedekind_two_quadratic_primes_iff_four_mod_five p hp hp5,
-    kummerDedekind_inert_iff_two_or_three_mod_five p hp hp5⟩
-
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Different

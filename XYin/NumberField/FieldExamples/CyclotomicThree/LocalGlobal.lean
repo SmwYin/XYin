@@ -44,16 +44,15 @@ def heightOneThree : HeightOneSpectrum (𝓞 K) where
 abbrev vThree : NumberField.FinitePlace K :=
   NumberField.FinitePlace.mk heightOneThree
 
-theorem vThree_ramificationIdx :
+example :
     (Ideal.span {(3 : ℤ)}).ramificationIdx heightOneThree.asIdeal = 2 := by
   exact ramificationIdx_span_zetaInt_sub_one
 
-theorem vThree_inertiaDeg :
+example :
     (Ideal.span {(3 : ℤ)}).inertiaDeg heightOneThree.asIdeal = 1 := by
   exact inertiaDeg_span_zetaInt_sub_one
 
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Completions
@@ -69,13 +68,7 @@ namespace NumberField.CyclotomicThree
 abbrev CompletionAtThree : Type :=
   heightOneThree.adicCompletion K
 
-theorem completionAtThree_contains_zeta :
-    ∃ x : CompletionAtThree,
-      x = NumberField.FinitePlace.embedding (K := K) heightOneThree ζ := by
-  exact ⟨NumberField.FinitePlace.embedding (K := K) heightOneThree ζ, rfl⟩
-
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Infinite Completions
@@ -94,7 +87,7 @@ private theorem complexEmbedding_norm_zeta_eq_one (φ : K →+* ℂ) : ‖φ ζ�
   Complex.norm_eq_one_of_pow_eq_one (ζ := φ ζ) (n := 3) (by
     rw [← map_pow, zeta_isPrimitiveRoot.pow_eq_one, map_one]) (by norm_num : 3 ≠ 0)
 
-theorem infiniteCompletion_equiv_complex (v : NumberField.InfinitePlace K) :
+example (v : NumberField.InfinitePlace K) :
     Nonempty (InfiniteCompletion v ≃+* ℂ) := by
   exact ⟨NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (infinitePlace_isComplex v)⟩
@@ -107,7 +100,6 @@ theorem infiniteCompletion_zeta_norm (v : NumberField.InfinitePlace K) :
   exact complexEmbedding_norm_zeta_eq_one (NumberField.InfinitePlace.embedding v)
 
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Product Formula
@@ -125,12 +117,12 @@ private theorem zeta_ne_zero : ζ ≠ 0 := by
   rw [h] at hpow
   norm_num at hpow
 
-theorem product_formula_zeta :
+example :
     ((∏ w : NumberField.InfinitePlace K, w ζ ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K, v ζ) = 1 := by
   exact NumberField.prod_abs_eq_one (K := K) (x := ζ) zeta_ne_zero
 
-theorem product_formula_etaUnit :
+example :
     ((∏ w : NumberField.InfinitePlace K,
           w (algebraMap (𝓞 K) K (etaUnit : 𝓞 K)) ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K,
@@ -142,7 +134,6 @@ theorem product_formula_etaUnit :
       exact Units.ne_zero etaUnit hunit)
 
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Infinite Adele Ring
@@ -163,16 +154,15 @@ abbrev infinitePrincipalAdele_zeta : CyclotomicThreeInfiniteAdeleRing :=
 abbrev infinitePrincipalAdele_etaUnit : CyclotomicThreeInfiniteAdeleRing :=
   algebraMap K CyclotomicThreeInfiniteAdeleRing (algebraMap (𝓞 K) K (etaUnit : 𝓞 K))
 
-theorem infiniteAdele_norm_zeta :
+example :
     ‖infinitePrincipalAdele_zeta‖ = |Algebra.norm ℚ ζ| := by
   exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm ζ
 
-theorem infiniteAdele_denseRange :
+example :
     DenseRange (algebraMap K CyclotomicThreeInfiniteAdeleRing) := by
   exact NumberField.InfiniteAdeleRing.denseRange_algebraMap K
 
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Canonical Embedding
@@ -183,10 +173,6 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 namespace NumberField.CyclotomicThree
-
-theorem canonicalEmbedding_apply_zeta (σ : K →+* ℂ) :
-    NumberField.canonicalEmbedding K ζ σ = σ ζ := by
-  rfl
 
 theorem canonicalEmbedding_zetaInt_mem_integerLattice :
     NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K zetaInt) ∈
@@ -212,17 +198,17 @@ namespace NumberField.CyclotomicThree
 abbrev mixedEmbedding_zeta : NumberField.mixedEmbedding.mixedSpace K :=
   NumberField.mixedEmbedding K ζ
 
-theorem mixedEmbedding_zeta_mem_convexBodyLT
+example
     (f : NumberField.InfinitePlace K → NNReal)
     (hf : ∀ w : NumberField.InfinitePlace K, w ζ < f w) :
     mixedEmbedding_zeta ∈ NumberField.mixedEmbedding.convexBodyLT K f := by
   exact (NumberField.mixedEmbedding.convexBodyLT_mem (K := K) (f := f) (x := ζ)).2 hf
 
-theorem measurableSet_fundamentalCone :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone K) := by
   exact NumberField.mixedEmbedding.measurableSet_fundamentalCone K
 
-theorem measurableSet_normLeOne :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone.normLeOne K) := by
   exact NumberField.mixedEmbedding.fundamentalCone.measurableSet_normLeOne K
 
@@ -231,7 +217,6 @@ theorem polarSpace_nonempty :
   infer_instance
 
 end NumberField.CyclotomicThree
-
 
 /-!
 ## House
@@ -261,7 +246,6 @@ theorem house_etaUnit :
   simpa [etaUnit, zetaInt] using house_zeta
 
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Adele Ring
@@ -310,7 +294,6 @@ theorem principalAdele_etaUnit_is_unit_everywhere :
 
 end NumberField.CyclotomicThree
 
-
 /-!
 ## Dedekind Zeta
 -/
@@ -327,11 +310,11 @@ abbrev cyclotomicThreeDedekindZeta (s : ℂ) : ℂ :=
 abbrev cyclotomicThreeDedekindZetaResidue : ℝ :=
   NumberField.dedekindZeta_residue K
 
-theorem dedekindZeta_residue_pos :
+example :
     0 < cyclotomicThreeDedekindZetaResidue := by
   exact NumberField.dedekindZeta_residue_pos K
 
-theorem dedekindZeta_residue_class_number_formula :
+example :
     cyclotomicThreeDedekindZetaResidue =
       (2 ^ NumberField.InfinitePlace.nrRealPlaces K *
           (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *

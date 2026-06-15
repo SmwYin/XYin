@@ -30,8 +30,6 @@ open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
 
-private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
-
 /-- A torsion generator of `𝓞 Kˣ`: the eighth root of unity `ζ` itself, with explicit
 inverse `ζ⁷`. -/
 noncomputable def torsionGenerator : (𝓞 K)ˣ where
@@ -199,7 +197,7 @@ private theorem unitGroupStructure_bijective
         simpa [Units.val_pow_eq_pow_val] using hval
       have hK : ζ ^ (Multiplicative.toAdd a).val = 1 := by
         have hmap := congrArg (algebraMap (𝓞 K) K) hOK
-        simpa [map_pow, coe_zetaInt] using hmap
+        simpa [map_pow, zetaInt] using hmap
       have hdvd := (IsPrimitiveRoot.pow_eq_one_iff_dvd zeta_isPrimitiveRoot _).mp hK
       have hlt : (Multiplicative.toAdd a).val < 8 := ZMod.val_lt _
       omega
@@ -245,9 +243,7 @@ theorem regulator_eq :
     NumberField.Units.regulator K = 2 * Real.log (1 + Real.sqrt 2) := by
   sorry
 
-
 end NumberField.CyclotomicEight
-
 
 /-!
 ## Regulator
@@ -258,9 +254,5 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 namespace NumberField.CyclotomicEight
-
-theorem regulator_eq_two_mul_log_one_add_sqrtTwo :
-    NumberField.Units.regulator K = 2 * Real.log (1 + Real.sqrt 2) := by
-  exact regulator_eq
 
 end NumberField.CyclotomicEight

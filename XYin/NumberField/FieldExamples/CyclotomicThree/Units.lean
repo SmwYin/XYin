@@ -126,9 +126,7 @@ theorem regulator_eq_one : Units.regulator K = 1 := by
   rw [hdet]
   simp
 
-
 end NumberField.CyclotomicThree
-
 
 /-!
 ## Regulator
@@ -139,9 +137,5 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 namespace NumberField.CyclotomicThree
-
-theorem regulator_eq_one_statement :
-    NumberField.Units.regulator K = 1 := by
-  exact regulator_eq_one
 
 end NumberField.CyclotomicThree

@@ -31,8 +31,6 @@ open NumberField.FieldExamples
 open scoped NumberField nonZeroDivisors
 
 namespace NumberField.CyclotomicEight
-private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
-
 private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
   rw [zeta_isPrimitiveRoot.integralPowerBasis_gen]; rfl
 
@@ -241,7 +239,7 @@ theorem intNorm_eq_normForm (a b c d : ℤ) :
   change Algebra.norm ℤ x = normForm a b c d
   have hx : algebraMap (𝓞 K) K x =
       (a : ℚ) • (1 : K) + (b : ℚ) • ζ + (c : ℚ) • ζ ^ 2 + (d : ℚ) • ζ ^ 3 := by
-    simp [x, coe_zetaInt, Algebra.smul_def]
+    simp [x, zetaInt, Algebra.smul_def]
   have hcoe : ((Algebra.norm ℤ x : ℤ) : ℚ) =
       Algebra.norm ℚ (algebraMap (𝓞 K) K x) :=
     Algebra.coe_norm_int x
@@ -552,7 +550,7 @@ private theorem absNorm_span_g1 :
   have hn : Algebra.norm ℤ (zetaInt ^ 2 + zetaInt - 1) = 9 := by
     apply intNorm_eq
     have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 + zetaInt - 1) = ζ ^ 2 + ζ - 1 := by
-      simp [map_add, map_sub, map_pow, map_one, coe_zetaInt]
+      simp [map_add, map_sub, map_pow, map_one, zetaInt]
     rw [e0]
     have e3 : sig3 (ζ ^ 2 + ζ - 1) = ζ ^ 3 - ζ ^ 2 - 1 := by
       rw [map_sub, map_add, map_pow, map_one, sig3_zeta]
@@ -574,7 +572,7 @@ private theorem absNorm_span_g2 :
   have hn : Algebra.norm ℤ (zetaInt ^ 2 - zetaInt - 1) = 9 := by
     apply intNorm_eq
     have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 - zetaInt - 1) = ζ ^ 2 - ζ - 1 := by
-      simp [map_sub, map_pow, map_one, coe_zetaInt]
+      simp [map_sub, map_pow, map_one, zetaInt]
     rw [e0]
     have e3 : sig3 (ζ ^ 2 - ζ - 1) = -ζ ^ 3 - ζ ^ 2 - 1 := by
       rw [map_sub, map_sub, map_pow, map_one, sig3_zeta]
@@ -1019,9 +1017,7 @@ theorem ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
     rw [hcast, span_two_eq]
     exact Ideal.pow_le_pow_right (by norm_num)
 
-
 end NumberField.CyclotomicEight
-
 
 /-!
 ## Kummer-Dedekind
@@ -1046,89 +1042,7 @@ private theorem zetaEightPolynomialMod_eq_cyclotomic (p : ℕ) :
   rw [Polynomial.map_cyclotomic_int] at h
   simpa [zetaEightPolynomialMod, map_add, map_pow, map_one] using h.symm
 
-theorem kummerDedekind_splitsCompletely_iff_one_mod_eight
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
-      Ideal.absNorm P = p) ↔ p % 8 = 1 := by
-  exact splits_completely_iff p hp hp2
-
-theorem kummerDedekind_two_quadratic_primes_iff_not_one_mod_eight
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-      Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
-        Ideal.absNorm Q = p ^ 2) ↔ p % 8 = 3 ∨ p % 8 = 5 ∨ p % 8 = 7 := by
-  sorry
-
-theorem kummerDedekind_no_inert_prime (p : ℕ) (hp : p.Prime) :
-    ¬ Irreducible (zetaEightPolynomialMod p) := by
-  intro hirr
-  haveI : Fact p.Prime := ⟨hp⟩
-  by_cases hp2 : p = 2
-  · subst p
-    have hroot : Polynomial.IsRoot (zetaEightPolynomialMod 2) (1 : ZMod 2) := by
-      rw [Polynomial.IsRoot.def]
-      simp only [eval_add, eval_pow, eval_X, one_pow, map_one, eval_one]
-      change ((2 : ℕ) : ZMod 2) = 0
-      exact (CharP.cast_eq_zero_iff (ZMod 2) 2 2).mpr (dvd_refl 2)
-    have hdeg1 := Polynomial.degree_eq_one_of_irreducible_of_root hirr hroot
-    have hdeg4 : (zetaEightPolynomialMod 2).natDegree = 4 := by
-      rw [zetaEightPolynomialMod]
-      compute_degree!
-    have hdeg1nat : (zetaEightPolynomialMod 2).natDegree = 1 :=
-      Polynomial.natDegree_eq_of_degree_eq_some hdeg1
-    omega
-  · have hnotdvd : ¬ p ∣ 8 := by
-      intro hpdvd
-      have hp2dvd : p ∣ 2 := hp.dvd_of_dvd_pow (show p ∣ 2 ^ 3 by
-        norm_num
-        exact hpdvd)
-      exact hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp hp2dvd)
-    have hcop : p.Coprime 8 := hp.coprime_iff_not_dvd.mpr hnotdvd
-    have hpoly : zetaEightPolynomialMod p = Polynomial.cyclotomic 8 (ZMod p) :=
-      zetaEightPolynomialMod_eq_cyclotomic p
-    have hdiv : zetaEightPolynomialMod p ∣ Polynomial.cyclotomic 8 (ZMod p) := by
-      rw [← hpoly]
-    have hdeg : (zetaEightPolynomialMod p).natDegree = 4 := by
-      rw [zetaEightPolynomialMod]
-      compute_degree!
-    have hdeg_order := Polynomial.natDegree_of_dvd_cyclotomic_of_irreducible
-      (K := ZMod p) (p := p) (f := 1) (n := 8) (P := zetaEightPolynomialMod p)
-      (by simp) hcop hdiv hirr
-    have horder : orderOf (ZMod.unitOfCoprime p hcop) = 4 := by
-      rw [hdeg] at hdeg_order
-      simpa [pow_one] using hdeg_order.symm
-    have hcases : p % 8 = 1 ∨ p % 8 = 3 ∨ p % 8 = 5 ∨ p % 8 = 7 := by
-      have hpmod2 : p % 2 ≠ 0 := by
-        intro h0
-        exact hp2 (((Nat.prime_dvd_prime_iff_eq (by norm_num : Nat.Prime 2) hp).mp
-          (Nat.dvd_of_mod_eq_zero h0)).symm)
-      omega
-    have hpow2 : (ZMod.unitOfCoprime p hcop) ^ 2 = 1 := by
-      ext
-      simp only [Units.val_pow_eq_pow_val, ZMod.coe_unitOfCoprime, Units.val_one]
-      rw [← ZMod.natCast_mod p 8]
-      rcases hcases with h | h | h | h <;> rw [h] <;> decide
-    have hdvd : orderOf (ZMod.unitOfCoprime p hcop) ∣ 2 :=
-      orderOf_dvd_iff_pow_eq_one.mpr hpow2
-    rw [horder] at hdvd
-    norm_num at hdvd
-
-theorem kummerDedekind_ramified_iff_eq_two (p : ℕ) (hp : p.Prime) :
-    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 2 := by
-  exact ramified_iff_eq_two p hp
-
-theorem kummerDedekind_splittingType_mod_eight
-    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) :
-    ((∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
-        Ideal.absNorm P = p) ↔ p % 8 = 1) ∧
-      ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-        Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
-          Ideal.absNorm Q = p ^ 2) ↔ p % 8 = 3 ∨ p % 8 = 5 ∨ p % 8 = 7) := by
-  exact ⟨kummerDedekind_splitsCompletely_iff_one_mod_eight p hp hp2,
-    kummerDedekind_two_quadratic_primes_iff_not_one_mod_eight p hp hp2⟩
-
 end NumberField.CyclotomicEight
-
 
 /-!
 ## Different

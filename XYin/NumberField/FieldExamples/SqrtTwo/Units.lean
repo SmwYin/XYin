@@ -470,9 +470,7 @@ theorem unitGroupStructure :
   have hbij : Function.Bijective ψ := unitGroupStructure_bijective i₀ η hη hneg_tor
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
-
 end NumberField.SqrtTwo
-
 
 /-!
 ## Regulator
@@ -480,13 +478,8 @@ end NumberField.SqrtTwo
 
 noncomputable section
 
-
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 namespace NumberField.SqrtTwo
-
-theorem regulator_eq_log_one_add_sqrtTwo :
-    NumberField.Units.regulator K = Real.log (1 + Real.sqrt 2) := by
-  exact regulator_eq
 
 end NumberField.SqrtTwo

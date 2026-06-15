@@ -973,13 +973,11 @@ theorem splits_iff_pm_one_mod_five (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
 
 end NumberField.SqrtFive
 
-
 /-!
 ## Kummer-Dedekind
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -1075,46 +1073,13 @@ private theorem goldenPolynomialMod_no_root_iff_two_or_three_mod_five
       · rw [h] at hsqp
         exact hnsq3 hsqp
 
-theorem kummerDedekind_splits_iff_pm_one_mod_five
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
-    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-      Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4 := by
-  exact splits_iff_pm_one_mod_five p hp hp5
-
-theorem kummerDedekind_inert_iff_two_or_three_mod_five
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
-    Irreducible (goldenPolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3 := by
-  haveI : Fact p.Prime := ⟨hp⟩
-  have hdeg2 : 2 ≤ (goldenPolynomialMod p).natDegree := by
-    rw [goldenPolynomialMod_natDegree]
-  have hdeg3 : (goldenPolynomialMod p).natDegree ≤ 3 := by
-    rw [goldenPolynomialMod_natDegree]
-    norm_num
-  rw [Polynomial.irreducible_iff_roots_eq_zero_of_degree_le_three hdeg2 hdeg3,
-    goldenPolynomialMod_roots_eq_zero_iff_no_root p,
-    goldenPolynomialMod_no_root_iff_two_or_three_mod_five p hp hp5]
-
-theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
-    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
-  exact ramified_iff_eq_five p hp
-
-theorem kummerDedekind_splittingType_mod_five
-    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
-    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
-        Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4) ∧
-      (Irreducible (goldenPolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3) := by
-  exact ⟨kummerDedekind_splits_iff_pm_one_mod_five p hp hp5,
-    kummerDedekind_inert_iff_two_or_three_mod_five p hp hp5⟩
-
 end NumberField.SqrtFive
-
 
 /-!
 ## Different
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 

@@ -89,47 +89,45 @@ abbrev finitePlaceSevenPlus : NumberField.FinitePlace K :=
 abbrev finitePlaceSevenMinus : NumberField.FinitePlace K :=
   NumberField.FinitePlace.mk vSevenMinus
 
-theorem vTwo_ramificationIdx :
+example :
     (Ideal.span {(2 : ℤ)}).ramificationIdx vTwo.asIdeal = 2 := by
   exact ramificationIdx_span_sqrtTwoInteger
 
-theorem vTwo_inertiaDeg :
+example :
     (Ideal.span {(2 : ℤ)}).inertiaDeg vTwo.asIdeal = 1 := by
   exact inertiaDeg_span_sqrtTwoInteger
 
-theorem vThree_ramificationIdx :
+example :
     (Ideal.span {(3 : ℤ)}).ramificationIdx vThree.asIdeal = 1 := by
   exact ramificationIdx_span_three
 
-theorem vThree_inertiaDeg :
+example :
     (Ideal.span {(3 : ℤ)}).inertiaDeg vThree.asIdeal = 2 := by
   exact inertiaDeg_span_three
 
-theorem vSevenPlus_ramificationIdx :
+example :
     (Ideal.span {(7 : ℤ)}).ramificationIdx vSevenPlus.asIdeal = 1 := by
   exact ramificationIdx_span_three_add_sqrtTwo
 
-theorem vSevenMinus_ramificationIdx :
+example :
     (Ideal.span {(7 : ℤ)}).ramificationIdx vSevenMinus.asIdeal = 1 := by
   exact ramificationIdx_span_three_sub_sqrtTwo
 
-theorem vSevenPlus_inertiaDeg :
+example :
     (Ideal.span {(7 : ℤ)}).inertiaDeg vSevenPlus.asIdeal = 1 := by
   exact inertiaDeg_span_three_add_sqrtTwo
 
-theorem vSevenMinus_inertiaDeg :
+example :
     (Ideal.span {(7 : ℤ)}).inertiaDeg vSevenMinus.asIdeal = 1 := by
   exact inertiaDeg_span_three_sub_sqrtTwo
 
 end NumberField.SqrtTwo
-
 
 /-!
 ## Completions
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -153,37 +151,29 @@ abbrev CompletionAtSevenPlus : Type :=
 abbrev CompletionAtSevenMinus : Type :=
   vSevenMinus.adicCompletion K
 
-/-- The canonical image of `√2` in the ramified `2`-adic completion. -/
-theorem completionAtTwo_contains_sqrtTwo :
-    ∃ x : CompletionAtTwo,
-      x = NumberField.FinitePlace.embedding (K := K) vTwo sqrtTwoRoot := by
-  exact ⟨NumberField.FinitePlace.embedding (K := K) vTwo sqrtTwoRoot, rfl⟩
-
 /-- The `2`-adic completion remembers the ramification index `2`. -/
-theorem completionAtTwo_ramificationIdx :
+example :
     (Ideal.span {(2 : ℤ)}).ramificationIdx vTwo.asIdeal = 2 := by
-  exact vTwo_ramificationIdx
+  exact ramificationIdx_span_sqrtTwoInteger
 
 /-- The `3`-adic completion is the inert local factor, with residue degree `2`. -/
-theorem completionAtThree_inertiaDeg :
+example :
     (Ideal.span {(3 : ℤ)}).inertiaDeg vThree.asIdeal = 2 := by
-  exact vThree_inertiaDeg
+  exact inertiaDeg_span_three
 
 /-- The two completions over `7` both have residue degree `1`. -/
-theorem completionAtSeven_inertiaDegs :
+example :
     (Ideal.span {(7 : ℤ)}).inertiaDeg vSevenPlus.asIdeal = 1 ∧
       (Ideal.span {(7 : ℤ)}).inertiaDeg vSevenMinus.asIdeal = 1 := by
-  exact ⟨vSevenPlus_inertiaDeg, vSevenMinus_inertiaDeg⟩
+  exact ⟨inertiaDeg_span_three_add_sqrtTwo, inertiaDeg_span_three_sub_sqrtTwo⟩
 
 end NumberField.SqrtTwo
-
 
 /-!
 ## Infinite Completions
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -196,7 +186,7 @@ abbrev InfiniteCompletion (v : NumberField.InfinitePlace K) : Type :=
   v.Completion
 
 /-- Every infinite completion of `ℚ(√2)` is a real completion. -/
-theorem infiniteCompletion_equiv_real (v : NumberField.InfinitePlace K) :
+example (v : NumberField.InfinitePlace K) :
     Nonempty (InfiniteCompletion v ≃+* ℝ) := by
   exact ⟨NumberField.InfinitePlace.Completion.ringEquivRealOfIsReal (infinitePlace_isReal v)⟩
 
@@ -218,13 +208,11 @@ theorem infinitePlace_sum_inertiaDeg_eq_two (v : NumberField.InfinitePlace ℚ) 
 
 end NumberField.SqrtTwo
 
-
 /-!
 ## Product Formula
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -234,7 +222,7 @@ open IsDedekindDomain HeightOneSpectrum
 namespace NumberField.SqrtTwo
 
 /-- Product formula for the generator `√2`. -/
-theorem product_formula_sqrtTwoRoot :
+example :
     (∏ w : NumberField.InfinitePlace K, w sqrtTwoRoot ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K, v sqrtTwoRoot = 1 := by
   exact NumberField.prod_abs_eq_one (K := K) (x := sqrtTwoRoot) (by
@@ -245,7 +233,7 @@ theorem product_formula_sqrtTwoRoot :
     norm_num at htwo)
 
 /-- Product formula for the fundamental unit `1 + √2`. -/
-theorem product_formula_fundamentalUnit :
+example :
     (∏ w : NumberField.InfinitePlace K,
           w (algebraMap (𝓞 K) K (sqrtTwoFundamentalUnit : 𝓞 K)) ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K,
@@ -278,13 +266,11 @@ theorem finite_support_sqrtTwoRoot_only_vTwo
 
 end NumberField.SqrtTwo
 
-
 /-!
 ## Infinite Adele Ring
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -305,22 +291,21 @@ abbrev infinitePrincipalAdele_fundamentalUnit : SqrtTwoInfiniteAdeleRing :=
   algebraMap K SqrtTwoInfiniteAdeleRing
     (algebraMap (𝓞 K) K (sqrtTwoFundamentalUnit : 𝓞 K))
 
-theorem infiniteAdele_norm_sqrtTwoRoot :
+example :
     ‖infinitePrincipalAdele_sqrtTwoRoot‖ = |Algebra.norm ℚ sqrtTwoRoot| := by
   exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm sqrtTwoRoot
 
-theorem infiniteAdele_norm_fundamentalUnit :
+example :
     ‖infinitePrincipalAdele_fundamentalUnit‖ =
       |Algebra.norm ℚ (algebraMap (𝓞 K) K (sqrtTwoFundamentalUnit : 𝓞 K))| := by
   exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm
     (algebraMap (𝓞 K) K (sqrtTwoFundamentalUnit : 𝓞 K))
 
-theorem infiniteAdele_denseRange :
+example :
     DenseRange (algebraMap K SqrtTwoInfiniteAdeleRing) := by
   exact NumberField.InfiniteAdeleRing.denseRange_algebraMap K
 
 end NumberField.SqrtTwo
-
 
 /-!
 ## Canonical Embedding
@@ -328,17 +313,11 @@ end NumberField.SqrtTwo
 
 noncomputable section
 
-
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open Module NumberField Polynomial
 
 namespace NumberField.SqrtTwo
-
-/-- The canonical embedding evaluates at each complex embedding by definition. -/
-theorem canonicalEmbedding_apply_sqrtTwoRoot (σ : K →+* ℂ) :
-    NumberField.canonicalEmbedding K sqrtTwoRoot σ = σ sqrtTwoRoot := by
-  rfl
 
 private theorem complexEmbedding_norm_sqrtTwoRoot (φ : K →+* ℂ) :
     ‖φ sqrtTwoRoot‖ = Real.sqrt 2 := by
@@ -390,7 +369,6 @@ end NumberField.SqrtTwo
 
 noncomputable section
 
-
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 open MeasureTheory NumberField
@@ -401,17 +379,17 @@ namespace NumberField.SqrtTwo
 abbrev mixedEmbedding_sqrtTwoRoot : NumberField.mixedEmbedding.mixedSpace K :=
   NumberField.mixedEmbedding K sqrtTwoRoot
 
-theorem mixedEmbedding_sqrtTwoRoot_mem_convexBodyLT
+example
     (f : NumberField.InfinitePlace K → NNReal)
     (hf : ∀ w : NumberField.InfinitePlace K, w sqrtTwoRoot < f w) :
     mixedEmbedding_sqrtTwoRoot ∈ NumberField.mixedEmbedding.convexBodyLT K f := by
   exact (NumberField.mixedEmbedding.convexBodyLT_mem (K := K) (f := f) (x := sqrtTwoRoot)).2 hf
 
-theorem measurableSet_fundamentalCone :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone K) := by
   exact NumberField.mixedEmbedding.measurableSet_fundamentalCone K
 
-theorem measurableSet_normLeOne :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone.normLeOne K) := by
   exact NumberField.mixedEmbedding.fundamentalCone.measurableSet_normLeOne K
 
@@ -431,13 +409,11 @@ theorem unit_smul_mem_fundamentalCone_iff_eq_one_or_neg_one
 
 end NumberField.SqrtTwo
 
-
 /-!
 ## House
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -482,13 +458,11 @@ theorem house_sqrtTwoFundamentalUnit :
 
 end NumberField.SqrtTwo
 
-
 /-!
 ## Adele Ring
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -551,13 +525,11 @@ theorem principalAdele_fundamentalUnit_is_unit_everywhere :
 
 end NumberField.SqrtTwo
 
-
 /-!
 ## Dedekind Zeta
 -/
 
 noncomputable section
-
 
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
@@ -573,11 +545,11 @@ abbrev sqrtTwoDedekindZeta (s : ℂ) : ℂ :=
 abbrev sqrtTwoDedekindZetaResidue : ℝ :=
   NumberField.dedekindZeta_residue K
 
-theorem dedekindZeta_residue_pos :
+example :
     0 < sqrtTwoDedekindZetaResidue := by
   exact NumberField.dedekindZeta_residue_pos K
 
-theorem dedekindZeta_residue_class_number_formula :
+example :
     sqrtTwoDedekindZetaResidue =
       (2 ^ NumberField.InfinitePlace.nrRealPlaces K *
           (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *

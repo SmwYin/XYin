@@ -302,9 +302,6 @@ noncomputable def integralBasisVectorsInt : Fin 3 → 𝓞 K := ![1, thetaInt, t
 noncomputable def ringOfIntegersLinearMap : 𝓞 K →ₗ[ℤ] K :=
   (Algebra.linearMap (𝓞 K) K).restrictScalars ℤ
 
-theorem ringOfIntegersLinearMap_apply (u : 𝓞 K) :
-    ringOfIntegersLinearMap u = (algebraMap (𝓞 K) K) u := rfl
-
 theorem ringOfIntegersLinearMap_injective :
     Function.Injective ringOfIntegersLinearMap :=
   FaithfulSMul.algebraMap_injective (𝓞 K) K
@@ -343,8 +340,9 @@ theorem span_integralBasisVectorsInt_eq_top :
   apply Submodule.map_injective_of_injective ringOfIntegersLinearMap_injective
   rw [Submodule.map_span, ← Set.range_comp]
   have hcomp : ringOfIntegersLinearMap ∘ integralBasisVectorsInt = integralBasisVectors := by
-    funext i; rw [Function.comp_apply, ringOfIntegersLinearMap_apply,
-      ← algebraMap_integralBasisVectorsInt]
+    funext i
+    rw [Function.comp_apply, ← algebraMap_integralBasisVectorsInt]
+    rfl
   rw [hcomp, span_integralBasisVectors_eq, Submodule.map_top]
   ext x
   rw [Subalgebra.mem_toSubmodule]
@@ -386,9 +384,7 @@ field is monogenic. Subalgebra-level restatement of `span_integralBasisVectors_e
 theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers :=
   integralClosure_eq_adjoin
 
-
 end NumberField.CubeRootThree
-
 
 /-!
 ## Norm Form
@@ -433,6 +429,5 @@ theorem isUnit_iff_normForm (x y z : ℤ) :
     have h' : |x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z| = 1 :=
       (abs_eq (by norm_num)).mpr h
     exact_mod_cast h'
-
 
 end NumberField.CubeRootThree

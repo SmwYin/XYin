@@ -70,11 +70,6 @@ noncomputable def sqrtNegSixPowerBasis : PowerBasis ℚ K where
     · exact quadraticBasis_zero
     · simpa [pow_one] using quadraticBasis_one
 
-@[simp]
-theorem sqrtNegSixPowerBasis_gen : sqrtNegSixPowerBasis.gen = θ := rfl
-
-theorem sqrtNegSixPowerBasis_dim : sqrtNegSixPowerBasis.dim = 2 := rfl
-
 /-- The integral polynomial `X² + 6` satisfied by `θ = √-6`. -/
 abbrev sqrtNegSixIntegerPolynomial : ℤ[X] := Polynomial.X ^ 2 + Polynomial.C (6 : ℤ)
 
@@ -281,9 +276,6 @@ private theorem algebraMap_integralBasisVectorsInt :
 private noncomputable def ringOfIntegersLinearMap : 𝓞 K →ₗ[ℤ] K :=
   (Algebra.linearMap (𝓞 K) K).restrictScalars ℤ
 
-private theorem ringOfIntegersLinearMap_apply (u : 𝓞 K) :
-    ringOfIntegersLinearMap u = (algebraMap (𝓞 K) K) u := rfl
-
 private theorem span_integralBasisVectorsInt_eq_top :
     Submodule.span ℤ (Set.range integralBasisVectorsInt) = ⊤ := by
   have hbasis : ⇑sqrtNegSixExplicitIntegralBasis = integralBasisVectorsInt := by
@@ -316,7 +308,8 @@ private theorem sqrtNegSixExplicitIntegralBasis_discr :
   change (algebraMap ℤ ℚ) (Algebra.discr ℤ bInt) = (algebraMap ℤ ℚ) (-24)
   rw [← hdiscLoc]
   change Algebra.discr ℚ bLoc = (-24 : ℚ)
-  have hBasis : bLoc = sqrtNegSixPowerBasis.basis.reindex (finCongr sqrtNegSixPowerBasis_dim) := by
+  have hdim : sqrtNegSixPowerBasis.dim = 2 := rfl
+  have hBasis : bLoc = sqrtNegSixPowerBasis.basis.reindex (finCongr hdim) := by
     apply DFunLike.ext
     intro i
     fin_cases i
@@ -328,7 +321,7 @@ private theorem sqrtNegSixExplicitIntegralBasis_discr :
   rw [hBasis]
   simpa [Basis.coe_reindex] using
     (Algebra.discr_reindex ℚ sqrtNegSixPowerBasis.basis
-      (finCongr sqrtNegSixPowerBasis_dim)).trans sqrtNegSixPowerBasis_discr
+      (finCongr hdim)).trans sqrtNegSixPowerBasis_discr
 
 /-- `1, θ` is an integral basis of `ℚ(√-6)`: their `ℤ`-span in `K` is exactly the ring of
 integers `𝓞 K`. Since `-6 ≡ 2 (mod 4)`, the naive order `ℤ[√-6]` is already maximal — in
@@ -341,7 +334,8 @@ theorem span_integralBasisVectors_eq :
   rw [Submodule.map_span, ← Set.range_comp] at hmap
   have hcomp : ringOfIntegersLinearMap ∘ integralBasisVectorsInt = integralBasisVectors := by
     funext i
-    rw [Function.comp_apply, ringOfIntegersLinearMap_apply, ← algebraMap_integralBasisVectorsInt]
+    rw [Function.comp_apply, ← algebraMap_integralBasisVectorsInt]
+    rfl
   rw [hcomp, Submodule.map_top] at hmap
   rw [hmap]
   ext x
@@ -434,9 +428,7 @@ theorem integralBasis_discr :
   rw [numberField_discr_eq] at h
   simpa using h.symm
 
-
 end NumberField.SqrtNegSix
-
 
 /-!
 ## Norm Form
@@ -553,6 +545,5 @@ theorem intNorm_ne_five (z : 𝓞 K) : Algebra.norm ℤ z ≠ 5 := by
   obtain ⟨x, y, hz⟩ := exists_eq_smul_one_add_smul_theta z
   rw [hz, intNorm_eq_normForm] at hz5
   exact normForm_ne_five x y hz5
-
 
 end NumberField.SqrtNegSix

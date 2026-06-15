@@ -45,16 +45,15 @@ def heightOneFive : HeightOneSpectrum (𝓞 K) where
 abbrev vFive : NumberField.FinitePlace K :=
   NumberField.FinitePlace.mk heightOneFive
 
-theorem vFive_ramificationIdx :
+example :
     (Ideal.span {(5 : ℤ)}).ramificationIdx heightOneFive.asIdeal = 4 := by
   exact ramificationIdx_span_one_sub_zeta
 
-theorem vFive_inertiaDeg :
+example :
     (Ideal.span {(5 : ℤ)}).inertiaDeg heightOneFive.asIdeal = 1 := by
   exact inertiaDeg_span_one_sub_zeta
 
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Completions
@@ -70,13 +69,7 @@ namespace NumberField.CyclotomicFive
 abbrev CompletionAtFive : Type :=
   heightOneFive.adicCompletion K
 
-theorem completionAtFive_contains_zeta :
-    ∃ x : CompletionAtFive,
-      x = NumberField.FinitePlace.embedding (K := K) heightOneFive ζ := by
-  exact ⟨NumberField.FinitePlace.embedding (K := K) heightOneFive ζ, rfl⟩
-
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Infinite Completions
@@ -95,7 +88,7 @@ private theorem complexEmbedding_norm_zeta_eq_one (φ : K →+* ℂ) : ‖φ ζ�
   Complex.norm_eq_one_of_pow_eq_one (ζ := φ ζ) (n := 5) (by
     rw [← map_pow, zeta_isPrimitiveRoot.pow_eq_one, map_one]) (by norm_num : 5 ≠ 0)
 
-theorem infiniteCompletion_equiv_complex (v : NumberField.InfinitePlace K) :
+example (v : NumberField.InfinitePlace K) :
     Nonempty (InfiniteCompletion v ≃+* ℂ) := by
   exact ⟨NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (infinitePlace_isComplex v)⟩
@@ -108,7 +101,6 @@ theorem infiniteCompletion_zeta_norm (v : NumberField.InfinitePlace K) :
   exact complexEmbedding_norm_zeta_eq_one (NumberField.InfinitePlace.embedding v)
 
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Product Formula
@@ -126,12 +118,12 @@ private theorem zeta_ne_zero : ζ ≠ 0 := by
   rw [h] at hpow
   norm_num at hpow
 
-theorem product_formula_zeta :
+example :
     ((∏ w : NumberField.InfinitePlace K, w ζ ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K, v ζ) = 1 := by
   exact NumberField.prod_abs_eq_one (K := K) (x := ζ) zeta_ne_zero
 
-theorem product_formula_fundamentalUnit :
+example :
     ((∏ w : NumberField.InfinitePlace K,
           w (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) ^ w.mult) *
         ∏ᶠ v : NumberField.FinitePlace K,
@@ -142,7 +134,6 @@ theorem product_formula_fundamentalUnit :
       exact Units.ne_zero fundamentalUnit (RingOfIntegers.coe_injective h))
 
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Infinite Adele Ring
@@ -163,16 +154,15 @@ abbrev infinitePrincipalAdele_zeta : CyclotomicFiveInfiniteAdeleRing :=
 abbrev infinitePrincipalAdele_fundamentalUnit : CyclotomicFiveInfiniteAdeleRing :=
   algebraMap K CyclotomicFiveInfiniteAdeleRing (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K))
 
-theorem infiniteAdele_norm_zeta :
+example :
     ‖infinitePrincipalAdele_zeta‖ = |Algebra.norm ℚ ζ| := by
   exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm ζ
 
-theorem infiniteAdele_denseRange :
+example :
     DenseRange (algebraMap K CyclotomicFiveInfiniteAdeleRing) := by
   exact NumberField.InfiniteAdeleRing.denseRange_algebraMap K
 
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Canonical Embedding
@@ -183,10 +173,6 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 namespace NumberField.CyclotomicFive
-
-theorem canonicalEmbedding_apply_zeta (σ : K →+* ℂ) :
-    NumberField.canonicalEmbedding K ζ σ = σ ζ := by
-  rfl
 
 theorem canonicalEmbedding_zetaInt_mem_integerLattice :
     NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K zetaInt) ∈
@@ -212,17 +198,17 @@ namespace NumberField.CyclotomicFive
 abbrev mixedEmbedding_zeta : NumberField.mixedEmbedding.mixedSpace K :=
   NumberField.mixedEmbedding K ζ
 
-theorem mixedEmbedding_zeta_mem_convexBodyLT
+example
     (f : NumberField.InfinitePlace K → NNReal)
     (hf : ∀ w : NumberField.InfinitePlace K, w ζ < f w) :
     mixedEmbedding_zeta ∈ NumberField.mixedEmbedding.convexBodyLT K f := by
   exact (NumberField.mixedEmbedding.convexBodyLT_mem (K := K) (f := f) (x := ζ)).2 hf
 
-theorem measurableSet_fundamentalCone :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone K) := by
   exact NumberField.mixedEmbedding.measurableSet_fundamentalCone K
 
-theorem measurableSet_normLeOne :
+example :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone.normLeOne K) := by
   exact NumberField.mixedEmbedding.fundamentalCone.measurableSet_normLeOne K
 
@@ -231,7 +217,6 @@ theorem polarSpace_nonempty :
   infer_instance
 
 end NumberField.CyclotomicFive
-
 
 /-!
 ## House
@@ -256,7 +241,7 @@ theorem house_zeta :
         rw [NumberField.canonicalEmbedding.apply_at, complexEmbedding_norm_zeta_eq_one φ]
       _ ≤ ‖NumberField.canonicalEmbedding K ζ‖ := norm_le_pi_norm _ φ
 
-theorem house_fundamentalUnit_pos :
+example :
     0 < NumberField.house (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) := by
   exact lt_of_lt_of_le zero_lt_one
     (NumberField.one_le_house_of_isIntegral
@@ -265,7 +250,6 @@ theorem house_fundamentalUnit_pos :
       exact Units.ne_zero fundamentalUnit (RingOfIntegers.coe_injective h)))
 
 end NumberField.CyclotomicFive
-
 
 /-!
 ## Adele Ring
@@ -315,7 +299,6 @@ theorem principalAdele_fundamentalUnit_is_unit_everywhere :
 
 end NumberField.CyclotomicFive
 
-
 /-!
 ## Dedekind Zeta
 -/
@@ -332,11 +315,11 @@ abbrev cyclotomicFiveDedekindZeta (s : ℂ) : ℂ :=
 abbrev cyclotomicFiveDedekindZetaResidue : ℝ :=
   NumberField.dedekindZeta_residue K
 
-theorem dedekindZeta_residue_pos :
+example :
     0 < cyclotomicFiveDedekindZetaResidue := by
   exact NumberField.dedekindZeta_residue_pos K
 
-theorem dedekindZeta_residue_class_number_formula :
+example :
     cyclotomicFiveDedekindZetaResidue =
       (2 ^ NumberField.InfinitePlace.nrRealPlaces K *
           (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *

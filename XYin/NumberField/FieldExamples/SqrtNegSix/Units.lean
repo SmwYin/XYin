@@ -157,9 +157,7 @@ theorem regulator_eq_one : NumberField.Units.regulator K = 1 := by
   rw [hdet]
   simp
 
-
 end NumberField.SqrtNegSix
-
 
 /-!
 ## Regulator
@@ -170,9 +168,5 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
-
-theorem regulator_eq_one_statement :
-    NumberField.Units.regulator K = 1 := by
-  exact regulator_eq_one
 
 end NumberField.SqrtNegSix

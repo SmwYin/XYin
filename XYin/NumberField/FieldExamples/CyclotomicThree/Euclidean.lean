@@ -30,8 +30,6 @@ open NumberField.FieldExamples
 
 namespace NumberField.CyclotomicThree
 
-private theorem coe_zetaInt : algebraMap (𝓞 K) K zetaInt = ζ := rfl
-
 private theorem abs_norm_int_lt_of_remainder_eq {b r : 𝓞 K} {bK : K} {xa xb : ℚ}
     (hbK : bK = algebraMap (𝓞 K) K b)
     (hrK :
@@ -91,9 +89,8 @@ theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
   have hxbK : x * bK = aK := div_mul_cancel₀ aK hbK0
   have hqK : algebraMap (𝓞 K) K q =
       ((round xa : ℤ) : ℚ) • (1 : K) + ((round xb : ℤ) : ℚ) • ζ := by
-    rw [hq, map_add, map_mul, map_intCast, map_intCast, coe_zetaInt,
-      Algebra.smul_def, Algebra.smul_def, mul_one, eq_ratCast (algebraMap ℚ K),
-      eq_ratCast (algebraMap ℚ K), Rat.cast_intCast, Rat.cast_intCast]
+    rw [hq, map_add, map_mul, map_intCast, map_intCast]
+    simp [zetaInt, Algebra.smul_def, eq_ratCast (algebraMap ℚ K), Rat.cast_intCast]
   have hrK : algebraMap (𝓞 K) K r =
       bK * ((xa - ((round xa : ℤ) : ℚ)) • (1 : K) +
         (xb - ((round xb : ℤ) : ℚ)) • ζ) := by
@@ -113,6 +110,5 @@ theorem normEuclidean (a b : 𝓞 K) (hb : b ≠ 0) :
     abs_pos.mpr (Algebra.norm_ne_zero_iff.mpr hbK0)
   have hlt := abs_norm_int_lt_of_remainder_eq hbK hrK hb_pos hfrac
   exact natAbs_lt_of_abs_ratCast_lt hlt
-
 
 end NumberField.CyclotomicThree
