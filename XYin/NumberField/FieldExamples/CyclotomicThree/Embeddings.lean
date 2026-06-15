@@ -3,11 +3,48 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicThree.Units
-import Mathlib.NumberTheory.NumberField.InfinitePlace.Basic
+import XYin.NumberField.FieldExamples.CyclotomicThree.Galois
 
 /-!
-# Embeddings and infinite places of `ℚ(ζ₃)`
+# `ℚ(ζ₃)` Embeddings
+
+Real and complex embeddings, signature, infinite places, and lightweight canonical embedding facts.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Signature and archimedean type
+-/
+
+noncomputable section
+
+attribute [-instance] DivisionRing.toRatAlgebra
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+open Module NumberField Polynomial
+
+namespace NumberField.CyclotomicThree
+
+theorem nrRealPlaces_eq_zero : InfinitePlace.nrRealPlaces K = 0 := by
+  exact IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 3) K (by norm_num)
+
+theorem isTotallyComplex : IsTotallyComplex K :=
+  IsCyclotomicExtension.Rat.isTotallyComplex (n := 3) K (by norm_num)
+
+theorem nrComplexPlaces_eq_one : InfinitePlace.nrComplexPlaces K = 1 := by
+  rw [IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := 3) K]
+  rw [Nat.totient_prime Nat.prime_three]
+end NumberField.CyclotomicThree
+
+
+/-!
+## Embeddings
 -/
 
 noncomputable section

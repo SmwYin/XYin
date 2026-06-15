@@ -3,12 +3,22 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtFive.Euclidean
+import XYin.NumberField.FieldExamples.SqrtFive.Basic
 
 /-!
-# `ℚ(√5)` Galois group
+# `ℚ(√5)` Galois
 
-This file develops the Galois group part of the `ℚ(√5)` number field example.
+Automorphisms, Galois/non-Galois statements, and explicit Galois group structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Galois
 -/
 
 noncomputable section

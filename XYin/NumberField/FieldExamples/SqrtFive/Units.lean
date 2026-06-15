@@ -3,12 +3,23 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtFive.PrimeSplitting
+import XYin.NumberField.FieldExamples.SqrtFive.ClassGroup
 
 /-!
-# `ℚ(√5)` Unit group
+# `ℚ(√5)` Units
 
-This file develops the unit group part of the `ℚ(√5)` number field example.
+Unit group, torsion, fundamental units, Dirichlet rank, regulator, and abstract unit-group
+structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Units
 -/
 
 noncomputable section
@@ -25,45 +36,6 @@ namespace NumberField.SqrtFive
 private theorem goldenIntO_sq : goldenIntO ^ 2 = goldenIntO + 1 :=
   Subtype.ext (by push_cast [goldenIntO]; exact goldenRoot_sq)
 
-private theorem ringHom_ext_golden {f g : K →+* ℂ} (h : f goldenRoot = g goldenRoot) :
-    f = g := by
-  ext z
-  obtain ⟨x, y⟩ := z
-  rw [QuadraticAlgebra.mk_eq_add_smul_omega, map_add, map_add]
-  congr 1
-  · exact (eq_ratCast (f.comp (algebraMap ℚ K)) x).trans
-      (eq_ratCast (g.comp (algebraMap ℚ K)) x).symm
-  · rw [Algebra.smul_def, map_mul, map_mul]
-    exact congrArg₂ (fun a b => a * b)
-      ((eq_ratCast (f.comp (algebraMap ℚ K)) y).trans
-        (eq_ratCast (g.comp (algebraMap ℚ K)) y).symm) h
-
-/-- `ℚ(√5)` is totally real. -/
-theorem isTotallyReal : NumberField.IsTotallyReal K := by
-  refine ⟨fun v => ?_⟩
-  rw [NumberField.InfinitePlace.isReal_iff, NumberField.ComplexEmbedding.isReal_iff]
-  refine ringHom_ext_golden ?_
-  rw [NumberField.ComplexEmbedding.conjugate_coe_eq]
-  set z := NumberField.InfinitePlace.embedding v goldenRoot with hz
-  have hsq : z ^ 2 = z + 1 := by
-    rw [hz, ← map_pow, goldenRoot_sq, map_add, map_one]
-  have hc : (starRingEnd ℂ) z ^ 2 = (starRingEnd ℂ) z + 1 := by
-    rw [← map_pow, hsq, map_add, map_one]
-  have hfac : ((starRingEnd ℂ) z - z) * ((starRingEnd ℂ) z + z - 1) = 0 := by
-    linear_combination hc - hsq
-  rcases mul_eq_zero.mp hfac with h | h
-  · exact sub_eq_zero.mp h
-  · exfalso
-    have hre : z.re = 1 / 2 := by
-      have hcr := congrArg Complex.re h
-      rw [Complex.sub_re, Complex.add_re, Complex.conj_re] at hcr
-      norm_num at hcr
-      linarith
-    have hreal := congrArg Complex.re hsq
-    rw [sq, Complex.mul_re, Complex.add_re, Complex.one_re, hre] at hreal
-    norm_num at hreal
-    nlinarith [sq_nonneg z.im]
-
 /-- The golden ratio `φ` is a unit of `𝓞 K`, with inverse `φ - 1 = 1/φ`: this is the
 fundamental unit of `ℚ(√5)`, the smallest fundamental unit of any real quadratic field. -/
 noncomputable def fundamentalUnit : (𝓞 K)ˣ where
@@ -77,19 +49,6 @@ noncomputable def fundamentalUnit : (𝓞 K)ˣ where
     rw [show (goldenIntO - 1) * goldenIntO = goldenIntO ^ 2 - goldenIntO by ring]
     rw [goldenIntO_sq]
     ring
-
-/-- The field `ℚ(√5)` has two real infinite places: the signature is `(r₁, r₂) = (2, 0)`. -/
-theorem nrRealPlaces_eq_two : InfinitePlace.nrRealPlaces K = 2 := by
-  haveI := isTotallyReal
-  have hcomplex := NumberField.IsTotallyReal.nrComplexPlaces_eq_zero K
-  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
-  rw [hcomplex, degree_eq_two] at h
-  omega
-
-/-- The field `ℚ(√5)` has no complex infinite places. -/
-theorem nrComplexPlaces_eq_zero : InfinitePlace.nrComplexPlaces K = 0 := by
-  haveI := isTotallyReal
-  exact NumberField.IsTotallyReal.nrComplexPlaces_eq_zero K
 
 /-- A torsion generator of `𝓞 Kˣ`, mathematically `-1`. -/
 abbrev torsionGenerator : (𝓞 K)ˣ := -1
@@ -437,5 +396,23 @@ theorem unitGroupStructure :
   have hbij : Function.Bijective ψ := unitGroupStructure_bijective i₀ η hη hneg_tor
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
+
+end NumberField.SqrtFive
+
+
+/-!
+## Regulator
+-/
+
+noncomputable section
+
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+namespace NumberField.SqrtFive
+
+theorem regulator_eq_log_goldenRatio :
+    NumberField.Units.regulator K = Real.log ((1 + Real.sqrt 5) / 2) := by
+  exact regulator_eq
 
 end NumberField.SqrtFive

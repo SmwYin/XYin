@@ -3,12 +3,23 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicThree.PrimeSplitting
+import XYin.NumberField.FieldExamples.CyclotomicThree.ClassGroup
 
 /-!
-# `ℚ(ζ₃)` Unit group
+# `ℚ(ζ₃)` Units
 
-This file develops the unit group part of the `ℚ(ζ₃)` number field example.
+Unit group, torsion, fundamental units, Dirichlet rank, regulator, and abstract unit-group
+structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Units
 -/
 
 noncomputable section
@@ -16,6 +27,7 @@ noncomputable section
 open scoped NumberField nonZeroDivisors Real ENNReal
 
 open Module NumberField Polynomial
+open NumberField.FieldExamples
 
 namespace NumberField.CyclotomicThree
 
@@ -44,19 +56,6 @@ theorem unit_eq_one_or_neg_one_or_eta (u : (𝓞 K)ˣ) :
 theorem torsionOrder_eq_six : Units.torsionOrder K = 6 := by
   rw [IsCyclotomicExtension.Rat.torsionOrder_eq (n := 3) (K := K)]
   norm_num
-
-/-- The field `ℚ(ζ₃)` has no real infinite places. -/
-theorem nrRealPlaces_eq_zero : InfinitePlace.nrRealPlaces K = 0 := by
-  exact IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 3) K (by norm_num)
-
-/-- `ℚ(ζ₃)` is totally complex. -/
-theorem isTotallyComplex : IsTotallyComplex K :=
-  IsCyclotomicExtension.Rat.isTotallyComplex (n := 3) K (by norm_num)
-
-/-- The field `ℚ(ζ₃)` has one complex infinite place. -/
-theorem nrComplexPlaces_eq_one : InfinitePlace.nrComplexPlaces K = 1 := by
-  rw [IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := 3) K]
-  rw [Nat.totient_prime Nat.prime_three]
 
 /-- Dirichlet's unit rank is `0` for this imaginary quadratic field: the signature is
 `(r₁, r₂) = (0, 1)`, so the rank is `r₁ + r₂ - 1 = 0`. -/
@@ -127,5 +126,22 @@ theorem regulator_eq_one : Units.regulator K = 1 := by
   rw [hdet]
   simp
 
+
+end NumberField.CyclotomicThree
+
+
+/-!
+## Regulator
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+namespace NumberField.CyclotomicThree
+
+theorem regulator_eq_one_statement :
+    NumberField.Units.regulator K = 1 := by
+  sorry
 
 end NumberField.CyclotomicThree

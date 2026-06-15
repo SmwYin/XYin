@@ -6,7 +6,19 @@ Authors: SmwYin
 import XYin.NumberField.FieldExamples.CyclotomicFive.RingOfIntegers
 
 /-!
-# Discriminant of `ℚ(ζ₅)`
+# `ℚ(ζ₅)` Discriminant
+
+Discriminant computations and immediate discriminant consequences.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Discriminant
 -/
 
 noncomputable section

@@ -3,12 +3,22 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicFive.Basic
+import XYin.NumberField.FieldExamples.CyclotomicFive.Embeddings
 
 /-!
-# `ℚ(ζ₅)` Ring of integers
+# `ℚ(ζ₅)` RingOfIntegers
 
-This file develops the ring of integers part of the `ℚ(ζ₅)` number field example.
+Integral basis, ring-of-integers description, and integral-coordinate norm forms.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Ring Of Integers
 -/
 
 noncomputable section

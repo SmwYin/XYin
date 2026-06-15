@@ -3,13 +3,23 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtNegSix.NormForm
+import XYin.NumberField.FieldExamples.SqrtNegSix.Discriminant
 import XYin.NumberField.FieldExamples.Common
 
 /-!
-# `ℚ(√-6)` Prime splitting
+# `ℚ(√-6)` PrimeSplitting
 
-This file develops the prime splitting part of the `ℚ(√-6)` number field example.
+Prime splitting, Kummer-Dedekind computations, ramification, and different-related statements.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Prime Splitting
 -/
 
 noncomputable section
@@ -1259,5 +1269,78 @@ theorem ramificationIdx_span_thirteen :
       exact hle2
     have h := (ramified_iff 13 (by norm_num)).mp hram
     omega
+
+end NumberField.SqrtNegSix
+
+
+/-!
+## Kummer-Dedekind
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+open Module NumberField Polynomial
+open Polynomial
+
+namespace NumberField.SqrtNegSix
+
+/-- The reduction of the integral generator polynomial `X^2 + 6` modulo `p`. -/
+abbrev sqrtNegSixPolynomialMod (p : ℕ) : (ZMod p)[X] :=
+  X ^ 2 + C (6 : ZMod p)
+
+theorem kummerDedekind_splits_iff_mod_twentyfour
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
+    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 K)} = P * Q) ↔
+        p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11 := by
+  exact splits_iff_mod_twentyfour p hp hp2 hp3
+
+theorem kummerDedekind_inert_iff_mod_twentyfour
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
+    Irreducible (sqrtNegSixPolynomialMod p) ↔
+      p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23 := by
+  sorry
+
+theorem kummerDedekind_ramified_iff_two_or_three (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔
+      p = 2 ∨ p = 3 := by
+  exact ramified_iff p hp
+
+theorem kummerDedekind_splittingType_mod_twentyfour
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
+    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+        Ideal.span {(p : 𝓞 K)} = P * Q) ↔
+        p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11) ∧
+      (Irreducible (sqrtNegSixPolynomialMod p) ↔
+        p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23) := by
+  exact ⟨kummerDedekind_splits_iff_mod_twentyfour p hp hp2 hp3,
+    kummerDedekind_inert_iff_mod_twentyfour p hp hp2 hp3⟩
+
+end NumberField.SqrtNegSix
+
+
+/-!
+## Different
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+open IsDedekindDomain
+
+namespace NumberField.SqrtNegSix
+
+theorem absNorm_differentIdeal_eq_twentyFour :
+    Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 24 := by
+  rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq]
+  norm_num
+
+theorem prime_dvd_differentIdeal_iff_eq_ramifiedPrime
+    (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
+    P ∣ differentIdeal ℤ (𝓞 K) ↔ P = primeAboveTwo ∨ P = primeAboveThree := by
+  sorry
 
 end NumberField.SqrtNegSix

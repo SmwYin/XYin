@@ -6,9 +6,19 @@ Authors: SmwYin
 import XYin.NumberField.FieldExamples.CyclotomicEight.RingOfIntegers
 
 /-!
-# `ℚ(ζ₈)` Discriminant computations
+# `ℚ(ζ₈)` Discriminant
 
-This file develops the discriminant computations part of the `ℚ(ζ₈)` number field example.
+Discriminant computations and immediate discriminant consequences.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Discriminant
 -/
 
 noncomputable section

@@ -7,9 +7,19 @@ import XYin.NumberField.FieldExamples.CyclotomicFive.Discriminant
 import XYin.NumberField.FieldExamples.Common
 
 /-!
-# `ℚ(ζ₅)` Prime splitting
+# `ℚ(ζ₅)` PrimeSplitting
 
-This file develops the prime splitting part of the `ℚ(ζ₅)` number field example.
+Prime splitting, Kummer-Dedekind computations, ramification, and different-related statements.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Prime Splitting
 -/
 
 noncomputable section
@@ -1153,5 +1163,81 @@ theorem ramificationIdx_span_two :
       exact hle2
     have h := (ramified_iff_eq_five 2 Nat.prime_two).mp hram
     norm_num at h
+
+end NumberField.CyclotomicFive
+
+
+/-!
+## Kummer-Dedekind
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+open Module NumberField Polynomial
+open Polynomial
+
+namespace NumberField.CyclotomicFive
+
+/-- The reduction of the fifth cyclotomic polynomial modulo `p`. -/
+abbrev zetaFivePolynomialMod (p : ℕ) : (ZMod p)[X] :=
+  X ^ 4 + X ^ 3 + X ^ 2 + X + C (1 : ZMod p)
+
+theorem kummerDedekind_splitsCompletely_iff_one_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+      Ideal.absNorm P = p) ↔ p % 5 = 1 := by
+  sorry
+
+theorem kummerDedekind_two_quadratic_primes_iff_four_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
+        Ideal.absNorm Q = p ^ 2) ↔ p % 5 = 4 := by
+  sorry
+
+theorem kummerDedekind_inert_iff_two_or_three_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    Irreducible (zetaFivePolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3 := by
+  sorry
+
+theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
+  sorry
+
+theorem kummerDedekind_splittingType_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    ((∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
+        Ideal.absNorm P = p) ↔ p % 5 = 1) ∧
+      ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+        Ideal.span {(p : 𝓞 K)} = P * Q ∧ Ideal.absNorm P = p ^ 2 ∧
+          Ideal.absNorm Q = p ^ 2) ↔ p % 5 = 4) ∧
+      (Irreducible (zetaFivePolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3) := by
+  sorry
+
+end NumberField.CyclotomicFive
+
+
+/-!
+## Different
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+open IsDedekindDomain
+
+namespace NumberField.CyclotomicFive
+
+theorem absNorm_differentIdeal_eq_oneHundredTwentyFive :
+    Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 125 := by
+  sorry
+
+theorem prime_dvd_differentIdeal_iff_eq_span_one_sub_zeta
+    (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
+    P ∣ differentIdeal ℤ (𝓞 K) ↔ P = Ideal.span {1 - zetaInt} := by
+  sorry
 
 end NumberField.CyclotomicFive

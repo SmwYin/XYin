@@ -8,7 +8,13 @@ import XYin.NumberField.FieldExamples.CyclotomicEight.Discriminant
 /-!
 # `ℚ(ζ₈)` Subfields
 
-This file develops the subfields part of the `ℚ(ζ₈)` number field example.
+Subfield structure special to this field.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
 -/
 
 noncomputable section

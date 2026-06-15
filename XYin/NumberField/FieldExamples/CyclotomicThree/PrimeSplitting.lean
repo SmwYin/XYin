@@ -7,9 +7,19 @@ import XYin.NumberField.FieldExamples.CyclotomicThree.Discriminant
 import XYin.NumberField.FieldExamples.Common
 
 /-!
-# `ℚ(ζ₃)` Prime splitting
+# `ℚ(ζ₃)` PrimeSplitting
 
-This file develops the prime splitting part of the `ℚ(ζ₃)` number field example.
+Prime splitting, Kummer-Dedekind computations, ramification, and different-related statements.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Prime Splitting
 -/
 
 noncomputable section
@@ -747,5 +757,71 @@ theorem splits_iff_one_mod_three (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
   constructor
   · exact one_mod_three_of_splits p hp hp3
   · exact splits_of_one_mod_three p hp hp3
+
+end NumberField.CyclotomicThree
+
+
+/-!
+## Kummer-Dedekind
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+open Module NumberField Polynomial
+open Polynomial
+
+namespace NumberField.CyclotomicThree
+
+/-- The reduction of the third cyclotomic polynomial modulo `p`. -/
+abbrev zetaThreePolynomialMod (p : ℕ) : (ZMod p)[X] :=
+  X ^ 2 + X + C (1 : ZMod p)
+
+theorem kummerDedekind_splits_iff_one_mod_three
+    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 3 = 1 := by
+  sorry
+
+theorem kummerDedekind_inert_iff_two_mod_three
+    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    Irreducible (zetaThreePolynomialMod p) ↔ p % 3 = 2 := by
+  sorry
+
+theorem kummerDedekind_ramified_iff_eq_three (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 3 := by
+  sorry
+
+theorem kummerDedekind_splittingType_mod_three
+    (p : ℕ) (hp : p.Prime) (hp3 : p ≠ 3) :
+    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+        Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 3 = 1) ∧
+      (Irreducible (zetaThreePolynomialMod p) ↔ p % 3 = 2) := by
+  sorry
+
+end NumberField.CyclotomicThree
+
+
+/-!
+## Different
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+open IsDedekindDomain
+
+namespace NumberField.CyclotomicThree
+
+theorem absNorm_differentIdeal_eq_three :
+    Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 3 := by
+  sorry
+
+theorem prime_dvd_differentIdeal_iff_eq_span_zeta_sub_one
+    (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
+    P ∣ differentIdeal ℤ (𝓞 K) ↔ P = Ideal.span {zetaInt - 1} := by
+  sorry
 
 end NumberField.CyclotomicThree

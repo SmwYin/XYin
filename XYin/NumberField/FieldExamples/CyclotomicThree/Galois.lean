@@ -3,12 +3,22 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicThree.Euclidean
+import XYin.NumberField.FieldExamples.CyclotomicThree.Basic
 
 /-!
-# `ℚ(ζ₃)` Galois group
+# `ℚ(ζ₃)` Galois
 
-This file develops the Galois group part of the `ℚ(ζ₃)` number field example.
+Automorphisms, Galois/non-Galois statements, and explicit Galois group structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Galois
 -/
 
 noncomputable section

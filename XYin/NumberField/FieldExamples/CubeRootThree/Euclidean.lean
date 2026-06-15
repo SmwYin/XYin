@@ -3,12 +3,22 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CubeRootThree.ClassGroup
+import XYin.NumberField.FieldExamples.CubeRootThree.Units
 
 /-!
-# `ℚ(∛3)` Euclidean structure
+# `ℚ(∛3)` Euclidean
 
-This file develops the Euclidean structure part of the `ℚ(∛3)` number field example.
+Euclidean or non-Euclidean properties and their arithmetic consequences.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Euclidean
 -/
 
 noncomputable section

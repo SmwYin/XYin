@@ -3,12 +3,23 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicFive.PrimeSplitting
+import XYin.NumberField.FieldExamples.CyclotomicFive.ClassGroup
 
 /-!
-# `ℚ(ζ₅)` Unit group
+# `ℚ(ζ₅)` Units
 
-This file develops the unit group part of the `ℚ(ζ₅)` number field example.
+Unit group, torsion, fundamental units, Dirichlet rank, regulator, and abstract unit-group
+structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Units
 -/
 
 noncomputable section
@@ -78,20 +89,6 @@ theorem torsionUnits_eq : {u : (𝓞 K)ˣ | IsOfFinOrder u} = torsionUnits := by
 `ℚ(ζₘ) ⊆ ℚ(ζ₅)`. -/
 theorem torsionOrder_eq_ten : NumberField.Units.torsionOrder K = 10 :=
   torsionOrder_eq'
-
-/-- `ℚ(ζ₅)` is totally complex: the signature is `(0, 2)`. -/
-theorem isTotallyComplex : NumberField.IsTotallyComplex K :=
-  IsCyclotomicExtension.Rat.isTotallyComplex (n := 5) K (by norm_num)
-
-/-- `ℚ(ζ₅)` has no real infinite places. -/
-theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 :=
-  IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 5) K (by norm_num)
-
-/-- `ℚ(ζ₅)` has exactly two (conjugate pairs of) complex places. -/
-theorem nrComplexPlaces_eq_two : NumberField.InfinitePlace.nrComplexPlaces K = 2 := by
-  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
-  rw [nrRealPlaces_eq_zero, degree_eq_four] at h
-  omega
 
 /-- The Dirichlet unit rank of `ℚ(ζ₅)` is `1`: the signature is `(0, 2)`, so the rank is
 `r₁ + r₂ - 1 = 1`. -/
@@ -259,5 +256,22 @@ theorem regulator_eq :
     NumberField.Units.regulator K = 2 * Real.log ((1 + Real.sqrt 5) / 2) := by
   sorry
 
+
+end NumberField.CyclotomicFive
+
+
+/-!
+## Regulator
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+namespace NumberField.CyclotomicFive
+
+theorem regulator_eq_two_mul_log_goldenRatio :
+    NumberField.Units.regulator K = 2 * Real.log ((1 + Real.sqrt 5) / 2) := by
+  sorry
 
 end NumberField.CyclotomicFive

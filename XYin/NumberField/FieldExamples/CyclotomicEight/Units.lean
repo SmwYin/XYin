@@ -3,12 +3,23 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicEight.PrimeSplitting
+import XYin.NumberField.FieldExamples.CyclotomicEight.ClassGroup
 
 /-!
-# `ℚ(ζ₈)` Unit group
+# `ℚ(ζ₈)` Units
 
-This file develops the unit group part of the `ℚ(ζ₈)` number field example.
+Unit group, torsion, fundamental units, Dirichlet rank, regulator, and abstract unit-group
+structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Units
 -/
 
 noncomputable section
@@ -65,20 +76,6 @@ theorem torsionUnits_eq : {u : (𝓞 K)ˣ | IsOfFinOrder u} = torsionUnits := by
 /-- The torsion subgroup of `𝓞 Kˣ` has order `8`. -/
 theorem torsionOrder_eq_eight : NumberField.Units.torsionOrder K = 8 :=
   torsionOrder_eq'
-
-/-- `ℚ(ζ₈)` is totally complex. -/
-theorem isTotallyComplex : NumberField.IsTotallyComplex K :=
-  IsCyclotomicExtension.Rat.isTotallyComplex (n := 8) K (by norm_num)
-
-/-- `ℚ(ζ₈)` has no real infinite places. -/
-theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 :=
-  IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 8) K (by norm_num)
-
-/-- `ℚ(ζ₈)` has exactly two (conjugate pairs of) complex places. -/
-theorem nrComplexPlaces_eq_two : NumberField.InfinitePlace.nrComplexPlaces K = 2 := by
-  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
-  rw [nrRealPlaces_eq_zero, degree_eq_four] at h
-  omega
 
 /-- The Dirichlet unit rank of `ℚ(ζ₈)` is `1`: the signature is `(0, 2)`, so the rank is
 `r₁ + r₂ - 1 = 1`. -/
@@ -248,5 +245,22 @@ theorem regulator_eq :
     NumberField.Units.regulator K = 2 * Real.log (1 + Real.sqrt 2) := by
   sorry
 
+
+end NumberField.CyclotomicEight
+
+
+/-!
+## Regulator
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal
+
+namespace NumberField.CyclotomicEight
+
+theorem regulator_eq_two_mul_log_one_add_sqrtTwo :
+    NumberField.Units.regulator K = 2 * Real.log (1 + Real.sqrt 2) := by
+  sorry
 
 end NumberField.CyclotomicEight

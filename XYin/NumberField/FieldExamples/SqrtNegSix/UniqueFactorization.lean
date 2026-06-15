@@ -6,9 +6,15 @@ Authors: SmwYin
 import XYin.NumberField.FieldExamples.SqrtNegSix.Euclidean
 
 /-!
-# `ℚ(√-6)` Unique factorization
+# `ℚ(√-6)` UniqueFactorization
 
-This file develops the unique factorization part of the `ℚ(√-6)` number field example.
+Unique-factorization statements special to this field.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
 -/
 
 noncomputable section

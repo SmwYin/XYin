@@ -3,12 +3,22 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CubeRootThree.Euclidean
+import XYin.NumberField.FieldExamples.CubeRootThree.Basic
 
 /-!
-# `ℚ(∛3)` Galois group
+# `ℚ(∛3)` Galois
 
-This file develops the Galois group part of the `ℚ(∛3)` number field example.
+Automorphisms, Galois/non-Galois statements, and explicit Galois group structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Galois
 -/
 
 noncomputable section

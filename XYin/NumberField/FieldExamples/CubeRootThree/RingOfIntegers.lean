@@ -3,12 +3,22 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CubeRootThree.Basic
+import XYin.NumberField.FieldExamples.CubeRootThree.Embeddings
 
 /-!
-# `ℚ(∛3)` Ring of integers
+# `ℚ(∛3)` RingOfIntegers
 
-This file develops the ring of integers part of the `ℚ(∛3)` number field example.
+Integral basis, ring-of-integers description, and integral-coordinate norm forms.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Ring Of Integers
 -/
 
 noncomputable section
@@ -375,6 +385,54 @@ abbrev concreteRingOfIntegers : Subalgebra ℤ K := Algebra.adjoin ℤ ({cubeRoo
 field is monogenic. Subalgebra-level restatement of `span_integralBasisVectors_eq`. -/
 theorem ringOfIntegers_eq : integralClosure ℤ K = concreteRingOfIntegers :=
   integralClosure_eq_adjoin
+
+
+end NumberField.CubeRootThree
+
+
+/-!
+## Norm Form
+-/
+
+noncomputable section
+
+open Module Polynomial
+open scoped NumberField nonZeroDivisors
+
+namespace NumberField.CubeRootThree
+
+/-- The integral norm form: on `𝓞 K = ℤ[θ]` the norm of `x + yθ + zθ²` (with `x, y, z ∈ ℤ`)
+is `x³ + 3y³ + 9z³ - 9xyz`. -/
+theorem intNorm_eq_normForm (x y z : ℤ) :
+    Algebra.norm ℤ (x • (1 : 𝓞 K) + y • thetaInt + z • thetaInt ^ 2) =
+      x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z := by
+  have ht : ((thetaInt : 𝓞 K) : K) = cubeRootThree :=
+    NumberField.RingOfIntegers.map_mk cubeRootThree cubeRootThree_integral
+  have key : (Algebra.norm ℤ (x • (1 : 𝓞 K) + y • thetaInt + z • thetaInt ^ 2) : ℚ)
+      = ((x : ℚ) ^ 3 + 3 * (y : ℚ) ^ 3 + 9 * (z : ℚ) ^ 3 - 9 * x * y * z) := by
+    rw [Algebra.coe_norm_int]
+    push_cast [ht]
+    rw [← Int.cast_smul_eq_zsmul ℚ x, ← Int.cast_smul_eq_zsmul ℚ y, ← Int.cast_smul_eq_zsmul ℚ z,
+      norm_eq_normForm]
+  exact_mod_cast key
+
+/-- The "cubic Pell equation" for `ℚ(∛3)`: `x + yθ + zθ²` is a unit of `ℤ[θ]` iff
+`x³ + 3y³ + 9z³ - 9xyz = ±1`. Combined with `unit_eq_torsion_mul_fundamentalUnit_zpow`, all
+integer solutions of `x³ + 3y³ + 9z³ - 9xyz = ±1` arise from `±(θ² - 2)ⁿ`, `n ∈ ℤ`. -/
+theorem isUnit_iff_normForm (x y z : ℤ) :
+    IsUnit (x • (1 : 𝓞 K) + y • thetaInt + z • thetaInt ^ 2) ↔
+      x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z = 1 ∨
+        x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z = -1 := by
+  rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm,
+    ← Algebra.coe_norm_int, intNorm_eq_normForm]
+  constructor
+  · intro h
+    have h' : |x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z| = 1 := by exact_mod_cast h
+    exact (abs_eq (by norm_num)).mp h'
+  · intro h
+    have h' : |x ^ 3 + 3 * y ^ 3 + 9 * z ^ 3 - 9 * x * y * z| = 1 :=
+      (abs_eq (by norm_num)).mpr h
+    exact_mod_cast h'
 
 
 end NumberField.CubeRootThree

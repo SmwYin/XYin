@@ -3,17 +3,29 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtNegSix.PrimeSplitting
+import XYin.NumberField.FieldExamples.SqrtNegSix.ClassGroup
 
 /-!
-# `ℚ(√-6)` Unit group
+# `ℚ(√-6)` Units
 
-This file develops the unit group part of the `ℚ(√-6)` number field example.
+Unit group, torsion, fundamental units, Dirichlet rank, regulator, and abstract unit-group
+structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Units
 -/
 
 noncomputable section
 
 open Module Polynomial
+open NumberField.FieldExamples
 open scoped NumberField nonZeroDivisors QuadraticAlgebra
 
 namespace NumberField.SqrtNegSix
@@ -23,23 +35,6 @@ abbrev torsionGenerator : (𝓞 K)ˣ := -1
 
 /-- The concrete torsion units `{1, -1}`. -/
 def torsionUnits : Set ((𝓞 K)ˣ) := {u | ∃ k : Fin 2, u = torsionGenerator ^ k.val}
-
-/-- `ℚ(√-6)` is totally complex. -/
-theorem isTotallyComplex : NumberField.IsTotallyComplex K := by
-  refine ⟨fun v => ?_⟩
-  rw [NumberField.InfinitePlace.isComplex_iff]
-  intro hreal
-  set z := NumberField.InfinitePlace.embedding v θ with hz
-  have hsq : z ^ 2 = (-6 : ℂ) := by
-    rw [hz, ← map_pow, theta_sq]
-    rw [map_neg, map_ofNat]
-  have hconj := RingHom.congr_fun (NumberField.ComplexEmbedding.isReal_iff.mp hreal) θ
-  rw [NumberField.ComplexEmbedding.conjugate_coe_eq, ← hz] at hconj
-  have him : z.im = 0 := Complex.conj_eq_iff_im.mp hconj
-  have hre := congrArg Complex.re hsq
-  rw [sq, Complex.mul_re, him] at hre
-  norm_num at hre
-  nlinarith [sq_nonneg z.re]
 
 /-- The torsion subgroup of `𝓞 Kˣ` is exactly `{1, -1}` (the discriminant is not `-3` or
 `-4`, so there are no extra roots of unity). -/
@@ -99,17 +94,6 @@ theorem torsionOrder_eq_two : NumberField.Units.torsionOrder K = 2 := by
       · right
         exact Subtype.ext (by simpa using hk)
   simpa [NumberField.Units.torsionOrder] using hcard
-
-/-- `ℚ(√-6)` has no real embedding: the signature is `(0, 1)`. -/
-theorem nrRealPlaces_eq_zero : NumberField.InfinitePlace.nrRealPlaces K = 0 := by
-  haveI := isTotallyComplex
-  exact NumberField.IsTotallyComplex.nrRealPlaces_eq_zero K
-
-/-- `ℚ(√-6)` has exactly one complex infinite place. -/
-theorem nrComplexPlaces_eq_one : NumberField.InfinitePlace.nrComplexPlaces K = 1 := by
-  have h := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank K
-  rw [nrRealPlaces_eq_zero, degree_eq_two] at h
-  omega
 
 /-- The Dirichlet unit rank of the imaginary quadratic field `ℚ(√-6)` is `0`: the signature
 is `(0, 1)`, so the rank is `r₁ + r₂ - 1 = 0` and the unit group is finite. -/
@@ -173,5 +157,22 @@ theorem regulator_eq_one : NumberField.Units.regulator K = 1 := by
   rw [hdet]
   simp
 
+
+end NumberField.SqrtNegSix
+
+
+/-!
+## Regulator
+-/
+
+noncomputable section
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+namespace NumberField.SqrtNegSix
+
+theorem regulator_eq_one_statement :
+    NumberField.Units.regulator K = 1 := by
+  exact regulator_eq_one
 
 end NumberField.SqrtNegSix

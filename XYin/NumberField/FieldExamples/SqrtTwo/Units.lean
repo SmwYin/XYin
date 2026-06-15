@@ -3,12 +3,23 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtTwo.PrimeSplitting
+import XYin.NumberField.FieldExamples.SqrtTwo.ClassGroup
 
 /-!
-# `ℚ(√2)` Unit group
+# `ℚ(√2)` Units
 
-This file develops the unit group part of the `ℚ(√2)` number field example.
+Unit group, torsion, fundamental units, Dirichlet rank, regulator, and abstract unit-group
+structure.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Units
 -/
 
 noncomputable section
@@ -294,37 +305,6 @@ theorem sqrtTwoFundamentalUnit_isFundamental :
   exact ⟨sqrtTwoFundamentalUnit_sq,
     pellTwoFundamentalSolution_generates_normOnePell⟩
 
-/-- The field `ℚ(√2)` has no complex infinite places. -/
-theorem nrComplexPlaces_eq_zero :
-    NumberField.InfinitePlace.nrComplexPlaces K = 0 := by
-  have hfin : Module.finrank ℚ K = 2 := by
-    rw [PowerBasis.finrank sqrtTwoPowerBasis]
-    exact sqrtTwoPowerBasis_dim
-  have hsig := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
-  rw [hfin] at hsig
-  have hsign := NumberField.sign_discr (K := K)
-  rw [sqrtTwo_numberField_discr] at hsign
-  have hnle : NumberField.InfinitePlace.nrComplexPlaces K ≤ 1 := by omega
-  rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hnle with hn | hn
-  · exact hn
-  · rw [hn] at hsign
-    norm_num at hsign
-
-/-- The field `ℚ(√2)` has two real infinite places: the signature is `(r₁, r₂) = (2, 0)`,
-i.e. the field is totally real. -/
-theorem nrRealPlaces_eq_two :
-    NumberField.InfinitePlace.nrRealPlaces K = 2 := by
-  have hfin : Module.finrank ℚ K = 2 := by
-    rw [PowerBasis.finrank sqrtTwoPowerBasis]
-    exact sqrtTwoPowerBasis_dim
-  have hsig := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
-  rw [hfin, nrComplexPlaces_eq_zero] at hsig
-  omega
-
-/-- `ℚ(√2)` is totally real. -/
-theorem isTotallyReal : NumberField.IsTotallyReal K :=
-  (NumberField.nrComplexPlaces_eq_zero_iff (K := K)).mp nrComplexPlaces_eq_zero
-
 /-- The torsion subgroup of `𝓞 ℚ(√2)ˣ` has order `2`: a totally real field has only the
 roots of unity `±1`. -/
 private theorem sqrtTwo_torsion_eq_one_or_neg_one
@@ -490,5 +470,23 @@ theorem unitGroupStructure :
   have hbij : Function.Bijective ψ := unitGroupStructure_bijective i₀ η hη hneg_tor
   exact ⟨(MulEquiv.ofBijective ψ hbij).symm⟩
 
+
+end NumberField.SqrtTwo
+
+
+/-!
+## Regulator
+-/
+
+noncomputable section
+
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+namespace NumberField.SqrtTwo
+
+theorem regulator_eq_log_one_add_sqrtTwo :
+    NumberField.Units.regulator K = Real.log (1 + Real.sqrt 2) := by
+  exact regulator_eq
 
 end NumberField.SqrtTwo

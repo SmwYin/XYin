@@ -6,21 +6,19 @@ Authors: SmwYin
 import Mathlib
 
 /-!
-# The cyclotomic quadratic field `ℚ(ζ₃)`
+# `ℚ(ζ₃)` Basic
 
-The imaginary quadratic field `K = CyclotomicField 3 ℚ`, i.e. `ℚ(ζ₃) ≃ ℚ(√-3)`, and its main
-arithmetic invariants:
+Field definition, chosen generator, defining polynomial, degree, and basic algebraic facts.
 
-* degree `2`, generator `ζ₃`, alternative `AdjoinRoot` presentations (section 1);
-* integral basis `1, ζ`, ring of integers `ℤ[ζ]` — the Eisenstein integers (section 2);
-* discriminant `-3` (section 3);
-* the norm form `x² - xy + y²` and its unit equation (section 4);
-* splitting of rational primes: `3` ramifies as `(ζ - 1)²`, `2` is inert, `7` splits, and the
-  splitting law: `p ≠ 3` splits iff `p ≡ 1 (mod 3)` (section 5);
-* unit group `μ₆ = {±1, ±ζ, ±ζ²}` of rank `0`, regulator `1` (section 6);
-* class number one (section 7);
-* the norm-Euclidean property (section 8);
-* Galois group `(ℤ/3)ˣ ≅ ℤ/2` (section 9).
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Basic
 -/
 
 noncomputable section

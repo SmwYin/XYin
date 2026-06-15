@@ -6,21 +6,19 @@ Authors: SmwYin
 import Mathlib
 
 /-!
-# The field `ℚ(∛3)` via `AdjoinRoot`
+# `ℚ(∛3)` Basic
 
-The pure cubic number field `K = ℚ(∛3)`, realised as `AdjoinRoot (X ^ 3 - 3)`, and its main
-arithmetic invariants:
+Field definition, chosen generator, defining polynomial, degree, and basic algebraic facts.
 
-* degree `3`, integral basis `1, θ, θ²`, ring of integers `ℤ[θ]` (sections 1–2);
-* discriminant `-243 = -3⁵` (section 3);
-* the norm form `x³ + 3y³ + 9z³ - 9xyz` and its unit ("cubic Pell") equation (section 4);
-* splitting of rational primes: `3` ramifies totally, `2` splits as (deg 1)·(deg 2), `7` is
-  inert, `61` splits completely (section 5);
-* unit group `{±1} × (θ² - 2)^ℤ`, signature `(1, 1)`, regulator `|log(∛9 - 2)|` (section 6);
-* class number one (section 7);
-* the norm-Euclidean property (section 8);
-* trivial automorphism group, hence non-Galois; Galois closure `ℚ(∛3, ζ₃)` of degree `6` with
-  Galois group `S₃` (section 9).
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Basic
 -/
 
 noncomputable section

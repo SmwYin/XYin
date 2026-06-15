@@ -4,10 +4,17 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
 import XYin.NumberField.FieldExamples.SqrtNegSix.Embeddings
-import Mathlib.NumberTheory.NumberField.CMField
 
 /-!
-# CM-field structure for `ℚ(√-6)`
+# `ℚ(√-6)` CMField
+
+CM-field structure and related statements.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
 -/
 
 noncomputable section

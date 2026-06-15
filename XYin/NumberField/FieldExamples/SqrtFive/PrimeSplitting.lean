@@ -3,13 +3,23 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.SqrtFive.NormForm
+import XYin.NumberField.FieldExamples.SqrtFive.Discriminant
 import XYin.NumberField.FieldExamples.Common
 
 /-!
-# `ℚ(√5)` Prime splitting
+# `ℚ(√5)` PrimeSplitting
 
-This file develops the prime splitting part of the `ℚ(√5)` number field example.
+Prime splitting, Kummer-Dedekind computations, ramification, and different-related statements.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Prime Splitting
 -/
 
 noncomputable section
@@ -959,5 +969,165 @@ theorem splits_iff_pm_one_mod_five (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
   constructor
   · exact pm_one_mod_five_of_splits p hp hp5
   · exact splits_of_pm_one_mod_five p hp hp5
+
+end NumberField.SqrtFive
+
+
+/-!
+## Kummer-Dedekind
+-/
+
+noncomputable section
+
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+open Module NumberField Polynomial
+open Polynomial
+
+namespace NumberField.SqrtFive
+
+/-- The reduction of the integral generator polynomial `X^2 - X - 1` modulo `p`. -/
+abbrev goldenPolynomialMod (p : ℕ) : (ZMod p)[X] :=
+  X ^ 2 - X - C (1 : ZMod p)
+
+theorem kummerDedekind_splits_iff_pm_one_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+      Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4 := by
+  exact splits_iff_pm_one_mod_five p hp hp5
+
+theorem kummerDedekind_inert_iff_two_or_three_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    Irreducible (goldenPolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3 := by
+  sorry
+
+theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
+    (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
+  exact ramified_iff_eq_five p hp
+
+theorem kummerDedekind_splittingType_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
+        Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4) ∧
+      (Irreducible (goldenPolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3) := by
+  exact ⟨kummerDedekind_splits_iff_pm_one_mod_five p hp hp5,
+    kummerDedekind_inert_iff_two_or_three_mod_five p hp hp5⟩
+
+end NumberField.SqrtFive
+
+
+/-!
+## Different
+-/
+
+noncomputable section
+
+
+open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
+
+open Module NumberField Polynomial
+open IsDedekindDomain
+
+namespace NumberField.SqrtFive
+
+private theorem goldenIntO_adjoin_eq_top :
+    Algebra.adjoin ℤ ({goldenIntO} : Set (𝓞 K)) = ⊤ := by
+  apply le_antisymm le_top
+  intro x _
+  have hxint : (x : K) ∈ integralClosure ℤ K := x.2
+  have hfield : (x : K) ∈ Algebra.adjoin ℤ ({goldenRoot} : Set K) := by
+    simpa [concreteRingOfIntegers] using (by
+      rw [ringOfIntegers_eq] at hxint
+      exact hxint)
+  rw [Algebra.adjoin_singleton_eq_range_aeval] at hfield
+  rcases hfield with ⟨P, hP⟩
+  have hx_eq : x = aeval goldenIntO P := by
+    apply Subtype.ext
+    change (x : K) = ((aeval goldenIntO P : 𝓞 K) : K)
+    rw [← hP]
+    simpa [goldenIntO] using
+      (Polynomial.aeval_algHom_apply (algebraMap (𝓞 K) K).toIntAlgHom goldenIntO P)
+  rw [hx_eq]
+  rw [Algebra.adjoin_singleton_eq_range_aeval]
+  exact ⟨P, rfl⟩
+
+private theorem goldenIntO_minpoly :
+    minpoly ℤ goldenIntO = X ^ 2 - X - 1 := by
+  letI : IsScalarTower ℤ (𝓞 K) K := IsScalarTower.of_algebraMap_eq fun _ => rfl
+  have hint : IsIntegral ℤ goldenIntO := Algebra.IsIntegral.isIntegral goldenIntO
+  have hfrac :
+      minpoly ℚ ((algebraMap (𝓞 K) K) goldenIntO) =
+        map (algebraMap ℤ ℚ) (minpoly ℤ goldenIntO) :=
+    @minpoly.isIntegrallyClosed_eq_field_fractions ℤ (𝓞 K)
+      inferInstance inferInstance inferInstance inferInstance
+      ℚ K inferInstance inferInstance inferInstance inferInstance inferInstance
+      inferInstance inferInstance inferInstance inferInstance this inferInstance inferInstance
+      goldenIntO hint
+  apply (Polynomial.map_injective (algebraMap ℤ ℚ) Int.cast_injective)
+  rw [← hfrac]
+  change minpoly ℚ goldenRoot = map (algebraMap ℤ ℚ) (X ^ 2 - X - 1 : ℤ[X])
+  have hminQ : minpoly ℚ goldenRoot = (X ^ 2 - X - 1 : ℚ[X]) := by
+    exact (minpoly.eq_of_irreducible_of_monic
+      (Polynomial.X_pow_sub_X_sub_one_irreducible_rat (n := 2)
+        (by norm_num : (2 : ℕ) ≠ 1))
+      (by
+        simp
+        linear_combination goldenRoot_sq) (by
+        rw [show (X ^ 2 - X - 1 : ℚ[X]) = X ^ 2 - (X + 1) by ring]
+        apply monic_X_pow_sub
+        simpa using (show degree (X + C (1 : ℚ)) < (2 : WithBot ℕ) by
+          rw [degree_X_add_C]
+          norm_num))).symm
+  rw [hminQ]
+  simp [sub_eq_add_neg]
+
+theorem differentIdeal_eq_span_sqrtFive :
+    differentIdeal ℤ (𝓞 K) = Ideal.span {sqrtFiveIntO} := by
+  have hcond : conductor ℤ goldenIntO = ⊤ :=
+    conductor_eq_top_of_adjoin_eq_top goldenIntO_adjoin_eq_top
+  have hadjoin : Algebra.adjoin ℚ ({algebraMap (𝓞 K) K goldenIntO} : Set K) = ⊤ := by
+    simpa [goldenIntO] using adjoin_goldenRoot_eq_top
+  have hdiff := conductor_mul_differentIdeal ℤ ℚ K (B := 𝓞 K) goldenIntO hadjoin
+  rw [hcond, Ideal.top_mul] at hdiff
+  have hae : aeval goldenIntO (derivative (minpoly ℤ goldenIntO)) = sqrtFiveIntO := by
+    rw [goldenIntO_minpoly]
+    rw [show derivative (X ^ 2 - X - (1 : ℤ[X])) = (2 : ℤ[X]) * X - 1 by
+      simp]
+    calc
+      aeval goldenIntO ((2 : ℤ[X]) * X - 1) =
+          aeval goldenIntO (C (2 : ℤ)) * aeval goldenIntO X - aeval goldenIntO 1 := by
+        rw [show (2 : ℤ[X]) = C (2 : ℤ) by rfl, map_sub, map_mul]
+      _ = sqrtFiveIntO := by
+        rw [aeval_C, aeval_X, map_one]
+        simp [sqrtFiveIntO]
+  rw [hdiff, hae]
+
+theorem absNorm_differentIdeal_eq_five :
+    Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 5 := by
+  rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq]
+  norm_num
+
+theorem prime_dvd_differentIdeal_iff_eq_span_sqrtFive
+    (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
+    P ∣ differentIdeal ℤ (𝓞 K) ↔ P = Ideal.span {sqrtFiveIntO} := by
+  constructor
+  · intro hdiv
+    haveI : P.IsPrime := _hP
+    have hle : Ideal.span {sqrtFiveIntO} ≤ P := by
+      rw [← differentIdeal_eq_span_sqrtFive]
+      exact Ideal.le_of_dvd hdiv
+    have hI0 : Ideal.span ({sqrtFiveIntO} : Set (𝓞 K)) ≠ ⊥ := by
+      intro hbot
+      have hzero : sqrtFiveIntO = 0 := Ideal.span_singleton_eq_bot.mp hbot
+      have hsqrt : sqrtFiveIntO ^ 2 = (5 : 𝓞 K) := by
+        apply Subtype.ext
+        change (2 * goldenRoot - 1) ^ 2 = (5 : K)
+        exact sqrtFiveRoot_sq
+      rw [hzero] at hsqrt
+      norm_num at hsqrt
+    exact ((isPrime_span_sqrtFiveIntO.isMaximal hI0).eq_of_le _hP.ne_top hle).symm
+  · intro h
+    rw [h, differentIdeal_eq_span_sqrtFive]
 
 end NumberField.SqrtFive

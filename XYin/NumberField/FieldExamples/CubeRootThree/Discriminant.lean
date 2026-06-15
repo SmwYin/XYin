@@ -6,9 +6,19 @@ Authors: SmwYin
 import XYin.NumberField.FieldExamples.CubeRootThree.RingOfIntegers
 
 /-!
-# `ℚ(∛3)` Discriminant computations
+# `ℚ(∛3)` Discriminant
 
-This file develops the discriminant computations part of the `ℚ(∛3)` number field example.
+Discriminant computations and immediate discriminant consequences.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
+-/
+
+/-!
+## Discriminant
 -/
 
 noncomputable section

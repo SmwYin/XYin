@@ -3,12 +3,18 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicFive.Euclidean
+import XYin.NumberField.FieldExamples.CyclotomicFive.Galois
 
 /-!
-# `ℚ(ζ₅)` Quadratic subfield
+# `ℚ(ζ₅)` QuadraticSubfield
 
-This file develops the quadratic subfield part of the `ℚ(ζ₅)` number field example.
+Quadratic subfield statements that are special to this field.
+
+This file is part of the reorganized `FieldExamples` case-study layout. The core files are
+intended to import almost linearly:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting →
+ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific special-topic files
+kept separate.
 -/
 
 noncomputable section
