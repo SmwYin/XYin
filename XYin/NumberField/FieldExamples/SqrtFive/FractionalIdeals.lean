@@ -26,14 +26,23 @@ abbrev ramifiedPrimeFractionalIdeal : FractionalIdeal (𝓞 K)⁰ K :=
 
 theorem goldenRoot_mem_fractionalIdeal :
     goldenRoot ∈ goldenRootFractionalIdeal := by
-  sorry
+  exact FractionalIdeal.mem_spanSingleton_self (𝓞 K)⁰ goldenRoot
 
 theorem goldenRootFractionalIdeal_absNorm :
     FractionalIdeal.absNorm goldenRootFractionalIdeal = |Algebra.norm ℚ goldenRoot| := by
-  sorry
+  simp [goldenRootFractionalIdeal]
 
 theorem ramifiedPrimeFractionalIdeal_ne_zero :
     ramifiedPrimeFractionalIdeal ≠ 0 := by
-  sorry
+  exact FractionalIdeal.coeIdeal_ne_zero.mpr (by
+    intro hbot
+    have hzero : sqrtFiveIntO = 0 := by
+      simpa [Ideal.span_singleton_eq_bot] using hbot
+    have hsqrt : sqrtFiveIntO ^ 2 = (5 : 𝓞 K) := by
+      apply Subtype.ext
+      change (2 * goldenRoot - 1) ^ 2 = (5 : K)
+      exact sqrtFiveRoot_sq
+    rw [hzero] at hsqrt
+    norm_num at hsqrt)
 
 end NumberField.SqrtFive

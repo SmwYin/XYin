@@ -20,7 +20,12 @@ namespace NumberField.SqrtFive
 
 theorem house_goldenRoot_pos :
     0 < NumberField.house goldenRoot := by
-  sorry
+  exact lt_of_lt_of_le zero_lt_one
+    (NumberField.one_le_house_of_isIntegral goldenRoot_isIntegral (by
+      intro h
+      have hsq := goldenRoot_sq
+      rw [h] at hsq
+      norm_num at hsq))
 
 theorem house_fundamentalUnit :
     NumberField.house (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) =

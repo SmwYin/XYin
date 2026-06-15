@@ -5,6 +5,7 @@ Authors: SmwYin
 -/
 import XYin.NumberField.FieldExamples.SqrtTwo.Embeddings
 import Mathlib.NumberTheory.NumberField.Completion.InfinitePlace
+import Mathlib.NumberTheory.NumberField.Completion.Ramification
 
 /-!
 # Infinite completions of `ℚ(√2)`
@@ -29,11 +30,22 @@ abbrev InfiniteCompletion (v : NumberField.InfinitePlace K) : Type :=
 /-- Every infinite completion of `ℚ(√2)` is a real completion. -/
 theorem infiniteCompletion_equiv_real (v : NumberField.InfinitePlace K) :
     Nonempty (InfiniteCompletion v ≃+* ℝ) := by
-  sorry
+  exact ⟨NumberField.InfinitePlace.Completion.ringEquivRealOfIsReal (infinitePlace_isReal v)⟩
 
 /-- The real isomorphism sends the image of `√2` to the expected real absolute value. -/
 theorem infiniteCompletion_sqrtTwoRoot_norm (v : NumberField.InfinitePlace K) :
     ‖(algebraMap K (InfiniteCompletion v) sqrtTwoRoot)‖ = Real.sqrt 2 := by
-  sorry
+  change ‖(((WithAbs.equiv v.1).symm sqrtTwoRoot : WithAbs v.1) : v.Completion)‖ =
+    Real.sqrt 2
+  rw [NumberField.InfinitePlace.Completion.norm_coe, (WithAbs.equiv v.1).apply_symm_apply]
+  exact infinitePlace_apply_sqrtTwoRoot v
+
+open scoped Classical in
+/-- The completion-ramification formula at infinity specializes to the degree `2` of
+`ℚ(√2)/ℚ`. -/
+theorem infinitePlace_sum_inertiaDeg_eq_two (v : NumberField.InfinitePlace ℚ) :
+    ∑ w ∈ v.placesOver K, v.inertiaDeg w = 2 := by
+  rw [NumberField.InfinitePlace.sum_inertiaDeg_eq_finrank (K := ℚ) (L := K) v]
+  exact degree_eq_two
 
 end NumberField.SqrtTwo

@@ -24,11 +24,11 @@ abbrev CompletionAtThree : Type :=
 theorem completionAtTwo_contains_theta :
     ∃ x : CompletionAtTwo,
       x = NumberField.FinitePlace.embedding (K := K) heightOneTwo θ := by
-  sorry
+  exact ⟨NumberField.FinitePlace.embedding (K := K) heightOneTwo θ, rfl⟩
 
 theorem completionAtThree_contains_theta :
     ∃ x : CompletionAtThree,
       x = NumberField.FinitePlace.embedding (K := K) heightOneThree θ := by
-  sorry
+  exact ⟨NumberField.FinitePlace.embedding (K := K) heightOneThree θ, rfl⟩
 
 end NumberField.SqrtNegSix

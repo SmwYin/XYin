@@ -38,15 +38,16 @@ abbrev infinitePrincipalAdele_fundamentalUnit : SqrtTwoInfiniteAdeleRing :=
 
 theorem infiniteAdele_norm_sqrtTwoRoot :
     ‖infinitePrincipalAdele_sqrtTwoRoot‖ = |Algebra.norm ℚ sqrtTwoRoot| := by
-  sorry
+  exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm sqrtTwoRoot
 
 theorem infiniteAdele_norm_fundamentalUnit :
     ‖infinitePrincipalAdele_fundamentalUnit‖ =
       |Algebra.norm ℚ (algebraMap (𝓞 K) K (sqrtTwoFundamentalUnit : 𝓞 K))| := by
-  sorry
+  exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm
+    (algebraMap (𝓞 K) K (sqrtTwoFundamentalUnit : 𝓞 K))
 
 theorem infiniteAdele_denseRange :
     DenseRange (algebraMap K SqrtTwoInfiniteAdeleRing) := by
-  sorry
+  exact NumberField.InfiniteAdeleRing.denseRange_algebraMap K
 
 end NumberField.SqrtTwo

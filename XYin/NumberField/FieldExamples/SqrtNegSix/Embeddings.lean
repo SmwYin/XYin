@@ -18,18 +18,33 @@ namespace NumberField.SqrtNegSix
 
 theorem infinitePlace_card_eq_one :
     Fintype.card (NumberField.InfinitePlace K) = 1 := by
-  sorry
+  rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces, nrRealPlaces_eq_zero,
+    nrComplexPlaces_eq_one]
 
 theorem infinitePlace_isComplex (v : NumberField.InfinitePlace K) :
     NumberField.InfinitePlace.IsComplex v := by
-  sorry
+  exact isTotallyComplex.isComplex v
 
 theorem exists_complexEmbedding_theta_pos :
     ∃ σ : K →+* ℂ, σ θ = Complex.I * (Real.sqrt 6 : ℂ) := by
-  sorry
+  refine ⟨(QuadraticAlgebra.lift (R := ℚ) (a := (-6 : ℚ)) (b := 0)
+      ⟨Complex.I * (Real.sqrt 6 : ℂ), ?_⟩).toRingHom, ?_⟩
+  · ring_nf
+    rw [pow_two, Complex.I_mul_I]
+    rw [← Complex.ofReal_pow, Real.sq_sqrt]
+    · norm_num
+    · norm_num
+  · simp [θ]
 
 theorem exists_complexEmbedding_theta_neg :
     ∃ σ : K →+* ℂ, σ θ = -Complex.I * (Real.sqrt 6 : ℂ) := by
-  sorry
+  refine ⟨(QuadraticAlgebra.lift (R := ℚ) (a := (-6 : ℚ)) (b := 0)
+      ⟨-Complex.I * (Real.sqrt 6 : ℂ), ?_⟩).toRingHom, ?_⟩
+  · ring_nf
+    rw [pow_two, Complex.I_mul_I]
+    rw [← Complex.ofReal_pow, Real.sq_sqrt]
+    · norm_num
+    · norm_num
+  · simp [θ]
 
 end NumberField.SqrtNegSix

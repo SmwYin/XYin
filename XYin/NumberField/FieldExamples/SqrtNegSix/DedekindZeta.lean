@@ -24,7 +24,7 @@ abbrev sqrtNegSixDedekindZetaResidue : ℝ :=
 
 theorem dedekindZeta_residue_pos :
     0 < sqrtNegSixDedekindZetaResidue := by
-  sorry
+  exact NumberField.dedekindZeta_residue_pos K
 
 theorem dedekindZeta_residue_class_number_formula :
     sqrtNegSixDedekindZetaResidue =
@@ -32,6 +32,6 @@ theorem dedekindZeta_residue_class_number_formula :
           (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *
           NumberField.Units.regulator K * NumberField.classNumber K) /
         (NumberField.Units.torsionOrder K * Real.sqrt |NumberField.discr K|) := by
-  sorry
+  exact NumberField.dedekindZeta_residue_def K
 
 end NumberField.SqrtNegSix

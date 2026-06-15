@@ -27,10 +27,10 @@ abbrev infinitePrincipalAdele_torsionGenerator : SqrtNegSixInfiniteAdeleRing :=
 
 theorem infiniteAdele_norm_theta :
     ‖infinitePrincipalAdele_theta‖ = |Algebra.norm ℚ θ| := by
-  sorry
+  exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm θ
 
 theorem infiniteAdele_denseRange :
     DenseRange (algebraMap K SqrtNegSixInfiniteAdeleRing) := by
-  sorry
+  exact NumberField.InfiniteAdeleRing.denseRange_algebraMap K
 
 end NumberField.SqrtNegSix

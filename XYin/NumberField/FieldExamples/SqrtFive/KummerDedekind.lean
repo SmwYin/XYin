@@ -29,7 +29,7 @@ theorem kummerDedekind_splits_iff_pm_one_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
       Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4 := by
-  sorry
+  exact splits_iff_pm_one_mod_five p hp hp5
 
 theorem kummerDedekind_inert_iff_two_or_three_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
@@ -38,13 +38,14 @@ theorem kummerDedekind_inert_iff_two_or_three_mod_five
 
 theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
-  sorry
+  exact ramified_iff_eq_five p hp
 
 theorem kummerDedekind_splittingType_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     ((∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
         Ideal.span {(p : 𝓞 K)} = P * Q) ↔ p % 5 = 1 ∨ p % 5 = 4) ∧
       (Irreducible (goldenPolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3) := by
-  sorry
+  exact ⟨kummerDedekind_splits_iff_pm_one_mod_five p hp hp5,
+    kummerDedekind_inert_iff_two_or_three_mod_five p hp hp5⟩
 
 end NumberField.SqrtFive

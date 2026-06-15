@@ -414,6 +414,15 @@ private theorem eq_one_or_neg_one_of_mem_torsion {ζ : (𝓞 K)ˣ}
     (sqrtTwo_torsion_eq_one_or_neg_one
       (⟨ζ, hζ⟩ : NumberField.Units.torsion K))
 
+/-- The only roots of unity in `𝓞 ℚ(√2)` are `1` and `-1`. -/
+theorem mem_torsion_iff_eq_one_or_neg_one (u : (𝓞 K)ˣ) :
+    u ∈ NumberField.Units.torsion K ↔ u = 1 ∨ u = -1 := by
+  constructor
+  · exact eq_one_or_neg_one_of_mem_torsion
+  · rintro (rfl | rfl)
+    · exact Subgroup.one_mem _
+    · exact neg_one_mem_torsion
+
 /-- The regulator of `ℚ(√2)` is `log(1 + √2) ≈ 0.8814`, the covolume of the unit lattice.
 This is the analytic restatement that `1 + √2` is a fundamental unit. -/
 theorem regulator_eq : Units.regulator K = Real.log (1 + Real.sqrt 2) := by

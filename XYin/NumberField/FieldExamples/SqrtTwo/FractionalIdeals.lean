@@ -33,14 +33,20 @@ abbrev ramifiedPrimeFractionalIdeal : FractionalIdeal (𝓞 K)⁰ K :=
 
 theorem sqrtTwoRoot_mem_fractionalIdeal :
     sqrtTwoRoot ∈ sqrtTwoRootFractionalIdeal := by
-  sorry
+  simp only [mem_spanSingleton]
+  exact ⟨1, one_smul (𝓞 K)⁰ sqrtTwoRoot⟩
 
 theorem sqrtTwoRootFractionalIdeal_absNorm :
     FractionalIdeal.absNorm sqrtTwoRootFractionalIdeal = |Algebra.norm ℚ sqrtTwoRoot| := by
-  sorry
+  exact FractionalIdeal.absNorm_span_singleton (R := 𝓞 K) sqrtTwoRoot
 
 theorem ramifiedPrimeFractionalIdeal_ne_zero :
     ramifiedPrimeFractionalIdeal ≠ 0 := by
-  sorry
+  change ((Ideal.span {sqrtTwoInteger} : Ideal (𝓞 K)) : FractionalIdeal (𝓞 K)⁰ K) ≠ 0
+  rw [FractionalIdeal.coeIdeal_ne_zero]
+  intro h
+  have hnorm := absNorm_span_sqrtTwoInteger
+  rw [h, Ideal.absNorm_bot] at hnorm
+  norm_num at hnorm
 
 end NumberField.SqrtTwo

@@ -23,10 +23,10 @@ abbrev InfiniteCompletion (v : NumberField.InfinitePlace K) : Type :=
 
 theorem infiniteCompletion_equiv_real (v : NumberField.InfinitePlace K) :
     Nonempty (InfiniteCompletion v ≃+* ℝ) := by
-  sorry
+  exact ⟨NumberField.InfinitePlace.Completion.ringEquivRealOfIsReal (infinitePlace_isReal v)⟩
 
 theorem infiniteCompletion_goldenRoot_norm (v : NumberField.InfinitePlace K) :
     ∃ r : ℝ, ‖(algebraMap K (InfiniteCompletion v) goldenRoot)‖ = r := by
-  sorry
+  exact ⟨‖(algebraMap K (InfiniteCompletion v) goldenRoot)‖, rfl⟩
 
 end NumberField.SqrtFive

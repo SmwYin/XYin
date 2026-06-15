@@ -27,14 +27,24 @@ abbrev primeAboveThreeFractionalIdeal : FractionalIdeal (𝓞 K)⁰ K :=
 
 theorem theta_mem_fractionalIdeal :
     θ ∈ thetaFractionalIdeal := by
-  sorry
+  exact FractionalIdeal.mem_spanSingleton_self (𝓞 K)⁰ θ
 
 theorem thetaFractionalIdeal_absNorm :
     FractionalIdeal.absNorm thetaFractionalIdeal = |Algebra.norm ℚ θ| := by
-  sorry
+  simp [thetaFractionalIdeal]
 
 theorem ramifiedFractionalIdeals_ne_zero :
     primeAboveTwoFractionalIdeal ≠ 0 ∧ primeAboveThreeFractionalIdeal ≠ 0 := by
-  sorry
+  constructor
+  · exact FractionalIdeal.coeIdeal_ne_zero.mpr (by
+      intro hbot
+      have hnorm := absNorm_primeAboveTwo
+      rw [hbot] at hnorm
+      norm_num at hnorm)
+  · exact FractionalIdeal.coeIdeal_ne_zero.mpr (by
+      intro hbot
+      have hnorm := absNorm_primeAboveThree
+      rw [hbot] at hnorm
+      norm_num at hnorm)
 
 end NumberField.SqrtNegSix

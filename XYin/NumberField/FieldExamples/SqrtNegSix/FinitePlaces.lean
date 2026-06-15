@@ -23,17 +23,23 @@ namespace NumberField.SqrtNegSix
 def heightOneTwo : HeightOneSpectrum (𝓞 K) where
   asIdeal := primeAboveTwo
   isPrime := by
-    sorry
+    exact isPrime_primeAboveTwo
   ne_bot := by
-    sorry
+    intro h
+    have hnorm := absNorm_primeAboveTwo
+    rw [h] at hnorm
+    norm_num at hnorm
 
 /-- The finite place over `3`, represented by the non-principal ramified prime. -/
 def heightOneThree : HeightOneSpectrum (𝓞 K) where
   asIdeal := primeAboveThree
   isPrime := by
-    sorry
+    exact isPrime_primeAboveThree
   ne_bot := by
-    sorry
+    intro h
+    have hnorm := absNorm_primeAboveThree
+    rw [h] at hnorm
+    norm_num at hnorm
 
 abbrev vTwo : NumberField.FinitePlace K :=
   NumberField.FinitePlace.mk heightOneTwo
@@ -43,18 +49,18 @@ abbrev vThree : NumberField.FinitePlace K :=
 
 theorem vTwo_ramificationIdx :
     (Ideal.span {(2 : ℤ)}).ramificationIdx heightOneTwo.asIdeal = 2 := by
-  sorry
+  exact ramificationIdx_primeAboveTwo
 
 theorem vThree_ramificationIdx :
     (Ideal.span {(3 : ℤ)}).ramificationIdx heightOneThree.asIdeal = 2 := by
-  sorry
+  exact ramificationIdx_primeAboveThree
 
 theorem vTwo_inertiaDeg :
     (Ideal.span {(2 : ℤ)}).inertiaDeg heightOneTwo.asIdeal = 1 := by
-  sorry
+  exact inertiaDeg_primeAboveTwo
 
 theorem vThree_inertiaDeg :
     (Ideal.span {(3 : ℤ)}).inertiaDeg heightOneThree.asIdeal = 1 := by
-  sorry
+  exact inertiaDeg_primeAboveThree
 
 end NumberField.SqrtNegSix

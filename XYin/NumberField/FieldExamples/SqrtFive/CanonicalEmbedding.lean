@@ -25,11 +25,12 @@ theorem canonicalEmbedding_apply_goldenRoot (σ : K →+* ℂ) :
 theorem canonicalEmbedding_goldenIntO_mem_integerLattice :
     NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K goldenIntO) ∈
       NumberField.canonicalEmbedding.integerLattice K := by
-  sorry
+  simp [NumberField.canonicalEmbedding.integerLattice]
 
 theorem canonicalEmbedding_fundamentalUnit_coordinates :
     ∃ x : (K →+* ℂ) → ℂ,
       x = NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) := by
-  sorry
+  exact ⟨NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)),
+    rfl⟩
 
 end NumberField.SqrtFive

@@ -27,11 +27,17 @@ abbrev principalAdele_torsionGenerator : SqrtNegSixAdeleRing :=
   algebraMap K SqrtNegSixAdeleRing (algebraMap (𝓞 K) K (torsionGenerator : 𝓞 K))
 
 theorem principalAdele_theta_ne_zero : principalAdele_theta ≠ 0 := by
-  sorry
+  intro h
+  have htheta : θ = 0 := by
+    exact NumberField.AdeleRing.algebraMap_injective (R := 𝓞 K) (K := K) h
+  have hsq := theta_sq
+  rw [htheta] at hsq
+  norm_num at hsq
 
 theorem principalAdele_torsionGenerator_is_unit_everywhere :
     ∀ v : NumberField.FinitePlace K,
       v (algebraMap (𝓞 K) K (torsionGenerator : 𝓞 K)) = 1 := by
-  sorry
+  intro v
+  simp [torsionGenerator]
 
 end NumberField.SqrtNegSix

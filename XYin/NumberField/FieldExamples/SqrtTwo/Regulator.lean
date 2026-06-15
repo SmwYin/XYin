@@ -20,6 +20,6 @@ namespace NumberField.SqrtTwo
 
 theorem regulator_eq_log_one_add_sqrtTwo :
     NumberField.Units.regulator K = Real.log (1 + Real.sqrt 2) := by
-  sorry
+  exact regulator_eq
 
 end NumberField.SqrtTwo

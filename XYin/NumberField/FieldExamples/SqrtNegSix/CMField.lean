@@ -17,18 +17,21 @@ open scoped NumberField nonZeroDivisors Real ENNReal QuadraticAlgebra
 namespace NumberField.SqrtNegSix
 
 theorem isCMField : NumberField.IsCMField K := by
-  sorry
+  haveI : NumberField.IsTotallyComplex K := isTotallyComplex
+  exact NumberField.IsCMField.ofCMExtension ℚ K
 
 theorem cmField_isTotallyComplex : NumberField.IsTotallyComplex K := by
-  sorry
+  exact isTotallyComplex
 
 theorem cmField_quadratic_over_maximalRealSubfield :
     Algebra.IsQuadraticExtension (NumberField.maximalRealSubfield K) K := by
-  sorry
+  haveI : NumberField.IsCMField K := isCMField
+  exact NumberField.IsCMField.isQuadraticExtension K
 
 theorem cmField_unitsRank_eq_maximalRealSubfield :
     NumberField.Units.rank (NumberField.maximalRealSubfield K) =
       NumberField.Units.rank K := by
-  sorry
+  haveI : NumberField.IsCMField K := isCMField
+  exact NumberField.IsCMField.units_rank_eq_units_rank K
 
 end NumberField.SqrtNegSix

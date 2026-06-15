@@ -23,6 +23,6 @@ theorem canonicalEmbedding_apply_theta (σ : K →+* ℂ) :
 theorem canonicalEmbedding_thetaInt_mem_integerLattice :
     NumberField.canonicalEmbedding K (algebraMap (𝓞 K) K thetaInt) ∈
       NumberField.canonicalEmbedding.integerLattice K := by
-  sorry
+  simp [NumberField.canonicalEmbedding.integerLattice]
 
 end NumberField.SqrtNegSix

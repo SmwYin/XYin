@@ -24,6 +24,6 @@ abbrev CompletionAtFive : Type :=
 theorem completionAtFive_contains_goldenRoot :
     ∃ x : CompletionAtFive,
       x = NumberField.FinitePlace.embedding (K := K) heightOneFive goldenRoot := by
-  sorry
+  exact ⟨NumberField.FinitePlace.embedding (K := K) heightOneFive goldenRoot, rfl⟩
 
 end NumberField.SqrtFive

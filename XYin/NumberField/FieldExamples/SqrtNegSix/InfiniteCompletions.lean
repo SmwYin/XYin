@@ -21,10 +21,11 @@ abbrev InfiniteCompletion (v : NumberField.InfinitePlace K) : Type :=
 
 theorem infiniteCompletion_equiv_complex (v : NumberField.InfinitePlace K) :
     Nonempty (InfiniteCompletion v ≃+* ℂ) := by
-  sorry
+  exact ⟨NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
+    (infinitePlace_isComplex v)⟩
 
 theorem infiniteCompletion_theta_norm (v : NumberField.InfinitePlace K) :
     ∃ r : ℝ, ‖(algebraMap K (InfiniteCompletion v) θ)‖ = r := by
-  sorry
+  exact ⟨‖(algebraMap K (InfiniteCompletion v) θ)‖, rfl⟩
 
 end NumberField.SqrtNegSix

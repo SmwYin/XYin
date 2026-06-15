@@ -29,10 +29,10 @@ abbrev infinitePrincipalAdele_fundamentalUnit : SqrtFiveInfiniteAdeleRing :=
 
 theorem infiniteAdele_norm_goldenRoot :
     ‖infinitePrincipalAdele_goldenRoot‖ = |Algebra.norm ℚ goldenRoot| := by
-  sorry
+  exact NumberField.InfiniteAdeleRing.coe_norm_eq_abs_norm goldenRoot
 
 theorem infiniteAdele_denseRange :
     DenseRange (algebraMap K SqrtFiveInfiniteAdeleRing) := by
-  sorry
+  exact NumberField.InfiniteAdeleRing.denseRange_algebraMap K
 
 end NumberField.SqrtFive

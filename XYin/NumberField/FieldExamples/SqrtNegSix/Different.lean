@@ -20,7 +20,8 @@ namespace NumberField.SqrtNegSix
 
 theorem absNorm_differentIdeal_eq_twentyFour :
     Ideal.absNorm (differentIdeal ℤ (𝓞 K)) = 24 := by
-  sorry
+  rw [NumberField.absNorm_differentIdeal (K := K), numberField_discr_eq]
+  norm_num
 
 theorem prime_dvd_differentIdeal_iff_eq_ramifiedPrime
     (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :

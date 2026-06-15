@@ -26,9 +26,17 @@ namespace NumberField.SqrtFive
 def heightOneFive : HeightOneSpectrum (𝓞 K) where
   asIdeal := Ideal.span {sqrtFiveIntO}
   isPrime := by
-    sorry
+    exact isPrime_span_sqrtFiveIntO
   ne_bot := by
-    sorry
+    intro hbot
+    have hzero : sqrtFiveIntO = 0 := by
+      simpa [Ideal.span_singleton_eq_bot] using hbot
+    have hsqrt : sqrtFiveIntO ^ 2 = (5 : 𝓞 K) := by
+      apply Subtype.ext
+      change (2 * goldenRoot - 1) ^ 2 = (5 : K)
+      exact sqrtFiveRoot_sq
+    rw [hzero] at hsqrt
+    norm_num at hsqrt
 
 /-- The finite absolute value associated to the ramified place over `5`. -/
 abbrev vFive : NumberField.FinitePlace K :=
@@ -36,10 +44,10 @@ abbrev vFive : NumberField.FinitePlace K :=
 
 theorem vFive_ramificationIdx :
     (Ideal.span {(5 : ℤ)}).ramificationIdx heightOneFive.asIdeal = 2 := by
-  sorry
+  exact ramificationIdx_span_sqrtFiveIntO
 
 theorem vFive_inertiaDeg :
     (Ideal.span {(5 : ℤ)}).inertiaDeg heightOneFive.asIdeal = 1 := by
-  sorry
+  exact inertiaDeg_span_sqrtFiveIntO
 
 end NumberField.SqrtFive

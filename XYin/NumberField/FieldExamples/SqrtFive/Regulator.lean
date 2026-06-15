@@ -20,6 +20,6 @@ namespace NumberField.SqrtFive
 
 theorem regulator_eq_log_goldenRatio :
     NumberField.Units.regulator K = Real.log ((1 + Real.sqrt 5) / 2) := by
-  sorry
+  exact regulator_eq
 
 end NumberField.SqrtFive

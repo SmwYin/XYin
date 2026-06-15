@@ -28,18 +28,27 @@ theorem mixedEmbedding_theta_mem_convexBodyLT
     (f : NumberField.InfinitePlace K → NNReal)
     (hf : ∀ w : NumberField.InfinitePlace K, w θ < f w) :
     mixedEmbedding_theta ∈ NumberField.mixedEmbedding.convexBodyLT K f := by
-  sorry
+  simp only [Set.mem_prod, Set.mem_pi, Set.mem_univ,
+    NumberField.mixedEmbedding.mixedEmbedding_apply_isReal, Metric.mem_ball, dist_zero_right,
+    Real.norm_eq_abs, forall_const, Subtype.forall,
+    NumberField.mixedEmbedding.mixedEmbedding_apply_isComplex]
+  constructor
+  · intro a ha
+    exact False.elim ((NumberField.InfinitePlace.not_isComplex_iff_isReal.mpr ha)
+      (infinitePlace_isComplex a))
+  · intro a _ha
+    simpa [NumberField.InfinitePlace.norm_embedding_eq a θ] using hf a
 
 theorem measurableSet_fundamentalCone :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone K) := by
-  sorry
+  exact NumberField.mixedEmbedding.measurableSet_fundamentalCone K
 
 theorem measurableSet_normLeOne :
     MeasurableSet (NumberField.mixedEmbedding.fundamentalCone.normLeOne K) := by
-  sorry
+  exact NumberField.mixedEmbedding.fundamentalCone.measurableSet_normLeOne K
 
 theorem polarSpace_nonempty :
     Nonempty (NumberField.mixedEmbedding.polarSpace K) := by
-  sorry
+  infer_instance
 
 end NumberField.SqrtNegSix
