@@ -1,701 +1,660 @@
-# Declaration Inventory — `XYin/NumberField/FieldExamples/SqrtFive/`
+# SqrtFive declaration inventory
 
-Real quadratic field `ℚ(√5)`, built via `QuadraticAlgebra ℚ 1 1` (the **golden-ratio model**, generator
-`φ` with `φ² = φ + 1`). Twin of `SqrtTwo` (which uses the radical model `QuadraticAlgebra ℚ 2 0`).
-Namespace `NumberField.SqrtFive` throughout. Every file: `noncomputable section`,
-`attribute [-instance] DivisionRing.toRatAlgebra`, same open scopes.
-
-All cross-references to `Common.lean` use namespace `NumberField.FieldExamples`.
+Folder: `XYin/NumberField/FieldExamples/SqrtFive/`
+Field: real quadratic `ℚ(√5)`, built via `QuadraticAlgebra ℚ 1 1` (golden-ratio model, generator
+`φ` with `φ² = φ + 1`). Ring of integers `ℤ[φ] = ℤ[(1+√5)/2]`, disc `5` (smallest of any real
+quadratic field). Twin of SqrtTwo (`QuadraticAlgebra ℚ 2 0`); SqrtFive additionally carries a
+`RadicalModel = QuadraticAlgebra ℚ 5 0` (generator `√5`) and an `AdjoinRoot (X²-5)` presentation,
+plus the golden `AdjoinRoot (X²-X-1)` presentation, all proved equivalent.
+Namespace throughout: `NumberField.SqrtFive`. Files open `QuadraticAlgebra`, `NumberField`,
+`Module`, `Polynomial` (and `NumberField.FieldExamples` = Common where relevant). All core files
+are `noncomputable section` and remove `DivisionRing.toRatAlgebra`.
+Cross-reference — `Common.lean` API used: `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`,
+`left_eq_prime_of_mul_eq_prime_sq_of_ne_one`, `exists_int_inverse_mod_prime`,
+`eq_of_le_of_absNorm_eq`, `natAbs_lt_of_abs_ratCast_lt`, `torsionPowerHom`, `rankOnePowerHom`,
+`abs_intNorm_lt_of_abs_norm_le`, `not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ`,
+`not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow`.
+**Sorry-free** (as of the 2026-06-15 update). The two former Units.lean sorries are now **closed**.
+`fundamentalUnit_generates` is proved by a self-contained **real-embedding window-reduction**
+argument: every unit maps under `reEmb : ℚ(√5) → ℝ` (sending `φ ↦ Φ = (1+√5)/2`); a power of `φ`
+reduces it into the window `[1, Φ)`; and the norm form `x²+xy−y² = ±1` (`isUnit_iff_normForm`) forces
+the only unit there to be `1`. This is the standard textbook proof, formalised faithfully — it does
+**not** use the `Zsqrtd`/`Pell` `x²−5y²=1` machinery (which only covers the index-2 suborder
+`ℤ[√5]`), and needs **no missing API**. `regulator_eq` then follows from mature mathlib API
+(`regOfFamily_div_regulator` → `regOfFamily_eq_det` → `Matrix.det_eq_elem_of_subsingleton`). SqrtFive
+is the proof that, for a real quadratic field, "this explicit unit is fundamental" is a matter of
+*intrinsic mathematical work*, not API immaturity.
 
 ---
 
 ## Basic.lean
 
-### `instance : Fact (∀ r : ℚ, r ^ 2 ≠ 1 + 1 * r)`
+### `instance Fact (∀ r : ℚ, r² ≠ 1 + 1·r)`
 - **Type**: `Fact (∀ r : ℚ, r ^ 2 ≠ (1 : ℚ) + (1 : ℚ) * r)`
-- **What**: Provides the `QuadraticAlgebra ℚ 1 1` field instance hypothesis (no rational root of `X²-X-1`).
-- **How**: From a root one builds `IsSquare (5:ℚ)` via `isSquare_iff_exists_sq` with witness `2r-1`, then `norm_num`/`nlinarith`.
-- **Hypotheses**: none.
-- **Uses from project**: []
-- **Visibility**: public (anonymous instance) — **Lines**: 34-41
-- **Notes**: none.
+- **What**: `X²-X-1` has no rational root; data instance feeding `QuadraticAlgebra` that the field is genuinely degree 2.
+- **How**: from `r²=r+1` build `IsSquare (5:ℚ)` via `2r-1`, contradiction by `norm_num`.
+- **Uses from project**: [] — **Visibility**: public (instance) — **Lines**: 34-41
 
 ### `abbrev K`
-- **Type**: `K : Type := QuadraticAlgebra ℚ (1:ℚ) (1:ℚ)`
-- **What**: The field `ℚ(√5)` as the golden-ratio quadratic algebra.
-- **How**: definitional.
-- **Uses from project**: [] — **Visibility**: public — **Lines**: 44
+- **Type**: `K : Type := QuadraticAlgebra ℚ (1:ℚ) (1:ℚ)` — **What**: the field `ℚ(√5)`. — **How**: definitional. — **Uses**: [] — public — **Lines**: 44
 
-### `instance : FiniteDimensional ℚ K`
-- **What**: `K` is finite-dimensional over `ℚ`. **How**: from `QuadraticAlgebra.basis` finiteness.
-- **Uses from project**: [] — **Lines**: 46-47
+### `instance FiniteDimensional ℚ K`
+- **How**: `QuadraticAlgebra.basis (1) (1) |>.finiteDimensional_of_finite`. — **Uses**: [] — public — **Lines**: 46-47
 
-### `instance : NumberField K`
-- **What**: `K` is a number field. **How**: `NumberField.of_module_finite`.
-- **Uses from project**: [] — **Lines**: 49-50
+### `instance NumberField K`
+- **How**: `NumberField.of_module_finite ℚ K`. — **Uses**: [] — public — **Lines**: 49-50
 
 ### `theorem degree_eq_two`
-- **Type**: `Module.finrank ℚ K = 2`
-- **What**: `[ℚ(√5):ℚ] = 2`. **How**: `Module.finrank_eq_card_basis` on `QuadraticAlgebra.basis` + `Fintype.card_fin`.
-- **Uses from project**: [] — **Visibility**: public — **Lines**: 52-55
-- **Notes**: KEY (used in Embeddings, ClassGroup, Units).
+- **Type**: `Module.finrank ℚ K = 2` — **How**: `finrank_eq_card_basis` + `Fintype.card_fin`.
+- **Uses**: [] — public — **Lines**: 52-55 — **Notes**: heavily-used API (≈10 references across folder).
 
-### `instance : Algebra.IsQuadraticExtension ℚ K`
-- **What**: registers quadratic extension. **How**: `degree_eq_two`. **Uses**: [`degree_eq_two`] — **Lines**: 57-59
+### `instance Algebra.IsQuadraticExtension ℚ K`
+- **How**: `finrank_eq_two' := degree_eq_two`. — **Uses**: [degree_eq_two] — public — **Lines**: 57-59
 
 ### `abbrev goldenRoot`
-- **Type**: `goldenRoot : K := QuadraticAlgebra.omega`
-- **What**: the generator `φ = (1+√5)/2`. **Uses**: [] — **Lines**: 62
-- **Notes**: KEY — referenced pervasively in every file.
+- **Type**: `goldenRoot : K := QuadraticAlgebra.omega` — **What**: distinguished `φ`. — **Uses**: [] — public — **Lines**: 62
+- **Notes**: THE central generator (≈40 references across folder).
 
 ### `theorem goldenRoot_sq`
-- **Type**: `goldenRoot ^ 2 = goldenRoot + 1`
-- **What**: `φ² = φ + 1`. **How**: `change` to component form `⟨0,1⟩`, `ext`/`simp [pow_two]`.
-- **Uses**: [`goldenRoot`] — **Lines**: 64-66 — **Notes**: KEY (used everywhere).
+- **Type**: `goldenRoot ^ 2 = goldenRoot + 1` — **How**: `change` to `⟨0,1⟩`, `ext`/`simp [pow_two]`.
+- **Uses**: [goldenRoot] — public — **Lines**: 64-66 — **Notes**: most-used identity in folder.
 
 ### `abbrev goldenPolynomial`
-- **Type**: `ℚ[X] := C 1 * X^2 + C (-1) * X + C (-1)` — the minimal polynomial `X²-X-1`. **Uses**: [] — **Lines**: 69-70
+- **Type**: `ℚ[X] := C 1·X² + C(-1)·X + C(-1)` — **What**: defining poly `X²-X-1`. — **Uses**: [] — public — **Lines**: 69-70
 
-### `instance : Fact (Irreducible goldenPolynomial)`
-- **How**: `Polynomial.X_pow_sub_X_sub_one_irreducible_rat`. **Uses**: [`goldenPolynomial`] — **Lines**: 72-76
+### `instance Fact (Irreducible goldenPolynomial)`
+- **How**: `Polynomial.X_pow_sub_X_sub_one_irreducible_rat (n:=2)` + `simpa`. — **Uses**: [goldenPolynomial] — public — **Lines**: 72-76
 
 ### `abbrev KAdjoinRoot`
-- **Type**: `AdjoinRoot goldenPolynomial`. Alternate presentation. **Uses**: [`goldenPolynomial`] — **Lines**: 79
+- **Type**: `:= AdjoinRoot goldenPolynomial` — AdjoinRoot presentation. — **Uses**: [goldenPolynomial] — public — **Lines**: 79
 
 ### `abbrev goldenAdjoinRoot`
-- **Type**: `AdjoinRoot.root goldenPolynomial`. **Uses**: [`goldenPolynomial`] — **Lines**: 82
+- **Type**: `KAdjoinRoot := AdjoinRoot.root goldenPolynomial` — **Uses**: [goldenPolynomial] — public — **Lines**: 82
 
 ### `theorem goldenAdjoinRoot_sq`
-- **Type**: `goldenAdjoinRoot ^ 2 = goldenAdjoinRoot + 1`. **How**: `AdjoinRoot.eval₂_root` + `linear_combination`.
-- **Uses**: [`goldenAdjoinRoot`,`goldenPolynomial`] — **Lines**: 84-88
+- **Type**: `goldenAdjoinRoot ^ 2 = goldenAdjoinRoot + 1` — **How**: `AdjoinRoot.eval₂_root` + `linear_combination`. — **Uses**: [goldenAdjoinRoot, goldenPolynomial] — public — **Lines**: 84-88
 
 ### `def goldenAdjoinRootEquivGolden`
-- **Type**: `KAdjoinRoot ≃ₐ[ℚ] K`
-- **What**: equivalence between AdjoinRoot and quadratic-algebra presentation.
-- **How**: `AdjoinRoot.liftAlgHom` and `QuadraticAlgebra.lift`; inverses via `AdjoinRoot.algHom_ext`/`QuadraticAlgebra.algHom_ext`.
-- **Uses**: [`goldenRoot`,`goldenRoot_sq`,`goldenPolynomial`,`goldenAdjoinRoot`,`goldenAdjoinRoot_sq`] — **Lines**: 91-113
-- **Notes**: proof >20 lines.
+- **Type**: `KAdjoinRoot ≃ₐ[ℚ] K` — **What**: AdjoinRoot ≅ QuadraticAlgebra model. **How**: fwd `AdjoinRoot.liftAlgHom`, back `QuadraticAlgebra.lift`; `algHom_ext`+`DFunLike.congr_fun`.
+- **Uses**: [goldenPolynomial, goldenRoot, goldenRoot_sq, goldenAdjoinRoot, goldenAdjoinRoot_sq] — public — **Lines**: 91-113 — **Notes**: proof ≈23 lines.
 
 ### `theorem goldenAdjoinRootEquivGolden_root`
-- **Type**: `goldenAdjoinRootEquivGolden goldenAdjoinRoot = goldenRoot`. **How**: `simp`. **Uses**: [the equiv, `goldenAdjoinRoot`,`goldenRoot`] — **Lines**: 115-117
+- **Type**: `... goldenAdjoinRoot = goldenRoot` — **How**: simp. — **Uses**: [goldenAdjoinRootEquivGolden, goldenAdjoinRoot, goldenRoot] — public — **Lines**: 115-117
 
 ### `abbrev sqrtFiveRoot`
-- **Type**: `sqrtFiveRoot : K := 2 * goldenRoot - 1` — `√5 = 2φ-1`. **Uses**: [`goldenRoot`] — **Lines**: 120
-- **Notes**: KEY (used in Galois, PrimeSplitting, ClassGroup, LocalGlobal).
+- **Type**: `K := 2 * goldenRoot - 1` — **What**: `√5 = 2φ - 1`. — **Uses**: [goldenRoot] — public — **Lines**: 120
+- **Notes**: key API (used 6+ times incl. ramification, conjugation).
 
 ### `theorem sqrtFiveRoot_sq`
-- **Type**: `sqrtFiveRoot ^ 2 = (5:K)`. **How**: `calc` expand + `goldenRoot_sq`. **Uses**: [`sqrtFiveRoot`,`goldenRoot_sq`] — **Lines**: 122-126
-- **Notes**: KEY — used in PrimeSplitting, ClassGroup, LocalGlobal repeatedly.
+- **Type**: `sqrtFiveRoot ^ 2 = (5 : K)` — **How**: `calc` expand + `goldenRoot_sq` + `ring`. — **Uses**: [sqrtFiveRoot, goldenRoot_sq] — public — **Lines**: 122-126 — **Notes**: reused throughout PrimeSplitting/ClassGroup/LocalGlobal.
 
 ### `theorem goldenRoot_eq_half_sqrtFiveRoot_add_one`
-- **Type**: `goldenRoot = (sqrtFiveRoot + 1)/2`. **How**: `field_simp`/`ring`. **Uses**: [`sqrtFiveRoot`] — **Lines**: 128-132
+- **Type**: `goldenRoot = (sqrtFiveRoot + 1) / 2` — **How**: `field_simp`/`ring`. — **Uses**: [sqrtFiveRoot] — public — **Lines**: 128-132
 
 ### `theorem goldenRoot_isIntegral`
-- **Type**: `IsIntegral ℤ goldenRoot`. **How**: witness `X²-X-1`, `monicity`, `goldenRoot_sq`. **Uses**: [`goldenRoot_sq`] — **Lines**: 134-138
-- **Notes**: KEY (RingOfIntegers, LocalGlobal).
+- **Type**: `IsIntegral ℤ goldenRoot` — **How**: witness `X²-X-1`, `monicity`, `simp [goldenRoot_sq]`. — **Uses**: [goldenRoot_sq] — public — **Lines**: 134-138 — **Notes**: key API (used 8+ times).
 
-### `instance : Fact (∀ r : ℚ, r ^ 2 ≠ 5 + 0 * r)`
-- **What**: field instance for the radical model `QuadraticAlgebra ℚ 5 0`. **How**: same `IsSquare 5` contradiction. **Uses**: [] — **Lines**: 140-147
+### `instance Fact (∀ r : ℚ, r² ≠ 5 + 0·r)`
+- **What**: `5` not a rational square (for `RadicalModel`). **How**: `IsSquare (5:ℚ)`, `norm_num`. — **Uses**: [] — public — **Lines**: 140-147
 
-### `abbrev RadicalModel` / `sqrtFiveRadicalRoot` / `sqrtFive` / `goldenRadicalRoot`
-- **Types**: `RadicalModel := QuadraticAlgebra ℚ 5 0`; `sqrtFiveRadicalRoot := omega`; `sqrtFive := sqrtFiveRadicalRoot`; `goldenRadicalRoot := (1+sqrtFive)/2`.
-- **What**: the alternative `√5`-presentation and its elements. **Uses**: chain — **Lines**: 150-167
+### `abbrev RadicalModel`
+- **Type**: `:= QuadraticAlgebra ℚ (5:ℚ) 0` — **What**: `√5`-generator presentation. — **Uses**: [] — public — **Lines**: 150
 
-### `theorem sqrtFiveRadicalRoot_sq` / `sqrtFive_sq` / `goldenRadicalRoot_sq`
-- **Types**: `sqrtFiveRadicalRoot^2 = 5`; `sqrtFive^2 = 5`; `goldenRadicalRoot^2 = goldenRadicalRoot + 1`.
-- **How**: component `ext`; aliasing; `field_simp`/`linear_combination`. **Uses**: each other — **Lines**: 155-173
+### `abbrev sqrtFiveRadicalRoot` / `theorem sqrtFiveRadicalRoot_sq`
+- `RadicalModel := QuadraticAlgebra.omega`; `^2 = 5`. **How**: `change`/`ext`/`simp`. — **Uses**: [] — public — **Lines**: 153 / 155-158
 
-### `abbrev sqrtFivePolynomial` / `RadicalAdjoinRoot` / `sqrtFiveAdjoinRoot`
-- **Types**: `X²-C 5`; `AdjoinRoot sqrtFivePolynomial`; `AdjoinRoot.root …`. **Uses**: chain — **Lines**: 176-183
+### `abbrev sqrtFive` / `theorem sqrtFive_sq`
+- `RadicalModel := sqrtFiveRadicalRoot`; `^2 = 5`. — **Uses**: [sqrtFiveRadicalRoot(_sq)] — public — **Lines**: 161 / 163-164
 
-### `theorem sqrtFiveAdjoinRoot_sq`
-- **Type**: `sqrtFiveAdjoinRoot^2 = 5`. **How**: `AdjoinRoot.eval₂_root` + `linear_combination`. **Uses**: [`sqrtFiveAdjoinRoot`,`sqrtFivePolynomial`] — **Lines**: 185-190
+### `abbrev goldenRadicalRoot` / `theorem goldenRadicalRoot_sq`
+- `(1+√5)/2` in radical model; `^2 = ·+1`. **How**: `field_simp`+`linear_combination sqrtFive_sq`. — **Uses**: [sqrtFive_sq] — public — **Lines**: 167 / 169-173
 
-### `private def sqrtFiveAdjoinRootToRadical` / `theorem …_root`
-- **Type**: `RadicalAdjoinRoot →ₐ[ℚ] RadicalModel`; root identity.
-- **How**: `AdjoinRoot.liftAlgHom`; `AdjoinRoot.liftAlgHom_root`. **Uses**: [`sqrtFivePolynomial`,`sqrtFive`,`sqrtFive_sq`,`sqrtFiveAdjoinRoot`] — **Lines**: 192-202 — **Visibility**: private
+### `abbrev sqrtFivePolynomial`
+- **Type**: `ℚ[X] := X² - C 5` — defining poly of `√5`. — **Uses**: [] — public — **Lines**: 176-177
 
-### `private def sqrtFiveRadicalToAdjoinRoot` / `theorem …_root`
-- **Type**: `RadicalModel →ₐ[ℚ] RadicalAdjoinRoot`; root identity.
-- **How**: `QuadraticAlgebra.lift`; component computation. **Uses**: [`sqrtFiveAdjoinRoot`,`sqrtFiveAdjoinRoot_sq`,`sqrtFive`,`sqrtFiveRadicalRoot`] — **Lines**: 204-214 — **Visibility**: private
+### `abbrev RadicalAdjoinRoot` / `abbrev sqrtFiveAdjoinRoot` / `theorem sqrtFiveAdjoinRoot_sq`
+- `:= AdjoinRoot sqrtFivePolynomial`; root; `root²=5` via `AdjoinRoot.eval₂_root`. — **Uses**: [sqrtFivePolynomial] — public — **Lines**: 180 / 183 / 185-190
 
-### `def sqrtFiveRadicalEquivAdjoinRoot` / `theorem …_root`
-- **Type**: `RadicalModel ≃ₐ[ℚ] RadicalAdjoinRoot`; sends `sqrtFive ↦ sqrtFiveAdjoinRoot`.
-- **How**: package the two AlgHoms; inverses via `QuadraticAlgebra.algHom_ext`/`AdjoinRoot.algHom_ext`.
-- **Uses**: [`sqrtFiveAdjoinRootToRadical(_root)`,`sqrtFiveRadicalToAdjoinRoot(_root)`,`sqrtFive`,`sqrtFiveAdjoinRoot`] — **Lines**: 217-244 — **Notes**: proof >20 lines.
+### `private def sqrtFiveAdjoinRootToRadical` / `private theorem sqrtFiveAdjoinRootToRadical_root`
+- `RadicalAdjoinRoot →ₐ[ℚ] RadicalModel` (`√5↦√5`); `AdjoinRoot.liftAlgHom`(_root). — **Uses**: [sqrtFivePolynomial, sqrtFive(_sq), sqrtFiveAdjoinRoot] — private — **Lines**: 192-197 / 199-202
 
-### `def sqrtFiveRadicalToGolden` / `@[simp] theorem …_root`
-- **Type**: `RadicalModel →ₐ[ℚ] K`; sends radical root to `sqrtFiveRoot`.
-- **How**: `QuadraticAlgebra.lift` with proof `sqrtFiveRoot²=5`. **Uses**: [`sqrtFiveRoot`,`sqrtFiveRoot_sq`,`sqrtFiveRadicalRoot`] — **Lines**: 247-255
+### `private def sqrtFiveRadicalToAdjoinRoot` / `private theorem sqrtFiveRadicalToAdjoinRoot_root`
+- `RadicalModel →ₐ[ℚ] RadicalAdjoinRoot`; `QuadraticAlgebra.lift`. — **Uses**: [sqrtFiveAdjoinRoot(_sq), sqrtFive…] — private — **Lines**: 204-207 / 209-214
 
-### `def goldenToSqrtFiveRadical` / `@[simp] theorem …_root`
-- **Type**: `K →ₐ[ℚ] RadicalModel`; sends `goldenRoot ↦ (radicalRoot+1)/2`.
-- **How**: `QuadraticAlgebra.lift`; `calc` quadratic identity using `sqrtFiveRadicalRoot_sq`. **Uses**: [`sqrtFiveRadicalRoot(_sq)`,`goldenRoot`] — **Lines**: 258-271
+### `def sqrtFiveRadicalEquivAdjoinRoot` / `theorem sqrtFiveRadicalEquivAdjoinRoot_root`
+- `RadicalModel ≃ₐ[ℚ] RadicalAdjoinRoot`; assembles fwd/back, `algHom_ext`+`DFunLike`. — **Uses**: [the four maps + `_root` lemmas] — public — **Lines**: 217-240 / 242-244 — **Notes**: proof ≈24 lines.
 
-### `def sqrtFiveRadicalEquivGolden` / `theorem …_root` / `theorem …_symm_root`
-- **Type**: `RadicalModel ≃ₐ[ℚ] K`. **What**: identifies radical and golden presentations.
-- **How**: `QuadraticAlgebra.algHom_ext` on both composites, using `goldenRoot_eq_half_sqrtFiveRoot_add_one`. **Uses**: [`sqrtFiveRadicalToGolden(_root)`,`goldenToSqrtFiveRadical(_root)`,`sqrtFiveRoot`,`goldenRoot_eq_half_sqrtFiveRoot_add_one`,`sqrtFiveRadicalRoot`] — **Lines**: 274-309 — **Notes**: proof >25 lines.
+### `def sqrtFiveRadicalToGolden` / `theorem sqrtFiveRadicalToGolden_root` (@[simp])
+- `RadicalModel →ₐ[ℚ] K` (`√5↦2φ-1`); `QuadraticAlgebra.lift` w/ `sqrtFiveRoot_sq`. — **Uses**: [sqrtFiveRoot(_sq), sqrtFiveRadicalRoot] — public — **Lines**: 247-250 / 252-255
 
-### `def sqrtFiveAdjoinRootEquivGolden` / `theorem …_root`
-- **Type**: `RadicalAdjoinRoot ≃ₐ[ℚ] K`. **How**: trans of the two equivs. **Uses**: [`sqrtFiveRadicalEquivAdjoinRoot(_root)`,`sqrtFiveRadicalEquivGolden(_root)`,`sqrtFive`,`sqrtFiveAdjoinRoot`,`sqrtFiveRoot`] — **Lines**: 312-321
+### `def goldenToSqrtFiveRadical` / `theorem goldenToSqrtFiveRadical_root` (@[simp])
+- `K →ₐ[ℚ] RadicalModel` (`φ↦(√5+1)/2`); `QuadraticAlgebra.lift`, relation via `calc`+`sqrtFiveRadicalRoot_sq`. — **Uses**: [sqrtFiveRadicalRoot(_sq), goldenRoot] — public — **Lines**: 258-266 / 268-271
 
-**File Summary — Basic.lean**: ~38 decls (abbrevs/defs ~24, theorems ~12, instances 4).
-Key API (3+): `goldenRoot`, `goldenRoot_sq`, `sqrtFiveRoot`, `sqrtFiveRoot_sq`, `goldenRoot_isIntegral`, `degree_eq_two`, `K`. No sorry. No `set_option`. Proofs >30 lines: none individually but several 20-27 line equiv constructions. The whole radical-model / AdjoinRoot apparatus (`RadicalModel`, `sqrtFive*`, four equivs) is presentation plumbing only used internally — largely "unused downstream" (only the golden model is used in later files).
+### `def sqrtFiveRadicalEquivGolden` / `_root` / `_symm_root`
+- `RadicalModel ≃ₐ[ℚ] K` + apply/symm-apply lemmas. **How**: fwd/back homs, `algHom_ext`+`DFunLike`, `goldenRoot_eq_half_sqrtFiveRoot_add_one`. — **Uses**: [sqrtFiveRadicalToGolden, goldenToSqrtFiveRadical, …] — public — **Lines**: 274-301 / 303-305 / 307-309 — **Notes**: proof ≈28 lines.
+
+### `def sqrtFiveAdjoinRootEquivGolden` / `theorem sqrtFiveAdjoinRootEquivGolden_root`
+- `RadicalAdjoinRoot ≃ₐ[ℚ] K := …EquivAdjoinRoot.symm.trans …EquivGolden`; `_root` via `AlgEquiv.trans_apply`. — **Uses**: [sqrtFiveRadicalEquivAdjoinRoot, sqrtFiveRadicalEquivGolden, sqrtFiveAdjoinRoot, sqrtFive…] — public — **Lines**: 312-313 / 315-321
+
+**File Summary (Basic.lean)**: ~33 decls (3 Fact/2 plain instances, ~9 defs, ~14 theorems, ~12
+abbrevs). Key API (3+ uses): `goldenRoot`, `goldenRoot_sq`, `sqrtFiveRoot`, `sqrtFiveRoot_sq`,
+`goldenRoot_isIntegral`, `degree_eq_two`. The entire `RadicalModel`/`RadicalAdjoinRoot`
+equivalence block (lines 150-321) is self-contained presentation machinery, **never referenced by
+any sibling file** (the field is used via the `QuadraticAlgebra ℚ 1 1` golden model directly). No
+sorry, no set_option. Longest proofs ≈28 lines (`sqrtFiveRadicalEquivGolden`),
+≈24 (`sqrtFiveRadicalEquivAdjoinRoot`), ≈23 (`goldenAdjoinRootEquivGolden`).
 
 ---
 
 ## Galois.lean
 
-### `private def conjHom` / `private theorem conjHom_root` / `private theorem conjHom_comp`
-- **Type**: `K →ₐ[ℚ] K` sending `φ ↦ 1-φ`; `conjHom goldenRoot = 1-goldenRoot`; `conjHom.comp conjHom = id`.
-- **How**: `QuadraticAlgebra.lift` (verifying `(1-φ)²=(1-φ)+1`); involution via `QuadraticAlgebra.algHom_ext`.
-- **Uses**: [`goldenRoot`,`goldenRoot_sq`] — **Lines**: 34-49 — **Visibility**: private
+### `private def conjHom`
+- **Type**: `K →ₐ[ℚ] K` (`φ ↦ 1 - φ`) — **How**: `QuadraticAlgebra.lift` with `(1-φ)²=1-2φ+φ²`, `goldenRoot_sq`. — **Uses**: [goldenRoot, goldenRoot_sq] — private — **Lines**: 34-40
+
+### `private theorem conjHom_root` / `private theorem conjHom_comp`
+- `conjHom φ = 1-φ`; `conjHom.comp conjHom = id` via `QuadraticAlgebra.algHom_ext`. — **Uses**: [conjHom, goldenRoot] — private — **Lines**: 42-43 / 45-49
 
 ### `def conjugation`
-- **Type**: `K ≃ₐ[ℚ] K`. **What**: the nontrivial automorphism. **How**: package `conjHom` with itself as inverse.
-- **Uses**: [`conjHom`,`conjHom_comp`] — **Lines**: 51-55 — **Notes**: KEY.
+- **Type**: `K ≃ₐ[ℚ] K` — involutive conjugation. **How**: `invFun := conjHom`, `left/right_inv` from `conjHom_comp`. — **Uses**: [conjHom, conjHom_comp] — public — **Lines**: 51-55 — **Notes**: key API across Galois/Embeddings.
 
 ### `private theorem conjugation_root`
-- **Type**: `conjugation goldenRoot = 1-goldenRoot`. **Uses**: [`conjHom_root`] — **Lines**: 57-58 — **Visibility**: private
+- `conjugation φ = 1-φ := conjHom_root`. — **Uses**: [conjugation, conjHom_root] — private — **Lines**: 57-58
 
 ### `def idAut`
-- **Type**: `K ≃ₐ[ℚ] K := AlgEquiv.refl`. **Uses**: [] — **Lines**: 60
+- **Type**: `K ≃ₐ[ℚ] K := AlgEquiv.refl`. — **Uses**: [] — public — **Lines**: 60
 
 ### `theorem conjugation_apply_goldenRoot`
-- **Type**: `conjugation goldenRoot = 1-goldenRoot`. **Uses**: [`conjugation_root`] — **Lines**: 63-64
+- `conjugation φ = 1 - φ` (public restatement). — **Uses**: [conjugation_root] — public — **Lines**: 62-64
 
 ### `theorem conjugation_apply_sqrtFiveRoot`
-- **Type**: `conjugation sqrtFiveRoot = -sqrtFiveRoot`. **How**: rewrite via `sqrtFiveRoot` def + `conjugation_apply_goldenRoot`. **Uses**: [`sqrtFiveRoot`,`conjugation_apply_goldenRoot`] — **Lines**: 66-69
+- `conjugation (√5) = -√5` — **How**: `map_sub`/`map_mul` + `conjugation_apply_goldenRoot` + `ring`. — **Uses**: [sqrtFiveRoot, conjugation, conjugation_apply_goldenRoot] — public — **Lines**: 66-69
 
 ### `theorem exists_conj`
-- **Type**: `∃ σ : K≃ₐ[ℚ]K, σ goldenRoot = 1-goldenRoot`. **Uses**: [`conjugation`,`conjugation_root`] — **Lines**: 71-75
+- `∃ σ : K ≃ₐ[ℚ] K, σ φ = 1-φ` — **How**: `⟨conjugation, conjugation_root⟩`. — **Uses**: [conjugation, conjugation_root, goldenRoot] — public — **Lines**: 71-75
 
 ### `theorem aut_apply_goldenRoot`
-- **Type**: `σ goldenRoot = goldenRoot ∨ σ goldenRoot = 1-goldenRoot`.
-- **How**: `σφ` satisfies same quadratic, factor `(σφ-φ)(σφ-(1-φ))=0` via `linear_combination`, `mul_eq_zero`. **Uses**: [`goldenRoot_sq`] — **Lines**: 79-88
+- **Type**: `(σ) → σφ = φ ∨ σφ = 1-φ` — **What**: classifies action on generator. **How**: `σφ` satisfies `x²=x+1`; factor `(σφ-φ)(σφ-(1-φ))=0` by `linear_combination`. — **Uses**: [goldenRoot_sq] — public — **Lines**: 77-88
 
 ### `theorem aut_eq_or`
-- **Type**: `σ = idAut ∨ σ = conjugation`. **How**: extensionality via `QuadraticAlgebra.algHom_ext` + `aut_apply_goldenRoot`. **Uses**: [`idAut`,`conjugation`,`conjugation_root`,`aut_apply_goldenRoot`] — **Lines**: 90-100
+- **Type**: `(σ) → σ = idAut ∨ σ = conjugation` — **How**: `QuadraticAlgebra.algHom_ext` ⇒ determined by image of `φ`; case-split `aut_apply_goldenRoot`. — **Uses**: [idAut, conjugation, conjugation_root, aut_apply_goldenRoot] — public — **Lines**: 90-100
 
 ### `theorem isGalois`
-- **Type**: `IsGalois ℚ K`. **How**: `infer_instance`. **Uses**: [] — **Lines**: 102-105
+- `IsGalois ℚ K` — **How**: `infer_instance` (quadratic char-0 ⇒ Galois). — **Uses**: [] — public — **Lines**: 102-105
 
 ### `theorem galoisGroupStructure`
-- **Type**: `Nonempty ((K≃ₐ[ℚ]K) ≃* Multiplicative (ZMod 2))`.
-- **What**: Galois group is cyclic of order 2. **How**: `Nat.card = 2` via `Nat.card_eq_two_iff` + `aut_eq_or`, then `mulEquivOfPrimeCardEq`/`Nat.card_zmod`.
-- **Uses**: [`conjugation`,`idAut`,`conjugation_root`,`aut_eq_or`,`goldenRoot`] — **Lines**: 109-126 — **Notes**: proof >15 lines.
+- **Type**: `Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (ZMod 2))` — **How**: `conjugation ≠ idAut` (else `2φ=1`, check `im`); `Nat.card_eq_two_iff` from `aut_eq_or`; `mulEquivOfPrimeCardEq` + `Nat.card_zmod`. — **Uses**: [conjugation, idAut, conjugation_root, goldenRoot, aut_eq_or] — public — **Lines**: 107-126 — **Notes**: proof ≈18 lines; **differs from SqrtTwo** which routes through `zmodAddEquivOfGenerator`/`AddEquiv.toMultiplicativeLeft` (shared infra) — here a direct `mulEquivOfPrimeCardEq`.
 
-**File Summary — Galois.lean**: 12 decls (defs 3, theorems 8 + 1 instance-like). Key API (3+): `conjugation`, `idAut`, `conjugation_apply_goldenRoot`. No sorry/set_option. >30-line proofs: none.
+**File Summary (Galois.lean)**: 13 decls (2 defs + `idAut`, ~8 theorems, conjHom internals).
+Key API (3+ uses): `conjugation`, `conjugation_apply_goldenRoot`, `aut_eq_or`. Public results:
+`isGalois`, `galoisGroupStructure`, `exists_conj`. No sorry/set_option. No proof >30 lines (longest
+`galoisGroupStructure` ≈18). `conjugation` double-uses `conjHom_comp` in both `left_inv`/`right_inv`
+(mild duplication, identical to SqrtTwo).
 
 ---
 
 ## Embeddings.lean
 
 ### `private theorem ringHom_ext_golden`
-- **Type**: `{f g : K →+* ℂ} (h : f goldenRoot = g goldenRoot) → f = g`.
-- **What**: ring homs `K→ℂ` agreeing on `φ` are equal. **How**: `QuadraticAlgebra.mk_eq_add_smul_omega`, `eq_ratCast` on the rational part. **Uses**: [`goldenRoot`] — **Lines**: 34-45 — **Visibility**: private
-- **Notes**: generic-looking — could be a shared `QuadraticAlgebra` ext lemma.
+- **Type**: `{f g : K →+* ℂ} (h : f φ = g φ) → f = g` — **What**: ring homs to ℂ determined by image of `φ`. **How**: `QuadraticAlgebra.mk_eq_add_smul_omega`, `eq_ratCast` on ℚ-part. — **Uses**: [goldenRoot] — private — **Lines**: 34-45 — **Notes**: GENERIC; a quadratic-algebra `ringHom_ext` candidate for Common (twin of SqrtTwo's `ringHom_ext_sqrtTwo`).
 
 ### `theorem isTotallyReal`
-- **Type**: `NumberField.IsTotallyReal K`.
-- **How**: each embedding is real: conjugate root satisfies same quadratic, factor; rule out `re=1/2` branch via `nlinarith [sq_nonneg z.im]`. Uses `ComplexEmbedding.conjugate_coe_eq`, `ringHom_ext_golden`.
-- **Uses**: [`ringHom_ext_golden`,`goldenRoot`,`goldenRoot_sq`] — **Lines**: 47-70 — **Notes**: proof >20 lines. KEY.
+- **Type**: `NumberField.IsTotallyReal K` — **How**: each embedding fixes `φ` under conjugation (factor `(z̄-z)(z̄+z-1)=0`); exclude `re=1/2` branch by `nlinarith [sq_nonneg z.im]`. — **Uses**: [goldenRoot_sq, ringHom_ext_golden] — public — **Lines**: 47-70 — **Notes**: proof ≈24 lines; the `re=1/2` exclusion is the golden-ratio analogue of SqrtTwo's `re=0`.
 
 ### `theorem nrRealPlaces_eq_two`
-- **Type**: `InfinitePlace.nrRealPlaces K = 2`. **How**: `IsTotallyReal.nrComplexPlaces_eq_zero`, `card_add_two_mul_card_eq_rank`, `degree_eq_two`, `omega`. **Uses**: [`isTotallyReal`,`degree_eq_two`] — **Lines**: 72-77 — **Notes**: KEY (Units, LocalGlobal).
+- `InfinitePlace.nrRealPlaces K = 2` — **How**: `IsTotallyReal.nrComplexPlaces_eq_zero` + `card_add_two_mul_card_eq_rank` + `degree_eq_two`, `omega`. — **Uses**: [isTotallyReal, degree_eq_two] — public — **Lines**: 72-77 — **Notes**: used in Embeddings/Units/ClassGroup.
 
 ### `theorem nrComplexPlaces_eq_zero`
-- **Type**: `InfinitePlace.nrComplexPlaces K = 0`. **How**: `IsTotallyReal.nrComplexPlaces_eq_zero`. **Uses**: [`isTotallyReal`] — **Lines**: 79-81 — **Notes**: KEY.
+- `= 0` — **How**: `IsTotallyReal.nrComplexPlaces_eq_zero`. — **Uses**: [isTotallyReal] — public — **Lines**: 79-81 — **Notes**: used 3+ times.
 
 ### `theorem infinitePlace_card_eq_two`
-- **Type**: `Fintype.card (InfinitePlace K) = 2`. **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces` + the two counts. **Uses**: [`nrRealPlaces_eq_two`,`nrComplexPlaces_eq_zero`] — **Lines**: 96-99
+- `Fintype.card (InfinitePlace K) = 2` — **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces` + the two counts. — **Uses**: [nrRealPlaces_eq_two, nrComplexPlaces_eq_zero] — public — **Lines**: 96-99
 
 ### `theorem infinitePlace_isReal`
-- **Type**: `(v : InfinitePlace K) → IsReal v`. **How**: `isTotallyReal.isReal`. **Uses**: [`isTotallyReal`] — **Lines**: 101-103 — **Notes**: used in LocalGlobal.
+- `(v) → IsReal v` — **How**: `isTotallyReal.isReal`. — **Uses**: [isTotallyReal] — public — **Lines**: 101-103 — **Notes**: used in LocalGlobal.
 
-### `theorem exists_realEmbedding_goldenRatio`
-- **Type**: `∃ σ : K →ₐ[ℚ] ℝ, σ goldenRoot = (1+√5)/2`. **How**: `QuadraticAlgebra.lift` with `Real.mul_self_sqrt`/`nlinarith`. **Uses**: [`goldenRoot`] — **Lines**: 105-113 — **Notes**: used in LocalGlobal.house.
+### `theorem exists_realEmbedding_goldenRatio` / `theorem exists_realEmbedding_conjugateGoldenRatio`
+- `∃ σ : K →ₐ[ℚ] ℝ, σφ = (1±√5)/2` — **How**: `QuadraticAlgebra.lift` with the relation checked via `Real.mul_self_sqrt`, `nlinarith`. — **Uses**: [goldenRoot] — public — **Lines**: 105-113 / 115-123 — **Notes**: `_goldenRatio` reused in `house_fundamentalUnit`.
 
-### `theorem exists_realEmbedding_conjugateGoldenRatio`
-- **Type**: `∃ σ, σ goldenRoot = (1-√5)/2`. **How**: same with `(1-√5)/2`. **Uses**: [`goldenRoot`] — **Lines**: 115-123
-
-**File Summary — Embeddings.lean**: 8 decls (theorems 8, 1 private). Key API (3+): `isTotallyReal`. No sorry/set_option. >30-line proofs: none (isTotallyReal ~24). `ringHom_ext_golden` is a generic helper.
+**File Summary (Embeddings.lean)**: 8 decls (1 private generic + 7 public). Key API:
+`isTotallyReal`, `nrComplexPlaces_eq_zero`, `nrRealPlaces_eq_two`, `infinitePlace_isReal`,
+`exists_realEmbedding_goldenRatio`. No sorry/set_option. `isTotallyReal` ≈24 lines. Split into two
+`noncomputable section`s (signature counts / embeddings). `ringHom_ext_golden` is reusable infra.
 
 ---
 
 ## RingOfIntegers.lean
 
-### `abbrev GoldenOrder` / `abbrev goldenInteger`
-- **Types**: `QuadraticAlgebra ℤ 1 1`; `goldenInteger := omega`. The concrete order `ℤ[φ]`. **Uses**: [] — **Lines**: 38-41 — **Notes**: KEY.
+### `abbrev GoldenOrder`
+- **Type**: `:= QuadraticAlgebra ℤ (1:ℤ) (1:ℤ)` — **What**: concrete `ℤ[φ]` model (`a+bφ`, `a b : ℤ`). — **Uses**: [] — public — **Lines**: 38 — **Notes**: key API.
 
-### `theorem goldenInteger_sq`
-- **Type**: `goldenInteger^2 = goldenInteger + 1`. **How**: component `ext`. **Uses**: [`goldenInteger`] — **Lines**: 43-45
+### `abbrev goldenInteger` / `theorem goldenInteger_sq`
+- `GoldenOrder := QuadraticAlgebra.omega`; `^2 = ·+1`. — **Uses**: [] — public — **Lines**: 41 / 43-45
 
 ### `theorem goldenInteger_isIntegral`
-- **Type**: `IsIntegral ℤ goldenInteger`. **How**: `X²-X-1`, `monicity`. **Uses**: [`goldenInteger_sq`] — **Lines**: 47-51
+- `IsIntegral ℤ goldenInteger` — **How**: witness `X²-X-1`, `monicity`. — **Uses**: [goldenInteger_sq] — public — **Lines**: 47-51
 
-### `instance : Algebra.IsIntegral ℤ GoldenOrder`
-- **How**: each `⟨a,b⟩` = `algebraMap a + b•goldenInteger`, both integral. **Uses**: [`goldenInteger_isIntegral`] — **Lines**: 53-59
+### `instance Algebra.IsIntegral ℤ GoldenOrder`
+- **How**: each `⟨a,b⟩ = algebraMap a + b•φ`, both integral. — **Uses**: [goldenInteger_isIntegral] — public — **Lines**: 53-59
 
 ### `def goldenOrderToField`
-- **Type**: `GoldenOrder →+* K`. **What**: embeds `ℤ[φ]` into `ℚ(√5)`. **How**: coordinatewise cast; ring-hom axioms by `ext`/`simp`. **Uses**: [] — **Lines**: 62-70 — **Notes**: KEY.
+- **Type**: `GoldenOrder →+* K` (`⟨a,b⟩ ↦ ⟨a,b⟩` over ℚ) — **How**: explicit `RingHom` w/ `ext`/`simp`. — **Uses**: [] — public — **Lines**: 62-70 — **Notes**: key API.
 
-### `instance : Algebra GoldenOrder K` / `instance : IsScalarTower ℤ GoldenOrder K`
-- **How**: `toAlgebra`; `IsScalarTower.of_algebraMap_eq`. **Uses**: [`goldenOrderToField`] — **Lines**: 72-76
+### `instance Algebra GoldenOrder K` / `instance IsScalarTower ℤ GoldenOrder K`
+- via `goldenOrderToField.toAlgebra`; tower by `of_algebraMap_eq`. — **Uses**: [goldenOrderToField] — public — **Lines**: 72-76
 
 ### `theorem goldenOrderToField_injective`
-- **Type**: `Function.Injective goldenOrderToField`. **How**: coordinatewise `exact_mod_cast`. **Uses**: [`goldenOrderToField`] — **Lines**: 78-86
+- `Injective goldenOrderToField` — **How**: compare `re`/`im`, `exact_mod_cast`. — **Uses**: [goldenOrderToField] — public — **Lines**: 78-86
 
 ### `abbrev goldenPowerBasis`
-- **Type**: `PowerBasis ℚ K` with gen `goldenRoot`, dim 2. **Uses**: [`goldenRoot`,`QuadraticAlgebra.basis`] — **Lines**: 88-94 — **Notes**: KEY.
+- **Type**: `PowerBasis ℚ K` (gen `φ`, dim 2, basis = `QuadraticAlgebra.basis`). — **Uses**: [goldenRoot] — public — **Lines**: 88-94 — **Notes**: key API (used 8+ times: discr, adjoin, basis lemmas).
 
 ### `theorem adjoin_goldenRoot_eq_top`
-- **Type**: `Algebra.adjoin ℚ {goldenRoot} = ⊤`. **How**: `goldenPowerBasis.adjoin_gen_eq_top`. **Uses**: [`goldenPowerBasis`,`goldenRoot`] — **Lines**: 96-98 — **Notes**: used in PrimeSplitting.
+- `Algebra.adjoin ℚ {φ} = ⊤` — **How**: `PowerBasis.adjoin_gen_eq_top`. — **Uses**: [goldenPowerBasis, goldenRoot] — public — **Lines**: 96-98 — **Notes**: used in Different section.
 
-### `theorem goldenPowerBasis_basis_zero` / `…_basis_one`
-- **Types**: basis 0 = 1; basis 1 = goldenRoot. **How**: component `ext`. **Uses**: [`goldenPowerBasis`,`goldenRoot`] — **Lines**: 100-106
+### `theorem goldenPowerBasis_basis_zero` / `_one`
+- `basis 0 = 1`, `basis 1 = φ` — **How**: `change`+`ext`/`simp`. — **Uses**: [goldenRoot] — public — **Lines**: 100-102 / 104-106 — **Notes**: each used 3+ times.
 
 ### `theorem golden_trace_eq`
-- **Type**: `Algebra.trace ℚ K x = 2*x.re + x.im`. **How**: `trace_eq_matrix_trace`, `leftMulMatrix_eq_repr_mul`, `Matrix.trace_fin_two`. **Uses**: [] — **Lines**: 108-114 — **Notes**: KEY (used in discr, five_dvd).
+- **Type**: `Algebra.trace ℚ K x = 2·x.re + x.im` — **How**: `trace_eq_matrix_trace`, `leftMulMatrix_eq_repr_mul`, `Matrix.trace_fin_two`. — **Uses**: [] — public — **Lines**: 108-114 — **Notes**: used in discr + integrality.
 
 ### `theorem golden_norm_eq`
-- **Type**: `Algebra.norm ℚ x = x.re² + x.re*x.im - x.im²`. **How**: `norm_eq_matrix_det`, `Matrix.det_fin_two`. **Uses**: [] — **Lines**: 116-122 — **Notes**: KEY.
+- **Type**: `Algebra.norm ℚ x = x.re² + x.re·x.im - x.im²` — **How**: `norm_eq_matrix_det`, `Matrix.det_fin_two`. — **Uses**: [] — public — **Lines**: 116-122 — **Notes**: the norm form; used in `norm_eq_normForm`, integrality, Euclidean.
 
 ### `theorem goldenPowerBasis_discr`
-- **Type**: `Algebra.discr ℚ goldenPowerBasis.basis = 5`. **How**: trace matrix `!![2,1;1,3]` via `golden_trace_eq` on the 4 entries, `Matrix.det_fin_two_of`. **Uses**: [`goldenPowerBasis(_basis_zero/_one)`,`golden_trace_eq`,`goldenRoot`] — **Lines**: 124-155 — **Notes**: proof >30 lines.
+- **Type**: `Algebra.discr ℚ goldenPowerBasis.basis = 5` — **How**: traceMatrix `!![2,1;1,3]` (entrywise via `golden_trace_eq`), `det_fin_two_of`. — **Uses**: [goldenPowerBasis_basis_zero/one, golden_trace_eq, goldenRoot] — public — **Lines**: 124-155 — **Notes**: proof ≈31 lines (>30); core disc computation.
 
 ### `theorem five_dvd_coords_of_trace_norm`
-- **Type**: `(2m+n=5T) → (m²+mn-n²=25N) → 5∣m ∧ 5∣n`. **How**: substitute `n`, show `m²=5(...)`, `Prime.dvd_of_dvd_pow`, then `5∣n`. **Uses**: [] — **Lines**: 157-173 — **Notes**: generic-ish number lemma.
+- `2m+n=5T ∧ m²+mn-n²=25N → 5∣m ∧ 5∣n` — **How**: substitute `n=5T-2m`, `m²=5·…` ⇒ `5∣m²`, `Prime 5`; then `5∣n`. — **Uses**: [] — public — **Lines**: 157-173
 
 ### `theorem int_eq_of_rat_div_five_eq` / `int_eq_of_rat_div_twentyFive_eq`
-- **Types**: `(a:ℚ)/5 = b → a = 5b`; same /25. **How**: `norm_num`/`linear_combination`/`exact_mod_cast`. **Uses**: [] — **Lines**: 175-188 — **Notes**: generic arithmetic helpers (could move to Common).
+- `(a/5 = b in ℚ) → a = 5b` (and `/25`). **How**: `norm_num`/`linear_combination`/`exact_mod_cast`. — **Uses**: [] — public — **Lines**: 175-180 / 182-188
 
 ### `private theorem five_dvd_coords_of_integral`
-- **Type**: integral `x` with `m=5x.re, n=5x.im` ⇒ `5∣m ∧ 5∣n`.
-- **How**: integrality of trace/norm (`Algebra.isIntegral_trace/_norm`, `exists_int_iff_exists_rat`), then `five_dvd_coords_of_trace_norm`. **Uses**: [`golden_trace_eq`,`golden_norm_eq`,`int_eq_of_rat_div_five_eq`,`int_eq_of_rat_div_twentyFive_eq`,`five_dvd_coords_of_trace_norm`] — **Lines**: 190-215 — **Visibility**: private — **Notes**: proof >20 lines.
+- For integral `x` with `m=5x.re,n=5x.im`: `5∣m ∧ 5∣n` — **How**: `trace`/`norm` of `x` are integers, push to `five_dvd_coords_of_trace_norm`. — **Uses**: [golden_trace_eq, golden_norm_eq, int_eq lemmas, five_dvd_coords_of_trace_norm] — private — **Lines**: 190-215
 
 ### `theorem integral_mem_goldenOrderToField_range`
-- **Type**: `IsIntegral ℤ x → ∃ y : GoldenOrder, algebraMap y = x`.
-- **What**: every algebraic integer lies in `ℤ[φ]`.
-- **How**: `Algebra.discr_mul_isIntegral_mem_adjoin` gives `5•x ∈ ℤ[φ]`, then divisibility of coords (`five_dvd_coords_of_integral`) to remove the 5. **Uses**: [`goldenPowerBasis(_discr)`,`goldenRoot_isIntegral`,`goldenOrderToField`,`goldenInteger`,`five_dvd_coords_of_integral`] — **Lines**: 217-251 — **Notes**: KEY; proof >30 lines.
+- **Type**: integral `x` ⇒ `∃ y : GoldenOrder, algebraMap y = x` — **How**: `discr·x ∈ adjoin` (`Algebra.discr_mul_isIntegral_mem_adjoin`, disc 5), divisibility of coords by 5 cancels the `5•`. — **Uses**: [goldenPowerBasis(_discr), goldenRoot_isIntegral, goldenOrderToField, goldenInteger, five_dvd_coords_of_integral] — public — **Lines**: 217-251 — **Notes**: proof ≈35 lines (>30); the integrality crux (golden half-integral subtlety).
 
-### `instance : IsIntegralClosure GoldenOrder ℤ K`
-- **How**: `goldenOrderToField_injective` + `integral_mem_goldenOrderToField_range`. **Uses**: those + `Algebra.IsIntegral.isIntegral` — **Lines**: 253-259 — **Notes**: KEY.
+### `instance IsIntegralClosure GoldenOrder ℤ K`
+- **How**: `algebraMap_injective` + `isIntegral_iff` both directions. — **Uses**: [goldenOrderToField_injective, integral_mem_goldenOrderToField_range] — public — **Lines**: 253-259
 
-### `def integralBasisVectors`
-- **Type**: `Fin 2 → K := ![1, goldenRoot]`. **Uses**: [`goldenRoot`] — **Lines**: 262
-
-### `theorem span_integralBasisVectors_eq`
-- **Type**: `span ℤ (range integralBasisVectors) = Subalgebra.toSubmodule (integralClosure ℤ K)`.
-- **How**: `le_antisymm`; reverse uses `integral_mem_goldenOrderToField_range` + coordinate decomposition. **Uses**: [`integralBasisVectors`,`goldenRoot(_isIntegral)`,`integral_mem_goldenOrderToField_range`,`goldenOrderToField`] — **Lines**: 264-284 — **Notes**: proof >15 lines.
+### `def integralBasisVectors` / `theorem span_integralBasisVectors_eq`
+- `Fin 2 → K := ![1, φ]`; their ℤ-span = `Subalgebra.toSubmodule (integralClosure ℤ K)`. **How**: `le_antisymm`; for `≥` decompose via `integral_mem_goldenOrderToField_range`. — **Uses**: [goldenRoot(_isIntegral), goldenOrderToField, integral_mem_goldenOrderToField_range] — public — **Lines**: 262 / 264-284
 
 ### `abbrev concreteRingOfIntegers`
-- **Type**: `Subalgebra ℤ K := Algebra.adjoin ℤ {goldenRoot}`. **Uses**: [`goldenRoot`] — **Lines**: 287-288 — **Notes**: KEY.
+- `:= Algebra.adjoin ℤ {goldenRoot}` — the order `ℤ[φ]`. — **Uses**: [goldenRoot] — public — **Lines**: 287-288 — **Notes**: used in Different.
 
 ### `theorem ringOfIntegers_eq`
-- **Type**: `integralClosure ℤ K = concreteRingOfIntegers`. **How**: `le_antisymm`, `integral_mem_goldenOrderToField_range`, `QuadraticAlgebra.mk_eq_add_smul_omega`. **Uses**: [`concreteRingOfIntegers`,`integral_mem_goldenOrderToField_range`,`goldenRoot`] — **Lines**: 290-304 — **Notes**: KEY (PrimeSplitting); proof >15 lines.
+- **Type**: `integralClosure ℤ K = concreteRingOfIntegers` — **How**: `le_antisymm`; integral ⇒ in adjoin via `mk_eq_add_smul_omega`, `intCast_mem`/`zsmul_mem`. — **Uses**: [integral_mem_goldenOrderToField_range, goldenRoot, concreteRingOfIntegers] — public — **Lines**: 290-304 — **Notes**: key result; used in `goldenIntO_adjoin_eq_top`.
 
 ### `theorem span_integralBasisVectors_eq_integralBasis`
-- **Type**: span of `[1,φ]` = span of mathlib `integralBasis K`. **How**: `mem_span_integralBasis`, `RingHom.mem_range`. **Uses**: [`integralBasisVectors`,`span_integralBasisVectors_eq`] — **Lines**: 306-320
+- `[1,φ]` span = `NumberField.integralBasis K` span. **How**: `mem_span_integralBasis`, `RingHom.mem_range`. — **Uses**: [span_integralBasisVectors_eq, integralBasisVectors] — public — **Lines**: 306-320
 
 ### `theorem adjoin_sqrtFive_ne_integralClosure`
-- **Type**: `Algebra.adjoin ℤ {sqrtFiveRoot} ≠ integralClosure ℤ K`.
-- **What**: `ℤ[√5]` is not the maximal order. **How**: builds the sub-`Subalgebra` `{re=a, im=2b}` containing `ℤ[√5]`, shows `φ` has odd `im`, contradiction `2b=1`. **Uses**: [`sqrtFiveRoot`,`goldenRoot`] — **Lines**: 322-362 — **Notes**: proof >30 lines.
+- **Type**: `Algebra.adjoin ℤ {√5} ≠ integralClosure ℤ K` — **What**: `ℤ[√5] ⊊ ℤ[φ]` (index 2). **How**: build subalgebra `S = {re∈ℤ, im∈2ℤ}` (with explicit `mul_mem` using `φ²=φ+1`), `√5=-1+2φ ∈ S`, but `φ∉S` (im=1 not even). — **Uses**: [sqrtFiveRoot, goldenRoot, goldenRoot_isIntegral] — public — **Lines**: 322-362 — **Notes**: proof ≈40 lines; the distinctive `5≡1 mod 4` fact (no SqrtTwo analogue — there `ℤ[√2]` IS the maximal order).
 
-### `abbrev sqrtFiveExplicitIntegralBasis`
-- **Type**: `Basis (Fin 2) ℤ GoldenOrder := QuadraticAlgebra.basis 1 1`. **Uses**: [] — **Lines**: 365-366 — **Notes**: KEY.
+### `abbrev sqrtFiveExplicitIntegralBasis` / `_zero` / `_one`
+- `Basis (Fin 2) ℤ GoldenOrder := QuadraticAlgebra.basis 1 1`; vectors `1`, `goldenInteger`. — **Uses**: [goldenInteger] — public — **Lines**: 365-366 / 369-372 / 375-378
 
-### `theorem sqrtFiveExplicitIntegralBasis_zero` / `…_one`
-- **Types**: basis 0 = 1; basis 1 = goldenInteger. **How**: component `ext`. **Uses**: [`goldenInteger`] — **Lines**: 369-378
-
-### `theorem goldenOrderToField_basis_zero` / `…_one`
-- **Types**: `goldenOrderToField (basis 0) = 1`; `(basis 1) = goldenRoot`. **Uses**: [`goldenOrderToField`,`sqrtFiveExplicitIntegralBasis_zero/_one`,`goldenRoot`] — **Lines**: 380-388
+### `theorem goldenOrderToField_basis_zero` / `_one`
+- `goldenOrderToField (basis i) = 1 / φ`. — **Uses**: [sqrtFiveExplicitIntegralBasis_zero/one, goldenOrderToField] — public — **Lines**: 380-383 / 385-388
 
 ### `def goldenOrderEquivRingOfIntegers`
-- **Type**: `GoldenOrder ≃ₐ[ℤ] 𝓞 K := IsIntegralClosure.equiv …`. **Uses**: [`GoldenOrder` instances] — **Lines**: 390-392 — **Notes**: KEY.
+- **Type**: `GoldenOrder ≃ₐ[ℤ] 𝓞 K := IsIntegralClosure.equiv …`. — **Uses**: [IsIntegralClosure instance] — public — **Lines**: 391-392 — **Notes**: key API.
 
-### `def concreteIntegralBasis`
-- **Type**: `Basis (Fin 2) ℤ (𝓞 K)`. **What**: `[1,φ]` transported into `𝓞 K`. **How**: `sqrtFiveExplicitIntegralBasis.map equiv`. **Uses**: [`sqrtFiveExplicitIntegralBasis`,`goldenOrderEquivRingOfIntegers`] — **Lines**: 394-396 — **Notes**: KEY (PrimeSplitting, discr).
-
-### `theorem concreteIntegralBasis_basis_zero` / `…_basis_one`
-- **Types**: `algebraMap (basis 0) = 1`; `(basis 1) = goldenRoot`. **How**: `IsIntegralClosure.algebraMap_equiv`. **Uses**: [`concreteIntegralBasis`,`goldenOrderEquivRingOfIntegers`,`sqrtFiveExplicitIntegralBasis_…`,`goldenOrderToField_basis_…`,`goldenRoot`] — **Lines**: 398-412
+### `def concreteIntegralBasis` + `_basis_zero`/`_one`
+- `Basis (Fin 2) ℤ (𝓞 K)` = explicit basis mapped via the equiv; `algebraMap (·) = 1 / φ`. **How**: `IsIntegralClosure.algebraMap_equiv`. — **Uses**: [sqrtFiveExplicitIntegralBasis, goldenOrderEquivRingOfIntegers, goldenOrderToField_basis_*] — public — **Lines**: 395-396 / 399-404 / 407-412 — **Notes**: key API across PrimeSplitting.
 
 ### `theorem concreteIntegralBasis_discr`
-- **Type**: `Algebra.discr ℤ concreteIntegralBasis = 5`.
-- **How**: `Algebra.discr_localizationLocalization` + `Module.Basis.localizationLocalization` to reduce to `goldenPowerBasis_discr`. **Uses**: [`concreteIntegralBasis(_basis_zero/_one)`,`goldenPowerBasis(_basis_zero/_one)(_discr)`] — **Lines**: 414-452 — **Notes**: proof >30 lines; heavy localization machinery.
+- **Type**: `Algebra.discr ℤ concreteIntegralBasis = 5` — **How**: `Algebra.discr_localizationLocalization` (𝓞 K → ℚ⊗) + `Module.Basis.localizationLocalization`, transfer to `goldenPowerBasis_discr`. — **Uses**: [concreteIntegralBasis(_basis_*), goldenPowerBasis_basis_*, goldenPowerBasis_discr] — public — **Lines**: 414-452 — **Notes**: proof ≈38 lines (>30); heaviest localization argument in folder.
 
 ### `theorem numberField_discr_eq`
-- **Type**: `NumberField.discr K = 5`. **How**: `discr_eq_discr K concreteIntegralBasis` + `concreteIntegralBasis_discr`. **Uses**: [`concreteIntegralBasis(_discr)`] — **Lines**: 454-459 — **Notes**: KEY (PrimeSplitting ×, ClassGroup, Units).
+- **Type**: `NumberField.discr K = 5` — **How**: `discr_eq_discr K concreteIntegralBasis` + `concreteIntegralBasis_discr`. — **Uses**: [concreteIntegralBasis(_discr)] — public — **Lines**: 454-459 — **Notes**: used in PrimeSplitting (different/ramification) and ClassGroup (Minkowski).
 
 ### `theorem integralBasis_discr`
-- **Type**: `Algebra.discr ℚ (integralBasis K) = 5`. **How**: `NumberField.coe_discr` + `numberField_discr_eq`. **Uses**: [`numberField_discr_eq`] — **Lines**: 461-467 — **Notes**: `attribute [local instance] DivisionRing.toRatAlgebra in`.
+- `Algebra.discr ℚ (NumberField.integralBasis K) = 5` (with local `DivisionRing.toRatAlgebra`). **How**: `NumberField.coe_discr` + `numberField_discr_eq`. — **Uses**: [numberField_discr_eq] — public — **Lines**: 461-467 — **Notes**: only `attribute [local instance]` in file.
 
-### `def goldenIntO`
-- **Type**: `𝓞 K := ⟨goldenRoot, goldenRoot_isIntegral⟩`. **What**: `φ` in the abstract `𝓞 K`. **Uses**: [`goldenRoot(_isIntegral)`] — **Lines**: 484 — **Notes**: KEY — pervasive in PrimeSplitting/Units/Euclidean/LocalGlobal.
+### `def goldenIntO` / `theorem goldenIntO_sq`
+- `𝓞 K := ⟨goldenRoot, goldenRoot_isIntegral⟩`; `^2 = ·+1`. **How**: `Subtype.ext`/`push_cast`. — **Uses**: [goldenRoot(_isIntegral, _sq)] — public — **Lines**: 484 / 487-488 — **Notes**: THE generator of `𝓞 K` (≈40 references across PrimeSplitting/ClassGroup/Units).
 
 ### `theorem norm_eq_normForm`
-- **Type**: `Algebra.norm ℚ (x•1 + y•goldenRoot) = x²+xy-y²`. **How**: `golden_norm_eq` + `norm_num`. **Uses**: [`golden_norm_eq`,`goldenRoot`] — **Lines**: 486-491 — **Notes**: KEY; near-identical name to SqrtTwo's `norm_eq_normForm`.
+- **Type**: `Algebra.norm ℚ (x•1 + y•φ) = x² + xy - y²` — **How**: `golden_norm_eq` + `re/im_add`. — **Uses**: [golden_norm_eq, goldenRoot] — public — **Lines**: 490-495 — **Notes**: used in Euclidean.
 
 ### `theorem intNorm_eq_normForm`
-- **Type**: `Algebra.norm ℤ (x•1 + y•goldenIntO) = x²+xy-y²` (`x,y:ℤ`). **How**: `Algebra.coe_norm_int`, cast to `K`, `norm_eq_normForm`. **Uses**: [`goldenIntO`,`norm_eq_normForm`,`goldenRoot`] — **Lines**: 493-507 — **Notes**: KEY — workhorse of all PrimeSplitting norm computations; twin of SqrtTwo's.
+- **Type**: integral version `Algebra.norm ℤ (x•1 + y•φ) = x² + xy - y²` (`x y : ℤ`) — **How**: push to ℚ via `Algebra.coe_norm_int`, `norm_eq_normForm`. — **Uses**: [goldenIntO, norm_eq_normForm] — public — **Lines**: 497-511 — **Notes**: workhorse of PrimeSplitting (≈12 uses computing ideal norms).
 
 ### `theorem isUnit_iff_normForm`
-- **Type**: `IsUnit (x•1 + y•goldenIntO) ↔ x²+xy-y² = ±1`. **How**: `isUnit_iff_norm`, `intNorm_eq_normForm`, `abs_eq`. **Uses**: [`goldenIntO`,`intNorm_eq_normForm`] — **Lines**: 509-525 — **Notes**: twin of SqrtTwo's `isUnit_iff_normForm`.
+- **Type**: `IsUnit (x•1+y•φ) ↔ x²+xy-y² = ±1` — **What**: Pell-type unit equation. **How**: `isUnit_iff_norm`, `intNorm_eq_normForm`, `abs_eq`. — **Uses**: [goldenIntO, intNorm_eq_normForm] — public — **Lines**: 513-528 — **Notes**: this norm-form criterion is exactly the engine `minimality`/`reduction` use to prove `fundamentalUnit_generates` (now proved).
 
-**File Summary — RingOfIntegers.lean**: ~37 decls (defs/abbrevs ~14, theorems ~21, instances 4). Key API (3+): `goldenIntO`, `intNorm_eq_normForm`, `goldenPowerBasis`, `concreteIntegralBasis`, `numberField_discr_eq`, `golden_trace_eq`, `golden_norm_eq`, `integral_mem_goldenOrderToField_range`, `ringOfIntegers_eq`. No sorry/set_option. >30-line proofs: `goldenPowerBasis_discr`, `integral_mem_goldenOrderToField_range`, `adjoin_sqrtFive_ne_integralClosure`, `concreteIntegralBasis_discr`. Generic helpers: `int_eq_of_rat_div_five_eq`, `int_eq_of_rat_div_twentyFive_eq`, `five_dvd_coords_of_trace_norm`.
+**File Summary (RingOfIntegers.lean)**: ~40 decls. Key API (3+ uses): `goldenIntO`,
+`goldenIntO_sq`, `intNorm_eq_normForm`, `concreteIntegralBasis(_basis_*)`, `goldenPowerBasis`,
+`golden_trace_eq`, `golden_norm_eq`, `numberField_discr_eq`, `goldenOrderEquivRingOfIntegers`. No
+sorry. One `attribute [local instance] DivisionRing.toRatAlgebra` (line 461). Proofs >30 lines:
+`adjoin_sqrtFive_ne_integralClosure` (~40), `concreteIntegralBasis_discr` (~38),
+`integral_mem_goldenOrderToField_range` (~35), `goldenPowerBasis_discr` (~31). The
+`adjoin_sqrtFive_ne_integralClosure` result is SqrtFive-specific (half-integral maximal order).
 
 ---
 
-## Discriminant.lean
-
-Empty body — namespace only, no declarations (content folded into RingOfIntegers).
-**File Summary**: 0 decls.
-
----
-
-## PrimeSplitting.lean  (1191 lines; imports `Common.lean`)
+## PrimeSplitting.lean
 
 ### `def sqrtFiveIntO`
-- **Type**: `𝓞 K := 2*goldenIntO - 1`. **What**: `√5` in `𝓞 K`. **Uses**: [`goldenIntO`] — **Lines**: 37 — **Notes**: KEY (ClassGroup, LocalGlobal, Different).
+- **Type**: `𝓞 K := 2 * goldenIntO - 1` — `√5` in `𝓞 K`. — **Uses**: [goldenIntO] — public — **Lines**: 37 — **Notes**: key API; the ramified prime generator.
 
 ### `theorem span_five_eq`
-- **Type**: `Ideal.span {5} = Ideal.span {sqrtFiveIntO}^2`. **What**: 5 totally ramifies. **How**: `span_singleton_pow` + `sqrtFiveRoot_sq`. **Uses**: [`sqrtFiveIntO`,`goldenIntO`,`sqrtFiveRoot_sq`] — **Lines**: 41-47 — **Notes**: KEY.
+- **Type**: `Ideal.span {5} = Ideal.span {√5} ^ 2` — **What**: `5` totally ramifies. **How**: `span_singleton_pow`, `(2φ-1)²=5` via `sqrtFiveRoot_sq`. — **Uses**: [sqrtFiveIntO, sqrtFiveRoot_sq] — public — **Lines**: 41-47
 
 ### `theorem absNorm_span_sqrtFiveIntO`
-- **Type**: `absNorm (span {sqrtFiveIntO}) = 5`. **How**: `intNorm_eq_normForm (-1) 2`, `absNorm_span_singleton`. **Uses**: [`sqrtFiveIntO`,`goldenIntO`,`intNorm_eq_normForm`] — **Lines**: 50-59 — **Notes**: KEY.
+- `Ideal.absNorm (span {√5}) = 5` — **How**: `√5 = -1+2φ`, `intNorm_eq_normForm (-1) 2`, `absNorm_span_singleton`. — **Uses**: [sqrtFiveIntO, intNorm_eq_normForm, goldenIntO] — public — **Lines**: 49-59 — **Notes**: used 3+ times.
 
 ### `theorem isPrime_span_sqrtFiveIntO`
-- **Type**: `(span {sqrtFiveIntO}).IsPrime`. **How**: `isPrime_of_irreducible_absNorm` + Nat.Prime 5. **Uses**: [`absNorm_span_sqrtFiveIntO`] — **Lines**: 62-65 — **Notes**: KEY (ClassGroup? no — LocalGlobal, Different).
+- `(√5).IsPrime` — **How**: `isPrime_of_irreducible_absNorm` + `Nat.Prime 5`. — **Uses**: [absNorm_span_sqrtFiveIntO] — public — **Lines**: 61-65 — **Notes**: used in LocalGlobal/ClassGroup/Different.
 
-### `theorem liesOver_span_sqrtFiveIntO`
-- **Type**: lies over `(5:ℤ)`. **How**: `liesOver_span_iff` + `sqrtFiveRoot_sq`. **Uses**: [`isPrime_span_sqrtFiveIntO`,`sqrtFiveIntO`,`goldenIntO`,`sqrtFiveRoot_sq`] — **Lines**: 68-79
-
-### `theorem inertiaDeg_span_sqrtFiveIntO`
-- **Type**: `inertiaDeg (5) (√5) = 1`. **How**: `absNorm_eq_pow_inertiaDeg'`, `Nat.Prime.pow_eq_iff`. **Uses**: [`liesOver_span_sqrtFiveIntO`,`absNorm_span_sqrtFiveIntO`] — **Lines**: 82-89 — **Notes**: used in LocalGlobal.
-
-### `theorem ramificationIdx_span_sqrtFiveIntO`
-- **Type**: `ramificationIdx (5) (√5) = 2`. **How**: `ramificationIdx_spec`; upper bound via norm `125 ∤ 25`. **Uses**: [`span_five_eq`,`absNorm_span_sqrtFiveIntO`,`intNorm_eq_normForm`,`goldenIntO`] — **Lines**: 92-115 — **Notes**: proof >20 lines; used in LocalGlobal.
-
-### `private theorem goldenIntO_sq`
-- **Type**: `goldenIntO^2 = goldenIntO + 1`. **How**: `Subtype.ext` + `goldenRoot_sq`. **Uses**: [`goldenIntO`,`goldenRoot_sq`] — **Lines**: 117-118 — **Visibility**: private — **Notes**: DUPLICATE — also defined privately in Units.lean (lines 36-37). Could be a single public lemma.
+### `theorem liesOver_span_sqrtFiveIntO` / `inertiaDeg_span_sqrtFiveIntO` / `ramificationIdx_span_sqrtFiveIntO`
+- `(√5)` lies over `(5)`; `f=1`; `e=2`. **How**: `liesOver_span_iff`; `absNorm_eq_pow_inertiaDeg'`; `ramificationIdx_spec` with norm 5/125/25 divisibility. — **Uses**: [isPrime/absNorm/span_five_eq, intNorm_eq_normForm] — public — **Lines**: 67-79 / 81-89 / 91-115
 
 ### `private theorem absNorm_ne_two` / `absNorm_ne_three`
-- **Types**: no ideal of `𝓞 K` has norm 2 (resp. 3).
-- **How**: residue field `ZMod p`, lift `φ` to root of `t²=t+1` in `ZMod 2`/`3`, `decide`. **Uses**: [`goldenIntO_sq`] — **Lines**: 119-155 — **Visibility**: private — **Notes**: structurally identical pair (only the prime differs); each ~18 lines.
+- No ideal of `𝓞 K` has norm 2 or 3. **How**: residue field `≅ ZMod 2/3`, `φ` would solve `t²=t+1`, `decide`. — **Uses**: [goldenIntO_sq] — private — **Lines**: 117-134 / 136-153 — **Notes**: drive inertness of `(2)`,`(3)`.
 
 ### `theorem isPrime_span_two`
-- **Type**: `(span {2}).IsPrime` (2 inert). **How**: norm 4, take maximal `M≥(2)`, rule out norms 1,2 via `absNorm_ne_two`, `eq_of_le_of_absNorm_eq`. **Uses**: [`intNorm_eq_normForm`,`goldenIntO`,`absNorm_ne_two`, Common `eq_of_le_of_absNorm_eq`] — **Lines**: 159-190 — **Notes**: proof >30 lines.
+- `(2).IsPrime` — **What**: `2` inert. **How**: `absNorm = 4`, any maximal `M ⊇ (2)` has norm ∣4, ≠1,≠2 ⇒ =4 ⇒ `M=(2)`. **Uses**: [absNorm_ne_two, eq_of_le_of_absNorm_eq, intNorm_eq_normForm] — public — **Lines**: 155-188
 
 ### `theorem absNorm_span_two` / `liesOver_span_two` / `inertiaDeg_span_two`
-- **Types**: norm 4; lies over (2); inertiaDeg 2. **How**: `intNorm_eq_normForm`; `liesOver_span_iff`; `absNorm_eq_pow_inertiaDeg'`+`Nat.pow_right_injective`. **Uses**: [`intNorm_eq_normForm`,`goldenIntO`,`isPrime_span_two`,`liesOver_span_two`,`absNorm_span_two`] — **Lines**: 192-220
+- norm 4; lies over `(2)`; `f=2`. **How**: `intNorm_eq_normForm 2 0`; `liesOver_span_iff`; `absNorm_eq_pow_inertiaDeg'` + `pow_right_injective`. — **Uses**: [isPrime_span_two, intNorm_eq_normForm] — public — **Lines**: 190-198 / 200-206 / 208-218
 
-### `theorem isPrime_span_three`
-- **Type**: `(span {3}).IsPrime` (3 inert). **How**: identical to `isPrime_span_two` with norm 9 / `absNorm_ne_three`. **Uses**: [`intNorm_eq_normForm`,`goldenIntO`,`absNorm_ne_three`, Common `eq_of_le_of_absNorm_eq`] — **Lines**: 224-255 — **Notes**: proof >30 lines; structural twin of `isPrime_span_two`.
-
-### `theorem absNorm_span_three` / `liesOver_span_three` / `inertiaDeg_span_three`
-- **Types/How**: as for 2, norm 9, inertiaDeg 2. **Uses**: [`intNorm_eq_normForm`,`goldenIntO`,`isPrime_span_three`,`liesOver_span_three`,`absNorm_span_three`] — **Lines**: 257-285
+### `theorem isPrime_span_three` + `absNorm`/`liesOver`/`inertiaDeg_span_three`
+- `3` inert (norm 9, `f=2`). **How**: analogous to `(2)` (`5` not a square mod 3). **Uses**: [absNorm_ne_three, eq_of_le_of_absNorm_eq, intNorm_eq_normForm] — public — **Lines**: 220-253 / 255-263 / 265-271 / 273-283
 
 ### `theorem eleven_eq_mul`
-- **Type**: `(11:𝓞 K) = (3+φ)(4-φ)`. **How**: `Subtype.ext`, expand, `goldenRoot_sq`. **Uses**: [`goldenIntO`,`goldenRoot_sq`] — **Lines**: 287-293
+- `(11 : 𝓞 K) = (3+φ)(4-φ)` — **How**: `Subtype.ext`, expand, `goldenRoot_sq`. — **Uses**: [goldenIntO, goldenRoot_sq] — public — **Lines**: 285-291 — **Notes**: the split-prime example.
 
-### `theorem span_eleven_eq`
-- **Type**: `span {11} = span {3+φ} * span {4-φ}`. **How**: `span_singleton_mul_span_singleton` + `eleven_eq_mul`. **Uses**: [`goldenIntO`,`eleven_eq_mul`] — **Lines**: 297-300
-
-### `theorem absNorm_span_three_add_golden` / `isPrime_span_three_add_golden`
-- **Types**: norm 11; prime. **How**: `intNorm_eq_normForm 3 1`; `isPrime_of_irreducible_absNorm`. **Uses**: [`intNorm_eq_normForm`,`goldenIntO`,`absNorm_span_three_add_golden`] — **Lines**: 303-317
-
-### `theorem absNorm_span_four_sub_golden` / `isPrime_span_four_sub_golden`
-- **Types**: norm 11; prime. **How**: `intNorm_eq_normForm 4 (-1)`. **Uses**: [`intNorm_eq_normForm`,`goldenIntO`,`absNorm_span_four_sub_golden`] — **Lines**: 319-336
-
-### `theorem liesOver_span_three_add_golden` / `liesOver_span_four_sub_golden`
-- **Types**: each lies over (11). **How**: `liesOver_span_iff` + `eleven_eq_mul`. **Uses**: [`isPrime_…`,`goldenIntO`,`eleven_eq_mul`] — **Lines**: 338-358
-
-### `theorem inertiaDeg_span_three_add_golden` / `inertiaDeg_span_four_sub_golden`
-- **Types**: inertiaDeg 1 over 11. **How**: `absNorm_eq_pow_inertiaDeg'`+`Nat.Prime.pow_eq_iff`. **Uses**: [`liesOver_…`,`absNorm_…`] — **Lines**: 360-378
+### `theorem span_eleven_eq` + `absNorm`/`isPrime`/`liesOver`/`inertiaDeg` for `(3+φ)`,`(4-φ)`
+- `(11) = (3+φ)(4-φ)`, each prime of norm 11, `f=1`, lies over `(11)`. **How**: `span_singleton_mul`, `intNorm_eq_normForm 3 1` / `4 (-1)`, `isPrime_of_irreducible_absNorm`. — **Uses**: [eleven_eq_mul, intNorm_eq_normForm] — public — **Lines**: 295-356 (spread)
 
 ### `theorem primesAboveEleven_ne`
-- **Type**: `span {3+φ} ≠ span {4-φ}`. **How**: assuming equal, derive `√5, 5, 11, 1 ∈ span{3+φ}` ⇒ top, contradict norm 11. **Uses**: [`goldenIntO`,`sqrtFiveIntO`,`sqrtFiveRoot_sq`,`eleven_eq_mul`,`absNorm_span_three_add_golden`] — **Lines**: 380-409 — **Notes**: proof >25 lines.
+- `(3+φ) ≠ (4-φ)` — **How**: else both contain their difference `√5`, then `5`, then `11`, then `1` ⇒ contradiction with norm 11. — **Uses**: [sqrtFiveIntO, sqrtFiveRoot_sq, eleven_eq_mul, absNorm_span_three_add_golden] — public — **Lines**: 378-407
 
 ### `private theorem absNorm_span_natCast`
-- **Type**: `absNorm (span {(p:ℕ):𝓞 K}) = p²` for `p:ℕ`. **How**: `intNorm_eq_normForm p 0`, `Int.natAbs_pow`. **Uses**: [`intNorm_eq_normForm`,`goldenIntO`] — **Lines**: 411-419 — **Visibility**: private — **Notes**: KEY in the general splitting law; generic.
+- `Ideal.absNorm (span {(p:𝓞 K)}) = p²` — **How**: `absNorm_span_natCast` (mathlib) + `RingOfIntegers.rank` + `degree_eq_two`. — **Uses**: [degree_eq_two] — private — **Lines**: 409-411 — **Notes**: used 4+ times (norm of inert/ramified rational primes); reusable infra.
 
-### `private theorem concreteIntegralBasis_zero_eq_one` / `…_one_eq_goldenIntO`
-- **Types**: `concreteIntegralBasis 0 = 1`; `1 = goldenIntO`. **How**: `Subtype.ext`. **Uses**: [`concreteIntegralBasis(_basis_zero/_one)`,`goldenIntO`] — **Lines**: 421-429 — **Visibility**: private
-
-### `private theorem li_one_golden`
-- **Type**: `LinearIndependent ℤ ![1, goldenIntO]`. **How**: transport from `concreteIntegralBasis.linearIndependent`. **Uses**: [`goldenIntO`,`concreteIntegralBasis(_…)`] — **Lines**: 431-440 — **Visibility**: private
-
-### `private theorem exists_o5_coords`
-- **Type**: `∀ z:𝓞 K, ∃ A B:ℤ, z = A•1 + B•goldenIntO`. **How**: `concreteIntegralBasis.repr`/`sum_repr`. **Uses**: [`goldenIntO`,`concreteIntegralBasis(_…)`] — **Lines**: 442-450 — **Visibility**: private
+### `private theorem concreteIntegralBasis_zero_eq_one` / `_one_eq_goldenIntO` / `li_one_golden` / `exists_o5_coords`
+- `[1,φ]` is the ℤ-basis of `𝓞 K`: coordinate extraction lemmas. **How**: `Subtype.ext`, `Fintype.linearIndependent_iff`, `concreteIntegralBasis.repr`. — **Uses**: [concreteIntegralBasis(_basis_*), goldenIntO] — private — **Lines**: 413-442
 
 ### `private theorem unit_golden_coeff_not_mem`
-- **Type**: `A + B·φ` with `B=±1` not in `span {p}` for `p≥2`. **How**: decompose membership, `li_one_golden`, `Int.le_of_dvd`. **Uses**: [`goldenIntO`,`exists_o5_coords`,`li_one_golden`] — **Lines**: 452-476 — **Visibility**: private — **Notes**: proof >20 lines.
+- `A + B·φ` with `B=±1` is never in `(p)` for `p≥2`. **How**: `mem_span_singleton`, coords via `li_one_golden`, `p∣1`⇒contra. — **Uses**: [goldenIntO, exists_o5_coords, li_one_golden] — private — **Lines**: 444-468 — **Notes**: drives norm-`p` ⇒ prime arguments.
 
 ### `theorem ramified_iff_eq_five`
-- **Type**: `(∃P prime, span{p} ≤ P²) ↔ p = 5` for prime `p`.
-- **What**: `p` ramifies iff `p=5` (divides discriminant). **How**: forward uses `not_isUnramifiedAt_…` + different-ideal divisibility (`dvd_differentIdeal_iff`, `absNorm_differentIdeal`, `numberField_discr_eq`); backward uses `span_five_eq`. **Uses**: [`absNorm_span_natCast`, Common (`not_map_span_natCast_le_pow_succ_…`, `not_isUnramifiedAt_of_map_span_natCast_le_sq_…`), `numberField_discr_eq`,`isPrime_span_sqrtFiveIntO`,`span_five_eq`,`sqrtFiveIntO`] — **Lines**: 478-522 — **Notes**: proof >40 lines. KEY public result.
+- **Type**: `(∃ P prime, (p) ≤ P²) ↔ p = 5` — **What**: ramification ⇔ `p ∣ disc = 5`. **How**: (⇒) `not_isUnramifiedAt_…` ⇒ `P ∣ differentIdeal`, `absNorm P ∣ 5`, so `p=5`; (⇐) use `span_five_eq`. — **Uses (incl. Common)**: [absNorm_span_natCast, not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ, not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow, numberField_discr_eq, absNorm_differentIdeal, sqrtFiveIntO, span_five_eq, isPrime_span_sqrtFiveIntO] — public — **Lines**: 470-514 — **Notes**: proof ≈45 lines (>30); central ramification law.
 
-### `theorem ramificationIdx_span_two` / `…_three` / `…_three_add_golden` / `…_four_sub_golden`
-- **Types**: each unramified (ramIdx 1). **How**: `ramificationIdx_spec`; upper bound by reducing to `ramified_iff_eq_five` (≠5). **Uses**: [`isPrime_span_…`,`ramified_iff_eq_five`,`span_eleven_eq`] — **Lines**: 524-586
+### `theorem ramificationIdx_span_two` / `_three` / `_three_add_golden` / `_four_sub_golden`
+- inert/split primes are unramified (`e=1`). **How**: `ramificationIdx_spec`; the `>` direction reduces to `ramified_iff_eq_five` giving `p=5` contradiction. — **Uses**: [ramified_iff_eq_five, isPrime_span_*, span_eleven_eq] — public — **Lines**: 516-578
 
 ### `private theorem golden_sub_mem_span_natCast_of_one_mem_span_pair`
-- **Type**: technical — if `1 ∈ span{p, φ-c}` and `(φ-c)(φ-c')=p·(…)` then `φ-c' ∈ span{p}`. **How**: `mem_span_pair`, `linear_combination`. **Uses**: [`goldenIntO`] — **Lines**: 588-608 — **Visibility**: private
+- Lattice computation supporting norm-`p` of `(p, φ-c)`. **How**: `mem_span_pair`, `mem_span_singleton`, `linear_combination`. — **Uses**: [goldenIntO] — private — **Lines**: 580-600
 
 ### `private theorem absNorm_span_prime_golden_sub_of_mul`
-- **Type**: `absNorm (span {p, φ-c}) = p` given the product factorization. **How**: rule out norm 1 (via prev + `unit_golden_coeff_not_mem`) and norm p² (via `eq_of_le_of_absNorm_eq`+`unit_golden_coeff_not_mem`), then Common `eq_prime_of_dvd_prime_sq_…`. **Uses**: [`goldenIntO`,`golden_sub_mem_span_natCast_of_one_mem_span_pair`,`unit_golden_coeff_not_mem`,`absNorm_span_natCast`, Common `eq_of_le_of_absNorm_eq`,`eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`] — **Lines**: 610-655 — **Visibility**: private — **Notes**: proof >40 lines.
+- `(p, φ-c)` has norm `p` given the product factorization. **How**: norm ∣ p², ≠1 (`unit_golden_coeff_not_mem`), ≠p² (`eq_of_le_of_absNorm_eq`), `eq_prime_of_dvd_prime_sq_…`. — **Uses (incl. Common)**: [absNorm_span_natCast, unit_golden_coeff_not_mem, eq_of_le_of_absNorm_eq, eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq, golden_sub_mem_span_natCast_of_one_mem_span_pair, goldenIntO] — private — **Lines**: 602-647
 
 ### `private theorem exists_golden_root_of_absNorm_eq_prime`
-- **Type**: `absNorm P = p ⇒ ∃ t:ZMod p, t²=t+1`. **How**: residue field `≃ ZMod p` (`ZMod.ringEquivOfPrime`), lift `φ`. **Uses**: [`goldenIntO`,`goldenIntO_sq`] — **Lines**: 657-675 — **Visibility**: private
+- norm-`p` prime ⇒ `∃ t : ZMod p, t²=t+1`. **How**: residue field `≅ ZMod p`, image of `φ`. — **Uses**: [goldenIntO_sq] — private — **Lines**: 649-667
 
 ### `private theorem isSquare_five_of_absNorm_eq_prime`
-- **Type**: `absNorm P = p ⇒ IsSquare ((5:ℕ):ZMod p)`. **How**: from root `t`, `2t-1` squares to 5. **Uses**: [`exists_golden_root_of_absNorm_eq_prime`] — **Lines**: 677-683 — **Visibility**: private
+- ⇒ `IsSquare ((5:ℕ):ZMod p)` via `2t-1`. — **Uses**: [exists_golden_root_of_absNorm_eq_prime] — private — **Lines**: 669-675
 
 ### `private theorem pm_one_mod_five_of_splits`
-- **Type**: split ⇒ `p%5 ∈ {1,4}`. **How**: norms multiply to `p²`, one factor norm `p`, `isSquare_five_…`, quadratic reciprocity `ZMod.exists_sq_eq_prime_iff_of_mod_four_eq_one`, case on `p%5` with `decide` non-residues. **Uses**: [`absNorm_span_natCast`, Common `left_eq_prime_of_mul_eq_prime_sq_of_ne_one`,`isSquare_five_of_absNorm_eq_prime`,`exists_golden_root_of_absNorm_eq_prime`] — **Lines**: 685-730 — **Visibility**: private — **Notes**: proof >40 lines.
+- `p` splits ⇒ `p%5 ∈ {1,4}`. **How**: norm-`p` factor + `isSquare_five`, quadratic reciprocity `ZMod.exists_sq_eq_prime_iff_of_mod_four_eq_one`, exclude `2,3` mod 5 by `decide`. — **Uses (incl. Common)**: [left_eq_prime_of_mul_eq_prime_sq_of_ne_one, absNorm_span_natCast, exists_golden_root_of_absNorm_eq_prime, isSquare_five_of_absNorm_eq_prime] — private — **Lines**: 677-722
 
 ### `private theorem exists_golden_root_of_pm_one_mod_five`
-- **Type**: `p%5∈{1,4} ⇒ ∃ t:ZMod p, t²=t+1`. **How**: reciprocity gives `IsSquare 5`, set `t=(1+s)/2`. **Uses**: [] — **Lines**: 732-772 — **Visibility**: private — **Notes**: proof >30 lines.
+- `p%5∈{1,4}` ⇒ `∃ t, t²=t+1`. **How**: reciprocity gives `5` square mod `p`, set `t=(1+s)/2`, clear `4`. — **Uses**: [] — private — **Lines**: 724-764
 
 ### `private theorem golden_root_ne_one_sub_of_prime_ne_five`
-- **Type**: root `t` of `t²=t+1` satisfies `t ≠ 1-t` when `p≠5`. **How**: else `2t=1`, derive `5≡0`. **Uses**: [] — **Lines**: 774-789 — **Visibility**: private
+- For `p≠5`: `t ≠ 1-t`. **How**: else `2t=1`, derive `5≡0 mod p` ⇒ contradiction. — **Uses**: [] — private — **Lines**: 766-781
 
 ### `private theorem span_prime_golden_sub_ne_of_root`
-- **Type**: the two primes `span{p,φ-c}`, `span{p,φ-c'}` are distinct. **How**: inverse mod p (Common `exists_int_inverse_mod_prime`), derive `1∈P`. **Uses**: [`goldenIntO`,`golden_root_ne_one_sub_of_prime_ne_five`, Common `exists_int_inverse_mod_prime`] — **Lines**: 791-836 — **Visibility**: private — **Notes**: proof >40 lines.
+- The two primes `(p,φ-c)`,`(p,φ-c')` are distinct. **How**: inverse of `c-c'` mod p (`exists_int_inverse_mod_prime`), else `1 ∈ P`. — **Uses (incl. Common)**: [exists_int_inverse_mod_prime, golden_root_ne_one_sub_of_prime_ne_five, goldenIntO] — private — **Lines**: 783-828
 
 ### `private theorem span_natCast_eq_mul_span_golden_sub_of_mul`
-- **Type**: `span{p} = span{p,φ-c} * span{p,φ-c'}`. **How**: `≤` by `mul_le`+product identity, then `eq_of_le_of_absNorm_eq` on norms `p²`. **Uses**: [`goldenIntO`,`absNorm_span_natCast`, Common `eq_of_le_of_absNorm_eq`] — **Lines**: 838-878 — **Visibility**: private — **Notes**: proof >30 lines.
+- `(p) = (p,φ-c)·(p,φ-c')`. **How**: `mul_le` + `mem_span_pair`/`linear_combination`, `eq_of_le_of_absNorm_eq` with norm `p²`. — **Uses (incl. Common)**: [eq_of_le_of_absNorm_eq, absNorm_span_natCast] — private — **Lines**: 830-870
 
 ### `private theorem exists_golden_split_data`
-- **Type**: from a root `t` produce integers `c,c',k₁,k₂` with the product factorization. **How**: `ZMod.natCast_rightInverse`, divisibility lifts, `linear_combination goldenIntO_sq`. **Uses**: [`goldenIntO`,`goldenIntO_sq`] — **Lines**: 880-918 — **Visibility**: private — **Notes**: proof >30 lines.
+- From a root `t` produce integer data `c,c',k₁,k₂` with the product identity. **How**: `ZMod.natCast_rightInverse`, divisibilities `p∣1-c-c'`,`p∣1+cc'`, `linear_combination`. — **Uses**: [goldenIntO(_sq)] — private — **Lines**: 872-910
 
 ### `private theorem splits_of_pm_one_mod_five`
-- **Type**: `p%5∈{1,4} ⇒ ∃ distinct primes P,Q, span{p}=P*Q`. **How**: assemble previous private lemmas. **Uses**: [`goldenIntO`,`exists_golden_root_of_pm_one_mod_five`,`exists_golden_split_data`,`absNorm_span_prime_golden_sub_of_mul`,`span_prime_golden_sub_ne_of_root`,`span_natCast_eq_mul_span_golden_sub_of_mul`] — **Lines**: 920-962 — **Visibility**: private — **Notes**: proof >40 lines.
+- `p%5∈{1,4}` ⇒ splits into two distinct primes. **How**: assemble all the above. — **Uses**: [exists_golden_root_of_pm_one_mod_five, exists_golden_split_data, absNorm_span_prime_golden_sub_of_mul, span_prime_golden_sub_ne_of_root, span_natCast_eq_mul_span_golden_sub_of_mul] — private — **Lines**: 912-954
 
 ### `theorem splits_iff_pm_one_mod_five`
-- **Type**: for prime `p≠5`: `(∃ distinct primes P,Q with span{p}=P*Q) ↔ p%5∈{1,4}`.
-- **What**: quadratic splitting law. **How**: combine `pm_one_mod_five_of_splits` and `splits_of_pm_one_mod_five`. **Uses**: those two — **Lines**: 964-973 — **Notes**: KEY public result.
+- **Type**: for `p≠5`, splits ↔ `p%5 ∈ {1,4}` — **What**: the quadratic splitting law (reciprocity). **How**: combines the two private directions. — **Uses**: [pm_one_mod_five_of_splits, splits_of_pm_one_mod_five] — public — **Lines**: 956-964 — **Notes**: headline splitting theorem.
 
-### `abbrev goldenPolynomialMod`
-- **Type**: `(ZMod p)[X] := X²-X-C 1`. **Uses**: [] — **Lines**: 990-991
+### Kummer-Dedekind section (`goldenPolynomialMod` etc.)
+- `abbrev goldenPolynomialMod p := X²-X-C 1`; `_isRoot_iff` (root ↔ `t²=t+1`); `_natDegree`=2 (`natDegree_quadratic`); `_roots_eq_zero_iff_no_root`; `_no_root_iff_two_or_three_mod_five` (`p%5∈{2,3}`, reciprocity + `decide`). — **Uses**: [exists_golden_root_of_pm_one_mod_five] — abbrev public / theorems private — **Lines**: 982-1066
 
-### `private theorem goldenPolynomialMod_isRoot_iff` / `…_natDegree` / `…_roots_eq_zero_iff_no_root` / `…_no_root_iff_two_or_three_mod_five`
-- **Types**: root iff `t²=t+1`; natDegree 2; roots empty iff no solution; no root iff `p%5∈{2,3}`.
-- **How**: `Polynomial.natDegree_quadratic`, `mem_roots`, reuse `exists_golden_root_of_pm_one_mod_five` and reciprocity. **Uses**: [`goldenPolynomialMod`,`exists_golden_root_of_pm_one_mod_five`] — **Lines**: 993-1075 — **Visibility**: private — **Notes**: Kummer-Dedekind support; last one proof >30 lines.
+### Different section
+- `private goldenIntO_adjoin_eq_top` (`adjoin ℤ {φ} = ⊤`; from `ringOfIntegers_eq`, `aeval`); `private goldenIntO_minpoly` (`= X²-X-1`; `minpoly.isIntegrallyClosed_eq_field_fractions` + `X_pow_sub_X_sub_one_irreducible_rat`); `differentIdeal_eq_span_sqrtFive` (`𝔡 = (√5)`; `conductor_mul_differentIdeal`, `aeval (derivative minpoly) = 2φ-1`); `absNorm_differentIdeal_eq_five` (=5; `absNorm_differentIdeal` + disc); `prime_dvd_differentIdeal_iff_eq_span_sqrtFive` (`P ∣ 𝔡 ↔ P=(√5)`). — **Uses**: [ringOfIntegers_eq, adjoin_goldenRoot_eq_top, concreteRingOfIntegers, goldenRoot_sq, goldenIntO, sqrtFiveIntO, sqrtFiveRoot_sq, numberField_discr_eq, isPrime_span_sqrtFiveIntO] — public/private — **Lines**: 1083-1182 — **Notes**: `goldenIntO_minpoly` proof ≈30 lines.
 
-### `private theorem goldenIntO_adjoin_eq_top`
-- **Type**: `Algebra.adjoin ℤ {goldenIntO} = ⊤`. **How**: pull back from `concreteRingOfIntegers`/`ringOfIntegers_eq` via `aeval`. **Uses**: [`goldenIntO`,`concreteRingOfIntegers`,`ringOfIntegers_eq`,`goldenRoot`] — **Lines**: 1091-1110 — **Visibility**: private — **Notes**: proof >15 lines.
-
-### `private theorem goldenIntO_minpoly`
-- **Type**: `minpoly ℤ goldenIntO = X²-X-1`. **How**: `minpoly.isIntegrallyClosed_eq_field_fractions`, map injectivity, `X_pow_sub_X_sub_one_irreducible_rat`. **Uses**: [`goldenIntO`,`goldenRoot(_sq)`] — **Lines**: 1112-1140 — **Visibility**: private — **Notes**: proof >25 lines.
-
-### `theorem differentIdeal_eq_span_sqrtFive`
-- **Type**: `differentIdeal ℤ (𝓞 K) = span {sqrtFiveIntO}`. **How**: `conductor_eq_top_of_adjoin_eq_top`, `conductor_mul_differentIdeal`, `aeval` of derivative `2X-1`. **Uses**: [`goldenIntO_adjoin_eq_top`,`goldenIntO_minpoly`,`goldenIntO`,`adjoin_goldenRoot_eq_top`,`sqrtFiveIntO`] — **Lines**: 1142-1161 — **Notes**: KEY; proof >15 lines.
-
-### `theorem absNorm_differentIdeal_eq_five`
-- **Type**: `absNorm (differentIdeal ℤ (𝓞 K)) = 5`. **How**: `NumberField.absNorm_differentIdeal` + `numberField_discr_eq`. **Uses**: [`numberField_discr_eq`] — **Lines**: 1163-1166
-
-### `theorem prime_dvd_differentIdeal_iff_eq_span_sqrtFive`
-- **Type**: nonzero prime `P ∣ differentIdeal ↔ P = span {sqrtFiveIntO}`. **How**: maximality of `span{sqrtFiveIntO}` (`isMaximal`), `differentIdeal_eq_span_sqrtFive`. **Uses**: [`differentIdeal_eq_span_sqrtFive`,`sqrtFiveIntO`,`sqrtFiveRoot_sq`,`isPrime_span_sqrtFiveIntO`] — **Lines**: 1168-1188 — **Notes**: proof >15 lines.
-
-**File Summary — PrimeSplitting.lean**: ~50 decls (defs/abbrevs 3, theorems ~47, ~22 private). Key API (3+, internal): `goldenIntO_sq`, `absNorm_span_natCast`, `intNorm_eq_normForm` (imported), `exists_golden_root_of_pm_one_mod_five`, `numberField_discr_eq` (imported), `sqrtFiveIntO`. Public results: `span_five_eq`, `ramified_iff_eq_five`, `splits_iff_pm_one_mod_five`, `differentIdeal_eq_span_sqrtFive`, all the per-prime split/inert facts. No sorry. No set_option. >30-line proofs: `isPrime_span_two`, `isPrime_span_three`, `ramified_iff_eq_five`, `absNorm_span_prime_golden_sub_of_mul`, `pm_one_mod_five_of_splits`, `exists_golden_root_of_pm_one_mod_five`, `span_prime_golden_sub_ne_of_root`, `span_natCast_eq_mul_span_golden_sub_of_mul`, `exists_golden_split_data`, `splits_of_pm_one_mod_five`, `goldenPolynomialMod_no_root_iff_…`, `goldenIntO_minpoly`. Heavy reliance on Common.lean.
+**File Summary (PrimeSplitting.lean)**: ~50 decls (largest file, 1183 lines, 4 `noncomputable
+section`s: Prime Splitting / Kummer-Dedekind / Different). Key API (3+ uses): `intNorm_eq_normForm`
+(≈12), `goldenIntO(_sq)`, `sqrtFiveIntO`, `absNorm_span_natCast`, `eq_of_le_of_absNorm_eq` (Common),
+`absNorm_eq_pow_inertiaDeg'`, `ramified_iff_eq_five`, `exists_golden_root_of_pm_one_mod_five`. Uses
+Common: `eq_of_le_of_absNorm_eq`, `eq_prime_of_dvd_prime_sq_…`,
+`left_eq_prime_of_mul_eq_prime_sq_…`, `exists_int_inverse_mod_prime`, plus the two ramification
+helpers. No sorry/set_option. Proofs >30 lines: `ramified_iff_eq_five` (~45),
+`span_prime_golden_sub_ne_of_root` (~45), `exists_golden_root_of_pm_one_mod_five` (~40),
+`span_natCast_eq_mul_span_golden_sub_of_mul` (~40), `exists_golden_split_data` (~38),
+`absNorm_span_prime_golden_sub_of_mul` (~45), `goldenIntO_minpoly` (~30). `absNorm_span_natCast`
+reusable infra. `goldenPolynomialMod` block is Kummer-Dedekind sugar largely independent of the
+splitting proof (which is done directly via norms).
 
 ---
 
 ## ClassGroup.lean
 
 ### `abbrev goldenRootFractionalIdeal` / `ramifiedPrimeFractionalIdeal`
-- **Types**: `spanSingleton goldenRoot`; coe of `span {sqrtFiveIntO}`. **Uses**: [`goldenRoot`,`sqrtFiveIntO`] — **Lines**: 33-37
+- `FractionalIdeal (𝓞 K)⁰ K`: `spanSingleton φ`; coe of `(√5)`. — **Uses**: [goldenRoot, sqrtFiveIntO] — public — **Lines**: 33-34 / 36-37
 
-### `theorem goldenRoot_mem_fractionalIdeal`
-- **Type**: `goldenRoot ∈ goldenRootFractionalIdeal`. **How**: `mem_spanSingleton_self`. **Uses**: [`goldenRootFractionalIdeal`,`goldenRoot`] — **Lines**: 39-41
-
-### `theorem goldenRootFractionalIdeal_absNorm`
-- **Type**: `absNorm = |Algebra.norm ℚ goldenRoot|`. **How**: `simp`. **Uses**: [`goldenRootFractionalIdeal`,`goldenRoot`] — **Lines**: 43-45
+### `theorem goldenRoot_mem_fractionalIdeal` / `goldenRootFractionalIdeal_absNorm`
+- `φ ∈ …`; `absNorm = |Algebra.norm ℚ φ|`. **How**: `mem_spanSingleton_self`; `simp`. — **Uses**: [goldenRootFractionalIdeal, goldenRoot] — public — **Lines**: 39-41 / 43-45
 
 ### `theorem ramifiedPrimeFractionalIdeal_ne_zero`
-- **Type**: `≠ 0`. **How**: `coeIdeal_ne_zero` + `span_singleton_eq_bot`, `sqrtFiveRoot_sq`. **Uses**: [`ramifiedPrimeFractionalIdeal`,`sqrtFiveIntO`,`sqrtFiveRoot_sq`] — **Lines**: 47-58
+- `≠ 0` — **How**: `coeIdeal_ne_zero`; `(√5)=0` ⇒ `5=0`. — **Uses**: [sqrtFiveIntO, sqrtFiveRoot_sq, goldenRoot] — public — **Lines**: 47-58
 
 ### `theorem classNumber_eq_one`
-- **Type**: `NumberField.classNumber K = 1`.
-- **What**: class number 1 via Minkowski bound `√5/2 < 2`. **How**: `classNumber_eq_one_iff` + `RingOfIntegers.isPrincipalIdealRing_of_isPrincipal_of_pow_le_…`; bound the Minkowski floor `< 2` with `Real.sqrt 5 < 3`, then `interval_cases`. **Uses**: [`nrComplexPlaces_eq_zero`,`degree_eq_two`,`numberField_discr_eq`] — **Lines**: 76-105 — **Notes**: KEY; proof >25 lines.
+- **Type**: `NumberField.classNumber K = 1` — **What**: trivial class group. **How**: `classNumber_eq_one_iff` + `isPrincipalIdealRing_of_…_mem_Icc`; Minkowski bound `√5/2 < 2` so `⌊bound⌋ < 2`, no primes in `Icc 2 1`. **Uses**: [nrComplexPlaces_eq_zero, degree_eq_two, numberField_discr_eq] — public — **Lines**: 76-105 — **Notes**: proof ≈30 lines; the Minkowski-bound class-number-one argument (disc 5 is what makes the bound `<2`).
 
 ### `theorem isPrincipalIdealRing`
-- **Type**: `IsPrincipalIdealRing (𝓞 K)`. **How**: `classNumber_eq_one_iff`. **Uses**: [`classNumber_eq_one`] — **Lines**: 107-111 — **Notes**: KEY.
+- `IsPrincipalIdealRing (𝓞 K)` — **How**: `← classNumber_eq_one_iff`. — **Uses**: [classNumber_eq_one] — public — **Lines**: 107-111
 
 ### `theorem uniqueFactorizationMonoid`
-- **Type**: `UniqueFactorizationMonoid (𝓞 K)`. **How**: PID ⇒ UFM. **Uses**: [`isPrincipalIdealRing`] — **Lines**: 113-116
+- `UniqueFactorizationMonoid (𝓞 K)` — **How**: PID ⇒ UFM, `infer_instance`. — **Uses**: [isPrincipalIdealRing] — public — **Lines**: 113-116
 
 ### `theorem classGroupStructure`
-- **Type**: `Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))`. **How**: card 1 ⇒ subsingleton ⇒ `MulEquiv.ofUnique`. **Uses**: [`classNumber_eq_one`] — **Lines**: 118-125
+- **Type**: `Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))` — **How**: `Nat.card = 1` ⇒ `Subsingleton`/`Unique` ⇒ `MulEquiv.ofUnique`. — **Uses**: [classNumber_eq_one] — public — **Lines**: 118-125 — **Notes**: trivial-group `Nonempty (… ≃* Multiplicative (ZMod 1))` encoding (twin pattern; unnatural — see report).
 
-### `abbrev unitIdealRepresentative`
-- **Type**: `(Ideal (𝓞 K))⁰ := ⟨⊤, …⟩`. **Uses**: [] — **Lines**: 128-129
+### `abbrev unitIdealRepresentative` / `theorem classGroupRepresentative`
+- `(⊤ : Ideal …)` as `(Ideal …)⁰`; every class = `mk0 ⊤`. **How**: `Subsingleton.elim`. — **Uses**: [classNumber_eq_one] — public — **Lines**: 128-129 / 132-137
 
-### `theorem classGroupRepresentative`
-- **Type**: `∀ C, C = ClassGroup.mk0 unitIdealRepresentative`. **How**: subsingleton. **Uses**: [`unitIdealRepresentative`,`classNumber_eq_one`] — **Lines**: 131-137
-
-**File Summary — ClassGroup.lean**: 10 decls (abbrevs 3, theorems 7). Key API (3+): `classNumber_eq_one`. No sorry/set_option. >30-line proofs: none (classNumber ~28). The fractional-ideal decls (33-58) are unused downstream.
+**File Summary (ClassGroup.lean)**: 10 decls (2 sections). Key API: `classNumber_eq_one` (drives
+all the rest). Uses RingOfIntegers/Embeddings API: `numberField_discr_eq`, `degree_eq_two`,
+`nrComplexPlaces_eq_zero`, `sqrtFiveIntO`. No sorry/set_option. `classNumber_eq_one` ≈30 lines
+(longest). The fractional-ideal decls (33-58) are demonstrative, unused by sibling files.
 
 ---
 
 ## Units.lean
 
-### `private theorem goldenIntO_sq`
-- **Type**: `goldenIntO^2 = goldenIntO + 1`. **Uses**: [`goldenIntO`,`goldenRoot_sq`] — **Lines**: 36-37 — **Visibility**: private — **Notes**: DUPLICATE of the private one in PrimeSplitting.lean.
-
 ### `def fundamentalUnit`
-- **Type**: `(𝓞 K)ˣ` with `val=goldenIntO`, `inv=goldenIntO-1`. **What**: fundamental unit `φ`. **How**: `goldenIntO_sq`/`ring`. **Uses**: [`goldenIntO`,`goldenIntO_sq`] — **Lines**: 41-51 — **Notes**: KEY (LocalGlobal).
+- **Type**: `(𝓞 K)ˣ` (`val = φ`, `inv = φ-1`) — **What**: the fundamental unit `φ`. **How**: `val_inv`/`inv_val` from `goldenIntO_sq` (`φ(φ-1)=φ²-φ=1`). — **Uses**: [goldenIntO(_sq)] — public — **Lines**: 38-48 — **Notes**: key API across Units/LocalGlobal.
 
-### `abbrev torsionGenerator`
-- **Type**: `(𝓞 K)ˣ := -1`. **Uses**: [] — **Lines**: 54
-
-### `def torsionUnits`
-- **Type**: `Set ((𝓞 K)ˣ) := {u | ∃ k:Fin 2, u = torsionGenerator^k.val}` = `{1,-1}`. **Uses**: [`torsionGenerator`] — **Lines**: 57
+### `abbrev torsionGenerator` / `def torsionUnits`
+- `(𝓞 K)ˣ := -1`; `{u | ∃ k:Fin 2, u = (-1)^k}`. — **Uses**: [] — public — **Lines**: 51 / 54
 
 ### `private def realEmb`
-- **Type**: `K →ₐ[ℚ] ℝ`. **What**: real embedding sending `φ ↦ (1+√5)/2`. **How**: `QuadraticAlgebra.lift`, `Real.mul_self_sqrt`. **Uses**: [] — **Lines**: 59-65 — **Visibility**: private — **Notes**: same construction as `exists_realEmbedding_goldenRatio` in Embeddings.
+- `K →ₐ[ℚ] ℝ` (`φ ↦ (1+√5)/2`) — **How**: `QuadraticAlgebra.lift`, `Real.mul_self_sqrt`. — **Uses**: [] — private — **Lines**: 56-62 — **Notes**: same construction as `exists_realEmbedding_goldenRatio`.
 
 ### `theorem torsionUnits_eq`
-- **Type**: `{u | IsOfFinOrder u} = torsionUnits`. **How**: finite-order unit ⇒ `|e(x)|=1` (real embedding) ⇒ `±1`; uses `IsFractionRing.injective`, `pow_lt_one₀`/`one_lt_pow₀`. **Uses**: [`realEmb`,`torsionUnits`,`torsionGenerator`] — **Lines**: 68-114 — **Notes**: KEY; proof >40 lines.
+- **Type**: `{u | IsOfFinOrder u} = torsionUnits` — **What**: torsion `= {±1}`. **How**: real embedding `e`; finite-order ⇒ `|e x|=1` ⇒ `e x=±1` ⇒ `x=±1` (injectivity). — **Uses**: [realEmb, torsionUnits, goldenRoot] — public — **Lines**: 64-111 — **Notes**: proof ≈47 lines (>30). The "totally real ⇒ roots of unity `±1`" argument.
 
 ### `theorem torsionOrder_eq_two`
-- **Type**: `Units.torsionOrder K = 2`. **How**: `Nat.card (torsion K) = 2` via `Nat.card_eq_two_iff` and `torsionUnits_eq`. **Uses**: [`torsionUnits_eq`] — **Lines**: 116-144 — **Notes**: KEY; proof >25 lines.
+- `Units.torsionOrder K = 2` — **How**: `Nat.card (torsion) = 2` via `card_eq_two_iff` (`±1`, distinct since `2≠0` in K), `torsionUnits_eq` for surjectivity. — **Uses**: [torsionUnits_eq] — public — **Lines**: 113-141
 
 ### `theorem unitRank_eq_one`
-- **Type**: `Units.rank K = 1`. **How**: rank `= card places - 1`, `nrRealPlaces_eq_two`/`nrComplexPlaces_eq_zero`. **Uses**: [`nrRealPlaces_eq_two`,`nrComplexPlaces_eq_zero`] — **Lines**: 146-150 — **Notes**: KEY.
+- `Units.rank K = 1` — **How**: `rank = #places - 1`, `nrRealPlaces=2`, `nrComplexPlaces=0`. — **Uses**: [nrRealPlaces_eq_two, nrComplexPlaces_eq_zero] — public — **Lines**: 143-147 — **Notes**: used 5+ times.
 
 ### `def fundamentalUnitSystem`
-- **Type**: `Fin (Units.rank K) → (𝓞 K)ˣ := fun _ => fundamentalUnit`. **Uses**: [`fundamentalUnit`] — **Lines**: 153-154
+- `Fin (Units.rank K) → (𝓞 K)ˣ := fun _ => fundamentalUnit`. — **Uses**: [fundamentalUnit] — public — **Lines**: 149-151
 
 ### `theorem intNorm_goldenInt`
-- **Type**: `Algebra.norm ℤ goldenIntO = -1`. **How**: `intNorm_eq_normForm 0 1`. **Uses**: [`goldenIntO`,`intNorm_eq_normForm`] — **Lines**: 156-159 — **Notes**: KEY (the norm is `-1`, so `φ` has norm `-1`).
+- `Algebra.norm ℤ goldenIntO = -1` — **How**: `intNorm_eq_normForm 0 1` (`0²+0-1²=-1`). — **Uses**: [intNorm_eq_normForm, goldenIntO] — public — **Lines**: 153-156 — **Notes**: `N(φ)=-1` is why `φ` (not `φ²`) is fundamental.
 
-### `private theorem normFundamentalUnit_map` / `normNegOneUnit_map`
-- **Types**: `Units.map (norm) fundamentalUnit = -1`; `…(-1) = 1`. **How**: `Units.ext` + `intNorm_goldenInt`/`intNorm_eq_normForm (-1) 0`. **Uses**: [`fundamentalUnit`,`goldenIntO`,`intNorm_goldenInt`,`intNorm_eq_normForm`] — **Lines**: 161-177 — **Visibility**: private
-
-### `private theorem even_of_negOneUnit_zpow_eq_one`
-- **Type**: `(-1:ℤˣ)^n = 1 → ∃k, n=2k`. **How**: parity, `Odd.neg_one_zpow`. **Uses**: [] — **Lines**: 179-189 — **Visibility**: private — **Notes**: generic.
-
-### `private theorem normFundamentalUnit_zpow_map` / `normNegFundamentalUnit_zpow_map`
-- **Types**: norm of `φⁿ` (resp `-(φⁿ)`) `= (-1)ⁿ`. **How**: `map_zpow`. **Uses**: [`fundamentalUnit`,`normFundamentalUnit_map`,`normNegOneUnit_map`] — **Lines**: 191-203 — **Visibility**: private
+### `private theorem normFundamentalUnit_map` / `normNegOneUnit_map` / `even_of_negOneUnit_zpow_eq_one` / `normFundamentalUnit_zpow_map` / `normNegFundamentalUnit_zpow_map`
+- `N(φ)=-1` and `N(-1)=1` as `ℤˣ`-maps; `(-1)^n=1 ⇒ n` even; the `zpow` versions. **How**: `Units.ext`, `map_zpow`, `Odd.neg_one_zpow`. — **Uses**: [fundamentalUnit, intNorm_goldenInt, intNorm_eq_normForm, goldenIntO] — private — **Lines**: 158-200
 
 ### `theorem exists_eq_torsion_mul_fundSystem_zpow`
-- **Type**: any unit `u = ζ * fundSystem K i₀ ^ n`, `ζ` torsion. **How**: `closure_fundSystem_sup_torsion_eq_top`, `Subgroup.mem_sup`, subsingleton of `Fin (rank)`. **Uses**: [`unitRank_eq_one`] — **Lines**: 207-229 — **Notes**: proof >20 lines.
+- mathlib `fundSystem K i₀` + torsion generate `(𝓞 K)ˣ`. **How**: `closure_fundSystem_sup_torsion_eq_top`, `mem_sup`, `range fundSystem = {fundSystem i₀}` (subsingleton via rank 1), `mem_closure_singleton`. — **Uses**: [unitRank_eq_one] — public — **Lines**: 204-226 — **Notes**: bridges abstract `fundSystem` to a single generator.
 
 ### `theorem fundSystem_zpow_mem_torsion`
-- **Type**: `fundSystem K i₀ ^ n` torsion ⇒ `n=0`. **How**: quotient by torsion is free, `basisModTorsion.repr`. **Uses**: [] — **Lines**: 231-248 — **Notes**: proof >15 lines.
+- `fundSystem^n ∈ torsion ⇒ n=0`. **How**: image in `(𝓞 K)ˣ/torsion` via `basisModTorsion`, `repr_self`. — **Uses**: [] — public — **Lines**: 228-245
 
 ### `theorem eq_one_or_neg_one_of_mem_torsion`
-- **Type**: `ζ ∈ torsion ⇒ ζ = 1 ∨ ζ = -1`. **How**: `torsionUnits_eq`. **Uses**: [`torsionUnits_eq`] — **Lines**: 250-259
+- torsion `ζ` ⇒ `ζ=±1`. **How**: `torsionUnits_eq` + `fin_cases`. — **Uses**: [torsionUnits_eq] — public — **Lines**: 247-256
 
-### `theorem fundamentalUnit_generates`  ⚠ SORRY
-- **Type**: `∀ u:(𝓞 K)ˣ, ∃ n, u = φⁿ ∨ u = -(φⁿ)`.
-- **What**: every unit is a signed power of `φ`. **How**: SORRY. **Uses**: [`fundamentalUnit`] — **Lines**: 261-269 — **Visibility**: public
-- **Notes**: **SORRY** — blocked: no bridge from the Fibonacci/Pell-±4 equation `x²+xy-y²=±1` (half-integral order `ℤ[(1+√5)/2]`) to the displayed `φ`. SqrtTwo solves the analogue via `Zsqrtd`/`Pell.Solution₁`. This sorry is the load-bearing assumption beneath the rest of the unit-group results.
+### `theorem fundamentalUnit_generates`  ✅ proved
+- **Type**: `(u) → ∃ n, u = φ^n ∨ u = -(φ^n)` — **What**: every unit is `±φⁿ`. **How**: a
+  **real-embedding window-reduction** (≈35 lines of supporting `private` lemmas: `reEmb`, `fhom`,
+  `exists_coords`, `minimality`, `reduction`, `pos_case`). Send units to ℝ via `reEmb : φ ↦ Φ`;
+  `exists_mem_Ico_zpow` reduces any positive-image unit into `[1, Φ)` by a power of `φ`; `minimality`
+  uses the norm form `x²+xy−y² = ±1` (`isUnit_iff_normForm`) + bounds on the conjugate to force the
+  reduced unit to `1`; sign handled by `fhom_neg`. — **Uses**: [fundamentalUnit, isUnit_iff_normForm,
+  exists_realEmbedding_goldenRatio] — public — **Lines**: 430-440 (helpers 258-428)
+- **NOT an API gap**: this is the faithful formalisation of the standard "φ is fundamental" proof for
+  a real quadratic field, using only mature mathlib API. It deliberately bypasses `Zsqrtd`/`Pell`
+  (which only covers the index-2 suborder `ℤ[√5]`, not the half-integral maximal order `ℤ[(1+√5)/2]`).
+  The difficulty was *intrinsic mathematics*, now discharged.
 
-### `theorem fundamentalUnitSystem_isFundamental`
-- **Type**: `closure (range fundamentalUnitSystem) ⊔ torsion K = ⊤`. **How**: `fundamentalUnit_generates` + membership bookkeeping. **Uses**: [`fundamentalUnit`,`fundamentalUnitSystem`,`unitRank_eq_one`,`fundamentalUnit_generates`] — **Lines**: 271-293 — **Notes**: depends transitively on the sorry.
+### `theorem fundamentalUnitSystem_isFundamental`  ✅ proved
+- `closure (range fundamentalUnitSystem) ⊔ torsion = ⊤`. **How**: `fundamentalUnit_generates` + `mem_sup`. — **Uses**: [fundamentalUnitSystem, fundamentalUnit, fundamentalUnit_generates] — public — **Lines**: 444-464.
 
-### `theorem unit_eq_torsion_mul_fundamentalUnit_zpow`
-- **Type**: `u = ζ * φⁿ`, ζ torsion. **How**: `fundamentalUnit_generates`. **Uses**: [`fundamentalUnit`,`fundamentalUnit_generates`] — **Lines**: 295-304 — **Notes**: depends on sorry.
+### `theorem unit_eq_torsion_mul_fundamentalUnit_zpow`  ✅ proved
+- `u = ζ · φ^n`, `ζ` torsion. **How**: `fundamentalUnit_generates`. — **Uses**: [fundamentalUnit_generates, fundamentalUnit] — public — **Lines**: 467-475.
 
-### `theorem normOneUnit_generated_by_fundamentalUnit_sq`
-- **Type**: norm-1 units `= ±φ^(2n)`. **How**: `fundamentalUnit_generates` + `even_of_negOneUnit_zpow_eq_one`. **Uses**: [`fundamentalUnit`,`fundamentalUnit_generates`,`normFundamentalUnit_zpow_map`,`normNegFundamentalUnit_zpow_map`,`even_of_negOneUnit_zpow_eq_one`] — **Lines**: 306-324 — **Notes**: depends on sorry.
+### `theorem normOneUnit_generated_by_fundamentalUnit_sq`  ✅ proved
+- norm-1 unit `= ±φ^(2n)`. **How**: `fundamentalUnit_generates` + `even_of_negOneUnit_zpow_eq_one` via the norm map. — **Uses**: [fundamentalUnit_generates, normFundamentalUnit_zpow_map, normNegFundamentalUnit_zpow_map, even_of_negOneUnit_zpow_eq_one] — public — **Lines**: 478-495.
 
-### `theorem regulator_eq`  ⚠ SORRY
-- **Type**: `Units.regulator K = Real.log ((1+√5)/2)`.
-- **What**: the regulator is `log φ`. **How**: SORRY. **Uses**: [] — **Lines**: 326-332 — **Visibility**: public
-- **Notes**: **SORRY** — intentionally the final theorem; needs the analytic statement that `φ` is fundamental (Artin-type unit bound), unproved in the project.
+### `theorem regulator_eq`  ✅ proved
+- **Type**: `Units.regulator K = Real.log ((1+√5)/2)` — **What**: regulator `= log φ ≈ 0.4812` (smallest of any real quadratic field). **How**: choose the real place `wR` (`exists_realEmbedding_goldenRatio`); `fundamentalUnitSystem_isFundamental` gives index 1, so `regOfFamily_div_regulator` ⇒ `regulator = regOfFamily`; `regOfFamily_eq_det` + `Matrix.det_eq_elem_of_subsingleton` evaluate the rank-1 `1×1` matrix to `|log(wR φ)| = log Φ`. — **Uses**: [fundamentalUnitSystem_isFundamental, unitRank_eq_one, infinitePlace_card_eq_two, exists_realEmbedding_goldenRatio] — public — **Lines**: 500-562
+- **NOT an API gap**: the regulator-value step is mature mathlib (`regOfFamily_eq_det`); it only sat downstream of `fundamentalUnit_generates`.
 
 ### `private theorem unitGroupStructure_bijective`
-- **Type**: the coproduct map `(torsionPowerHom 2 (-1)).coprod (rankOnePowerHom η)` is bijective.
-- **How**: injectivity via `fundSystem_zpow_mem_torsion`; surjectivity via `exists_eq_torsion_mul_fundSystem_zpow` + `eq_one_or_neg_one_of_mem_torsion`. **Uses**: [`fundSystem_zpow_mem_torsion`,`exists_eq_torsion_mul_fundSystem_zpow`,`eq_one_or_neg_one_of_mem_torsion`, Common `torsionPowerHom`,`rankOnePowerHom`] — **Lines**: 334-378 — **Visibility**: private — **Notes**: proof >40 lines.
+- The coprod hom `(ZMod 2 torsion) ⊕ (rank-1 ℤ)` → `(𝓞 K)ˣ` is bijective. **How**: injective via `fundSystem_zpow_mem_torsion` + `-1` order 2; surjective via `exists_eq_torsion_mul_fundSystem_zpow` + `eq_one_or_neg_one_of_mem_torsion`. — **Uses (incl. Common)**: [torsionPowerHom, rankOnePowerHom, fundSystem_zpow_mem_torsion, exists_eq_torsion_mul_fundSystem_zpow, eq_one_or_neg_one_of_mem_torsion] — private — **Lines**: 331-375 — **Notes**: proof ≈45 lines (>30); does NOT use the sorry (routes through mathlib `fundSystem`).
 
 ### `theorem unitGroupStructure`
-- **Type**: `Nonempty ((𝓞 K)ˣ ≃* Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))`.
-- **What**: unit group `≅ μ₂ × ℤ`. **How**: `MulEquiv.ofBijective` of `unitGroupStructure_bijective`. **Uses**: [`unitRank_eq_one`,`unitGroupStructure_bijective`, Common `torsionPowerHom`,`rankOnePowerHom`] — **Lines**: 380-397 — **Notes**: KEY public result; proof >15 lines. Independent of the sorry (uses mathlib's abstract fundSystem, not `fundamentalUnit_generates`).
+- **Type**: `Nonempty ((𝓞 K)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ)))` — **What**: `(𝓞 K)ˣ ≅ μ₂ × ℤ`. **How**: assemble `torsionPowerHom`/`rankOnePowerHom` coprod, `MulEquiv.ofBijective`. — **Uses (incl. Common)**: [torsionPowerHom, rankOnePowerHom, unitGroupStructure_bijective, unitRank_eq_one] — public — **Lines**: 377-394 — **Notes**: sorry-FREE; the abstract structure theorem routes through mathlib `fundSystem`. (The *explicit* generator identification, once a separate blocker, is now also proved — see `fundamentalUnit_generates`.)
 
-**File Summary — Units.lean**: ~22 decls (defs/abbrevs 4, theorems ~17, 1 private def). Key API (3+): `fundamentalUnit`, `torsionUnits_eq`, `unitRank_eq_one`, `fundamentalUnit_generates`, `goldenIntO_sq`. **SORRY ×2**: `fundamentalUnit_generates`, `regulator_eq`. No set_option. >30-line proofs: `torsionUnits_eq`, `unitGroupStructure_bijective`. The "Regulator" section at the end is empty.
+**File Summary (Units.lean)**: ~28 decls (incl. the `reEmb`/`fhom`/`minimality`/`reduction`/
+`pos_case` window-reduction toolkit). **0 sorries** — both former sorries (`fundamentalUnit_generates`,
+`regulator_eq`) are now proved, and the three downstream results
+(`fundamentalUnitSystem_isFundamental`, `unit_eq_torsion_mul_fundamentalUnit_zpow`,
+`normOneUnit_generated_by_fundamentalUnit_sq`) along with them. Key API: `fundamentalUnit`,
+`unitRank_eq_one`, `torsionUnits_eq`, `isUnit_iff_normForm`, `regOfFamily_eq_det`,
+`exists_eq_torsion_mul_fundSystem_zpow`, `fundSystem_zpow_mem_torsion`,
+`eq_one_or_neg_one_of_mem_torsion`. Uses Common: `torsionPowerHom`, `rankOnePowerHom`. No set_option.
+Proofs >30 lines: `torsionUnits_eq` (~47), `unitGroupStructure_bijective` (~45), the
+`fundamentalUnit_generates` window-reduction block. NB: the *abstract* unit group
+(`unitGroupStructure ≅ μ₂ × ℤ`) routes through mathlib `fundSystem` and was always sorry-free; the
+new work supplies the *explicit* `±φⁿ` description and regulator value by following the standard
+mathematics (no API gap).
 
 ---
 
 ## Euclidean.lean
 
 ### `private theorem abs_norm_int_lt_of_remainder_eq`
-- **Type**: given remainder identity and `|norm-form of fractional part| ≤ 3/4` and `0 < |norm bK|`, then `|norm r| < |norm b|`.
-- **How**: `Algebra.coe_norm_int`, `norm_eq_normForm`, `abs_mul`, `mul_le_mul_of_nonneg_left`, `linarith`. **Uses**: [`norm_eq_normForm`,`goldenRoot`] — **Lines**: 35-57 — **Visibility**: private — **Notes**: twin of SqrtTwo's `abs_norm_int_lt_of_remainder_eq` (its version has extra `e` arg for the `2` shift).
+- **Type**: division-with-remainder norm bound: if `r = b·(frac)` and the golden norm form of the fractional part `≤ 3/4`, then `|N(r)| < |N(b)|`. **How**: `Common.abs_intNorm_lt_of_abs_norm_le` with `3/4 < 1`, rewriting the norm via `norm_eq_normForm`. — **Uses (incl. Common)**: [abs_intNorm_lt_of_abs_norm_le, norm_eq_normForm, goldenRoot] — private — **Lines**: 35-50
 
 ### `theorem normEuclidean`
-- **Type**: `∀ a b, b≠0 → ∃ q r, a = b*q + r ∧ (norm r).natAbs < (norm b).natAbs`.
-- **What**: `ℤ[φ]` is norm-Euclidean. **How**: round real/imag coords of `a/b`; the fractional-part norm form `|s²+st-t²| ≤ 3/4` (from `|s|,|t| ≤ 1/2`, `nlinarith`), then `abs_norm_int_lt_of_remainder_eq` + Common `natAbs_lt_of_abs_ratCast_lt`. **Uses**: [`goldenIntO`,`goldenRoot`,`norm_eq_normForm` (via helper),`abs_norm_int_lt_of_remainder_eq`, Common `natAbs_lt_of_abs_ratCast_lt`] — **Lines**: 59-100 — **Notes**: KEY public result; proof >30 lines. (3/4 bound is specific to disc-5 form; SqrtTwo uses a 1/2-style bound.)
+- **Type**: `(a b)(hb : b≠0) → ∃ q r, a = b·q + r ∧ |N r|.natAbs < |N b|.natAbs` — **What**: `ℤ[φ]` is norm-Euclidean. **How**: take `q` by rounding the `(re, im)` coordinates of `a/b` in the `1,φ` basis; the fractional parts `(s,t)` satisfy `|s²+st-t²| ≤ 3/4` (the golden norm form on `[-1/2,1/2]²`, shown by `nlinarith` from `abs_sub_round`), then apply the bound lemma. — **Uses (incl. Common)**: [goldenRoot, goldenIntO, norm_eq_normForm, abs_norm_int_lt_of_remainder_eq, natAbs_lt_of_abs_ratCast_lt] — public — **Lines**: 52-93 — **Notes**: proof ≈40 lines (>30). The `3/4` bound is sharp-enough for the golden form (cf. SqrtTwo's `1/2` for `x²-2y²`); the rounding/`nlinarith` packaging is the same shape as SqrtTwo's `normEuclidean`.
 
-**File Summary — Euclidean.lean**: 2 decls (1 private helper + `normEuclidean`). Key API: `normEuclidean`. No sorry/set_option. >30-line proofs: `normEuclidean`. The helper is a generic norm-shrinking lemma; near-identical to SqrtTwo.
+**File Summary (Euclidean.lean)**: 2 decls. Uses Common: `abs_intNorm_lt_of_abs_norm_le`,
+`natAbs_lt_of_abs_ratCast_lt`. No sorry/set_option. `normEuclidean` ≈40 lines.
+`abs_norm_int_lt_of_remainder_eq` is the SqrtFive twin of SqrtTwo's helper (golden norm form vs
+`x²-2y²`).
 
 ---
 
 ## LocalGlobal.lean
 
 ### `def heightOneFive`
-- **Type**: `HeightOneSpectrum (𝓞 K)` = the ramified prime `(√5)`. **How**: fields via `isPrime_span_sqrtFiveIntO` and nonzero via `sqrtFiveRoot_sq`. **Uses**: [`sqrtFiveIntO`,`isPrime_span_sqrtFiveIntO`,`sqrtFiveRoot_sq`,`goldenRoot`] — **Lines**: 37-50
+- **Type**: `HeightOneSpectrum (𝓞 K)` (asIdeal `(√5)`) — the finite place over `5`. **How**: `isPrime_span_sqrtFiveIntO`, `ne_bot` from `(√5)=0 ⇒ 5=0`. — **Uses**: [sqrtFiveIntO, isPrime_span_sqrtFiveIntO, sqrtFiveRoot_sq, goldenRoot] — public — **Lines**: 37-50
 
 ### `abbrev vFive`
-- **Type**: `FinitePlace K := FinitePlace.mk heightOneFive`. **Uses**: [`heightOneFive`] — **Lines**: 53-54
+- `FinitePlace K := FinitePlace.mk heightOneFive`. — **Uses**: [heightOneFive] — public — **Lines**: 53-54
 
-### two `example`s (ramIdx 2, inertiaDeg 1 at `heightOneFive`)
-- **Uses**: [`ramificationIdx_span_sqrtFiveIntO`,`inertiaDeg_span_sqrtFiveIntO`,`heightOneFive`] — **Lines**: 56-62
+### `example`s (ramification/inertia at 5)
+- `ramificationIdx … heightOneFive = 2`, `inertiaDeg … = 1`. **How**: the PrimeSplitting lemmas. — **Uses**: [ramificationIdx_span_sqrtFiveIntO, inertiaDeg_span_sqrtFiveIntO] — anonymous — **Lines**: 56-62
 
 ### `abbrev CompletionAtFive`
-- **Type**: `heightOneFive.adicCompletion K`. **Uses**: [`heightOneFive`] — **Lines**: 77-79
+- `:= heightOneFive.adicCompletion K`. — **Uses**: [heightOneFive] — public — **Lines**: 77-78
 
-### `abbrev InfiniteCompletion` + `example` (`≃+* ℝ`)
-- **Type**: `(v) → v.Completion`; example uses `ringEquivRealOfIsReal (infinitePlace_isReal v)`. **Uses**: [`infinitePlace_isReal`] — **Lines**: 92-97
+### `abbrev InfiniteCompletion` + `example`
+- `v.Completion`; each `≅+* ℝ` (`ringEquivRealOfIsReal`, `infinitePlace_isReal`). — **Uses**: [infinitePlace_isReal] — public/anon — **Lines**: 92-93 / 95-97
 
-### two product-formula `example`s (for `goldenRoot`, `fundamentalUnit`)
-- **How**: `NumberField.prod_abs_eq_one` (nonzero via `goldenRoot_sq` / `Units.ne_zero`). **Uses**: [`goldenRoot(_sq)`,`fundamentalUnit`] — **Lines**: 111-128
+### `example`s (product formula)
+- `(∏_w w(φ)^mult)·(∏ᶠ_v v(φ)) = 1` for `φ` and for `fundamentalUnit`. **How**: `NumberField.prod_abs_eq_one` (nonzero from `φ²=φ+1` / `Units.ne_zero`). — **Uses**: [goldenRoot(_sq), fundamentalUnit] — anonymous — **Lines**: 111-128
 
-### `abbrev SqrtFiveInfiniteAdeleRing` / `infinitePrincipalAdele_goldenRoot` / `…_fundamentalUnit` + 2 `example`s
-- **Types**: infinite adele ring abbrevs; examples = norm equality and dense range. **Uses**: [`goldenRoot`,`fundamentalUnit`] — **Lines**: 142-157
+### `abbrev SqrtFiveInfiniteAdeleRing` + `infinitePrincipalAdele_goldenRoot`/`_fundamentalUnit` + `example`s
+- `InfiniteAdeleRing K` and principal-adele images; norm = `|N φ|`; dense range. **How**: `coe_norm_eq_abs_norm`, `denseRange_algebraMap`. — **Uses**: [goldenRoot, fundamentalUnit] — public/anon — **Lines**: 142-157
 
 ### `theorem canonicalEmbedding_goldenIntO_mem_integerLattice`
-- **Type**: `canonicalEmbedding K (algebraMap goldenIntO) ∈ integerLattice K`. **How**: `simp`. **Uses**: [`goldenIntO`] — **Lines**: 171-174
+- `canonicalEmbedding K φ ∈ integerLattice K` — **How**: `simp [integerLattice]`. — **Uses**: [goldenIntO] — public — **Lines**: 171-174
 
-### `abbrev mixedEmbedding_goldenRoot`
-- **Type**: `mixedSpace K`. **Uses**: [`goldenRoot`] — **Lines**: 190-191
+### `abbrev mixedEmbedding_goldenRoot` / `theorem mixedEmbedding_goldenRoot_mem_convexBodyLT`
+- `mixedEmbedding K φ`; membership in `convexBodyLT K f` when `w(φ) < f w` ∀w. **How**: `Set.mem_prod`/`mem_pi`, totally-real reduces complex coordinates (`infinitePlace_isReal`). — **Uses**: [goldenRoot, infinitePlace_isReal] — public — **Lines**: 190-191 / 193-208
 
-### `theorem mixedEmbedding_goldenRoot_mem_convexBodyLT`
-- **Type**: membership in `convexBodyLT K f` under coordinate bounds. **How**: unfold prod/pi memberships; all places real via `infinitePlace_isReal`. **Uses**: [`mixedEmbedding_goldenRoot`,`goldenRoot`,`infinitePlace_isReal`] — **Lines**: 193-208 — **Notes**: proof >15 lines.
+### `example`s (fundamental cone) + `theorem polarSpace_nonempty`
+- `MeasurableSet (fundamentalCone K)`, `(normLeOne K)`; `Nonempty (polarSpace K)`. **How**: mathlib lemmas / `infer_instance`. — **Uses**: [] — anon/public — **Lines**: 210-220
 
-### two `example`s (measurable fundamentalCone, normLeOne) + `theorem polarSpace_nonempty`
-- **How**: mathlib lemmas / `infer_instance`. **Uses**: [] — **Lines**: 210-219
+### `example` (house of φ > 0) / `theorem house_fundamentalUnit`
+- `0 < house φ` (`one_le_house_of_isIntegral`); `house φ = (1+√5)/2` — **What**: archimedean size of the fundamental unit. **How**: every embedding sends `φ` to `(1±√5)/2` (`sq_eq_sq_iff_eq_or_eq_neg`); the conjugate `(1-√5)/2` has smaller norm; `le_antisymm` via `canonicalEmbedding.norm_le_iff` and `exists_realEmbedding_goldenRatio`. — **Uses**: [goldenRoot(_sq, _isIntegral), fundamentalUnit, exists_realEmbedding_goldenRatio] — public — **Lines**: 234-241 / 243-296 — **Notes**: proof ≈53 lines (>30); the only place a quantitative archimedean value of `φ` is computed.
 
-### `example` (`0 < house goldenRoot`) + `theorem house_fundamentalUnit`
-- **Type**: `house (algebraMap fundamentalUnit) = (1+√5)/2`.
-- **How**: each embedding sends `φ` to `(1±√5)/2`; bound conjugate norm `≤ (1+√5)/2`; lower bound from `exists_realEmbedding_goldenRatio`; `canonicalEmbedding.norm_le_iff`, `norm_le_pi_norm`. **Uses**: [`goldenRoot(_sq)(_isIntegral)`,`fundamentalUnit`,`exists_realEmbedding_goldenRatio`] — **Lines**: 234-296 — **Notes**: proof >40 lines.
+### `abbrev SqrtFiveAdeleRing` + principal adeles + `theorem principalAdele_goldenRoot_ne_zero` / `principalAdele_fundamentalUnit_is_unit_everywhere`
+- `AdeleRing (𝓞 K) K`; `φ`-adele `≠0`; fundamental unit has `v(·)=1` at every finite place. **How**: `AdeleRing.algebraMap_injective`; `norm_eq_one_iff_notMem` (if `φ ∈ 𝔪` then `1 ∈ 𝔪` via the inverse). — **Uses**: [goldenRoot(_sq), fundamentalUnit] — public — **Lines**: 310-346 — **Notes**: `principalAdele_fundamentalUnit_is_unit_everywhere` ≈20 lines.
 
-### `abbrev SqrtFiveAdeleRing` / `principalAdele_goldenRoot` / `…_fundamentalUnit`
-- **Types**: full adele ring abbrevs. **Uses**: [`goldenRoot`,`fundamentalUnit`] — **Lines**: 310-317
+### `abbrev sqrtFiveDedekindZeta` / `sqrtFiveDedekindZetaResidue` + `example`s
+- `dedekindZeta K s`; residue; residue `> 0`; class-number-formula residue identity. **How**: `dedekindZeta_residue_pos`, `dedekindZeta_residue_def`. — **Uses**: [] — public/anon — **Lines**: 360-377 — **Notes**: residue identity references `regulator K`/`classNumber K`/`torsionOrder K`/`discr K` but is just the mathlib formula (does not re-prove them, so independent of the sorries).
 
-### `theorem principalAdele_goldenRoot_ne_zero`
-- **Type**: `≠ 0`. **How**: `AdeleRing.algebraMap_injective` + `goldenRoot_sq`. **Uses**: [`principalAdele_goldenRoot`,`goldenRoot(_sq)`] — **Lines**: 319-325
-
-### `theorem principalAdele_fundamentalUnit_is_unit_everywhere`
-- **Type**: `∀ v finite place, v(fundamentalUnit) = 1`. **How**: `norm_eq_one_iff_notMem`; unit inverse forces `1 ∈ maximalIdeal`, contradiction. **Uses**: [`fundamentalUnit`] — **Lines**: 327-346 — **Notes**: proof >15 lines.
-
-### `abbrev sqrtFiveDedekindZeta` / `sqrtFiveDedekindZetaResidue` + 2 `example`s
-- **Types**: zeta abbrevs; examples: residue positive, residue formula (involves `regulator`, `classNumber`, `torsionOrder`, `discr`). **Uses**: [] — **Lines**: 360-376
-
-**File Summary — LocalGlobal.lean**: ~30 decls (mostly abbrevs + `example`s; ~7 named theorems). Key API: `heightOneFive`, `house_fundamentalUnit`. No sorry/set_option. >30-line proofs: `house_fundamentalUnit`. Many `example`s are smoke-tests of mathlib API rather than reusable lemmas.
+**File Summary (LocalGlobal.lean)**: ~30 decls (~10 named theorems, ~12 abbrevs/defs, ~10 anonymous
+`example`s; 9 `noncomputable section`s by topic). Key API: `heightOneFive`, `goldenRoot`,
+`fundamentalUnit`, `infinitePlace_isReal`, `exists_realEmbedding_goldenRatio`,
+`isPrime_span_sqrtFiveIntO`, `sqrtFiveRoot_sq`. Public results: place data, completions, infinite
+completion ≅ ℝ, product formula, house of φ / fundamental unit, mixed-embedding/convex-body
+membership, adele non-vanishing, Dedekind zeta residue + class-number formula. No sorry/set_option.
+Proofs >30 lines: `house_fundamentalUnit` (~53). Many `example`s are demonstrative (not reusable
+API).
 
 ---
 
-## Cross-file notes
+## Cross-file observations
 
-- **Duplicate**: `private theorem goldenIntO_sq` appears identically in PrimeSplitting.lean (117-118) and Units.lean (36-37). Should be a single public lemma in RingOfIntegers.lean.
-- **Generic helpers that could move to Common.lean / mathlib**:
-  - `ringHom_ext_golden` (Embeddings) — `QuadraticAlgebra` ring-hom extensionality on the generator.
-  - `int_eq_of_rat_div_five_eq`, `int_eq_of_rat_div_twentyFive_eq` (RingOfIntegers) — pure ℤ/ℚ arithmetic.
-  - `five_dvd_coords_of_trace_norm` (RingOfIntegers) — generic divisibility-from-trace/norm shape.
-  - `even_of_negOneUnit_zpow_eq_one` (Units) — `(-1:ℤˣ)^n=1 → Even n`; fully generic.
-  - `absNorm_ne_two` / `absNorm_ne_three` (PrimeSplitting) — could be one parametrized lemma.
-  - `abs_norm_int_lt_of_remainder_eq` (Euclidean) — already a twin in SqrtTwo; candidate for a shared real-quadratic Euclidean helper.
-- **Twin with SqrtTwo** (near-identical names/roles): `K`, `degree_eq_two`, `isTotallyReal`, `nrRealPlaces_eq_two`, `nrComplexPlaces_eq_zero`, `norm_eq_normForm`, `intNorm_eq_normForm`, `isUnit_iff_normForm`, `integralBasis_discr`, `abs_norm_int_lt_of_remainder_eq`, `normEuclidean`, `unitGroupStructure`, the whole prime-splitting / local-global scaffolding. The mathematical content differs (golden vs radical model; disc 5 vs 8; norm form `x²+xy-y²` vs `x²-2y²`; 5 ramified+`±1 mod 5` splitting vs 2 ramified). SqrtTwo additionally completes the `fundamentalUnit_generates` analogue via `Pell.Solution₁`/`Zsqrtd`, which is exactly the SqrtFive sorry.
+- **SqrtTwo twins (QuadraticAlgebra setup, near-identical)**: `K`, `degree_eq_two`,
+  `IsQuadraticExtension`, AdjoinRoot↔QuadraticAlgebra equivalence block, the whole Units machinery
+  (`torsionUnits_eq`, `torsionOrder_eq_two`, `unitRank_eq_one`,
+  `exists_eq_torsion_mul_fundSystem_zpow`, `fundSystem_zpow_mem_torsion`,
+  `eq_one_or_neg_one_of_mem_torsion`, `unitGroupStructure(_bijective)`,
+  `fundamentalUnit_generates`+`regulator_eq`, now proved in both twins by different routes — SqrtTwo
+  via `Pell`, SqrtFive via the real-embedding window-reduction), `normEuclidean`, the PrimeSplitting /
+  ClassGroup / LocalGlobal scaffolding. Differences: generator (golden `φ=(1+√5)/2` vs `√2`),
+  constants (disc 5 vs 8; norm form `x²+xy-y²` vs `x²-2y²`; ramified prime 5 vs 2; split criterion
+  `p%5∈{1,4}` vs `p%8∈{1,7}`), and the golden-ratio intermediary (`goldenRoot` is the generator,
+  `sqrtFiveRoot=2φ-1` derived).
+- **EXTRA in SqrtFive (not in SqrtTwo's analogous slot)**: `RadicalModel`/`RadicalAdjoinRoot`
+  presentations + all their equivalences (Basic 150-321), and `adjoin_sqrtFive_ne_integralClosure`
+  (`ℤ[√5] ⊊ ℤ[φ]`, the genuinely-`5≡1 mod 4` fact; SqrtTwo has no such proper-suborder result).
+  SqrtTwo's EXTRA `KUnitModel` (`1+√2`) block has no SqrtFive counterpart.
+- **Generic helpers worth promoting to Common**: `ringHom_ext_golden` (Embeddings, twin of
+  `ringHom_ext_sqrtTwo`), `abs_norm_int_lt_of_remainder_eq` (Euclidean), `absNorm_span_natCast`
+  (PrimeSplitting).
+- **Sorry blast radius**: none — the folder is now **sorry-free**. The former blockers
+  `fundamentalUnit_generates` (explicit `±φⁿ`) and `regulator_eq` are proved, and the three
+  results that depended on the former follow. The lesson for the project-wide API assessment: this
+  "explicit fundamental unit" obstruction was *intrinsic mathematical difficulty*, not API
+  immaturity — a faithful formalisation of the textbook real-embedding argument closed it with
+  existing mathlib API.

@@ -1,827 +1,632 @@
-# SqrtTwo declaration inventory
+# Declaration Inventory — `XYin/NumberField/FieldExamples/SqrtTwo/`
 
-Folder: `XYin/NumberField/FieldExamples/SqrtTwo/`
-Field: real quadratic `ℚ(√2)`, built via `QuadraticAlgebra ℚ 2 0`.
-Twin of SqrtFive (golden-ratio model). SqrtTwo additionally carries a second `AdjoinRoot`
-presentation `KUnitModel = AdjoinRoot (X²-2X-1)` (root `1+√2`).
+Real quadratic field `ℚ(√2)`, built via `QuadraticAlgebra ℚ 2 0` (the **radical model**, generator
+`√2` with `√2² = 2`). Twin of `SqrtFive` (which uses the golden-ratio model `QuadraticAlgebra ℚ 1 1`).
+The decisive difference: ring of integers is `ℤ[√2]` (monogenic at the *square root*, disc `8 = 2³`),
+and the **fundamental unit `1+√2` is proved outright via mathlib's `Zsqrtd`/`Pell.Solution₁` API** —
+so `unitGroupStructure` (`μ₂ × ℤ`) is fully formalised; `regulator_eq` is now also **proved**, making
+the folder **sorry-free**.
+Namespace `NumberField.SqrtTwo` throughout. Every file: `noncomputable section`,
+`attribute [-instance] DivisionRing.toRatAlgebra`, same open scopes.
 
-Namespace throughout: `NumberField.SqrtTwo`. Files open
-`QuadraticAlgebra`, `NumberField`, `Module`, `Polynomial`, and (where relevant)
-`NumberField.FieldExamples` (Common). All files are `noncomputable section` and remove the
-`DivisionRing.toRatAlgebra` instance (the core files).
-
-Cross-reference: `Common.lean` API used = `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`,
-`eq_of_le_of_absNorm_eq`, `natAbs_lt_of_abs_ratCast_lt`, `torsionPowerHom`, `rankOnePowerHom`,
+All cross-references to `Common.lean` use namespace `NumberField.FieldExamples`. Common API actually
+used here: `eq_of_le_of_absNorm_eq`, `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`,
 `not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ`,
-`not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow`. Galois uses
-`zmodAddEquivOfGenerator`, `AddEquiv.toMultiplicativeLeft` (also Common/shared infra).
+`not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow`, `abs_intNorm_lt_of_abs_norm_le`,
+`natAbs_lt_of_abs_ratCast_lt`, `torsionPowerHom`, `rankOnePowerHom`.
+
+**Sorry-free.** The former lone sorry `regulator_eq` (`Units.regulator K = log(1+√2)`) is now
+**closed**, via mathlib's `regOfFamily_div_regulator` → `regOfFamily_eq_det` →
+`Matrix.det_eq_elem_of_subsingleton`. This is the diagnostic case that corrects an earlier
+mis-reading: the "regulator = log(fundamental unit)" step is **mature mathlib API**, not a missing
+bridge — it only needed the fundamental unit (already certified here via Pell). The regulator was
+never an API gap; it was simply downstream of fundamentality.
 
 ---
 
 ## Basic.lean
 
-### `instance Fact (∀ r : ℚ, r^2 ≠ 2 + 0*r)`
-- **Type**: `Fact (∀ r : ℚ, r ^ 2 ≠ (2 : ℚ) + (0 : ℚ) * r)`
-- **What**: `2` is not a rational square; the data instance feeding `QuadraticAlgebra` that the field is genuinely degree 2.
-- **How**: assumes `r^2 = 2`, builds `IsSquare (2:ℚ)`, contradiction via `norm_num`.
-- **Hypotheses**: none.
-- **Uses from project**: []
-- **Visibility**: public (instance)
-- **Lines**: 39-46
+### `instance : Fact (∀ r : ℚ, r ^ 2 ≠ 2 + 0 * r)`
+- **Type**: `Fact (∀ r : ℚ, r ^ 2 ≠ (2 : ℚ) + (0 : ℚ) * r)`.
+- **What**: the `QuadraticAlgebra ℚ 2 0` field-instance hypothesis (`2` has no rational square root).
+- **How**: from a root build `IsSquare (2:ℚ)` via `isSquare_iff_exists_sq` + `nlinarith`, then `norm_num`.
+- **Uses from project**: [] — **Visibility**: public (anon instance) — **Lines**: 39-46
 
 ### `abbrev K`
-- **Type**: `K : Type := QuadraticAlgebra ℚ (2 : ℚ) 0`
-- **What**: the field `ℚ(√2)`.
-- **How**: definitional.
-- **Uses from project**: []
-- **Visibility**: public — **Lines**: 49
+- **Type**: `K : Type := QuadraticAlgebra ℚ (2:ℚ) 0`. **What**: `ℚ(√2)` as a quadratic algebra. **How**: defn.
+- **Uses**: [] — **Visibility**: public — **Lines**: 49
 
-### `instance NumberField K`
-- **Type**: `NumberField K`
-- **What**: `K` is a number field.
-- **How**: `NumberField.of_module_finite ℚ K`.
-- **Uses from project**: [] — **Visibility**: public — **Lines**: 51-52
+### `instance : NumberField K`
+- **What**: `K` is a number field. **How**: `NumberField.of_module_finite`. **Uses**: [] — **Lines**: 51-52
 
 ### `abbrev sqrtTwoRoot`
-- **Type**: `sqrtTwoRoot : K := QuadraticAlgebra.omega`
-- **What**: distinguished `√2`. — **How**: definitional.
-- **Uses from project**: [] — **Visibility**: public — **Lines**: 55
+- **Type**: `sqrtTwoRoot : K := QuadraticAlgebra.omega`. **What**: the generator `√2`. **Uses**: [] — **Lines**: 55
+- **Notes**: KEY — referenced pervasively in every file.
 
 ### `theorem sqrtTwoRoot_sq`
-- **Type**: `sqrtTwoRoot ^ 2 = (2 : K)`
-- **What**: `√2² = 2`. **How**: `QuadraticAlgebra.omega_mul_omega_eq_add`, `ext`/`norm_num`.
-- **Uses from project**: [sqrtTwoRoot] — **Visibility**: public — **Lines**: 57-59
-- **Notes**: heavily-used API (≈30 references across folder).
+- **Type**: `sqrtTwoRoot ^ 2 = (2 : K)`. **How**: `pow_two` + `QuadraticAlgebra.omega_mul_omega_eq_add`, `ext`/`norm_num`.
+- **Uses**: [`sqrtTwoRoot`] — **Lines**: 57-59 — **Notes**: KEY (used everywhere).
 
 ### `abbrev sqrtTwoPolynomial`
-- **Type**: `ℚ[X] := X ^ 2 - C (2 : ℚ)` — **What**: defining poly. **How**: definitional.
-- **Uses from project**: [] — **Visibility**: public — **Lines**: 62
+- **Type**: `ℚ[X] := X^2 - C 2` — the minimal polynomial. **Uses**: [] — **Lines**: 62
 
-### `instance Fact (Irreducible sqrtTwoPolynomial)`
-- **What**: `X²-2` irreducible over ℚ. **How**: `Polynomial.irreducible_of_degree_le_three_of_not_isRoot` + `natDegree_X_pow_sub_C` + "2 not a square".
-- **Uses from project**: [sqrtTwoPolynomial] — **Visibility**: public — **Lines**: 64-80
+### `instance : Fact (Irreducible sqrtTwoPolynomial)`
+- **How**: `irreducible_of_degree_le_three_of_not_isRoot`; root would give `IsSquare 2`. **Uses**: [`sqrtTwoPolynomial`] — **Lines**: 64-80
 
-### `abbrev KAdjoinRoot`
-- **Type**: `:= AdjoinRoot sqrtTwoPolynomial` — **What**: AdjoinRoot presentation. — **Uses**: [sqrtTwoPolynomial] — public — **Lines**: 83
-
-### `abbrev sqrtTwoAdjoinRoot`
-- **Type**: `KAdjoinRoot := AdjoinRoot.root sqrtTwoPolynomial` — **Uses**: [sqrtTwoPolynomial] — public — **Lines**: 86
+### `abbrev KAdjoinRoot` / `abbrev sqrtTwoAdjoinRoot`
+- **Types**: `AdjoinRoot sqrtTwoPolynomial`; `AdjoinRoot.root …`. Alternate presentation. **Uses**: [`sqrtTwoPolynomial`] — **Lines**: 83, 86
 
 ### `theorem sqrtTwoAdjoinRoot_sq`
-- **Type**: `sqrtTwoAdjoinRoot ^ 2 = (2 : KAdjoinRoot)` — **How**: `AdjoinRoot.eval₂_root` + `calc`.
-- **Uses**: [sqrtTwoAdjoinRoot, sqrtTwoPolynomial] — public — **Lines**: 88-94
+- **Type**: `sqrtTwoAdjoinRoot^2 = 2`. **How**: `AdjoinRoot.eval₂_root` + `calc`. **Uses**: [`sqrtTwoAdjoinRoot`,`sqrtTwoPolynomial`] — **Lines**: 88-94
 
-### `def sqrtTwoAdjoinRootToQuadratic`
-- **Type**: `KAdjoinRoot →ₐ[ℚ] K` — **What**: AdjoinRoot→QuadraticAlgebra iso half. **How**: `AdjoinRoot.liftAlgHom`, relation `sqrtTwoRoot_sq`.
-- **Uses**: [sqrtTwoPolynomial, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 96-102
+### `def sqrtTwoAdjoinRootToQuadratic` / `@[simp] theorem …_root`
+- **Type**: `KAdjoinRoot →ₐ[ℚ] K`; root identity. **How**: `AdjoinRoot.liftAlgHom`; `AdjoinRoot.liftAlgHom_root`.
+- **Uses**: [`sqrtTwoPolynomial`,`sqrtTwoRoot`,`sqrtTwoRoot_sq`,`sqrtTwoAdjoinRoot`] — **Lines**: 96-108
 
-### `theorem sqrtTwoAdjoinRootToQuadratic_root` (@[simp])
-- **Type**: `... sqrtTwoAdjoinRoot = sqrtTwoRoot` — **How**: `AdjoinRoot.liftAlgHom_root`.
-- **Uses**: [sqrtTwoAdjoinRootToQuadratic, sqrtTwoAdjoinRoot, sqrtTwoPolynomial, sqrtTwoRoot] — public — **Lines**: 104-108
-
-### `def sqrtTwoQuadraticToAdjoinRoot`
-- **Type**: `K →ₐ[ℚ] KAdjoinRoot` — **How**: `QuadraticAlgebra.lift` with `sqrtTwoAdjoinRoot_sq`.
-- **Uses**: [sqrtTwoAdjoinRoot, sqrtTwoAdjoinRoot_sq] — public — **Lines**: 110-113
-
-### `theorem sqrtTwoQuadraticToAdjoinRoot_root` (@[simp])
-- **Type**: `... sqrtTwoRoot = sqrtTwoAdjoinRoot` — **How**: simp.
-- **Uses**: [sqrtTwoQuadraticToAdjoinRoot, sqrtTwoRoot, sqrtTwoAdjoinRoot] — public — **Lines**: 115-118
+### `def sqrtTwoQuadraticToAdjoinRoot` / `@[simp] theorem …_root`
+- **Type**: `K →ₐ[ℚ] KAdjoinRoot`; root identity. **How**: `QuadraticAlgebra.lift`. **Uses**: [`sqrtTwoAdjoinRoot(_sq)`,`sqrtTwoRoot`] — **Lines**: 110-118
 
 ### `def sqrtTwoAdjoinRootEquivQuadratic`
-- **Type**: `KAdjoinRoot ≃ₐ[ℚ] K` — **What**: equivalence of the two presentations. **How**: assembles fwd/back hom; `AdjoinRoot.algHom_ext`/`QuadraticAlgebra.algHom_ext` + `DFunLike.congr_fun`.
-- **Uses**: [sqrtTwoAdjoinRootToQuadratic, sqrtTwoQuadraticToAdjoinRoot, sqrtTwoAdjoinRoot, sqrtTwoRoot, *_root lemmas] — public — **Lines**: 120-140
+- **Type**: `KAdjoinRoot ≃ₐ[ℚ] K`. **What**: AdjoinRoot ≅ quadratic-algebra presentation. **How**: package the two AlgHoms; inverses via `AdjoinRoot.algHom_ext`/`QuadraticAlgebra.algHom_ext`.
+- **Uses**: [`sqrtTwoAdjoinRootToQuadratic(_root)`,`sqrtTwoQuadraticToAdjoinRoot(_root)`] — **Lines**: 120-140 — **Notes**: KEY (used in RingOfIntegers minpoly); proof ~20 lines.
 
-### `abbrev sqrtTwoAdjoinRootPowerBasis`
-- **Type**: `PowerBasis ℚ KAdjoinRoot` — power basis `1,√2`. — **How**: `AdjoinRoot.powerBasis`.
-- **Uses**: [sqrtTwoPolynomial] — public — **Lines**: 143-145
+### `abbrev sqrtTwoAdjoinRootPowerBasis` / `abbrev sqrtTwoPowerBasis`
+- **Types**: `PowerBasis ℚ KAdjoinRoot` from `AdjoinRoot.powerBasis`; mapped to `PowerBasis ℚ K`. **Uses**: [`sqrtTwoPolynomial`,`sqrtTwoAdjoinRootEquivQuadratic`] — **Lines**: 143-148 — **Notes**: KEY.
 
-### `abbrev sqrtTwoPowerBasis`
-- **Type**: `PowerBasis ℚ K := sqrtTwoAdjoinRootPowerBasis.map sqrtTwoAdjoinRootEquivQuadratic`
-- **Uses**: [sqrtTwoAdjoinRootPowerBasis, sqrtTwoAdjoinRootEquivQuadratic] — public — **Lines**: 147-148
-- **Notes**: key API (used 8+ times: finrank, discr, basis).
-
-### `theorem sqrtTwoPowerBasis_gen` (@[simp])
-- **Type**: `sqrtTwoPowerBasis.gen = sqrtTwoRoot` — **How**: `sqrtTwoAdjoinRootToQuadratic_root`.
-- **Uses**: [sqrtTwoPowerBasis, sqrtTwoAdjoinRoot, sqrtTwoRoot, sqrtTwoAdjoinRootToQuadratic_root] — public — **Lines**: 150-153
+### `@[simp] theorem sqrtTwoPowerBasis_gen`
+- **Type**: `sqrtTwoPowerBasis.gen = sqrtTwoRoot`. **How**: `sqrtTwoAdjoinRootToQuadratic_root`. **Uses**: [`sqrtTwoPowerBasis`,…] — **Lines**: 150-153
 
 ### `theorem adjoin_sqrtTwoRoot_eq_top`
-- **Type**: `Algebra.adjoin ℚ {sqrtTwoRoot} = ⊤` — **How**: `PowerBasis.adjoin_gen_eq_top`.
-- **Uses**: [sqrtTwoPowerBasis_gen, sqrtTwoPowerBasis, sqrtTwoRoot] — public — **Lines**: 156-158
+- **Type**: `Algebra.adjoin ℚ {sqrtTwoRoot} = ⊤`. **How**: `PowerBasis.adjoin_gen_eq_top`. **Uses**: [`sqrtTwoPowerBasis(_gen)`] — **Lines**: 156-158 — **Notes**: used in PrimeSplitting (Different).
 
 ### `theorem sqrtTwoPowerBasis_dim`
-- **Type**: `sqrtTwoPowerBasis.dim = 2` — **How**: `natDegree_X_pow_sub_C`.
-- **Uses**: [sqrtTwoPowerBasis, sqrtTwoPolynomial] — public — **Lines**: 160-163
-- **Notes**: key API (used 6+ times).
+- **Type**: `sqrtTwoPowerBasis.dim = 2`. **How**: `natDegree_X_pow_sub_C`. **Uses**: [`sqrtTwoPowerBasis`,`sqrtTwoPolynomial`] — **Lines**: 160-163 — **Notes**: KEY.
 
 ### `theorem degree_eq_two`
-- **Type**: `Module.finrank ℚ K = 2` — **How**: `PowerBasis.finrank` + `sqrtTwoPowerBasis_dim`.
-- **Uses**: [sqrtTwoPowerBasis, sqrtTwoPowerBasis_dim] — public — **Lines**: 165-168
+- **Type**: `Module.finrank ℚ K = 2`. **How**: `PowerBasis.finrank` + `sqrtTwoPowerBasis_dim`. **Uses**: [`sqrtTwoPowerBasis(_dim)`] — **Lines**: 165-168 — **Notes**: KEY (Embeddings, PrimeSplitting, LocalGlobal).
 
-### `instance Algebra.IsQuadraticExtension ℚ K`
-- **What**: K/ℚ quadratic. **How**: `finrank_eq_two' := degree_eq_two`.
-- **Uses**: [degree_eq_two] — public — **Lines**: 170-171
+### `instance : Algebra.IsQuadraticExtension ℚ K`
+- **How**: `degree_eq_two`. **Uses**: [`degree_eq_two`] — **Lines**: 170-171
 
 ### `abbrev sqrtTwoUnitPolynomial`
-- **Type**: `ℚ[X] := C 1 * X^2 + C(-2)*X + C(-1)` — defining poly of `1+√2`.
-- **Uses**: [] — public — **Lines**: 177-178
-- **Notes**: EXTRA vs SqrtFive (second/unit presentation).
+- **Type**: `ℚ[X] := C 1 * X² + C(-2) * X + C(-1)` — the minimal polynomial `X²-2X-1` of `1+√2`. **Uses**: [] — **Lines**: 177-178
 
-### `instance Fact (Irreducible sqrtTwoUnitPolynomial)`
-- **How**: `irreducible_of_degree_le_three_of_not_isRoot` + `natDegree_quadratic` + "2 not a square".
-- **Uses**: [sqrtTwoUnitPolynomial] — public — **Lines**: 180-192 — **Notes**: EXTRA.
+### `instance : Fact (Irreducible sqrtTwoUnitPolynomial)`
+- **How**: `irreducible_of_degree_le_three_of_not_isRoot`; root would give `IsSquare 2` (witness `x-1`). **Uses**: [`sqrtTwoUnitPolynomial`] — **Lines**: 180-192
 
-### `abbrev KUnitModel`
-- **Type**: `:= AdjoinRoot sqrtTwoUnitPolynomial` — the `1+√2` model. — **Uses**: [sqrtTwoUnitPolynomial] — public — **Lines**: 195 — **Notes**: EXTRA.
-
-### `abbrev sqrtTwoUnitRoot`
-- **Type**: `KUnitModel := AdjoinRoot.root sqrtTwoUnitPolynomial` — **Uses**: [sqrtTwoUnitPolynomial] — public — **Lines**: 198 — **Notes**: EXTRA.
+### `abbrev KUnitModel` / `abbrev sqrtTwoUnitRoot`
+- **Types**: `AdjoinRoot sqrtTwoUnitPolynomial`; `AdjoinRoot.root …` (a root of `X²-2X-1`, i.e. `1+√2`). **Uses**: [`sqrtTwoUnitPolynomial`] — **Lines**: 195, 198
 
 ### `theorem sqrtTwoUnitRoot_relation`
-- **Type**: `sqrtTwoUnitRoot^2 - 2*sqrtTwoUnitRoot - 1 = 0` — **How**: `AdjoinRoot.eval₂_root`.
-- **Uses**: [sqrtTwoUnitRoot, sqrtTwoUnitPolynomial] — public — **Lines**: 200-203 — **Notes**: EXTRA.
+- **Type**: `sqrtTwoUnitRoot² - 2·sqrtTwoUnitRoot - 1 = 0`. **How**: `AdjoinRoot.eval₂_root`. **Uses**: [`sqrtTwoUnitRoot`,`sqrtTwoUnitPolynomial`] — **Lines**: 200-203
 
-### `def sqrtTwoToUnitModel`
-- **Type**: `K →ₐ[ℚ] KUnitModel` (`√2 ↦ β-1`) — **How**: `QuadraticAlgebra.lift`, relation via `linear_combination`.
-- **Uses**: [sqrtTwoUnitRoot, sqrtTwoUnitRoot_relation] — public — **Lines**: 206-217 — **Notes**: EXTRA.
+### `def sqrtTwoToUnitModel` / `@[simp] theorem …_root`
+- **Type**: `K →ₐ[ℚ] KUnitModel` sending `√2 ↦ β-1`. **How**: `QuadraticAlgebra.lift`, `calc`+`linear_combination sqrtTwoUnitRoot_relation`. **Uses**: [`sqrtTwoUnitRoot(_relation)`,`sqrtTwoRoot`] — **Lines**: 206-222
 
-### `theorem sqrtTwoToUnitModel_root` (@[simp])
-- **Type**: `sqrtTwoToUnitModel sqrtTwoRoot = sqrtTwoUnitRoot - 1` — **Uses**: [sqrtTwoToUnitModel, sqrtTwoRoot, sqrtTwoUnitRoot] — public — **Lines**: 219-222 — **Notes**: EXTRA.
+### `def unitModelToSqrtTwo` / `@[simp] theorem …_root`
+- **Type**: `KUnitModel →ₐ[ℚ] K` sending `β ↦ √2+1`. **How**: `AdjoinRoot.liftAlgHom`. **Uses**: [`sqrtTwoUnitPolynomial`,`sqrtTwoRoot(_sq)`,`sqrtTwoUnitRoot`] — **Lines**: 225-240
 
-### `def unitModelToSqrtTwo`
-- **Type**: `KUnitModel →ₐ[ℚ] K` (`β ↦ √2+1`) — **How**: `AdjoinRoot.liftAlgHom`, relation via `sqrtTwoRoot_sq`.
-- **Uses**: [sqrtTwoUnitPolynomial, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 225-233 — **Notes**: EXTRA.
+### `def sqrtTwoEquivUnitModel` / `theorem …_root`
+- **Type**: `K ≃ₐ[ℚ] KUnitModel`. **What**: the two AdjoinRoot presentations are equivalent. **How**: package AlgHoms; inverses via `QuadraticAlgebra.algHom_ext`/`AdjoinRoot.algHom_ext`. **Uses**: [`sqrtTwoToUnitModel(_root)`,`unitModelToSqrtTwo(_root)`,`sqrtTwoRoot`] — **Lines**: 243-270 — **Notes**: proof >25 lines.
 
-### `theorem unitModelToSqrtTwo_root` (@[simp])
-- **Type**: `unitModelToSqrtTwo sqrtTwoUnitRoot = sqrtTwoRoot + 1` — **How**: `AdjoinRoot.liftAlgHom_root`.
-- **Uses**: [unitModelToSqrtTwo, sqrtTwoUnitRoot, sqrtTwoUnitPolynomial, sqrtTwoRoot] — public — **Lines**: 235-240 — **Notes**: EXTRA.
-
-### `def sqrtTwoEquivUnitModel`
-- **Type**: `K ≃ₐ[ℚ] KUnitModel` — **How**: fwd/back hom + algHom_ext + `DFunLike`.
-- **Uses**: [sqrtTwoToUnitModel, unitModelToSqrtTwo, sqrtTwoRoot, sqrtTwoUnitRoot, *_root] — public — **Lines**: 243-266 — **Notes**: EXTRA, never used elsewhere in folder.
-
-### `theorem sqrtTwoEquivUnitModel_root`
-- **Type**: `sqrtTwoEquivUnitModel sqrtTwoRoot = sqrtTwoUnitRoot - 1` — **How**: `sqrtTwoToUnitModel_root`.
-- **Uses**: [sqrtTwoEquivUnitModel, sqrtTwoRoot, sqrtTwoUnitRoot, sqrtTwoToUnitModel_root] — public — **Lines**: 268-270 — **Notes**: EXTRA, unused.
-
-**File Summary (Basic.lean)**: ~30 decls (3 instances, ~7 defs, ~10 theorems, ~10 abbrevs).
-Key API (3+ uses): `sqrtTwoRoot`, `sqrtTwoRoot_sq`, `sqrtTwoPolynomial`, `sqrtTwoPowerBasis`,
-`sqrtTwoPowerBasis_dim`, `sqrtTwoPowerBasis_gen`, `sqrtTwoAdjoinRootEquivQuadratic`.
-Unused outside file: the entire `KUnitModel` block (lines 177-270) — second presentation, never
-referenced by any sibling file. No sorry, no set_option, no >30-line proof (longest ≈24).
+**File Summary — Basic.lean**: ~23 decls (abbrevs/defs ~14, theorems ~7, instances 3). Key API (3+): `sqrtTwoRoot`, `sqrtTwoRoot_sq`, `sqrtTwoPowerBasis`, `degree_eq_two`. No sorry/set_option. >30-line proofs: none (several ~20-27 line equiv constructions). The entire `KUnitModel`/`sqrtTwoUnit*` apparatus (the `1+√2` presentation) is presentation plumbing — **unused downstream**; the `KAdjoinRoot` chain is used only in RingOfIntegers (`sqrtTwo_minpoly_rat`).
 
 ---
 
 ## Galois.lean
 
-### `def sqrtTwoConjHom`
-- **Type**: `K →ₐ[ℚ] K` (`√2 ↦ -√2`) — **How**: `QuadraticAlgebra.lift` with `neg_sq`, `sqrtTwoRoot_sq`.
-- **Uses**: [sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 35-38
-
-### `theorem sqrtTwoConjHom_root` (@[simp])
-- **Type**: `sqrtTwoConjHom sqrtTwoRoot = -sqrtTwoRoot` — **How**: simp.
-- **Uses**: [sqrtTwoConjHom, sqrtTwoRoot] — public — **Lines**: 40-42
+### `def sqrtTwoConjHom` / `@[simp] theorem sqrtTwoConjHom_root`
+- **Type**: `K →ₐ[ℚ] K` sending `√2 ↦ -√2`; `sqrtTwoConjHom sqrtTwoRoot = -sqrtTwoRoot`.
+- **How**: `QuadraticAlgebra.lift` (verifying `(-√2)²=2`). **Uses**: [`sqrtTwoRoot(_sq)`] — **Lines**: 34-42
 
 ### `def sqrtTwoConj`
-- **Type**: `K ≃ₐ[ℚ] K` — involutive conjugation. **How**: invFun = self; `QuadraticAlgebra.algHom_ext`.
-- **Uses**: [sqrtTwoConjHom, sqrtTwoRoot, sqrtTwoConjHom_root] — public — **Lines**: 45-63
+- **Type**: `K ≃ₐ[ℚ] K`. **What**: the nontrivial conjugation automorphism. **How**: package `sqrtTwoConjHom` as its own inverse (involution via `QuadraticAlgebra.algHom_ext`).
+- **Uses**: [`sqrtTwoConjHom(_root)`] — **Lines**: 44-63 — **Notes**: KEY.
 
 ### `theorem sqrtTwoConj_root`
-- **Type**: `sqrtTwoConj sqrtTwoRoot = -sqrtTwoRoot` — **Uses**: [sqrtTwoConj, sqrtTwoConjHom_root, sqrtTwoRoot] — public — **Lines**: 65-67
+- **Type**: `sqrtTwoConj sqrtTwoRoot = -sqrtTwoRoot`. **How**: `sqrtTwoConjHom_root`. **Uses**: [`sqrtTwoConjHom_root`] — **Lines**: 65-67
 
 ### `theorem isGalois`
-- **Type**: `IsGalois ℚ K` — **How**: `infer_instance` (quadratic ⇒ Galois). — **Uses**: [] — public — **Lines**: 69-71
+- **Type**: `IsGalois ℚ K`. **How**: `infer_instance` (quadratic extensions are Galois). **Uses**: [] — **Lines**: 69-71
 
 ### `theorem sqrtTwo_gal_eq_id_or_conj`
-- **Type**: `(σ : Gal(K/ℚ)) → σ = 1 ∨ σ = sqrtTwoConj` — **What**: classifies the 2 automorphisms. **How**: `σ√2` squares to 2, factor `(σ√2-√2)(σ√2+√2)=0`, `QuadraticAlgebra.algHom_ext`.
-- **Uses**: [sqrtTwoRoot, sqrtTwoRoot_sq, sqrtTwoConj, sqrtTwoConjHom_root] — public — **Lines**: 73-100 — **Notes**: proof 28 lines.
+- **Type**: `(σ : Gal(K/ℚ)) → σ = 1 ∨ σ = sqrtTwoConj`. **How**: `σ√2` satisfies `X²=2`, factor `(σ√2-√2)(σ√2+√2)=0`, `mul_eq_zero`, extensionality via `QuadraticAlgebra.algHom_ext`.
+- **Uses**: [`sqrtTwoRoot(_sq)`,`sqrtTwoConj(Hom_root)`] — **Lines**: 73-100 — **Notes**: proof >25 lines.
 
 ### `private theorem sqrtTwoConj_ne_one`
-- **Type**: `sqrtTwoConj ≠ 1` — **How**: else `-√2=√2 ⇒ √2=0 ⇒ 2=0`. — **Uses**: [sqrtTwoConj, sqrtTwoConjHom_root, sqrtTwoRoot, sqrtTwoRoot_sq] — private — **Lines**: 102-121
+- **Type**: `sqrtTwoConj ≠ 1`. **How**: else `-√2=√2 ⇒ 2·√2=0 ⇒ √2=0 ⇒ 2=0`, contradiction. **Uses**: [`sqrtTwoConjHom_root`,`sqrtTwoRoot(_sq)`] — **Lines**: 102-121 — **Visibility**: private
 
 ### `theorem gal_natCard_eq_two`
-- **Type**: `Nat.card Gal(K/ℚ) = 2` — **How**: `Nat.card_eq_two_iff` + classification.
-- **Uses**: [sqrtTwoConj, sqrtTwoConj_ne_one, sqrtTwo_gal_eq_id_or_conj] — public — **Lines**: 123-128
+- **Type**: `Nat.card (Gal(K/ℚ)) = 2`. **How**: `Nat.card_eq_two_iff` with witnesses `1`,`sqrtTwoConj` + `sqrtTwo_gal_eq_id_or_conj`. **Uses**: [`sqrtTwoConj(_ne_one)`,`sqrtTwo_gal_eq_id_or_conj`] — **Lines**: 123-128 — **Notes**: KEY.
 
 ### `private abbrev CyclicTwo`
-- **Type**: `Multiplicative (ZMod 2)` — **Uses**: [] — private — **Lines**: 131
+- **Type**: `Multiplicative (ZMod 2)`. **Uses**: [] — **Lines**: 131 — **Visibility**: private
 
 ### `private theorem sqrtTwoGal_additive_generator`
-- **Type**: conjugation generates `Additive Gal(K/ℚ)` — **How**: case split via `sqrtTwo_gal_eq_id_or_conj`, `zmultiples`.
-- **Uses**: [sqrtTwo_gal_eq_id_or_conj, sqrtTwoConj] — private — **Lines**: 134-142
+- **Type**: every `σ ∈ AddSubgroup.zmultiples (ofMul sqrtTwoConj)`. **How**: case on `sqrtTwo_gal_eq_id_or_conj`. **Uses**: [`sqrtTwo_gal_eq_id_or_conj`,`sqrtTwoConj`] — **Lines**: 134-142 — **Visibility**: private
 
-### `private noncomputable abbrev cyclicTwoEquivSqrtTwoGal`
-- **Type**: `CyclicTwo ≃* Gal(K/ℚ)` — **How**: `AddEquiv.toMultiplicativeLeft` + `zmodAddEquivOfGenerator`.
-- **Uses (incl. shared infra)**: [sqrtTwoGal_additive_generator, gal_natCard_eq_two, sqrtTwoConj] — private — **Lines**: 148-150
-
-### `private noncomputable abbrev sqrtTwoGalEquivCyclicTwo`
-- **Type**: `Gal(K/ℚ) ≃* CyclicTwo := cyclicTwoEquivSqrtTwoGal.symm` — **Uses**: [cyclicTwoEquivSqrtTwoGal] — private — **Lines**: 153-154
+### `private abbrev cyclicTwoEquivSqrtTwoGal` / `sqrtTwoGalEquivCyclicTwo`
+- **Types**: `CyclicTwo ≃* Gal(K/ℚ)` (via `zmodAddEquivOfGenerator`+`AddEquiv.toMultiplicativeLeft`); its `.symm`. **Uses**: [`sqrtTwoGal_additive_generator`,`gal_natCard_eq_two`] — **Lines**: 148-154 — **Visibility**: private
 
 ### `theorem galoisGroupStructure`
-- **Type**: `Nonempty (Gal(K/ℚ) ≃* Multiplicative (ZMod 2))` — **How**: wraps the iso.
-- **Uses**: [sqrtTwoGalEquivCyclicTwo] — public — **Lines**: 158-159
+- **Type**: `Nonempty (Gal(K/ℚ) ≃* Multiplicative (ZMod 2))`. **What**: Galois group is cyclic of order 2. **How**: `⟨sqrtTwoGalEquivCyclicTwo⟩`. **Uses**: [`sqrtTwoGalEquivCyclicTwo`] — **Lines**: 156-159
 
-**File Summary (Galois.lean)**: 13 decls (2 defs, ~7 theorems, 4 abbrevs). Key API: `sqrtTwoConj`,
-`sqrtTwoConjHom_root`, `sqrtTwo_gal_eq_id_or_conj`, `gal_natCard_eq_two`. Public results:
-`isGalois`, `galoisGroupStructure`. No sorry/set_option; one proof at 28 lines
-(`sqrtTwo_gal_eq_id_or_conj`). `sqrtTwoConj` double-derives the same `hcomp` in both `left_inv`
-and `right_inv` (mild duplication).
+**File Summary — Galois.lean**: 12 decls (defs 2, abbrevs 3, theorems 6 + 1 instance-like). Key API (3+): `sqrtTwoConj`, `sqrtTwoConjHom_root`, `sqrtTwo_gal_eq_id_or_conj`. No sorry/set_option. >30-line proofs: none.
 
 ---
 
 ## Embeddings.lean
 
 ### `private theorem ringHom_ext_sqrtTwo`
-- **Type**: `{f g : K →+* ℂ} (h : f √2 = g √2) → f = g` — **What**: ring homs to ℂ are determined by image of `√2`. **How**: `QuadraticAlgebra.mk_eq_add_smul_omega`, `eq_ratCast` on `ℚ`-part.
-- **Uses**: [sqrtTwoRoot] — private — **Lines**: 34-45
-- **Notes**: GENERIC-looking; a quadratic-algebra `ringHom_ext` candidate for Common.
+- **Type**: `{f g : K →+* ℂ} (h : f sqrtTwoRoot = g sqrtTwoRoot) → f = g`. **What**: ring homs `K→ℂ` agreeing on `√2` are equal.
+- **How**: `QuadraticAlgebra.mk_eq_add_smul_omega`, `eq_ratCast` on rational part. **Uses**: [`sqrtTwoRoot`] — **Lines**: 34-45 — **Visibility**: private — **Notes**: generic — could be a shared `QuadraticAlgebra` ext lemma.
 
 ### `theorem isTotallyReal`
-- **Type**: `NumberField.IsTotallyReal K` — **How**: each embedding fixes `√2` under conjugation; factor `(z̄-z)(z̄+z)=0`, exclude `re=0` by `nlinarith [sq_nonneg z.im]`.
-- **Uses**: [ringHom_ext_sqrtTwo, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 47-73 — **Notes**: 27-line proof.
+- **Type**: `NumberField.IsTotallyReal K`. **How**: each embedding is real — conjugate root satisfies `X²=2`, factor, rule out `re=0` branch via `nlinarith [sq_nonneg z.im]`. Uses `ComplexEmbedding.conjugate_coe_eq`, `ringHom_ext_sqrtTwo`.
+- **Uses**: [`ringHom_ext_sqrtTwo`,`sqrtTwoRoot(_sq)`] — **Lines**: 47-73 — **Notes**: KEY; proof >20 lines.
 
 ### `theorem nrComplexPlaces_eq_zero`
-- **Type**: `InfinitePlace.nrComplexPlaces K = 0` — **How**: `IsTotallyReal.nrComplexPlaces_eq_zero`.
-- **Uses**: [isTotallyReal] — public — **Lines**: 75-79
+- **Type**: `InfinitePlace.nrComplexPlaces K = 0`. **How**: `IsTotallyReal.nrComplexPlaces_eq_zero`. **Uses**: [`isTotallyReal`] — **Lines**: 75-79 — **Notes**: KEY (ClassGroup, Units, LocalGlobal).
 
 ### `theorem nrRealPlaces_eq_two`
-- **Type**: `InfinitePlace.nrRealPlaces K = 2` — **How**: `card_add_two_mul_card_eq_rank` + finrank 2 + `omega`.
-- **Uses**: [sqrtTwoPowerBasis, sqrtTwoPowerBasis_dim, nrComplexPlaces_eq_zero] — public — **Lines**: 81-90
-- **Notes**: key API (used in ClassGroup, Units).
+- **Type**: `InfinitePlace.nrRealPlaces K = 2`. **How**: `card_add_two_mul_card_eq_rank`, `nrComplexPlaces_eq_zero`, `finrank=2`, `omega`. **Uses**: [`nrComplexPlaces_eq_zero`,`sqrtTwoPowerBasis(_dim)`] — **Lines**: 81-90 — **Notes**: KEY (Units, LocalGlobal).
 
-### `theorem exists_realEmbedding_pos`
-- **Type**: `∃ σ : K →ₐ[ℚ] ℝ, σ √2 = Real.sqrt 2` — **How**: `QuadraticAlgebra.lift` with `Real.mul_self_sqrt`.
-- **Uses**: [sqrtTwoRoot] — public — **Lines**: 107-114
-
-### `theorem exists_realEmbedding_neg`
-- **Type**: `∃ σ : K →ₐ[ℚ] ℝ, σ √2 = -Real.sqrt 2` — analog. — **Uses**: [sqrtTwoRoot] — public — **Lines**: 116-123
+### `theorem exists_realEmbedding_pos` / `exists_realEmbedding_neg`
+- **Types**: `∃ σ : K →ₐ[ℚ] ℝ, σ sqrtTwoRoot = ±Real.sqrt 2`. **How**: `QuadraticAlgebra.lift` with `Real.mul_self_sqrt`. **Uses**: [`sqrtTwoRoot`] — **Lines**: 108-123 — **Notes**: used in LocalGlobal (house, canonical coords).
 
 ### `theorem realEmbedding_root_eq_pos_or_neg`
-- **Type**: `(σ : K →ₐ[ℚ] ℝ) → σ√2 = √2 ∨ σ√2 = -√2` — **How**: `sq_eq_sq_iff_eq_or_eq_neg`.
-- **Uses**: [sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 125-134
+- **Type**: `(σ : K →ₐ[ℚ] ℝ) → σ sqrtTwoRoot = √2 ∨ = -√2`. **How**: `sq_eq_sq_iff_eq_or_eq_neg`. **Uses**: [`sqrtTwoRoot(_sq)`] — **Lines**: 125-134
 
 ### `theorem infinitePlace_card_eq_two`
-- **Type**: `Fintype.card (InfinitePlace K) = 2` — **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces`.
-- **Uses**: [nrRealPlaces_eq_two, nrComplexPlaces_eq_zero] — public — **Lines**: 137-140
+- **Type**: `Fintype.card (InfinitePlace K) = 2`. **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces` + counts. **Uses**: [`nrRealPlaces_eq_two`,`nrComplexPlaces_eq_zero`] — **Lines**: 137-140
 
 ### `theorem infinitePlace_isReal`
-- **Type**: `(v) → InfinitePlace.IsReal v` — **How**: `IsTotallyReal.isReal`.
-- **Uses**: [isTotallyReal] — public — **Lines**: 142-146
+- **Type**: `(v : InfinitePlace K) → IsReal v`. **How**: `IsTotallyReal.isReal`. **Uses**: [`isTotallyReal`] — **Lines**: 142-146 — **Notes**: used in LocalGlobal.
 
 ### `theorem infinitePlace_apply_sqrtTwoRoot`
-- **Type**: `(v) → v √2 = Real.sqrt 2` — **How**: `norm_embedding_eq`, square argument, `sq_eq_sq_iff`.
-- **Uses**: [sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 148-169 — **Notes**: key API (LocalGlobal).
+- **Type**: `(v : InfinitePlace K) → v sqrtTwoRoot = Real.sqrt 2`. **How**: `norm_embedding_eq`, embedding-square is `2=√2²`, `sq_eq_sq_iff_eq_or_eq_neg`, both branches give `√2`. **Uses**: [`sqrtTwoRoot(_sq)`] — **Lines**: 148-169 — **Notes**: KEY (LocalGlobal house/canonical/completion); proof >20 lines.
 
-**File Summary (Embeddings.lean)**: 10 decls (all theorems; 1 private). Key API:
-`isTotallyReal`, `nrRealPlaces_eq_two`, `nrComplexPlaces_eq_zero`, `infinitePlace_isReal`,
-`infinitePlace_apply_sqrtTwoRoot`. No sorry/set_option. `isTotallyReal` 27 lines.
-`ringHom_ext_sqrtTwo` is a generic helper.
-
----
-
-## Discriminant.lean
-
-Empty placeholder: only `noncomputable section` + empty namespace. **0 declarations.** All
-discriminant content lives in RingOfIntegers.lean.
+**File Summary — Embeddings.lean**: 9 decls (theorems 9, 1 private). Two `noncomputable section`s in one file (signature block + embeddings block). Key API (3+): `isTotallyReal`, `sqrtTwoRoot_sq`, `nrComplexPlaces_eq_zero`. No sorry/set_option. >30-line proofs: none (`isTotallyReal` ~26). `ringHom_ext_sqrtTwo` is a generic helper.
 
 ---
 
 ## RingOfIntegers.lean
 
 ### `theorem sqrtTwoRoot_isIntegral`
-- **Type**: `IsIntegral ℤ sqrtTwoRoot` — **How**: witness `X²-C 2`, `monic_X_pow_sub_C`.
-- **Uses**: [sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 34-37 — **Notes**: key API.
+- **Type**: `IsIntegral ℤ sqrtTwoRoot`. **How**: witness `X²-C 2`, `monic_X_pow_sub_C`, `sqrtTwoRoot_sq`. **Uses**: [`sqrtTwoRoot_sq`] — **Lines**: 34-37 — **Notes**: KEY.
 
 ### `abbrev sqrtTwoInteger`
-- **Type**: `𝓞 K := ⟨sqrtTwoRoot, sqrtTwoRoot_isIntegral⟩` — **What**: `√2` as algebraic integer.
-- **Uses**: [sqrtTwoRoot, sqrtTwoRoot_isIntegral] — public — **Lines**: 40-41 — **Notes**: most-used integral element (40+ refs).
+- **Type**: `𝓞 K := ⟨sqrtTwoRoot, sqrtTwoRoot_isIntegral⟩`. **What**: `√2` in `𝓞 K`. **Uses**: [`sqrtTwoRoot(_isIntegral)`] — **Lines**: 40-41 — **Notes**: KEY — pervasive in every later file.
 
-### `local notation 𝓟₂`
-- `Submodule.span ℤ {(2:ℤ)}` — **Lines**: 43.
-
-### `abbrev sqrtTwoIntegerPolynomial`
-- **Type**: `ℤ[X] := X^2 - C 2` — **Uses**: [] — public — **Lines**: 46.
+### `local notation "𝓟₂"` / `abbrev sqrtTwoIntegerPolynomial`
+- `𝓟₂ := span ℤ {2}`; `sqrtTwoIntegerPolynomial := X²-C 2` over `ℤ`. **Uses**: [] — **Lines**: 43, 46
 
 ### `theorem sqrtTwo_minpoly_rat`
-- **Type**: `minpoly ℚ √2 = sqrtTwoPolynomial` — **How**: transport via `sqrtTwoAdjoinRootEquivQuadratic`, `minpoly.algEquiv_eq`, `AdjoinRoot.minpoly_root`.
-- **Uses**: [sqrtTwoAdjoinRootToQuadratic_root, sqrtTwoAdjoinRootEquivQuadratic, sqrtTwoAdjoinRoot, sqrtTwoPolynomial] — public — **Lines**: 49-57.
+- **Type**: `minpoly ℚ sqrtTwoRoot = sqrtTwoPolynomial`. **How**: transport along `sqrtTwoAdjoinRootEquivQuadratic` via `minpoly.algEquiv_eq` + `AdjoinRoot.minpoly_root`. **Uses**: [`sqrtTwoAdjoinRootToQuadratic_root`,`sqrtTwoAdjoinRootEquivQuadratic`,`sqrtTwoPolynomial`] — **Lines**: 49-57 — **Notes**: KEY.
 
 ### `theorem sqrtTwo_minpoly_int`
-- **Type**: `minpoly ℤ √2 = sqrtTwoIntegerPolynomial` — **How**: `map_injective` + `minpoly.isIntegrallyClosed_eq_field_fractions'` + `sqrtTwo_minpoly_rat`.
-- **Uses**: [sqrtTwoRoot_isIntegral, sqrtTwo_minpoly_rat, sqrtTwoIntegerPolynomial] — public — **Lines**: 60-67.
+- **Type**: `minpoly ℤ sqrtTwoRoot = sqrtTwoIntegerPolynomial`. **How**: `map_injective` + `minpoly.isIntegrallyClosed_eq_field_fractions'` + `sqrtTwo_minpoly_rat`. **Uses**: [`sqrtTwoRoot_isIntegral`,`sqrtTwo_minpoly_rat`,`sqrtTwoIntegerPolynomial`] — **Lines**: 60-67
 
 ### `theorem sqrtTwo_minpoly_int_isEisenstein`
-- **Type**: `(minpoly ℤ √2).IsEisensteinAt 𝓟₂` — **How**: `monic_X_pow_sub_C.isEisensteinAt_of_mem_of_notMem`.
-- **Uses**: [sqrtTwo_minpoly_int] — public — **Lines**: 69-82.
+- **Type**: `(minpoly ℤ sqrtTwoRoot).IsEisensteinAt 𝓟₂`. **What**: `X²-2` is Eisenstein at `2`. **How**: `monic.isEisensteinAt_of_mem_of_notMem`, membership via `Ideal.mem_span_singleton`. **Uses**: [`sqrtTwo_minpoly_int`] — **Lines**: 70-82 — **Notes**: KEY — the engine of integral-closure (no discriminant covering argument).
 
 ### `theorem sqrtTwoPowerBasis_discr`
-- **Type**: `Algebra.discr ℚ sqrtTwoPowerBasis.basis = 8` — **How**: `discr_powerBasis_eq_norm`, `norm_gen_eq_coeff_zero_minpoly`, `Algebra.norm_algebraMap`.
-- **Uses**: [sqrtTwoPowerBasis, sqrtTwoPolynomial, sqrtTwoPowerBasis_gen, sqrtTwoRoot, sqrtTwo_minpoly_rat] — public — **Lines**: 84-106 — **Notes**: 22-line proof.
+- **Type**: `Algebra.discr ℚ sqrtTwoPowerBasis.basis = 8`. **How**: `discr_powerBasis_eq_norm`; compute `norm(1+1)=4`, `norm(√2)=-2` via `PowerBasis.norm_gen_eq_coeff_zero_minpoly`, `simp`+`norm_num`. **Uses**: [`sqrtTwoPowerBasis(_gen)`,`sqrtTwoRoot`,`sqrtTwoPolynomial`,`sqrtTwo_minpoly_rat`] — **Lines**: 85-106 — **Notes**: proof >20 lines.
 
 ### `theorem sqrtTwo_integral_mem_adjoin`
-- **Type**: `(z hz : IsIntegral ℤ z) → z ∈ Algebra.adjoin ℤ {√2}` — **What**: every integer lies in `ℤ[√2]`. **How**: `discr_mul_isIntegral_mem_adjoin` (gives `8•z`), strip `2³` via `mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt`.
-- **Uses**: [sqrtTwoPowerBasis, sqrtTwoPowerBasis_gen, sqrtTwoRoot, sqrtTwoPowerBasis_discr, sqrtTwo_minpoly_int_isEisenstein] — public — **Lines**: 108-133 — **Notes**: 25 lines; core ring-of-integers argument.
+- **Type**: `IsIntegral ℤ z → z ∈ Algebra.adjoin ℤ {sqrtTwoRoot}`. **What**: every algebraic integer lies in `ℤ[√2]`.
+- **How**: `Algebra.discr_mul_isIntegral_mem_adjoin` gives `8•z ∈ ℤ[√2]`, then `mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt` (Eisenstein theorem at `p=2,n=3`) removes the `2³`. **Uses**: [`sqrtTwoPowerBasis(_gen/_discr)`,`sqrtTwoRoot_isIntegral`,`sqrtTwo_minpoly_int_isEisenstein`] — **Lines**: 108-133 — **Notes**: KEY; proof >20 lines. Cleaner than SqrtFive's discriminant-coordinate-divisibility route.
 
 ### `theorem isIntegralClosure_adjoin_sqrtTwoRoot`
-- **Type**: `IsIntegralClosure (Algebra.adjoin ℤ {√2}) ℤ K` — **How**: builds the two-part structure; uses `sqrtTwo_integral_mem_adjoin`, `Algebra.IsIntegral.adjoin`.
-- **Uses**: [sqrtTwoRoot, sqrtTwo_integral_mem_adjoin, sqrtTwoRoot_isIntegral] — public — **Lines**: 139-157.
+- **Type**: `IsIntegralClosure (Algebra.adjoin ℤ {sqrtTwoRoot}) ℤ K`. **How**: injectivity (`Subtype.ext`) + `sqrtTwo_integral_mem_adjoin`; reverse via `Algebra.IsIntegral.adjoin`. **Uses**: [`sqrtTwo_integral_mem_adjoin`,`sqrtTwoRoot_isIntegral`] — **Lines**: 139-157 — **Notes**: KEY.
 
 ### `theorem sqrtTwoInteger_adjoin_eq_top`
-- **Type**: `Algebra.adjoin ℤ {sqrtTwoInteger} = ⊤` — **What**: 𝓞K generated by √2 over ℤ. **How**: lift field-level adjoin via `adjoin_singleton_eq_range_aeval`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoRoot, sqrtTwo_integral_mem_adjoin] — public — **Lines**: 159-178 — **Notes**: key API (PrimeSplitting, Units).
+- **Type**: `Algebra.adjoin ℤ {sqrtTwoInteger} = ⊤`. **How**: `le_antisymm`; pull each `x∈𝓞 K` back via `sqrtTwo_integral_mem_adjoin` + `adjoin_singleton_eq_range_aeval`. **Uses**: [`sqrtTwoInteger`,`sqrtTwo_integral_mem_adjoin`] — **Lines**: 160-178 — **Notes**: KEY (PrimeSplitting Kummer-Dedekind + Different).
 
 ### `theorem sqrtTwoInteger_minpoly`
-- **Type**: `minpoly ℤ sqrtTwoInteger = sqrtTwoIntegerPolynomial` — **How**: `minpoly.isIntegrallyClosed_eq_field_fractions` (explicit instance args) + `sqrtTwo_minpoly_rat`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoRoot, sqrtTwo_minpoly_rat, sqrtTwoIntegerPolynomial] — public — **Lines**: 180-202 — **Notes**: 23 lines; verbose `@minpoly...` instance call.
+- **Type**: `minpoly ℤ sqrtTwoInteger = sqrtTwoIntegerPolynomial`. **How**: `minpoly.isIntegrallyClosed_eq_field_fractions` (fully explicit `@`-application), `map_injective`, reduce to `sqrtTwo_minpoly_rat`. **Uses**: [`sqrtTwoInteger`,`sqrtTwo_minpoly_rat`,`sqrtTwoIntegerPolynomial`,`sqrtTwoRoot`] — **Lines**: 181-202 — **Notes**: KEY (PrimeSplitting KD/Different); proof >15 lines.
 
 ### `abbrev sqrtTwoExplicitIntegralPowerBasis`
-- **Type**: `PowerBasis ℤ (𝓞 K)` — **How**: `PowerBasis.ofAdjoinEqTop'`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoInteger_adjoin_eq_top] — public — **Lines**: 208-211.
+- **Type**: `PowerBasis ℤ (𝓞 K) := PowerBasis.ofAdjoinEqTop' …`. **Uses**: [`sqrtTwoInteger(_adjoin_eq_top)`] — **Lines**: 208-211 — **Notes**: KEY.
 
 ### `theorem sqrtTwoExplicitIntegralPowerBasis_dim`
-- **Type**: `... .dim = 2` — **How**: `ofAdjoinEqTop'_dim`, `sqrtTwoInteger_minpoly`, `natDegree_X_pow_sub_C`.
-- **Uses**: [sqrtTwoExplicitIntegralPowerBasis, sqrtTwoInteger_minpoly, sqrtTwoIntegerPolynomial] — public — **Lines**: 213-218.
+- **Type**: `dim = 2`. **How**: `ofAdjoinEqTop'_dim` + `sqrtTwoInteger_minpoly` + `natDegree_X_pow_sub_C`. **Uses**: [those] — **Lines**: 213-218
 
 ### `abbrev sqrtTwoExplicitIntegralBasis`
-- **Type**: `Basis (Fin 2) ℤ (𝓞 K)` — basis `[1,√2]`. **How**: reindex power basis.
-- **Uses**: [sqrtTwoExplicitIntegralPowerBasis, sqrtTwoExplicitIntegralPowerBasis_dim] — public — **Lines**: 220-223 — **Notes**: key API (PrimeSplitting, Units).
+- **Type**: `Basis (Fin 2) ℤ (𝓞 K)` = `[1,√2]` (reindexed power basis). **Uses**: [`sqrtTwoExplicitIntegralPowerBasis(_dim)`] — **Lines**: 221-223 — **Notes**: KEY (PrimeSplitting, Units).
 
-### `theorem sqrtTwoExplicitIntegralBasis_zero`
-- **Type**: `sqrtTwoExplicitIntegralBasis 0 = 1` — **How**: `basis_eq_pow`, `pow_zero`.
-- **Uses**: [sqrtTwoExplicitIntegralBasis, sqrtTwoExplicitIntegralPowerBasis, sqrtTwoExplicitIntegralPowerBasis_dim] — public — **Lines**: 225-234.
-
-### `theorem sqrtTwoExplicitIntegralBasis_one`
-- **Type**: `sqrtTwoExplicitIntegralBasis 1 = sqrtTwoInteger` — analog. — **Uses**: [same + sqrtTwoInteger] — public — **Lines**: 236-245.
+### `theorem sqrtTwoExplicitIntegralBasis_zero` / `…_one`
+- **Types**: basis 0 = 1; basis 1 = sqrtTwoInteger. **How**: `Basis.reindex_apply` + `basis_eq_pow`. **Uses**: [`sqrtTwoExplicitIntegralBasis`,`sqrtTwoInteger`] — **Lines**: 226-245
 
 ### `theorem sqrtTwoInteger_sq`
-- **Type**: `sqrtTwoInteger ^ 2 = (2 : 𝓞 K)` — **How**: `Subtype.ext` + `sqrtTwoRoot_sq`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 247-250 — **Notes**: key API (PrimeSplitting; 12+ refs).
+- **Type**: `sqrtTwoInteger ^ 2 = (2 : 𝓞 K)`. **How**: `Subtype.ext` + `sqrtTwoRoot_sq`. **Uses**: [`sqrtTwoInteger`,`sqrtTwoRoot_sq`] — **Lines**: 247-250 — **Notes**: KEY — workhorse of all PrimeSplitting/Units factorisation/norm steps.
 
 ### `theorem sqrtTwoExplicitIntegralBasis_discr`
-- **Type**: `Algebra.discr ℤ sqrtTwoExplicitIntegralBasis = 8` — **How**: descend to ℚ via `Algebra.discr_localizationLocalization` + `Module.Basis.localizationLocalization`, identify with `sqrtTwoPowerBasis.basis`, use `sqrtTwoPowerBasis_discr`.
-- **Uses**: [sqrtTwoExplicitIntegralBasis, sqrtTwoPowerBasis, sqrtTwoPowerBasis_dim, sqrtTwoExplicitIntegralBasis_zero/_one, sqrtTwoRoot, sqrtTwoPowerBasis_gen, sqrtTwoPowerBasis_discr] — public — **Lines**: 252-299 — **Notes**: `set_option linter.flexible false`; proof ~47 lines, heaviest in file.
+- **Type**: `Algebra.discr ℤ sqrtTwoExplicitIntegralBasis = 8`. **How**: `Algebra.discr_localizationLocalization` + `Module.Basis.localizationLocalization` to reduce to `sqrtTwoPowerBasis_discr` via `discr_reindex`. **Uses**: [`sqrtTwoExplicitIntegralBasis(_zero/_one)`,`sqrtTwoPowerBasis(_gen/_dim/_discr)`,`sqrtTwoRoot`] — **Lines**: 252-299 — **Notes**: `set_option linter.flexible false in`; proof >40 lines; heavy localization machinery.
 
 ### `theorem sqrtTwo_numberField_discr`
-- **Type**: `NumberField.discr K = 8` — **How**: `discr_eq_discr` + basis discriminant.
-- **Uses**: [sqrtTwoExplicitIntegralBasis, sqrtTwoExplicitIntegralBasis_discr] — public — **Lines**: 301-304 — **Notes**: key public result; used in ClassGroup, PrimeSplitting.
+- **Type**: `NumberField.discr K = 8`. **How**: `discr_eq_discr K …` + `sqrtTwoExplicitIntegralBasis_discr`. **Uses**: [`sqrtTwoExplicitIntegralBasis(_discr)`] — **Lines**: 301-304 — **Notes**: KEY (PrimeSplitting `ramified_iff_eq_two`/Different, ClassGroup).
 
 ### `theorem integralBasis_discr`
-- **Type**: `Algebra.discr ℚ (integralBasis K) = 8` — **How**: `NumberField.coe_discr` + above.
-- **Uses**: [sqrtTwo_numberField_discr] — public — **Lines**: 306-311 — **Notes**: `attribute [local instance] DivisionRing.toRatAlgebra`.
+- **Type**: `Algebra.discr ℚ (integralBasis K) = 8`. **How**: `NumberField.coe_discr` + `sqrtTwo_numberField_discr`. **Uses**: [`sqrtTwo_numberField_discr`] — **Lines**: 306-311 — **Notes**: `attribute [local instance] DivisionRing.toRatAlgebra in`.
 
-### `example` (discr under matrix mulVec)
-- **Lines**: 313-317 — `Algebra.discr_of_matrix_mulVec`. Anonymous, no name. **Uses**: [sqrtTwoPowerBasis].
-
-### `example` (det ±1 keeps discr 8)
-- **Lines**: 319-334 — **Uses**: [sqrtTwoPowerBasis, sqrtTwoPowerBasis_discr]. Anonymous.
+### `example` (×2)
+- **Types**: discr-of-`mulVec` `= det²·discr`; and `=8` when `det=±1` (change-of-basis invariance of disc). **How**: `Algebra.discr_of_matrix_mulVec` + `sqrtTwoPowerBasis_discr`. **Uses**: [`sqrtTwoPowerBasis(_discr)`] — **Lines**: 313-334 — **Notes**: smoke-tests, not named lemmas.
 
 ### `theorem sqrtTwoInteger_dvd_two`
-- **Type**: `sqrtTwoInteger ∣ (2 : 𝓞 K)` — **How**: from `sqrtTwoInteger_sq`. — **Uses**: [sqrtTwoInteger, sqrtTwoInteger_sq] — public — **Lines**: 336-342.
+- **Type**: `sqrtTwoInteger ∣ (2 : 𝓞 K)`. **How**: witness `sqrtTwoInteger`, `sqrtTwoInteger_sq`. **Uses**: [`sqrtTwoInteger(_sq)`] — **Lines**: 336-342 — **Notes**: ramification flavour (`(√2)²=2`).
 
 ### `theorem norm_eq_normForm`
-- **Type**: `Algebra.norm ℚ x = x.re^2 - 2*x.im^2` — **What**: norm form (binary quadratic form disc 8). **How**: `QuadraticAlgebra.det_toLinearMap_eq_norm`, `QuadraticAlgebra.norm_def`.
-- **Uses**: [] — public — **Lines**: 358-366 — **Notes**: key API (Euclidean, norm-form chain).
+- **Type**: `Algebra.norm ℚ x = x.re² - 2·x.im²`. **What**: norm form = principal form of disc `8`. **How**: `Algebra.norm_apply`, `QuadraticAlgebra.det_toLinearMap_eq_norm`, `QuadraticAlgebra.norm_def`, `ring`. **Uses**: [] — **Lines**: 361-366 — **Notes**: KEY.
 
 ### `theorem intNorm_eq_normForm`
-- **Type**: `(x y : ℤ) → Algebra.norm ℤ (x•1 + y•√2) = x^2 - 2*y^2` — **How**: `Algebra.coe_norm_int` to push to ℚ, `norm_eq_normForm`, cast back.
-- **Uses**: [sqrtTwoInteger, sqrtTwoRoot, norm_eq_normForm] — public — **Lines**: 368-386 — **Notes**: heavily-used API (PrimeSplitting norm computations, 10+ refs).
+- **Type**: `Algebra.norm ℤ (x•1 + y•sqrtTwoInteger) = x² - 2y²` (`x,y:ℤ`). **How**: `Algebra.coe_norm_int`, cast to `K`, `norm_eq_normForm`. **Uses**: [`sqrtTwoInteger`,`norm_eq_normForm`,`sqrtTwoRoot`] — **Lines**: 370-386 — **Notes**: KEY — workhorse of all PrimeSplitting norm computations; twin of SqrtFive's.
 
 ### `theorem isUnit_iff_normForm`
-- **Type**: `IsUnit (x•1 + y•√2) ↔ x²-2y² = 1 ∨ = -1` — **What**: Pell unit criterion. **How**: `NumberField.isUnit_iff_norm`, `intNorm_eq_normForm`, `abs_eq`.
-- **Uses**: [sqrtTwoInteger, intNorm_eq_normForm] — public — **Lines**: 388-402.
+- **Type**: `IsUnit (x•1 + y•sqrtTwoInteger) ↔ x²-2y² = ±1`. **What**: the Pell-equation unit criterion. **How**: `isUnit_iff_norm`, `intNorm_eq_normForm`, `abs_eq`. **Uses**: [`sqrtTwoInteger`,`intNorm_eq_normForm`] — **Lines**: 391-402 — **Notes**: docstring links to `sqrtTwoFundamentalUnit_generates_unitGroup` (the full Pell solution).
 
-**File Summary (RingOfIntegers.lean)**: ~27 decls (~17 theorems, 5 abbrevs, 2 anonymous examples,
-1 notation). Key API (3+): `sqrtTwoInteger`, `sqrtTwoInteger_sq`, `sqrtTwoExplicitIntegralBasis`
-(+ `_zero/_one`), `sqrtTwo_numberField_discr`, `sqrtTwoInteger_adjoin_eq_top`,
-`intNorm_eq_normForm`, `norm_eq_normForm`, `sqrtTwoInteger_minpoly`. Public results: ring of
-integers = ℤ[√2] (`sqrtTwoInteger_adjoin_eq_top`), discriminant 8 (`sqrtTwo_numberField_discr`),
-integral basis. One `set_option linter.flexible false`. Proofs >30 lines:
-`sqrtTwoExplicitIntegralBasis_discr` (~47). The two `example`s are unused demonstrations.
+**File Summary — RingOfIntegers.lean**: ~26 decls (defs/abbrevs ~7, theorems ~17 + 2 examples). Two `noncomputable section`s (ring-of-integers + norm form). Key API (3+): `sqrtTwoInteger`, `sqrtTwoInteger_sq`, `intNorm_eq_normForm`, `sqrtTwoPowerBasis_discr`, `sqrtTwo_minpoly_rat`, `sqrtTwo_integral_mem_adjoin`, `sqrtTwo_numberField_discr`, `sqrtTwoExplicitIntegralBasis(_zero/_one)`. **One `set_option linter.flexible false`** (`sqrtTwoExplicitIntegralBasis_discr`). No sorry. >30-line proofs: `sqrtTwoExplicitIntegralBasis_discr` (localization). The integral-closure route is the **Eisenstein theorem** (`X²-2` Eisenstein at `2`) — mathematically cleaner than SqrtFive's coordinate-divisibility route.
+
+---
+
+## Discriminant.lean
+
+Not present as a standalone file in this folder (the linear-import header mentions it, but discriminant content lives in RingOfIntegers.lean: `sqrtTwoPowerBasis_discr`, `sqrtTwoExplicitIntegralBasis_discr`, `sqrtTwo_numberField_discr`, `integralBasis_discr`). **0 decls.**
+
+---
+
+## PrimeSplitting.lean  (791 lines; imports `Common.lean`)
+
+### `theorem span_two_eq`
+- **Type**: `span {2} = span {sqrtTwoInteger}²`. **What**: 2 totally ramifies, `(2)=(√2)²`. **How**: `span_singleton_pow` + `sqrtTwoInteger_sq`. **Uses**: [`sqrtTwoInteger(_sq)`] — **Lines**: 38-39 — **Notes**: KEY.
+
+### `theorem absNorm_span_sqrtTwoInteger`
+- **Type**: `absNorm (span {sqrtTwoInteger}) = 2`. **How**: `intNorm_eq_normForm 0 1` (`= -2`, abs `2`), `absNorm_span_singleton`. **Uses**: [`intNorm_eq_normForm`,`sqrtTwoInteger`] — **Lines**: 41-47 — **Notes**: KEY.
+
+### `theorem isPrime_span_sqrtTwoInteger`
+- **Type**: `(span {sqrtTwoInteger}).IsPrime`. **How**: `isPrime_of_irreducible_absNorm` + `Nat.prime_two`. **Uses**: [`absNorm_span_sqrtTwoInteger`] — **Lines**: 49-54 — **Notes**: KEY (ClassGroup, LocalGlobal, Different).
+
+### `theorem liesOver_span_sqrtTwoInteger` / `inertiaDeg_span_sqrtTwoInteger` / `ramificationIdx_span_sqrtTwoInteger`
+- **Types**: lies over `(2)`; `f=1`; `e=2`. **How**: `liesOver_span_iff`; `absNorm_eq_pow_inertiaDeg'`+`Nat.Prime.pow_eq_iff`; `ramificationIdx_spec` with norm upper bound `8∤4` for the cube. **Uses**: [`isPrime_/absNorm_/span_two_eq`,`sqrtTwoInteger(_sq)`,`intNorm_eq_normForm`] — **Lines**: 56-98 — **Notes**: used in LocalGlobal.
+
+### `theorem span_seven_eq`
+- **Type**: `span {7} = span {3+√2} * span {3-√2}`. **What**: 7 splits. **How**: `span_singleton_mul_span_singleton` + `(3+√2)(3-√2)=9-√2²=7`. **Uses**: [`sqrtTwoInteger(_sq)`] — **Lines**: 100-110
+
+### `theorem absNorm_span_three_add_sqrtTwo` / `isPrime_…` / `absNorm_span_three_sub_sqrtTwo` / `isPrime_…`
+- **Types**: each norm 7; each prime. **How**: `intNorm_eq_normForm 3 (±1)` (`=7`); `isPrime_of_irreducible_absNorm`. **Uses**: [`intNorm_eq_normForm`,`sqrtTwoInteger`,`absNorm_…`] — **Lines**: 112-145
+
+### `theorem liesOver_span_three_add_sqrtTwo` / `…_sub_…`
+- **Types**: each lies over `(7)`. **How**: `liesOver_span_iff` + product `=7`. **Uses**: [`isPrime_…`,`sqrtTwoInteger(_sq)`] — **Lines**: 147-169
+
+### `theorem inertiaDeg_span_three_add_sqrtTwo` / `…_sub_…`
+- **Types**: each `f=1` over 7. **How**: `absNorm_eq_pow_inertiaDeg'`+`Nat.Prime.pow_eq_iff`. **Uses**: [`liesOver_…`,`absNorm_…`] — **Lines**: 171-189
+
+### `private theorem absNorm_ne_three`
+- **Type**: no ideal of `𝓞 K` has norm 3. **How**: residue field `≃ ZMod 3` (`ZMod.ringEquivOfPrime`), lift `√2` to root of `t²=2` in `ZMod 3`, `revert t; decide` (no solution). **Uses**: [`sqrtTwoInteger(_sq)`] — **Lines**: 191-207 — **Visibility**: private
+
+### `theorem isPrime_span_three`
+- **Type**: `(span {3}).IsPrime` (3 inert). **What**: `2` is a non-residue mod `3`. **How**: norm 9, take maximal `M≥(3)`, rule out norms 1,3 (`absNorm_ne_three`), `eq_of_le_of_absNorm_eq`. **Uses**: [`intNorm_eq_normForm`,`sqrtTwoInteger`,`absNorm_ne_three`, Common `eq_of_le_of_absNorm_eq`] — **Lines**: 209-242 — **Notes**: proof >30 lines.
+
+### `theorem absNorm_span_three` / `liesOver_span_three` / `inertiaDeg_span_three`
+- **Types**: norm 9; lies over (3); `f=2`. **How**: `intNorm_eq_normForm 3 0`; `liesOver_span_iff`; `absNorm_eq_pow_inertiaDeg'`+`Nat.pow_right_injective`. **Uses**: [`intNorm_eq_normForm`,`isPrime_span_three`,`liesOver_span_three`,`absNorm_span_three`] — **Lines**: 244-266
+
+### `private theorem absNorm_span_natCast`
+- **Type**: `absNorm (span {(p:ℕ):𝓞 K}) = p²`. **How**: `Ideal.absNorm_span_natCast`, `RingOfIntegers.rank`, `degree_eq_two`. **Uses**: [`degree_eq_two`] — **Lines**: 268-271 — **Visibility**: private — **Notes**: KEY in the general splitting law; generic.
+
+### `private theorem li_one_sqrtTwo`
+- **Type**: `LinearIndependent ℤ ![1, sqrtTwoInteger]`. **How**: transport from `sqrtTwoExplicitIntegralBasis.linearIndependent`. **Uses**: [`sqrtTwoExplicitIntegralBasis(_zero/_one)`,`sqrtTwoInteger`] — **Lines**: 273-281 — **Visibility**: private
+
+### `private theorem exists_o2_coords`
+- **Type**: `∀ z:𝓞 K, ∃ A B:ℤ, z = A•1 + B•sqrtTwoInteger`. **How**: `repr`/`sum_repr` of the explicit basis. **Uses**: [`sqrtTwoExplicitIntegralBasis(_…)`,`sqrtTwoInteger`] — **Lines**: 283-291 — **Visibility**: private
+
+### `private theorem unit_sqrtTwo_coeff_not_mem`
+- **Type**: `A + B√2` with `B=±1` not in `span {p}` for `p≥2`. **How**: decompose membership, `li_one_sqrtTwo`, `Int.le_of_dvd`. **Uses**: [`sqrtTwoInteger`,`exists_o2_coords`,`li_one_sqrtTwo`] — **Lines**: 293-317 — **Visibility**: private — **Notes**: proof >20 lines.
+
+### `theorem ramified_iff_eq_two`
+- **Type**: prime `p` ramifies (`∃P, span{p}≤P²`) ↔ `p=2`. **What**: `p` ramifies iff divides disc `8`. **How**: forward via `not_isUnramifiedAt_…` + different-ideal divisibility (`dvd_differentIdeal_iff`, `absNorm_differentIdeal`, `sqrtTwo_numberField_discr`); backward via `span_two_eq`. **Uses**: [`absNorm_span_natCast`, Common (`not_map_span_natCast_le_pow_succ_…`, `not_isUnramifiedAt_…`), `sqrtTwo_numberField_discr`,`isPrime_span_sqrtTwoInteger`,`span_two_eq`,`sqrtTwoInteger`] — **Lines**: 319-363 — **Notes**: proof >40 lines. KEY public result.
+
+### `theorem ramificationIdx_span_three_add_sqrtTwo` / `…_sub_…` / `ramificationIdx_span_three`
+- **Types**: each unramified (`e=1`). **How**: `ramificationIdx_spec`; upper bound by reducing to `ramified_iff_eq_two` (`p≠2`). **Uses**: [`isPrime_…`,`ramified_iff_eq_two`,`span_seven_eq`] — **Lines**: 365-409
+
+### `private theorem absNorm_span_prime_sqrtTwo_sub_of_mul`
+- **Type**: `absNorm (span {p, √2-c}) = p` given `(√2-c)(√2+c)=p·k`. **How**: rule out norm 1 (`mem_span_pair`+`unit_sqrtTwo_coeff_not_mem`) and norm p² (`eq_of_le_of_absNorm_eq`+`unit_sqrtTwo_coeff_not_mem`), then Common `eq_prime_of_dvd_prime_sq_…`. **Uses**: [`sqrtTwoInteger`,`unit_sqrtTwo_coeff_not_mem`,`absNorm_span_natCast`, Common `eq_of_le_of_absNorm_eq`,`eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`] — **Lines**: 411-456 — **Visibility**: private — **Notes**: proof >40 lines.
+
+### `private theorem pm_one_mod_eight_of_prime_norm`
+- **Type**: `(∃ P prime, span{p}≤P, absNorm P = p) → p%8∈{1,7}` (`p≠2`). **How**: residue field `≃ ZMod p`, lift `√2` to `t` with `t²=2`, `IsSquare (2:ZMod p)`, then `ZMod.exists_sq_eq_two_iff` (second supplement to QR). **Uses**: [`sqrtTwoInteger(_sq)`] — **Lines**: 458-480 — **Visibility**: private
+
+### `private theorem exists_prime_norm_of_pm_one_mod_eight`
+- **Type**: `p%8∈{1,7} → ∃ P prime of norm p above p` (`p≠2`). **How**: `ZMod.exists_sq_eq_two_iff` gives `c` with `c²≡2`, build `span {p, √2-c}`, factorization `(√2-c)(√2+c)=p·k`, `absNorm_span_prime_sqrtTwo_sub_of_mul` + `isPrime_of_irreducible_absNorm`. **Uses**: [`sqrtTwoInteger(_sq)`,`absNorm_span_prime_sqrtTwo_sub_of_mul`] — **Lines**: 482-520 — **Visibility**: private — **Notes**: proof >30 lines.
+
+### `theorem exists_prime_norm_iff_pm_one_mod_eight`
+- **Type**: `(∃ P prime of norm p above p) ↔ p%8∈{1,7}` (`p≠2`). **How**: combine the two private lemmas. **Uses**: those — **Lines**: 522-527 — **Notes**: public intermediate.
+
+### `private theorem pm_one_mod_eight_of_splits`
+- **Type**: split ⇒ `p%8∈{1,7}` (`p≠2`). **How**: norms multiply to `p²`, one factor norm `p`, reduce to `exists_prime_norm_iff_…`. **Uses**: [`absNorm_span_natCast`,`exists_prime_norm_iff_pm_one_mod_eight`] — **Lines**: 529-561 — **Visibility**: private — **Notes**: proof >30 lines.
+
+### `private theorem splits_of_pm_one_mod_eight`
+- **Type**: `p%8∈{1,7} ⇒ ∃ distinct primes P,Q, span{p}=P*Q` (`p≠2`). **How**: get norm-`p` prime `P`, `dvd_iff_le` gives complement `Q`, norms force `absNorm Q = p`, `P≠Q` via `ramified_iff_eq_two`. **Uses**: [`exists_prime_norm_iff_pm_one_mod_eight`,`absNorm_span_natCast`,`ramified_iff_eq_two`] — **Lines**: 563-588 — **Visibility**: private — **Notes**: proof >25 lines.
+
+### `theorem splits_iff_pm_one_mod_eight`
+- **Type**: for prime `p≠2`: `(∃ distinct primes P,Q, span{p}=P*Q) ↔ p%8∈{1,7}`. **What**: the quadratic splitting law (`(2/p)=1 ⇔ p≡±1 mod 8`, second supplement). **How**: combine the two private lemmas. **Uses**: those — **Lines**: 590-598 — **Notes**: KEY public result.
+
+### `abbrev sqrtTwoPolynomialMod`
+- **Type**: `(ZMod p)[X] := X² - C 2`. **Uses**: [] — **Lines**: 616-617
+
+### `theorem sqrtTwoInteger_exponent_eq_one`
+- **Type**: `RingOfIntegers.exponent sqrtTwoInteger = 1`. **What**: `√2` generates the full `𝓞 K`, so KD has no conductor primes. **How**: `exponent_eq_one_iff` + `sqrtTwoInteger_adjoin_eq_top`. **Uses**: [`sqrtTwoInteger_adjoin_eq_top`] — **Lines**: 619-624
+
+### `theorem sqrtTwoInteger_exponent_not_dvd`
+- **Type**: `¬ p ∣ exponent sqrtTwoInteger`. **How**: `sqrtTwoInteger_exponent_eq_one` + `not_dvd_one`. **Uses**: [`sqrtTwoInteger_exponent_eq_one`] — **Lines**: 626-630
+
+### `theorem sqrtTwo_kummerDedekind_inertiaDeg` / `…_ramificationIdx`
+- **Types**: KD identifies `f` with `natDegree` (resp. `e` with `multiplicity`) of a mod-`p` factor. **How**: `Ideal.inertiaDeg_/ramificationIdx_primesOverSpanEquivMonicFactorsMod_symm_apply'` + `sqrtTwoInteger_minpoly`. **Uses**: [`sqrtTwoInteger(_exponent_not_dvd/_minpoly)`,`sqrtTwoPolynomialMod`,`sqrtTwoIntegerPolynomial`] — **Lines**: 632-657
+
+### `theorem sqrtTwoPolynomialMod_two`
+- **Type**: `sqrtTwoPolynomialMod 2 = X²`. **What**: KD double root at `2` (ramification). **How**: `(2:ZMod 2)=0`, `simp`. **Uses**: [`sqrtTwoPolynomialMod`] — **Lines**: 659-665
+
+### `theorem sqrtTwoPolynomialMod_seven_factor`
+- **Type**: `sqrtTwoPolynomialMod 7 = (X-3)(X+3)`. **What**: KD two roots `±3` (splitting). **How**: `ring_nf` + `2=3²` in `ZMod 7`. **Uses**: [`sqrtTwoPolynomialMod`] — **Lines**: 667-676
+
+### `theorem sqrtTwoPolynomialMod_three_irreducible`
+- **Type**: `Irreducible (sqrtTwoPolynomialMod 3)`. **What**: KD irreducible at `3` (inert). **How**: `irreducible_of_degree_le_three_of_not_isRoot` + `fin_cases x` over `ZMod 3`, `decide`. **Uses**: [`sqrtTwoPolynomialMod`] — **Lines**: 678-694
+
+### `theorem exists_root_mod_iff_exists_prime_norm`
+- **Type**: `(∃ c:ZMod p, c²=2) ↔ ∃ norm-p prime above p` (`p≠2`). **What**: KD root condition = the norm-`p` prime condition. **How**: `calc` through `p%8∈{1,7}` (`ZMod.exists_sq_eq_two_iff`) + `exists_prime_norm_iff_pm_one_mod_eight`. **Uses**: [`exists_prime_norm_iff_pm_one_mod_eight`] — **Lines**: 696-708
+
+### `theorem differentIdeal_eq_span_two_mul_sqrtTwo`
+- **Type**: `differentIdeal ℤ (𝓞 K) = span {2·√2}`. **How**: `conductor_eq_top_of_adjoin_eq_top`, `conductor_mul_differentIdeal`, `aeval` of derivative `2X` of `X²-2`. **Uses**: [`sqrtTwoInteger(_adjoin_eq_top/_minpoly)`,`adjoin_sqrtTwoRoot_eq_top`,`sqrtTwoIntegerPolynomial`] — **Lines**: 724-745 — **Notes**: KEY; proof >15 lines.
+
+### `theorem differentIdeal_eq_span_sqrtTwoInteger_pow_three`
+- **Type**: `differentIdeal = span {sqrtTwoInteger}³`. **What**: different is `(√2)³` (matches disc `2³`). **How**: rewrite `2·√2 = √2³` via `sqrtTwoInteger_sq`. **Uses**: [`differentIdeal_eq_span_two_mul_sqrtTwo`,`sqrtTwoInteger_sq`] — **Lines**: 747-755 — **Notes**: KEY.
+
+### `theorem absNorm_differentIdeal_eq_eight`
+- **Type**: `absNorm (differentIdeal) = 8`. **How**: `differentIdeal_eq_span_sqrtTwoInteger_pow_three`, `map_pow`, `absNorm_span_sqrtTwoInteger`. **Uses**: [those] — **Lines**: 757-761
+
+### `theorem prime_dvd_differentIdeal_iff_eq_span_sqrtTwo`
+- **Type**: nonzero prime `P ∣ differentIdeal ↔ P = span {sqrtTwoInteger}`. **How**: `IsPrime.le_of_pow_le`, maximality (`isPrime_span_sqrtTwoInteger.isMaximal`), `differentIdeal_eq_…_pow_three`. **Uses**: [`differentIdeal_eq_span_sqrtTwoInteger_pow_three`,`sqrtTwoInteger`,`sqrtTwoRoot_sq`,`isPrime_span_sqrtTwoInteger`] — **Lines**: 763-788 — **Notes**: proof >20 lines.
+
+**File Summary — PrimeSplitting.lean**: ~36 decls (defs/abbrevs 2, theorems ~34, ~7 private). Three `noncomputable section`s (Prime Splitting / Kummer-Dedekind / Different). Key API (3+, internal): `intNorm_eq_normForm` (imported), `sqrtTwoInteger_sq` (imported), `absNorm_span_natCast`, `ZMod.exists_sq_eq_two_iff`, `exists_prime_norm_iff_pm_one_mod_eight`, `sqrtTwo_numberField_discr` (imported). Public results: `span_two_eq`, `ramified_iff_eq_two`, `splits_iff_pm_one_mod_eight`, all per-prime split/inert/ramified facts, full Kummer-Dedekind dictionary, `differentIdeal_eq_span_*`. No sorry/set_option. >30-line proofs: `isPrime_span_three`, `ramified_iff_eq_two`, `absNorm_span_prime_sqrtTwo_sub_of_mul`, `exists_prime_norm_of_pm_one_mod_eight`, `pm_one_mod_eight_of_splits`. Heavy reliance on Common.lean. **Note**: leaner than SqrtFive's splitting law — `ZMod.exists_sq_eq_two_iff` (second supplement) does in one lemma what SqrtFive does by hand for `5` via reciprocity.
 
 ---
 
 ## ClassGroup.lean
 
-### `abbrev sqrtTwoRootFractionalIdeal`
-- **Type**: `FractionalIdeal (𝓞 K)⁰ K := spanSingleton ... sqrtTwoRoot` — **Uses**: [sqrtTwoRoot] — public — **Lines**: 36-37 — **Notes**: only used by `sqrtTwoRoot_mem_fractionalIdeal`/`_absNorm`.
-
-### `abbrev ramifiedPrimeFractionalIdeal`
-- **Type**: fractional ideal `(√2)` — **Uses**: [sqrtTwoInteger] — public — **Lines**: 40-41 — **Notes**: used only by its `_ne_zero` lemma; otherwise unused.
+### `abbrev sqrtTwoRootFractionalIdeal` / `ramifiedPrimeFractionalIdeal`
+- **Types**: `spanSingleton sqrtTwoRoot`; coe of `span {sqrtTwoInteger}`. **Uses**: [`sqrtTwoRoot`,`sqrtTwoInteger`] — **Lines**: 36-41
 
 ### `theorem sqrtTwoRoot_mem_fractionalIdeal`
-- **Type**: `√2 ∈ sqrtTwoRootFractionalIdeal` — **How**: `mem_spanSingleton`. — **Uses**: [sqrtTwoRoot, sqrtTwoRootFractionalIdeal] — public — **Lines**: 43-46 — **Notes**: unused elsewhere.
+- **Type**: `sqrtTwoRoot ∈ sqrtTwoRootFractionalIdeal`. **How**: `mem_spanSingleton` (witness 1). **Uses**: [`sqrtTwoRootFractionalIdeal`,`sqrtTwoRoot`] — **Lines**: 43-46
 
 ### `theorem sqrtTwoRootFractionalIdeal_absNorm`
-- **Type**: `absNorm = |Algebra.norm ℚ √2|` — **How**: `absNorm_span_singleton`. — **Uses**: [sqrtTwoRootFractionalIdeal, sqrtTwoRoot] — public — **Lines**: 48-50 — **Notes**: unused elsewhere.
+- **Type**: `absNorm = |Algebra.norm ℚ sqrtTwoRoot|`. **How**: `FractionalIdeal.absNorm_span_singleton`. **Uses**: [`sqrtTwoRootFractionalIdeal`,`sqrtTwoRoot`] — **Lines**: 48-50
 
 ### `theorem ramifiedPrimeFractionalIdeal_ne_zero`
-- **Type**: `ramifiedPrimeFractionalIdeal ≠ 0` — **How**: `coeIdeal_ne_zero` + `absNorm_span_sqrtTwoInteger`.
-- **Uses**: [ramifiedPrimeFractionalIdeal, absNorm_span_sqrtTwoInteger] — public — **Lines**: 52-59 — **Notes**: forward ref to PrimeSplitting (`absNorm_span_sqrtTwoInteger`).
+- **Type**: `≠ 0`. **How**: `coeIdeal_ne_zero` + `absNorm_span_sqrtTwoInteger` (norm 2 ≠ 0). **Uses**: [`ramifiedPrimeFractionalIdeal`,`sqrtTwoInteger`,`absNorm_span_sqrtTwoInteger`] — **Lines**: 52-59
 
 ### `theorem isPrincipalIdealRing`
-- **Type**: `IsPrincipalIdealRing (𝓞 K)` — **What**: class number 1 ring content. **How**: `RingOfIntegers.isPrincipalIdealRing_of_abs_discr_lt` + Minkowski bound estimate (`Real.pi_gt_three`, `nlinarith`).
-- **Uses**: [sqrtTwo_numberField_discr, sqrtTwoPowerBasis, sqrtTwoPowerBasis_dim] — public — **Lines**: 79-94 — **Notes**: key API; 16 lines.
+- **Type**: `IsPrincipalIdealRing (𝓞 K)`. **What**: ring-theoretic content of class number 1. **How**: `RingOfIntegers.isPrincipalIdealRing_of_abs_discr_lt`; bound `|disc|=8` (Minkowski bound `½√8 ≈ 1.41 < 2`), case-split `nrComplexPlaces ≤ 1`, `nlinarith [Real.pi_gt_three]`. **Uses**: [`sqrtTwo_numberField_discr`,`sqrtTwoPowerBasis(_dim)`] — **Lines**: 79-94 — **Notes**: KEY; small-discriminant PIR criterion.
 
 ### `theorem uniqueFactorizationMonoid`
-- **Type**: `UniqueFactorizationMonoid (𝓞 K)` — **How**: from PID. — **Uses**: [isPrincipalIdealRing] — public — **Lines**: 96-99.
+- **Type**: `UniqueFactorizationMonoid (𝓞 K)`. **How**: PID ⇒ UFM (`infer_instance`). **Uses**: [`isPrincipalIdealRing`] — **Lines**: 96-99
 
 ### `theorem classNumber_eq_one`
-- **Type**: `NumberField.classNumber K = 1` — **How**: `classNumber_eq_one_iff.mpr isPrincipalIdealRing`.
-- **Uses**: [isPrincipalIdealRing] — public — **Lines**: 101-104.
+- **Type**: `NumberField.classNumber K = 1`. **How**: `classNumber_eq_one_iff.mpr isPrincipalIdealRing`. **Uses**: [`isPrincipalIdealRing`] — **Lines**: 101-104 — **Notes**: KEY.
 
 ### `theorem classGroupStructure`
-- **Type**: `Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))` — **How**: `Subsingleton` from card 1 + `MulEquiv.ofBijective`.
-- **Uses**: [classNumber_eq_one] — public — **Lines**: 106-118.
+- **Type**: `Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))`. **How**: card 1 ⇒ `Subsingleton` ⇒ `MulEquiv.ofBijective` of the trivial hom. **Uses**: [`classNumber_eq_one`] — **Lines**: 106-118
 
 ### `abbrev unitIdealRepresentative`
-- **Type**: `(Ideal (𝓞 K))⁰ := ⟨⊤, _⟩` — **Uses**: [] — public — **Lines**: 121.
+- **Type**: `(Ideal (𝓞 K))⁰ := ⟨⊤, …⟩`. **Uses**: [] — **Lines**: 120-121
 
 ### `theorem classGroupRepresentative`
-- **Type**: `(C) → C = ClassGroup.mk0 unitIdealRepresentative` — **How**: `Subsingleton.elim`.
-- **Uses**: [classNumber_eq_one, unitIdealRepresentative] — public — **Lines**: 123-131.
+- **Type**: `∀ C, C = ClassGroup.mk0 unitIdealRepresentative`. **How**: `Subsingleton.elim`. **Uses**: [`unitIdealRepresentative`,`classNumber_eq_one`] — **Lines**: 123-131
 
-**File Summary (ClassGroup.lean)**: 11 decls (6 theorems, ~3 abbrevs). Key API: `isPrincipalIdealRing`
-(used 3+ — uniqueFactorizationMonoid, classNumber, etc.). Public: `classNumber_eq_one`,
-`classGroupStructure`, `isPrincipalIdealRing`, `uniqueFactorizationMonoid`. No sorry/set_option;
-no >30-line proof. The fractional-ideal block (lines 36-50) is largely demonstrative/unused.
+**File Summary — ClassGroup.lean**: 10 decls (abbrevs 3, theorems 7). Two `noncomputable section`s. Key API (3+): `isPrincipalIdealRing`/`classNumber_eq_one`, `sqrtTwo_numberField_discr`. No sorry/set_option. >30-line proofs: none. **Note**: order differs from SqrtFive — here `isPrincipalIdealRing` is the primitive (via `isPrincipalIdealRing_of_abs_discr_lt`) and `classNumber_eq_one` follows. The fractional-ideal decls (36-59) are unused downstream.
 
 ---
 
-## PrimeSplitting.lean
+## Units.lean  (486 lines)
 
-### `theorem span_two_eq`
-- **Type**: `Ideal.span {2} = Ideal.span {√2}^2` — **What**: 2 totally ramified. **How**: `span_singleton_pow` + `sqrtTwoInteger_sq`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoInteger_sq] — public — **Lines**: 38-39.
-
-### `theorem absNorm_span_sqrtTwoInteger`
-- **Type**: `absNorm (span {√2}) = 2` — **How**: `intNorm_eq_normForm 0 1`, `absNorm_span_singleton`.
-- **Uses**: [intNorm_eq_normForm, sqrtTwoInteger] — public — **Lines**: 40-47 — **Notes**: key API (ClassGroup, LocalGlobal, different).
-
-### `theorem isPrime_span_sqrtTwoInteger`
-- **Type**: `(span {√2}).IsPrime` — **How**: `isPrime_of_irreducible_absNorm` (norm 2 prime). — **Uses**: [absNorm_span_sqrtTwoInteger, sqrtTwoInteger] — public — **Lines**: 49-54 — **Notes**: key API (LocalGlobal vTwo).
-
-### `theorem liesOver_span_sqrtTwoInteger`
-- **Type**: `(span {√2}).LiesOver (span {2:ℤ})` — **How**: `liesOver_span_iff`. — **Uses**: [isPrime_span_sqrtTwoInteger, sqrtTwoInteger, sqrtTwoInteger_sq] — public — **Lines**: 56-65.
-
-### `theorem inertiaDeg_span_sqrtTwoInteger`
-- **Type**: inertia deg = 1 — **How**: `absNorm_eq_pow_inertiaDeg'`, `Nat.Prime.pow_eq_iff`. — **Uses**: [liesOver_span_sqrtTwoInteger, absNorm_span_sqrtTwoInteger, sqrtTwoInteger] — public — **Lines**: 67-75.
-
-### `theorem ramificationIdx_span_sqrtTwoInteger`
-- **Type**: ram idx = 2 — **How**: `ramificationIdx_spec` + norm-divisibility (`absNorm_dvd_absNorm_of_le`).
-- **Uses**: [sqrtTwoInteger, span_two_eq, intNorm_eq_normForm, absNorm_span_sqrtTwoInteger] — public — **Lines**: 77-98.
-
-### `theorem span_seven_eq`
-- **Type**: `span {7} = span {3+√2} * span {3-√2}` — **How**: `(3+√2)(3-√2)=9-2=7` via `sqrtTwoInteger_sq`. — **Uses**: [sqrtTwoInteger, sqrtTwoInteger_sq] — public — **Lines**: 100-110.
-
-### `theorem absNorm_span_three_add_sqrtTwo` / `_sub_sqrtTwo`
-- **Type**: norm `=7` each — **How**: `intNorm_eq_normForm 3 ±1`. — **Uses**: [intNorm_eq_normForm, sqrtTwoInteger] — public — **Lines**: 112-118 / 127-138.
-
-### `theorem isPrime_span_three_add_sqrtTwo` / `_sub_sqrtTwo`
-- **Type**: each prime — **How**: `isPrime_of_irreducible_absNorm` (norm 7). — **Uses**: [absNorm_span_three_add/sub_sqrtTwo, sqrtTwoInteger] — public — **Lines**: 120-125 / 140-145 — **Notes**: key API (LocalGlobal vSeven±).
-
-### `theorem liesOver_span_three_add_sqrtTwo` / `_sub_sqrtTwo`
-- **Type**: lies over `(7)` — **How**: `liesOver_span_iff`. — **Uses**: [isPrime_span_three_add/sub_sqrtTwo, sqrtTwoInteger, sqrtTwoInteger_sq] — public — **Lines**: 147-169.
-
-### `theorem inertiaDeg_span_three_add_sqrtTwo` / `_sub_sqrtTwo`
-- **Type**: inertia deg 1 — **How**: `absNorm_eq_pow_inertiaDeg'`. — **Uses**: [liesOver_*, absNorm_span_three_add/sub_sqrtTwo] — public — **Lines**: 171-189.
-
-### `private theorem absNorm_ne_three`
-- **Type**: `(P) → absNorm P ≠ 3` — **What**: no prime with residue field 𝔽₃ (X²-2 has no root mod 3). **How**: `ZMod.ringEquivOfPrime`, then `decide` over `ZMod 3`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoInteger_sq] — private — **Lines**: 190-207.
-
-### `theorem isPrime_span_three`
-- **Type**: `(span {3:𝓞K}).IsPrime` — **What**: 3 inert. **How**: norm 9; rule out maximal sub-ideals of norm 1 and 3 (`absNorm_ne_three`), force norm 9, `eq_of_le_of_absNorm_eq` (Common).
-- **Uses**: [intNorm_eq_normForm, sqrtTwoInteger, absNorm_ne_three, eq_of_le_of_absNorm_eq] — public — **Lines**: 209-242 — **Notes**: 33-line proof; key API (vThree).
-
-### `theorem absNorm_span_three`
-- **Type**: `absNorm (span {3}) = 9` — **How**: `intNorm_eq_normForm 3 0`. — **Uses**: [intNorm_eq_normForm, sqrtTwoInteger] — public — **Lines**: 244-249.
-
-### `theorem liesOver_span_three` / `inertiaDeg_span_three` / `ramificationIdx_span_three`
-- inert prime (3): lies over (3), inertia deg 2, ram idx 1. **How**: `liesOver_span_iff`; `absNorm_eq_pow_inertiaDeg'` + `Nat.pow_right_injective`; `ramificationIdx_spec` + `ramified_iff_eq_two`.
-- **Uses**: [isPrime_span_three, absNorm_span_three, liesOver_span_three, ramified_iff_eq_two] — public — **Lines**: 251-266 / 403-415.
-
-### `private theorem absNorm_span_natCast`
-- **Type**: `(p:ℕ) → absNorm (span {(p:𝓞K)}) = p^2` — **How**: `intNorm_eq_normForm p 0`. — **Uses**: [intNorm_eq_normForm, sqrtTwoInteger] — private — **Lines**: 268-277 — **Notes**: generic helper, reused 5× in file.
-
-### `private theorem li_one_sqrtTwo`
-- **Type**: `LinearIndependent ℤ ![1, √2]` — **How**: reduce to `sqrtTwoExplicitIntegralBasis.linearIndependent`. — **Uses**: [sqrtTwoInteger, sqrtTwoExplicitIntegralBasis(+_zero/_one)] — private — **Lines**: 279-287.
-
-### `private theorem exists_o2_coords`
-- **Type**: `(z) → ∃ A B : ℤ, z = A•1 + B•√2` — **How**: basis `repr`. — **Uses**: [sqrtTwoInteger, sqrtTwoExplicitIntegralBasis(+_zero/_one)] — private — **Lines**: 289-297.
-
-### `private theorem unit_sqrtTwo_coeff_not_mem`
-- **Type**: `A+B√2` with `B=±1` ∉ `(p)` for `p≥2` — **How**: coordinates + `li_one_sqrtTwo`, `p ∣ 1` contradiction. — **Uses**: [sqrtTwoInteger, exists_o2_coords, li_one_sqrtTwo] — private — **Lines**: 299-323.
-
-### `theorem ramified_iff_eq_two`
-- **Type**: `(p prime) → (∃P prime, span{p} ≤ P²) ↔ p = 2` — **What**: ramified ⟺ p=2 ⟺ p∣disc 8. **How**: different ideal: `dvd_differentIdeal_iff`, `not_isUnramifiedAt_of_...` and `not_map_span_natCast_le_pow_succ_of_...` (Common), `absNorm_differentIdeal`, disc 8.
-- **Uses**: [absNorm_span_natCast, not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow, not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ, sqrtTwo_numberField_discr, isPrime_span_sqrtTwoInteger, span_two_eq] — public — **Lines**: 325-369 — **Notes**: 44-line proof; central splitting result; reused by ramificationIdx lemmas + split law.
-
-### `theorem ramificationIdx_span_three_add_sqrtTwo` / `_sub_sqrtTwo`
-- ram idx 1 for the (7)-primes — **How**: `ramificationIdx_spec` + `span_seven_eq` + `ramified_iff_eq_two 7`. — **Uses**: [span_seven_eq, isPrime_span_three_add/sub_sqrtTwo, ramified_iff_eq_two] — public — **Lines**: 371-401.
-
-### `private theorem absNorm_span_prime_sqrtTwo_sub_of_mul`
-- **Type**: from `(√2-c)(√2+c)=p·k`, `absNorm (span {p, √2-c}) = p` — **How**: show ≠1 and ≠p² (using `unit_sqrtTwo_coeff_not_mem`, `eq_of_le_of_absNorm_eq`), then `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq` (Common).
-- **Uses**: [sqrtTwoInteger, absNorm_span_natCast, unit_sqrtTwo_coeff_not_mem, eq_of_le_of_absNorm_eq, eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq] — private — **Lines**: 417-462 — **Notes**: 45-line proof.
-
-### `private theorem pm_one_mod_eight_of_prime_norm`
-- **Type**: existence of norm-p prime ⇒ `p % 8 ∈ {1,7}` — **How**: residue field 𝔽_p, `ZMod.exists_sq_eq_two_iff` (second supplement of QR). — **Uses**: [sqrtTwoInteger, sqrtTwoInteger_sq] — private — **Lines**: 464-486.
-
-### `private theorem exists_prime_norm_of_pm_one_mod_eight`
-- **Type**: converse — build prime `(p, √2-c)` from a sqrt of 2 mod p. **How**: `ZMod.exists_sq_eq_two_iff`, `absNorm_span_prime_sqrtTwo_sub_of_mul`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoInteger_sq, absNorm_span_prime_sqrtTwo_sub_of_mul] — private — **Lines**: 488-526 — **Notes**: 38-line proof.
-
-### `theorem exists_prime_norm_iff_pm_one_mod_eight`
-- **Type**: norm-p prime ⟺ `p%8 ∈ {1,7}` — **How**: combines previous two. — **Uses**: [pm_one_mod_eight_of_prime_norm, exists_prime_norm_of_pm_one_mod_eight] — public — **Lines**: 528-533.
-
-### `private theorem pm_one_mod_eight_of_splits` / `splits_of_pm_one_mod_eight`
-- split ⟺ congruence direction-by-direction. **How**: norm bookkeeping (`absNorm_span_natCast`), `ramified_iff_eq_two` to ensure distinctness. — **Uses**: [absNorm_span_natCast, exists_prime_norm_iff_pm_one_mod_eight, ramified_iff_eq_two] — private — **Lines**: 535-594.
-
-### `theorem splits_iff_pm_one_mod_eight`
-- **Type**: odd `p` splits into two distinct primes ⟺ `p%8 ∈ {1,7}` — **How**: combines the two halves. — **Uses**: [pm_one_mod_eight_of_splits, splits_of_pm_one_mod_eight] — public — **Lines**: 596-604 — **Notes**: main splitting law.
-
-### `abbrev sqrtTwoPolynomialMod`
-- **Type**: `(p) → (ZMod p)[X] := X^2 - C 2` — **Uses**: [] — public — **Lines**: 622-623.
-
-### `theorem sqrtTwoInteger_exponent_eq_one`
-- **Type**: `RingOfIntegers.exponent sqrtTwoInteger = 1` — **How**: `exponent_eq_one_iff` + `sqrtTwoInteger_adjoin_eq_top`. — **Uses**: [sqrtTwoInteger, sqrtTwoInteger_adjoin_eq_top] — public — **Lines**: 627-630.
-
-### `theorem sqrtTwoInteger_exponent_not_dvd`
-- **Type**: `[Fact p.Prime] → ¬ p ∣ exponent √2` — **Uses**: [sqrtTwoInteger, sqrtTwoInteger_exponent_eq_one] — public — **Lines**: 632-636.
-
-### `theorem sqrtTwo_kummerDedekind_inertiaDeg` / `_ramificationIdx`
-- Kummer-Dedekind reads inertia deg = `natDegree` and ram idx = `multiplicity` of a mod-p factor. **How**: `primesOverSpanEquivMonicFactorsMod` machinery (`inertiaDeg_..._symm_apply'`, `ramificationIdx_..._symm_apply'`).
-- **Uses**: [sqrtTwoInteger, sqrtTwoInteger_exponent_not_dvd, sqrtTwoInteger_minpoly, sqrtTwoIntegerPolynomial, sqrtTwoPolynomialMod] — public — **Lines**: 638-663.
-
-### `theorem sqrtTwoPolynomialMod_two` / `_seven_factor` / `_three_irreducible`
-- mod-2: `X²`; mod-7: `(X-3)(X+3)`; mod-3: irreducible. **How**: `ZMod.natCast_self`; `ring_nf` + `C 2 = (C 3)²`; `irreducible_of_degree_le_three_of_not_isRoot` + `fin_cases`/`decide`.
-- **Uses**: [sqrtTwoPolynomialMod] — public — **Lines**: 665-700.
-
-### `theorem exists_root_mod_iff_exists_prime_norm`
-- **Type**: `∃ c, c² = 2 mod p ⟺ ∃ norm-p prime` — **How**: `ZMod.exists_sq_eq_two_iff` + `exists_prime_norm_iff_pm_one_mod_eight`. — **Uses**: [exists_prime_norm_iff_pm_one_mod_eight] — public — **Lines**: 702-715.
-
-### `theorem differentIdeal_eq_span_two_mul_sqrtTwo`
-- **Type**: `differentIdeal ℤ (𝓞 K) = span {2√2}` — **How**: `conductor_eq_top_of_adjoin_eq_top` + `conductor_mul_differentIdeal`; different = `(minpoly')(√2) = 2√2`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoInteger_adjoin_eq_top, adjoin_sqrtTwoRoot_eq_top, sqrtTwoInteger_minpoly, sqrtTwoIntegerPolynomial] — public — **Lines**: 730-751 — **Notes**: 22 lines.
-
-### `theorem differentIdeal_eq_span_sqrtTwoInteger_pow_three`
-- **Type**: `differentIdeal = span {√2}^3` — **How**: `√2³ = 2√2` via `sqrtTwoInteger_sq`. — **Uses**: [differentIdeal_eq_span_two_mul_sqrtTwo, sqrtTwoInteger, sqrtTwoInteger_sq] — public — **Lines**: 753-761.
-
-### `theorem absNorm_differentIdeal_eq_eight`
-- **Type**: `absNorm (differentIdeal) = 8` — **How**: cube of (√2)-norm 2. — **Uses**: [differentIdeal_eq_span_sqrtTwoInteger_pow_three, absNorm_span_sqrtTwoInteger] — public — **Lines**: 763-767.
-
-### `theorem prime_dvd_differentIdeal_iff_eq_span_sqrtTwo`
-- **Type**: `(P prime ≠⊥) → P ∣ differentIdeal ↔ P = span {√2}` — **How**: `IsPrime.le_of_pow_le`, maximality of `(√2)`. — **Uses**: [differentIdeal_eq_span_sqrtTwoInteger_pow_three, sqrtTwoInteger, sqrtTwoRoot, sqrtTwoRoot_sq, isPrime_span_sqrtTwoInteger] — public — **Lines**: 769-794 — **Notes**: ~25 lines.
-
-**File Summary (PrimeSplitting.lean)**: ~40 decls (~33 theorems incl. 9 private, ~2 abbrevs).
-Key API (3+): `absNorm_span_sqrtTwoInteger`, `sqrtTwoInteger_sq` (imported), `intNorm_eq_normForm`
-(imported), `absNorm_span_natCast`, `unit_sqrtTwo_coeff_not_mem`, `ramified_iff_eq_two`,
-`exists_prime_norm_iff_pm_one_mod_eight`, the `isPrime_span_*`/`absNorm_span_*` (consumed by
-LocalGlobal). Public main results: `ramified_iff_eq_two`, `splits_iff_pm_one_mod_eight`,
-different ideal `= (√2)³` / norm 8, full split/inert/ramified data for 2,3,7. No sorry/set_option.
-Proofs >30 lines: `ramified_iff_eq_two` (~44), `absNorm_span_prime_sqrtTwo_sub_of_mul` (~45),
-`exists_prime_norm_of_pm_one_mod_eight` (~38), `isPrime_span_three` (~33).
-
----
-
-## Units.lean
-
-### `abbrev ZSqrtTwo`
-- **Type**: `Zsqrtd (2 : ℤ)` — mathlib Pell `ℤ[√2]`. — **Uses**: [] — public — **Lines**: 42.
-
-### `abbrev zsqrtTwoToRingOfIntegers`
-- **Type**: `ZSqrtTwo →+* 𝓞 K` (`√2↦√2`) — **How**: `Zsqrtd.lift` with `sqrtTwoInteger_sq`. — **Uses**: [sqrtTwoInteger, sqrtTwoInteger_sq] — public — **Lines**: 45-46.
+### `abbrev ZSqrtTwo` / `abbrev zsqrtTwoToRingOfIntegers`
+- **Types**: `Zsqrtd (2:ℤ)` (mathlib's concrete `ℤ[√2]`); `Zsqrtd.lift ⟨sqrtTwoInteger,…⟩ : ZSqrtTwo →+* 𝓞 K`. **Uses**: [`sqrtTwoInteger(_sq)`] — **Lines**: 42-46 — **Notes**: KEY — the Pell bridge; the whole reason SqrtTwo's fundamental unit is proved.
 
 ### `theorem zsqrtTwoToRingOfIntegers_apply`
-- **Type**: `⟨a,b⟩ ↦ a + b√2` — **Uses**: [zsqrtTwoToRingOfIntegers, sqrtTwoInteger] — public — **Lines**: 48-51.
+- **Type**: `zsqrtTwoToRingOfIntegers ⟨a,b⟩ = a + b·√2`. **How**: `simp`. **Uses**: [`zsqrtTwoToRingOfIntegers`] — **Lines**: 48-51
 
 ### `theorem two_not_int_square`
-- **Type**: `∀ n:ℤ, 2 ≠ n*n` — **How**: `IsSquare`+`norm_num`. — **Uses**: [] — public — **Lines**: 53-56 — **Notes**: GENERIC; candidate for Common.
+- **Type**: `∀ n:ℤ, 2 ≠ n*n`. **How**: `IsSquare 2` + `norm_num`. **Uses**: [] — **Lines**: 53-56
 
-### `theorem zsqrtTwoToRingOfIntegers_injective` / `_surjective`
-- bijectivity of the model map. **How**: `Zsqrtd.lift_injective` (+ `two_not_int_square`); surj via basis `repr`. — **Uses**: [zsqrtTwoToRingOfIntegers(+_apply), sqrtTwoInteger, sqrtTwoInteger_sq, two_not_int_square, sqrtTwoExplicitIntegralBasis(+_zero/_one), sqrtTwoExplicitIntegralPowerBasis(+_dim)] — public — **Lines**: 58-84.
+### `theorem zsqrtTwoToRingOfIntegers_injective` / `…_surjective`
+- **Types**: injective (`Zsqrtd.lift_injective` + `two_not_int_square`); surjective (decompose target on `sqrtTwoExplicitIntegralBasis`). **Uses**: [`sqrtTwoInteger(_sq)`,`two_not_int_square`,`sqrtTwoExplicitIntegral*`] — **Lines**: 58-84
 
 ### `abbrev zsqrtTwoEquivRingOfIntegers`
-- **Type**: `ZSqrtTwo ≃+* 𝓞 K` — **How**: `RingEquiv.ofBijective`. — **Uses**: [zsqrtTwoToRingOfIntegers(+inj/surj)] — public — **Lines**: 87-89 — **Notes**: key bridge to Pell.
+- **Type**: `ZSqrtTwo ≃+* 𝓞 K := RingEquiv.ofBijective …`. **Uses**: [`zsqrtTwoToRingOfIntegers(_injective/_surjective)`] — **Lines**: 86-89 — **Notes**: KEY.
 
 ### `abbrev sqrtTwoFundamentalUnit`
-- **Type**: `(𝓞 K)ˣ` val `√2+1`, inv `√2-1` — **What**: fundamental unit `1+√2`. **How**: `val_inv/inv_val` via `sqrtTwoRoot_sq`.
-- **Uses**: [sqrtTwoInteger, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 91-104 — **Notes**: key public object (LocalGlobal, regulator, house, adeles).
+- **Type**: `(𝓞 K)ˣ` with `val = sqrtTwoInteger+1`, `inv = sqrtTwoInteger-1`. **What**: the fundamental unit `1+√2`. **How**: `Subtype.ext` + `(√2+1)(√2-1)=√2²-1=1`. **Uses**: [`sqrtTwoInteger`,`sqrtTwoRoot_sq`] — **Lines**: 91-104 — **Notes**: KEY (LocalGlobal house/adele/product).
 
 ### `abbrev zsqrtTwoFundamentalUnit`
-- **Type**: `ZSqrtTwoˣ` val `⟨1,1⟩`, inv `⟨-1,1⟩` — **Uses**: [] — public — **Lines**: 107-113.
+- **Type**: `ZSqrtTwoˣ` with `val=⟨1,1⟩`, `inv=⟨-1,1⟩`. **What**: `1+√2` in the `Zsqrtd` model. **Uses**: [] — **Lines**: 106-113
 
 ### `theorem zsqrtTwoFundamentalUnit_norm`
-- **Type**: `Zsqrtd.norm = -1` — **How**: `norm_num`. — **Uses**: [zsqrtTwoFundamentalUnit] — public — **Lines**: 115-117.
+- **Type**: `Zsqrtd.norm ⟨1,1⟩ = -1`. **How**: `norm_num [Zsqrtd.norm]`. **Uses**: [`zsqrtTwoFundamentalUnit`] — **Lines**: 115-117 — **Notes**: KEY — norm `-1` (so the *square* is the norm-one Pell solution).
 
 ### `theorem zsqrtTwoEquivRingOfIntegers_fundamentalUnit`
-- **Type**: `Units.mapEquiv ... zsqrtTwoFundamentalUnit = sqrtTwoFundamentalUnit` — **How**: `Units.ext`. — **Uses**: [zsqrtTwoEquivRingOfIntegers, zsqrtTwoToRingOfIntegers_apply, zsqrtTwoFundamentalUnit, sqrtTwoFundamentalUnit, sqrtTwoInteger] — public — **Lines**: 119-126.
+- **Type**: `Units.mapEquiv … zsqrtTwoFundamentalUnit = sqrtTwoFundamentalUnit`. **How**: `Units.ext` + `zsqrtTwoToRingOfIntegers_apply`. **Uses**: [both fundamental units, the equiv] — **Lines**: 119-126
 
 ### `theorem zsqrtTwoEquivRingOfIntegers_unitsMap_neg`
-- **Type**: `mapEquiv (-v) = -(mapEquiv v)` — **How**: `map_neg`. — **Uses**: [zsqrtTwoEquivRingOfIntegers] — public — **Lines**: 128-134 — **Notes**: GENERIC (mapEquiv commutes with neg).
+- **Type**: `mapEquiv (-v) = -(mapEquiv v)`. **How**: `Units.ext` + `map_neg`. **Uses**: [`zsqrtTwoEquivRingOfIntegers`] — **Lines**: 128-134
 
 ### `theorem sqrtTwoFundamentalUnit_sq`
-- **Type**: `(1+√2)² = 3+2√2` — **How**: `Subtype.ext`+`sqrtTwoRoot_sq`. — **Uses**: [sqrtTwoFundamentalUnit, sqrtTwoInteger, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 141-148.
+- **Type**: `((1+√2)² : 𝓞 K) = 3 + 2√2`. **How**: `Subtype.ext`, expand, `sqrtTwoRoot_sq`. **Uses**: [`sqrtTwoFundamentalUnit`,`sqrtTwoInteger`,`sqrtTwoRoot_sq`] — **Lines**: 136-148
 
 ### `abbrev pellTwoFundamentalSolution`
-- **Type**: `Pell.Solution₁ 2 := mk 3 2 _` — **Uses**: [] — public — **Lines**: 151-152.
+- **Type**: `Pell.Solution₁ (2:ℤ) := Solution₁.mk 3 2 _`. **What**: `3+2√2`, the fundamental norm-one Pell solution of `x²-2y²=1`. **Uses**: [] — **Lines**: 150-152 — **Notes**: KEY.
 
 ### `theorem pellTwoFundamentalSolution_isFundamental`
-- **Type**: `Pell.IsFundamental pellTwoFundamentalSolution` — **What**: 3+2√2 is the fundamental norm-1 Pell solution. **How**: minimality via `omega`/`nlinarith` on `b.x<3`. — **Uses**: [pellTwoFundamentalSolution] — public — **Lines**: 159-173.
+- **Type**: `Pell.IsFundamental pellTwoFundamentalSolution`. **How**: `Pell.IsFundamental` triple — positivity + minimality of `x`-coord (rule out `x=2` via `2y²=3`, `omega`). **Uses**: [`pellTwoFundamentalSolution`] — **Lines**: 159-173 — **Notes**: KEY — the load-bearing Pell minimality fact.
 
 ### `theorem pellTwoFundamentalSolution_generates_normOnePell`
-- **Type**: every Pell sol = `±F^n` — **How**: `IsFundamental.eq_zpow_or_neg_zpow`. — **Uses**: [pellTwoFundamentalSolution_isFundamental, pellTwoFundamentalSolution] — public — **Lines**: 175-180.
+- **Type**: `∀ a:Solution₁ 2, ∃ n, a = pell^n ∨ a = -pell^n`. **How**: `IsFundamental.eq_zpow_or_neg_zpow`. **Uses**: [`pellTwoFundamentalSolution(_isFundamental)`] — **Lines**: 175-180 — **Notes**: KEY — mathlib gives the entire norm-one solution group directly.
 
 ### `theorem zsqrtTwoFundamentalUnit_sq_toPell`
-- **Type**: `Unitary.toUnits pellSol = zF²` — **How**: `ext`+`norm_num`. — **Uses**: [pellTwoFundamentalSolution, zsqrtTwoFundamentalUnit] — public — **Lines**: 182-186.
+- **Type**: `Unitary.toUnits pellTwoFundamentalSolution = zsqrtTwoFundamentalUnit²`. **How**: `ext` + `norm_num`. **Uses**: [`pellTwoFundamentalSolution`,`zsqrtTwoFundamentalUnit`] — **Lines**: 182-186
 
 ### `theorem zsqrtTwo_normOneUnit_generated_by_square`
-- **Type**: norm-1 ZSqrtTwo unit = `±zF^(2n)` — **How**: pass to `Pell.Solution₁`, `Unitary.toUnits.map_zpow`, `zsqrtTwoFundamentalUnit_sq_toPell`. — **Uses**: [zsqrtTwoFundamentalUnit, pellTwoFundamentalSolution(+_generates), zsqrtTwoFundamentalUnit_sq_toPell] — public — **Lines**: 188-226 — **Notes**: 38-line proof.
+- **Type**: norm-one `ZSqrtTwoˣ` units `= ±zsqrtTwoFundamentalUnit^(2n)`. **How**: pass to `Solution₁` (`Zsqrtd.norm_eq_one_iff_mem_unitary`), `pellTwoFundamentalSolution_generates_normOnePell`, `map_zpow`/`zpow_mul`. **Uses**: [`pellTwoFundamentalSolution(_generates…)`,`zsqrtTwoFundamentalUnit(_sq_toPell)`] — **Lines**: 188-226 — **Notes**: proof >30 lines.
 
 ### `theorem zsqrtTwo_units_generated_by_fundamental`
-- **Type**: every ZSqrtTwo unit = `±zF^n` — **How**: norm is ±1 (`Int.isUnit_eq_one_or`); multiply by zF to reduce norm-(-1) case. — **Uses**: [zsqrtTwoFundamentalUnit(+_norm), zsqrtTwo_normOneUnit_generated_by_square] — public — **Lines**: 228-265 — **Notes**: 37-line proof.
+- **Type**: every `ZSqrtTwoˣ` unit `= ±zsqrtTwoFundamentalUnit^n`. **How**: norm is `±1` (`Zsqrtd.isUnit_iff_norm_isUnit`, `Int.isUnit_eq_one_or`); norm `-1` case multiplies by the fundamental unit to reach norm `1`, then shifts the exponent. **Uses**: [`zsqrtTwo_normOneUnit_generated_by_square`,`zsqrtTwoFundamentalUnit(_norm)`] — **Lines**: 228-265 — **Notes**: proof >30 lines.
 
 ### `theorem sqrtTwoFundamentalUnit_generates_unitGroup`
-- **Type**: every `(𝓞 K)ˣ` = `±(1+√2)^n` — **What**: complete unit-group generation. **How**: transport via `zsqrtTwoEquivRingOfIntegers`. — **Uses**: [zsqrtTwoEquivRingOfIntegers, zsqrtTwo_units_generated_by_fundamental, zsqrtTwoFundamentalUnit, zsqrtTwoEquivRingOfIntegers_fundamentalUnit, zsqrtTwoEquivRingOfIntegers_unitsMap_neg, sqrtTwoFundamentalUnit] — public — **Lines**: 267-292 — **Notes**: key result.
+- **Type**: `∀ u:(𝓞 K)ˣ, ∃ n, u = (1+√2)^n ∨ u = -(1+√2)^n`. **What**: every unit is a signed power of the fundamental unit — **fully proved** (the analogue is a SORRY in every other folder). **How**: transport `zsqrtTwo_units_generated_by_fundamental` along `Units.mapEquiv zsqrtTwoEquivRingOfIntegers`. **Uses**: [`zsqrtTwo_units_generated_by_fundamental`,`zsqrtTwoEquivRingOfIntegers(_fundamentalUnit/_unitsMap_neg)`,`sqrtTwoFundamentalUnit`] — **Lines**: 267-292 — **Notes**: KEY; the decisive theorem of this folder.
 
 ### `theorem sqrtTwoFundamentalUnit_isFundamental`
-- **Type**: `(1+√2)²=3+2√2 ∧ ∀ Pell sol = ±F^n` — **How**: pairs the two facts. — **Uses**: [sqrtTwoFundamentalUnit_sq, pellTwoFundamentalSolution_generates_normOnePell, sqrtTwoFundamentalUnit, sqrtTwoInteger] — public — **Lines**: 299-306.
+- **Type**: `((1+√2)²=3+2√2) ∧ (∀ Pell solution = ±pell^n)`. **How**: `⟨sqrtTwoFundamentalUnit_sq, pellTwoFundamentalSolution_generates_normOnePell⟩`. **Uses**: [those] — **Lines**: 294-306
 
 ### `private theorem sqrtTwo_torsion_eq_one_or_neg_one`
-- **Type**: `(x : torsion K) → x = ±1` — **How**: totally real ⇒ no primitive root of order >2 (`InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt`), interval_cases on order. — **Uses**: [nrRealPlaces_eq_two] — private — **Lines**: 310-334 — **Notes**: 25 lines; reused by torsionOrder + iff lemma.
+- **Type**: `(x : torsion K) → (x:(𝓞 K)ˣ) = 1 ∨ = -1`. **How**: if `orderOf > 2`, a primitive root of order `>2` would force `nrRealPlaces = 0` (`IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt`), contradicting `nrRealPlaces_eq_two`; else `interval_cases` on order ∈{0,1,2}. **Uses**: [`nrRealPlaces_eq_two`] — **Lines**: 310-334 — **Visibility**: private — **Notes**: proof >20 lines; the totally-real torsion argument.
 
 ### `theorem torsionOrder_eq_two`
-- **Type**: `Units.torsionOrder K = 2` — **How**: `Finset.card_eq_two` with `{1,-1}` + classification. — **Uses**: [sqrtTwo_torsion_eq_one_or_neg_one] — public — **Lines**: 336-341 — **Notes**: TWIN of SqrtFive `torsionOrder_eq_two`.
+- **Type**: `Units.torsionOrder K = 2`. **How**: `Finset.card_eq_two` with `{1,-1}` + `sqrtTwo_torsion_eq_one_or_neg_one`. **Uses**: [`sqrtTwo_torsion_eq_one_or_neg_one`] — **Lines**: 336-341 — **Notes**: KEY.
 
 ### `theorem unitRank_eq_one`
-- **Type**: `Units.rank K = 1` — **How**: `(2,0)` signature ⇒ rank 1. — **Uses**: [nrRealPlaces_eq_two, nrComplexPlaces_eq_zero] — public — **Lines**: 343-348 — **Notes**: TWIN of SqrtFive.
+- **Type**: `Units.rank K = 1`. **How**: `rank = card places - 1`, `nrRealPlaces_eq_two`/`nrComplexPlaces_eq_zero`. **Uses**: [`nrRealPlaces_eq_two`,`nrComplexPlaces_eq_zero`] — **Lines**: 343-348 — **Notes**: KEY.
 
 ### `private theorem exists_eq_torsion_mul_fundSystem_zpow`
-- **Type**: `(i₀ u) → ∃ ζ ∈ torsion, ∃ n, u = ζ·fundSystem^n` — **How**: `closure_fundSystem_sup_torsion_eq_top`, `Subgroup.mem_sup`, rank-1 ⇒ subsingleton fundSystem index. — **Uses**: [unitRank_eq_one] — private — **Lines**: 350-373 — **Notes**: TWIN of SqrtFive (same name).
+- **Type**: any unit `u = ζ * fundSystem K i₀ ^ n`, `ζ` torsion. **How**: `closure_fundSystem_sup_torsion_eq_top`, `Subgroup.mem_sup`, subsingleton of `Fin (rank)`. **Uses**: [`unitRank_eq_one`] — **Lines**: 350-373 — **Visibility**: private — **Notes**: proof >20 lines.
 
 ### `private theorem fundSystem_zpow_mem_torsion`
-- **Type**: `fundSystem^n ∈ torsion ⇒ n=0` — **How**: project to `(𝓞K)ˣ/torsion`, `basisModTorsion.repr`. — **Uses**: [] (uses unitRank only indirectly) — private — **Lines**: 375-389 — **Notes**: TWIN of SqrtFive.
+- **Type**: `fundSystem K i₀ ^ n` torsion ⇒ `n=0`. **How**: quotient by torsion is free, `basisModTorsion.repr`. **Uses**: [] — **Lines**: 375-389 — **Visibility**: private
 
 ### `private theorem eq_one_or_neg_one_of_mem_torsion`
-- **Type**: `ζ ∈ torsion ⇒ ζ = ±1` — **How**: wraps `sqrtTwo_torsion_eq_one_or_neg_one`. — **Uses**: [sqrtTwo_torsion_eq_one_or_neg_one] — private — **Lines**: 391-395 — **Notes**: TWIN of SqrtFive.
+- **Type**: `ζ ∈ torsion ⇒ ζ = ±1`. **How**: `sqrtTwo_torsion_eq_one_or_neg_one`. **Uses**: [`sqrtTwo_torsion_eq_one_or_neg_one`] — **Lines**: 391-395 — **Visibility**: private
 
 ### `theorem mem_torsion_iff_eq_one_or_neg_one`
-- **Type**: `u ∈ torsion K ↔ u = ±1` — **How**: both directions. — **Uses**: [eq_one_or_neg_one_of_mem_torsion] — public — **Lines**: 397-404 — **Notes**: used by LocalGlobal fundamental-cone lemma.
+- **Type**: `u ∈ torsion ↔ u = 1 ∨ u = -1`. **How**: `eq_one_or_neg_one_of_mem_torsion` + `neg_one_mem_torsion`. **Uses**: [`eq_one_or_neg_one_of_mem_torsion`] — **Lines**: 397-404 — **Notes**: used in LocalGlobal (fundamental cone).
 
-### `theorem regulator_eq`  ⚠ SORRY
-- **Type**: `Units.regulator K = Real.log (1 + Real.sqrt 2)` — **What**: regulator = log of fundamental unit. **How**: `sorry`. — **Uses**: [] — public — **Lines**: 406-409 — **Notes**: **SORRY**. Blocked (Artin/fundamental-unit covolume identification), same blocker as all 8 twins.
+### `theorem regulator_eq`  ✅ proved
+- **Type**: `Units.regulator K = Real.log (1 + Real.sqrt 2)`. **What**: the regulator is `log(1+√2) ≈ 0.8814`. **How**: pick the real place `wR`; show the fundamental-unit family generates the units mod torsion (from the Pell-certified `sqrtTwoFundamentalUnit_generates_unitGroup`); then `regOfFamily_div_regulator` (index = 1) ⇒ `regulator = regOfFamily`, `regOfFamily_eq_det`, and `Matrix.det_eq_elem_of_subsingleton` on the rank-1 `1×1` matrix evaluate it to `|log (wR (1+√2))| = log(1+√2)`. **Uses**: [`sqrtTwoFundamentalUnit_generates_unitGroup`, `unitRank_eq_one`, `infinitePlace_card_eq_two`, `infinitePlace_isReal`, `exists_realEmbedding_pos`] — **Lines**: 406-460 — **Visibility**: public
+- **Notes**: the whole computation rests on **mature mathlib API** (`regOfFamily_div_regulator`, `regOfFamily_eq_det`); no missing "regulator = log(unit)" bridge. Correcting an earlier note: the regulator was never an API gap — only downstream of fundamentality, which Pell supplies here.
 
 ### `private theorem unitGroupStructure_bijective`
-- **Type**: bijectivity of `torsionPowerHom 2 (-1) ⊕ rankOnePowerHom η` (Common helpers). **How**: injectivity via `fundSystem_zpow_mem_torsion`/`ZMod 2` casework; surjectivity via `exists_eq_torsion_mul_fundSystem_zpow`.
-- **Uses**: [torsionPowerHom, rankOnePowerHom, fundSystem_zpow_mem_torsion, exists_eq_torsion_mul_fundSystem_zpow, eq_one_or_neg_one_of_mem_torsion] — private — **Lines**: 411-453 — **Notes**: ~43 lines; TWIN of SqrtFive.
+- **Type**: `(torsionPowerHom 2 (-1) _).coprod (rankOnePowerHom η)` is bijective. **How**: injectivity — `fundSystem_zpow_mem_torsion` kills the free part, then `ZMod 2`-parity kills the torsion part (using `(-1:𝓞 K)=1 ⇒ 2=0`); surjectivity — `exists_eq_torsion_mul_fundSystem_zpow` + `eq_one_or_neg_one_of_mem_torsion`. **Uses**: [Common `torsionPowerHom`,`rankOnePowerHom`; `fundSystem_zpow_mem_torsion`,`exists_eq_torsion_mul_fundSystem_zpow`,`eq_one_or_neg_one_of_mem_torsion`] — **Lines**: 411-453 — **Visibility**: private — **Notes**: proof >40 lines.
 
 ### `theorem unitGroupStructure`
-- **Type**: `Nonempty ((𝓞 K)ˣ ≃* Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ))` — **What**: unit group `≅ μ₂ × ℤ`. **How**: `MulEquiv.ofBijective` on coprod, bijectivity from above. — **Uses**: [unitRank_eq_one, torsionPowerHom, rankOnePowerHom, unitGroupStructure_bijective] — public — **Lines**: 455-471 — **Notes**: key public result; TWIN of SqrtFive.
+- **Type**: `Nonempty ((𝓞 K)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ)))`. **What**: the unit group is `μ₂ × ℤ` as an abstract abelian group — **fully proved, no sorry**. **How**: package `ψ₁.coprod ψ₂` (`torsionPowerHom`/`rankOnePowerHom`), `unitGroupStructure_bijective`, `MulEquiv.ofBijective`. **Uses**: [Common `torsionPowerHom`,`rankOnePowerHom`; `unitRank_eq_one`,`unitGroupStructure_bijective`] — **Lines**: 455-471 — **Notes**: KEY — the abstract structure theorem. Contrast SqrtFive, where the analogous result rests on a sorry.
 
-**File Summary (Units.lean)**: ~28 decls (~20 theorems incl. 6 private, ~7 abbrevs). Key API:
-`sqrtTwoFundamentalUnit`, `zsqrtTwoEquivRingOfIntegers`, `sqrtTwo_torsion_eq_one_or_neg_one`,
-`unitRank_eq_one`, `mem_torsion_iff_eq_one_or_neg_one`. Public results: `torsionOrder_eq_two`,
-`unitRank_eq_one`, `sqrtTwoFundamentalUnit_generates_unitGroup`,
-`sqrtTwoFundamentalUnit_isFundamental`, `unitGroupStructure`, `regulator_eq` (sorry).
-**1 SORRY** (`regulator_eq`). No set_option. Proofs >30 lines:
-`zsqrtTwo_normOneUnit_generated_by_square` (~38), `zsqrtTwo_units_generated_by_fundamental` (~37),
-`unitGroupStructure_bijective` (~43). The empty `## Regulator` section at end has 0 decls.
-NOTE: lines 350-471 (torsion/rank/unitGroup machinery) are near-verbatim twins of SqrtFive Units.
+**File Summary — Units.lean**: ~26 decls (abbrevs/defs ~8, theorems ~18, ~5 private). Two `noncomputable section`s (Units + an empty Regulator block). Key API (3+): `zsqrtTwoFundamentalUnit`, `pellTwoFundamentalSolution`, `sqrtTwoFundamentalUnit`, `sqrtTwo_torsion_eq_one_or_neg_one`, `zsqrtTwoEquivRingOfIntegers`, Common `torsionPowerHom`/`rankOnePowerHom`. **1 sorry** (`regulator_eq`). No set_option. >30-line proofs: `zsqrtTwo_normOneUnit_generated_by_square`, `zsqrtTwo_units_generated_by_fundamental`, `unitGroupStructure_bijective`. **The crucial folder**: the `Zsqrtd`/`Pell.Solution₁` API makes the fundamental-unit / unit-group-structure theorems sorry-free here, unlike all the imaginary-quadratic / golden-ratio twins.
 
 ---
 
 ## Euclidean.lean
 
 ### `private theorem abs_norm_int_lt_of_remainder_eq`
-- **Type**: given `r = b·e` and `|N(e)| = |frac form| ≤ 1/2` and `0<|N(b)|`, conclude `|N r| < |N b|`. — **What**: the arithmetic core of the Euclidean division bound. **How**: `Algebra.coe_norm_int`, `abs_mul`, `mul_le_mul_of_nonneg_left`, `linarith`.
-- **Uses**: [] — private — **Lines**: 35-55 — **Notes**: GENERIC-looking; quadratic-field Euclidean helper candidate for Common.
+- **Type**: packaging lemma: from `bK = algebraMap b`, `algebraMap r = bK·e`, `|norm bK|>0`, `|norm e| = |(u-round u)² - 2(v-round v)²|`, and that fraction `≤ 1/2`, conclude `|norm ℤ r| < |norm ℤ b|`. **How**: applies Common `abs_intNorm_lt_of_abs_norm_le` with the threshold `1/2 < 1`. **Uses**: [Common `abs_intNorm_lt_of_abs_norm_le`] — **Lines**: 35-46 — **Visibility**: private
 
 ### `theorem normEuclidean`
-- **Type**: `(a b : 𝓞 K) (hb : b ≠ 0) → ∃ q r, a = b·q + r ∧ (N r).natAbs < (N b).natAbs` — **What**: ℚ(√2) is norm-Euclidean. **How**: round real/im coords of `a/b`, remainder norm form `|u'²-2v'²| ≤ 1/2` via `abs_sub_round` + `nlinarith`, then `abs_norm_int_lt_of_remainder_eq` and `natAbs_lt_of_abs_ratCast_lt` (Common).
-- **Uses**: [sqrtTwoInteger, sqrtTwoRoot, norm_eq_normForm, abs_norm_int_lt_of_remainder_eq, natAbs_lt_of_abs_ratCast_lt] — public — **Lines**: 57-107 — **Notes**: ~50-line proof; central Euclidean result. TWIN of SqrtFive `normEuclidean` (different constant `2` vs `5`/golden form).
+- **Type**: `(a b : 𝓞 K) → b ≠ 0 → ∃ q r, a = b*q + r ∧ (norm ℤ r).natAbs < (norm ℤ b).natAbs`. **What**: `ℚ(√2)` is norm-Euclidean (the real quadratic field of smallest discriminant). **How**: take `q` = nearest-integer rounding of the coordinates of `a/b`; the remainder `e` has `|norm e| = |(u-round u)² - 2(v-round v)²| ≤ 1/2 < 1` (`nlinarith` with `abs_sub_round` bounds and `sq_nonneg`), then the packaging lemma + Common `natAbs_lt_of_abs_ratCast_lt`. **Uses**: [`norm_eq_normForm`,`sqrtTwoRoot`,`sqrtTwoInteger`, Common `abs_intNorm_lt_of_abs_norm_le`,`natAbs_lt_of_abs_ratCast_lt`] — **Lines**: 51-98 — **Notes**: KEY; proof >40 lines. **Strengthens** `isPrincipalIdealRing`. Fully proved (the `½` bound is exact for `d=2`) — contrast CubeRootThree where `normEuclidean` is blocked.
 
-**File Summary (Euclidean.lean)**: 2 decls (1 private helper, 1 public theorem). Key public result:
-`normEuclidean`. No sorry/set_option. `normEuclidean` proof ~50 lines. The helper
-`abs_norm_int_lt_of_remainder_eq` is generic enough to share with SqrtFive.
+**File Summary — Euclidean.lean**: 2 decls (theorem 1 + 1 private packaging lemma). Key Common API: `abs_intNorm_lt_of_abs_norm_le`, `natAbs_lt_of_abs_ratCast_lt`. No sorry/set_option. >30-line proofs: `normEuclidean`. **Note**: the norm-Euclidean inequality `|x²-2y²| ≤ 1/2` (for `|x|,|y| ≤ 1/2`) is discharged cleanly by `nlinarith`, so no extra covering machinery is needed — `ℚ(√2)` has the cleanest Euclidean proof of all the folders.
 
 ---
 
-## LocalGlobal.lean
+## LocalGlobal.lean  (561 lines)
 
 ### `def vTwo` / `vThree` / `vSevenPlus` / `vSevenMinus`
-- **Type**: `HeightOneSpectrum (𝓞 K)` for `(√2)`, `(3)`, `(3+√2)`, `(3-√2)`. **How**: package ideal + `isPrime_span_*` + `ne_bot` (from `absNorm_span_*`).
-- **Uses**: [isPrime_span_sqrtTwoInteger/three/three_add/three_sub, absNorm_span_sqrtTwoInteger/three/three_add/three_sub, sqrtTwoInteger] — public — **Lines**: 37-74 — **Notes**: each used by its FinitePlace + Completion + examples.
+- **Types**: `HeightOneSpectrum (𝓞 K)` for the primes `(√2)`, `(3)`, `(3+√2)`, `(3-√2)`. **How**: package `isPrime_…` + `ne_bot` (via nonzero `absNorm`). **Uses**: [`isPrime_span_sqrtTwoInteger/_three/_three_add/_sub`,`absNorm_…`,`sqrtTwoInteger`] — **Lines**: 37-74 — **Notes**: KEY (used by completions/finite places).
 
-### `abbrev finitePlaceTwo` / `Three` / `SevenPlus` / `SevenMinus`
-- **Type**: `NumberField.FinitePlace K := FinitePlace.mk v…` — **Uses**: [vTwo/vThree/vSevenPlus/vSevenMinus] — public — **Lines**: 77-90. `finitePlaceTwo` used in `finite_support_sqrtTwoRoot_only_vTwo`.
+### `abbrev finitePlaceTwo` / `finitePlaceThree` / `finitePlaceSevenPlus` / `finitePlaceSevenMinus`
+- **Types**: `NumberField.FinitePlace K := FinitePlace.mk v…`. **Uses**: [`vTwo`,`vThree`,`vSevenPlus`,`vSevenMinus`] — **Lines**: 76-90
 
-### `example`s (8×, lines 92-122)
-- ramification/inertia data for `vTwo/vThree/vSeven±` — **How**: cite the PrimeSplitting lemmas. **Uses**: [ramificationIdx_*, inertiaDeg_*, vTwo/vThree/vSeven±] — anonymous.
+### `example` (×8, finite places)
+- **Types**: `ramificationIdx`/`inertiaDeg` of each `v….asIdeal` equal the computed `e`,`f` (`2,1` / `1,2` / `1,1`,`1,1`). **How**: cite the PrimeSplitting lemmas. **Uses**: [`ramificationIdx_/inertiaDeg_span_…`] — **Lines**: 92-122 — **Notes**: smoke-tests tying `HeightOneSpectrum` to the ramification data.
 
-### `abbrev CompletionAtTwo` / `Three` / `SevenPlus` / `SevenMinus`
-- **Type**: `v….adicCompletion K` — **Uses**: [vTwo/vThree/vSeven±] — public — **Lines**: 139-152.
+### `abbrev CompletionAtTwo` / `CompletionAtThree` / `CompletionAtSevenPlus` / `CompletionAtSevenMinus`
+- **Types**: `v….adicCompletion K`. **Uses**: [the `v…`] — **Lines**: 138-152
 
-### `example`s (lines 155-168)
-- ram idx 2 at 2; inertia 2 at 3; inertia 1 at both 7. — **Uses**: [ramificationIdx_span_sqrtTwoInteger, inertiaDeg_span_three(+_add/_sub_sqrtTwo), vTwo/vThree/vSeven±] — anonymous.
+### `example` (×3, completions)
+- **Types**: `2`-adic remembers `e=2`; `3`-adic inert `f=2`; both `7`-completions `f=1`. **How**: cite PrimeSplitting lemmas. **Uses**: [`ramificationIdx_span_sqrtTwoInteger`,`inertiaDeg_span_three/_add/_sub`] — **Lines**: 154-168
 
 ### `abbrev InfiniteCompletion`
-- **Type**: `(v : InfinitePlace K) → Type := v.Completion` — **Uses**: [] — public — **Lines**: 185-186.
+- **Type**: `(v : InfinitePlace K) → Type := v.Completion`. **Uses**: [] — **Lines**: 184-186
 
 ### `example` (infinite completion ≅ ℝ)
-- **How**: `Completion.ringEquivRealOfIsReal (infinitePlace_isReal v)`. **Uses**: [InfiniteCompletion, infinitePlace_isReal] — anonymous — **Lines**: 189-191.
+- **Type**: `Nonempty (InfiniteCompletion v ≃+* ℝ)`. **How**: `Completion.ringEquivRealOfIsReal (infinitePlace_isReal v)`. **Uses**: [`infinitePlace_isReal`] — **Lines**: 188-191
 
 ### `theorem infiniteCompletion_sqrtTwoRoot_norm`
-- **Type**: `‖algebraMap K (InfiniteCompletion v) √2‖ = √2` — **How**: `Completion.norm_coe` + `infinitePlace_apply_sqrtTwoRoot`. — **Uses**: [InfiniteCompletion, sqrtTwoRoot, infinitePlace_apply_sqrtTwoRoot] — public — **Lines**: 194-199.
+- **Type**: `‖algebraMap K (InfiniteCompletion v) sqrtTwoRoot‖ = Real.sqrt 2`. **How**: `Completion.norm_coe`, `WithAbs.equiv`, `infinitePlace_apply_sqrtTwoRoot`. **Uses**: [`infinitePlace_apply_sqrtTwoRoot`,`sqrtTwoRoot`] — **Lines**: 193-199
 
 ### `theorem infinitePlace_sum_inertiaDeg_eq_two`
-- **Type**: `(v : InfinitePlace ℚ) → ∑ w ∈ v.placesOver K, v.inertiaDeg w = 2` — **How**: `sum_inertiaDeg_eq_finrank` + `degree_eq_two`. — **Uses**: [degree_eq_two] — public — **Lines**: 201-207.
+- **Type**: `(v : InfinitePlace ℚ) → ∑ w ∈ v.placesOver K, v.inertiaDeg w = 2`. **How**: `sum_inertiaDeg_eq_finrank` + `degree_eq_two`. **Uses**: [`degree_eq_two`] — **Lines**: 201-207 — **Notes**: `open scoped Classical in`.
 
-### `example` (product formula for √2)
-- **How**: `NumberField.prod_abs_eq_one` (√2≠0). **Uses**: [sqrtTwoRoot, sqrtTwoRoot_sq] — anonymous — **Lines**: 225-233.
-
-### `example` (product formula for 1+√2)
-- **How**: `prod_abs_eq_one`. **Uses**: [sqrtTwoFundamentalUnit] — anonymous — **Lines**: 236-245.
+### `example` (×2, product formula)
+- **Types**: product formula `(∏ infinite)(∏ finite) = 1` for `√2` and for the fundamental unit `1+√2`. **How**: `NumberField.prod_abs_eq_one` (nonzero witness). **Uses**: [`sqrtTwoRoot(_sq)`,`sqrtTwoFundamentalUnit`] — **Lines**: 224-245
 
 ### `theorem finite_support_sqrtTwoRoot_only_vTwo`
-- **Type**: `(v ≠ finitePlaceTwo) → v √2 = 1` — **What**: finite contribution of √2 sits only at vTwo. **How**: `norm_eq_one_iff_notMem`; maximal ideal containing `(√2)` must equal vTwo (`IsMaximal.eq_of_le`). — **Uses**: [sqrtTwoRoot, sqrtTwoInteger, finitePlaceTwo, vTwo] — public — **Lines**: 248-265 — **Notes**: ~18 lines.
+- **Type**: `v ≠ finitePlaceTwo → v sqrtTwoRoot = 1`. **What**: the finite-place support of `√2` is exactly `vTwo`. **How**: `norm_embedding_eq`, `norm_eq_one_iff_notMem`; if `√2 ∈` maximal ideal then `span{√2} ≤ that ideal`, and maximality of `(√2)` forces the ideal `= vTwo`. **Uses**: [`sqrtTwoRoot`,`sqrtTwoInteger`,`finitePlaceTwo`,`vTwo`,`isMaximal vTwo`] — **Lines**: 247-265 — **Notes**: proof >15 lines.
 
-### `abbrev SqrtTwoInfiniteAdeleRing` / `infinitePrincipalAdele_sqrtTwoRoot` / `_fundamentalUnit`
-- infinite adele ring + two principal adeles. **Uses**: [sqrtTwoRoot, sqrtTwoFundamentalUnit] — public — **Lines**: 282-292.
+### `abbrev SqrtTwoInfiniteAdeleRing` / `infinitePrincipalAdele_sqrtTwoRoot` / `…_fundamentalUnit`
+- **Types**: `InfiniteAdeleRing K`; principal infinite adeles of `√2` and `1+√2`. **Uses**: [`sqrtTwoRoot`,`sqrtTwoFundamentalUnit`] — **Lines**: 281-292
 
-### `example`s (lines 294-306)
-- norm of principal infinite adeles = `|N|`; dense range. — **Uses**: [infinitePrincipalAdele_sqrtTwoRoot/_fundamentalUnit, SqrtTwoInfiniteAdeleRing, sqrtTwoRoot, sqrtTwoFundamentalUnit] — anonymous.
+### `example` (×3, infinite adeles)
+- **Types**: `‖adele‖ = |norm ℚ ·|` for `√2` and the fundamental unit; `DenseRange (algebraMap K …)`. **How**: `InfiniteAdeleRing.coe_norm_eq_abs_norm`, `denseRange_algebraMap`. **Uses**: [`sqrtTwoRoot`,`sqrtTwoFundamentalUnit`] — **Lines**: 294-306
 
 ### `private theorem complexEmbedding_norm_sqrtTwoRoot`
-- **Type**: `(φ : K →+* ℂ) → ‖φ √2‖ = √2` — **How**: `infinitePlace_apply_sqrtTwoRoot (mk φ)`. — **Uses**: [sqrtTwoRoot, infinitePlace_apply_sqrtTwoRoot] — private — **Lines**: 322-324.
+- **Type**: `(φ : K →+* ℂ) → ‖φ sqrtTwoRoot‖ = Real.sqrt 2`. **How**: `infinitePlace_apply_sqrtTwoRoot` on `InfinitePlace.mk φ`. **Uses**: [`infinitePlace_apply_sqrtTwoRoot`,`sqrtTwoRoot`] — **Lines**: 322-324 — **Visibility**: private
 
 ### `theorem canonicalEmbedding_norm_sqrtTwoRoot`
-- **Type**: `‖canonicalEmbedding K √2‖ = √2` — **How**: `le_antisymm` via `canonicalEmbedding.norm_le_iff` and `norm_le_pi_norm`. — **Uses**: [sqrtTwoRoot, complexEmbedding_norm_sqrtTwoRoot] — public — **Lines**: 327-337.
+- **Type**: `‖canonicalEmbedding K sqrtTwoRoot‖ = Real.sqrt 2`. **What**: the house of `√2`. **How**: `le_antisymm`; `canonicalEmbedding.norm_le_iff` + `norm_le_pi_norm`. **Uses**: [`complexEmbedding_norm_sqrtTwoRoot`,`sqrtTwoRoot`] — **Lines**: 326-337 — **Notes**: used in House.
 
 ### `theorem canonicalEmbedding_sqrtTwoInteger_mem_integerLattice`
-- **Type**: `canonicalEmbedding K √2 ∈ integerLattice K` — **How**: exhibit preimage. — **Uses**: [sqrtTwoInteger] — public — **Lines**: 339-345.
+- **Type**: `canonicalEmbedding K (algebraMap sqrtTwoInteger) ∈ integerLattice K`. **How**: exhibit the preimage in `RingHom.range`. **Uses**: [`sqrtTwoInteger`] — **Lines**: 339-345
 
 ### `theorem canonicalEmbedding_fundamentalUnit_coordinates`
-- **Type**: `∃ σ τ, σ(1+√2) = 1+√2 ∧ τ(1+√2) = 1-√2` — **How**: `exists_realEmbedding_pos/_neg` composed with `ofRealHom`. — **Uses**: [exists_realEmbedding_pos, exists_realEmbedding_neg, sqrtTwoFundamentalUnit, sqrtTwoRoot] — public — **Lines**: 347-362.
+- **Type**: `∃ σ τ : K →+* ℂ`, `σ(1+√2) = 1+√2` and `τ(1+√2) = 1-√2`. **How**: `exists_realEmbedding_pos/_neg`, compose with `Complex.ofRealHom`. **Uses**: [`exists_realEmbedding_pos/_neg`,`sqrtTwoRoot`,`sqrtTwoFundamentalUnit`] — **Lines**: 347-362 — **Notes**: used in House.
 
 ### `abbrev mixedEmbedding_sqrtTwoRoot`
-- **Type**: `mixedSpace K := mixedEmbedding K √2` — **Uses**: [sqrtTwoRoot] — public — **Lines**: 379-380.
+- **Type**: `mixedEmbedding.mixedSpace K := mixedEmbedding K sqrtTwoRoot`. **Uses**: [`sqrtTwoRoot`] — **Lines**: 378-380
 
-### `example`s (lines 382-394)
-- `convexBodyLT_mem`; `measurableSet_fundamentalCone`; `measurableSet_normLeOne`. — **Uses**: [mixedEmbedding_sqrtTwoRoot, sqrtTwoRoot] — anonymous.
+### `example` (×3, geometry of numbers)
+- **Types**: `mixedEmbedding_sqrtTwoRoot ∈ convexBodyLT K f` under `w √2 < f w`; `MeasurableSet (fundamentalCone K)`; `MeasurableSet (fundamentalCone.normLeOne K)`. **How**: `convexBodyLT_mem`, `measurableSet_fundamentalCone`, `fundamentalCone.measurableSet_normLeOne`. **Uses**: [`mixedEmbedding_sqrtTwoRoot`,`sqrtTwoRoot`] — **Lines**: 382-394
 
 ### `theorem polarSpace_nonempty`
-- **Type**: `Nonempty (polarSpace K)` — `infer_instance`. — **Uses**: [] — public — **Lines**: 396-398.
+- **Type**: `Nonempty (mixedEmbedding.polarSpace K)`. **How**: `infer_instance`. **Uses**: [] — **Lines**: 396-398
 
 ### `theorem unit_smul_mem_fundamentalCone_iff_eq_one_or_neg_one`
-- **Type**: `u • x ∈ fundamentalCone ↔ u = ±1` — **How**: `fundamentalCone.unit_smul_mem_iff_mem_torsion` + `mem_torsion_iff_eq_one_or_neg_one`. — **Uses**: [mem_torsion_iff_eq_one_or_neg_one] — public — **Lines**: 402-408.
+- **Type**: for `x` in the fundamental cone, `u • x ∈ cone ↔ u = 1 ∨ u = -1`. **How**: `fundamentalCone.unit_smul_mem_iff_mem_torsion` + `mem_torsion_iff_eq_one_or_neg_one`. **Uses**: [`mem_torsion_iff_eq_one_or_neg_one`] — **Lines**: 400-408 — **Notes**: ties the (proved) torsion `{±1}` to the geometry of numbers.
 
 ### `theorem house_sqrtTwoRoot`
-- **Type**: `house √2 = √2` — **How**: `house` + `canonicalEmbedding_norm_sqrtTwoRoot`. — **Uses**: [sqrtTwoRoot, canonicalEmbedding_norm_sqrtTwoRoot] — public — **Lines**: 425-427.
+- **Type**: `NumberField.house sqrtTwoRoot = Real.sqrt 2`. **How**: unfold `house` + `canonicalEmbedding_norm_sqrtTwoRoot`. **Uses**: [`canonicalEmbedding_norm_sqrtTwoRoot`,`sqrtTwoRoot`] — **Lines**: 424-427
 
 ### `theorem house_sqrtTwoInteger`
-- **Type**: `house (algebraMap √2) = √2` — **Uses**: [sqrtTwoInteger, house_sqrtTwoRoot] — public — **Lines**: 429-432.
+- **Type**: `house (algebraMap sqrtTwoInteger) = Real.sqrt 2`. **How**: `simpa` from `house_sqrtTwoRoot`. **Uses**: [`house_sqrtTwoRoot`,`sqrtTwoInteger`] — **Lines**: 429-432
 
 ### `theorem house_sqrtTwoFundamentalUnit`
-- **Type**: `house (1+√2) = 1+√2` — **How**: `le_antisymm` (`norm_le_iff` + triangle; lower bound from real embedding `σ`). — **Uses**: [sqrtTwoFundamentalUnit, sqrtTwoRoot, infinitePlace_apply_sqrtTwoRoot, canonicalEmbedding_fundamentalUnit_coordinates] — public — **Lines**: 434-457 — **Notes**: ~23 lines.
+- **Type**: `house (algebraMap (1+√2)) = 1 + Real.sqrt 2`. **How**: `le_antisymm`; upper bound `norm_add_le` per embedding (each `‖φ√2‖=√2`); lower bound from the real embedding `σ(1+√2)=1+√2` of `canonicalEmbedding_fundamentalUnit_coordinates`. **Uses**: [`infinitePlace_apply_sqrtTwoRoot`,`canonicalEmbedding_fundamentalUnit_coordinates`,`sqrtTwoRoot`,`sqrtTwoFundamentalUnit`] — **Lines**: 434-457 — **Notes**: proof >20 lines.
 
-### `abbrev SqrtTwoAdeleRing` / `principalAdele_sqrtTwoRoot` / `_fundamentalUnit`
-- full adele ring + principal adeles. **Uses**: [sqrtTwoRoot, sqrtTwoFundamentalUnit] — public — **Lines**: 474-483.
+### `abbrev SqrtTwoAdeleRing` / `principalAdele_sqrtTwoRoot` / `…_fundamentalUnit`
+- **Types**: `AdeleRing (𝓞 K) K`; principal adeles of `√2` and `1+√2`. **Uses**: [`sqrtTwoRoot`,`sqrtTwoFundamentalUnit`] — **Lines**: 473-483
 
 ### `theorem principalAdele_sqrtTwoRoot_ne_zero`
-- **Type**: `principalAdele_sqrtTwoRoot ≠ 0` — **How**: `AdeleRing.algebraMap_injective`. — **Uses**: [principalAdele_sqrtTwoRoot, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 486-494.
+- **Type**: `principalAdele_sqrtTwoRoot ≠ 0`. **How**: `AdeleRing.algebraMap_injective`; `√2=0 ⇒ 2=0`. **Uses**: [`principalAdele_sqrtTwoRoot`,`sqrtTwoRoot(_sq)`] — **Lines**: 485-494
 
 ### `theorem principalAdele_fundamentalUnit_is_unit_everywhere`
-- **Type**: `∀ v : FinitePlace K, v(1+√2) = 1` — **How**: `norm_eq_one_iff_notMem`; if `(1+√2) ∈ 𝔪` then `1 ∈ 𝔪` (via inverse). — **Uses**: [sqrtTwoFundamentalUnit, sqrtTwoInteger, sqrtTwoRoot, sqrtTwoRoot_sq] — public — **Lines**: 497-524 — **Notes**: ~27 lines.
+- **Type**: `∀ v : FinitePlace K, v (algebraMap (1+√2)) = 1`. **What**: the unit is a local unit at every finite place. **How**: `norm_embedding_eq`, `norm_eq_one_iff_notMem`; if `(1+√2) ∈` maximal ideal then so is `(1+√2)(√2-1)=1`, contradiction. **Uses**: [`sqrtTwoFundamentalUnit`,`sqrtTwoInteger`,`sqrtTwoRoot_sq`] — **Lines**: 496-524 — **Notes**: proof >20 lines.
 
 ### `abbrev sqrtTwoDedekindZeta` / `sqrtTwoDedekindZetaResidue`
-- Dedekind zeta + residue. **Uses**: [] — public — **Lines**: 541-546.
+- **Types**: `dedekindZeta K s`; `dedekindZeta_residue K`. **Uses**: [] — **Lines**: 540-546
 
-### `example`s (lines 548-558)
-- residue positivity; class-number-formula residue identity. — **Uses**: [sqrtTwoDedekindZetaResidue] — anonymous.
+### `example` (×2, zeta)
+- **Types**: residue `> 0`; the class-number-formula expansion `residue = (2^r₁ (2π)^r₂ · reg · h)/(w · √|disc|)`. **How**: `dedekindZeta_residue_pos`, `dedekindZeta_residue_def`. **Uses**: [] — **Lines**: 548-558
 
-**File Summary (LocalGlobal.lean)**: ~45 decls (~16 named theorems, ~15 abbrevs/defs, ~14
-anonymous `example`s). Key API: `vTwo/vThree/vSeven±`, `finitePlaceTwo`,
-`canonicalEmbedding_norm_sqrtTwoRoot`, `canonicalEmbedding_fundamentalUnit_coordinates`,
-`mem_torsion_iff_eq_one_or_neg_one` (imported). Public results: place data, completions, infinite
-completion ≅ ℝ, product formula, house of √2 / 1+√2, adele non-vanishing, Dedekind zeta residue.
-No sorry/set_option. No proof >30 lines (longest ≈27). Many `example`s are demonstrative (not
-reusable API).
+**File Summary — LocalGlobal.lean**: ~34 named decls + ~18 `example` smoke-tests. Seven+ `noncomputable section`s (Finite Places / Completions / Infinite Completions / Product Formula / Infinite Adeles / Canonical Embedding (+Geometry) / House / Adeles / Zeta). Key API (3+): `sqrtTwoRoot`, `infinitePlace_apply_sqrtTwoRoot`, `sqrtTwoFundamentalUnit`, the `v…`/`finitePlace…`/`Completion…` families, `canonicalEmbedding_*`. No sorry/set_option. >30-line proofs: none individually (several ~20-25). Most "results" here are `example` smoke-tests pinning the local data to mathlib's adele/place/zeta API rather than new theorems.
 
 ---
 
-## Cross-file observations
+## Folder-level notes
 
-- **SqrtFive twins (QuadraticAlgebra setup, near-identical)**: `K`, `degree_eq_two`,
-  `IsQuadraticExtension` instance, the AdjoinRoot↔QuadraticAlgebra equivalence block, the entire
-  Units machinery (`torsionOrder_eq_two`, `unitRank_eq_one`,
-  `exists_eq_torsion_mul_fundSystem_zpow`, `fundSystem_zpow_mem_torsion`,
-  `eq_one_or_neg_one_of_mem_torsion`, `mem_torsion_iff_eq_one_or_neg_one`,
-  `unitGroupStructure(_bijective)`, `regulator_eq` sorry), `normEuclidean`, all the
-  PrimeSplitting/LocalGlobal scaffolding. Differences: generator (`√2` vs golden `(1+√5)/2`),
-  constants (disc 8 vs 5; norm form `x²-2y²` vs golden form), and SqrtFive's golden-ratio
-  intermediary model.
-- **EXTRA in SqrtTwo (not in SqrtFive)**: the whole `KUnitModel` second presentation
-  (`sqrtTwoUnitPolynomial`, `KUnitModel`, `sqrtTwoUnitRoot`, `sqrtTwoUnitRoot_relation`,
-  `sqrtTwoToUnitModel`, `unitModelToSqrtTwo`, `sqrtTwoEquivUnitModel`, `_root` lemmas) —
-  Basic.lean lines 173-270. Self-contained, unused by any sibling file.
-- **Generic helpers worth promoting**: `ringHom_ext_sqrtTwo` (Embeddings),
-  `abs_norm_int_lt_of_remainder_eq` (Euclidean), `two_not_int_square` (Units),
-  `zsqrtTwoEquivRingOfIntegers_unitsMap_neg` (Units), `absNorm_span_natCast` (PrimeSplitting).
+- **Sorry count: 0.** Everything — including the full unit-group structure theorem `μ₂ × ℤ`, the fundamental unit `1+√2` (via mathlib's `Zsqrtd`/`Pell.Solution₁` API), and now `regulator_eq` (via `regOfFamily_eq_det`) — is proved. This is the most-complete of the case-study folders.
+- **Generic/duplicated helpers**: `ringHom_ext_sqrtTwo` (Embeddings) is a generic `QuadraticAlgebra` ext lemma; `absNorm_span_natCast`, `li_one_sqrtTwo`, `exists_o2_coords`, `unit_sqrtTwo_coeff_not_mem` mirror the SqrtFive private toolkit.
+- **set_option**: one `set_option linter.flexible false` (RingOfIntegers `sqrtTwoExplicitIntegralBasis_discr`).
+- **Discriminant 8 = 2³**; one ramified prime `(√2)` (`e=2,f=1`); splitting law `p ≡ ±1 (mod 8)` via the second supplement (`ZMod.exists_sq_eq_two_iff`); class number 1; norm-Euclidean.

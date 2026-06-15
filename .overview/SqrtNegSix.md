@@ -1,1526 +1,748 @@
-# SqrtNegSix declaration inventory
+# Declaration Inventory — `XYin/NumberField/FieldExamples/SqrtNegSix/`
 
-Field: `K = ℚ(√-6) = QuadraticAlgebra ℚ (-6) 0`. Imaginary quadratic, signature `(0,1)`,
-discriminant `-24`, ring of integers `ℤ[√-6]` (maximal order), class number `2`,
-non-trivial class group `ℤ/2`, **not** a UFD/PID, **not** norm-Euclidean.
-
-All declarations live in `namespace NumberField.SqrtNegSix` unless noted.
-`𝓞 K` denotes `NumberField.RingOfIntegers K`. `θ = √-6`, `thetaInt` its integral lift.
-
-Common helpers referenced live in `namespace NumberField.FieldExamples`
-(file `FieldExamples/Common.lean`).
+Imaginary quadratic field `ℚ(√-6)`, built via `QuadraticAlgebra ℚ (-6) 0` (radical model, generator
+`θ` with `θ² = -6`). Signature `(0,1)`; ring of integers `ℤ[√-6]` (maximal order, since `-6 ≡ 2 (mod 4)`);
+discriminant `-24`. **The only non-PID case study**: class number `2`, class group `≅ ℤ/2`, *not* a UFD,
+*not* norm-Euclidean — the mathematically interesting negative results. Namespace `NumberField.SqrtNegSix`.
+Cross-refs to `Common.lean` via `NumberField.FieldExamples`. Import chain:
+`Basic → Galois → Embeddings → RingOfIntegers → PrimeSplitting → ClassGroup → Units → Euclidean → LocalGlobal`,
+plus special-topic files `CMField` and `UniqueFactorization`. **Sorry-free** (confirmed: zero `sorry`/`admit`).
 
 ---
 
 ## Basic.lean
 
-### `instance : Fact (∀ r : ℚ, r ^ 2 ≠ (-6 : ℚ) + (0 : ℚ) * r)`
+### `instance : Fact (∀ r : ℚ, r ^ 2 ≠ (-6 : ℚ) + 0 * r)`
 - **Type**: `Fact (∀ r : ℚ, r ^ 2 ≠ (-6 : ℚ) + (0 : ℚ) * r)`
-- **What**: The nonsquare condition that makes `QuadraticAlgebra ℚ (-6) 0` a field.
-- **How**: `sq_nonneg r` plus `nlinarith`.
-- **Hypotheses**: none.
-- **Uses from project**: []
-- **Visibility**: public (instance)
-- **Lines**: 33-36
-- **Notes**: none.
+- **What**: Nonsquare hypothesis making `QuadraticAlgebra ℚ (-6) 0` a field (`-6` is not a rational square).
+- **How**: `sq_nonneg r` + `nlinarith` (no real square root of a negative).
+- **Uses from project**: [] — **Visibility**: public (anonymous instance) — **Lines**: 33-36
 
 ### `abbrev K`
-- **Type**: `Type := QuadraticAlgebra ℚ (-6 : ℚ) 0`
-- **What**: The number field `ℚ(√-6)`.
-- **How**: definitional.
-- **Hypotheses**: none.
-- **Uses from project**: []
-- **Visibility**: public
-- **Lines**: 39
-- **Notes**: none.
+- **Type**: `K : Type := QuadraticAlgebra ℚ (-6:ℚ) 0`. **What**: the field `ℚ(√-6)` (radical model). **Uses**: [] — **Lines**: 39
 
 ### `abbrev θ`
-- **Type**: `K := QuadraticAlgebra.omega`
-- **What**: The distinguished square root of `-6`.
-- **How**: definitional.
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 42
+- **Type**: `θ : K := QuadraticAlgebra.omega`. **What**: distinguished `√-6`. **Uses**: [] — **Lines**: 42 — **Notes**: KEY, pervasive.
 
 ### `instance : Field K`
-- **Type**: `Field K`
-- **What**: Field structure on `K`.
-- **How**: `infer_instance`.
-- **Uses from project**: [`K`]
-- **Visibility**: public (instance)
-- **Lines**: 45-46
+- **How**: `infer_instance` (uses the `Fact` above). **Uses**: [] — **Lines**: 45-46
 
 ### `instance : FiniteDimensional ℚ K`
-- **Type**: `FiniteDimensional ℚ K`
-- **What**: `K` is finite-dimensional over `ℚ`.
-- **How**: `QuadraticAlgebra.basis ... |>.finiteDimensional_of_finite`.
-- **Uses from project**: [`K`]
-- **Visibility**: public (instance)
-- **Lines**: 49-50
+- **How**: `QuadraticAlgebra.basis (-6) 0 |>.finiteDimensional_of_finite`. **Uses**: [] — **Lines**: 49-50
 
 ### `instance : NumberField K`
-- **Type**: `NumberField K`
-- **What**: Number-field structure on `K`.
-- **How**: `NumberField.of_module_finite ℚ K`.
-- **Uses from project**: [`K`]
-- **Visibility**: public (instance)
-- **Lines**: 53-54
+- **How**: `NumberField.of_module_finite ℚ K`. **Uses**: [] — **Lines**: 53-54
 
 ### `theorem degree_eq_two`
-- **Type**: `Module.finrank ℚ K = 2`
-- **What**: `[K : ℚ] = 2`.
-- **How**: `Module.finrank_eq_card_basis` on `QuadraticAlgebra.basis`, then `Fintype.card_fin`.
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 57-58
+- **Type**: `Module.finrank ℚ K = 2`. **How**: `Module.finrank_eq_card_basis` on `QuadraticAlgebra.basis` + `Fintype.card_fin`.
+- **Uses**: [] — **Visibility**: public — **Lines**: 57-58 — **Notes**: KEY (used in Embeddings, RingOfIntegers, ClassGroup, PrimeSplitting).
 
 ### `instance : Algebra.IsQuadraticExtension ℚ K`
-- **Type**: `Algebra.IsQuadraticExtension ℚ K`
-- **What**: Quadratic-extension class instance.
-- **How**: field `finrank_eq_two' := degree_eq_two`.
-- **Uses from project**: [`K`, `degree_eq_two`]
-- **Visibility**: public (instance)
-- **Lines**: 60-61
+- **How**: `degree_eq_two`. **Uses**: [`degree_eq_two`] — **Lines**: 60-61
 
 ### `theorem theta_sq`
-- **Type**: `θ ^ 2 = -6`
-- **What**: `θ² = -6`.
-- **How**: `QuadraticAlgebra.omega_mul_omega_eq_add`, simp.
-- **Uses from project**: [`θ`]
-- **Visibility**: public
-- **Lines**: 64-66
-- **Notes**: KEY API (used 15+ times across folder).
+- **Type**: `θ ^ 2 = -6`. **How**: `sq` + `QuadraticAlgebra.omega_mul_omega_eq_add` + `simp`.
+- **Uses**: [] — **Lines**: 64-66 — **Notes**: KEY (the defining relation, used everywhere).
 
 ### `abbrev sqrtNegSixPolynomial`
-- **Type**: `Polynomial ℚ := X ^ 2 + C 6`
-- **What**: defining polynomial `X²+6`.
-- **Uses from project**: []
-- **Visibility**: public
-- **Lines**: 69-70
+- **Type**: `ℚ[X] := X^2 + C 6` — defining polynomial `X²+6`. **Uses**: [] — **Lines**: 69-70
 
 ### `instance : Fact (Irreducible sqrtNegSixPolynomial)`
-- **Type**: `Fact (Irreducible sqrtNegSixPolynomial)`
-- **What**: `X²+6` is irreducible over `ℚ`.
-- **How**: `Polynomial.irreducible_of_degree_le_three_of_not_isRoot`, `natDegree_X_pow_add_C`, `nlinarith` for no real root.
-- **Uses from project**: [`sqrtNegSixPolynomial`]
-- **Visibility**: public (instance)
-- **Lines**: 72-84
+- **How**: `irreducible_of_degree_le_three_of_not_isRoot` (degree 2, no rational root since `x²+6=0` impossible via `sq_nonneg`+`nlinarith`).
+- **Uses**: [] — **Lines**: 72-84
 
 ### `abbrev KAdjoinRoot`
-- **Type**: `Type := AdjoinRoot sqrtNegSixPolynomial`
-- **What**: `AdjoinRoot` presentation of the same field.
-- **Uses from project**: [`sqrtNegSixPolynomial`]
-- **Visibility**: public
-- **Lines**: 87
+- **Type**: `AdjoinRoot sqrtNegSixPolynomial`. Alternate presentation. **Uses**: [] — **Lines**: 87
 
 ### `abbrev thetaAdjoinRoot`
-- **Type**: `KAdjoinRoot := AdjoinRoot.root sqrtNegSixPolynomial`
-- **What**: root in the `AdjoinRoot` model.
-- **Uses from project**: [`KAdjoinRoot`, `sqrtNegSixPolynomial`]
-- **Visibility**: public
-- **Lines**: 90
+- **Type**: `AdjoinRoot.root sqrtNegSixPolynomial`. **Uses**: [] — **Lines**: 90
 
 ### `theorem thetaAdjoinRoot_sq`
-- **Type**: `thetaAdjoinRoot ^ 2 = (-6 : KAdjoinRoot)`
-- **What**: root squares to `-6`.
-- **How**: `AdjoinRoot.eval₂_root`, `linear_combination`.
-- **Uses from project**: [`thetaAdjoinRoot`, `sqrtNegSixPolynomial`]
-- **Visibility**: public
-- **Lines**: 92-97
+- **Type**: `thetaAdjoinRoot ^ 2 = (-6 : KAdjoinRoot)`. **How**: `AdjoinRoot.eval₂_root` + `linear_combination`.
+- **Uses**: [] — **Lines**: 92-97
 
 ### `private theorem sqrtNegSixPolynomial_aeval_theta`
-- **Type**: `Polynomial.eval₂ (Algebra.ofId ℚ K) θ sqrtNegSixPolynomial = 0`
-- **What**: `θ` is a root of the defining polynomial via `eval₂`.
-- **How**: calc to `θ²+6 = 0`, `theta_sq`.
-- **Uses from project**: [`K`, `θ`, `sqrtNegSixPolynomial`, `theta_sq`]
-- **Visibility**: private
-- **Lines**: 99-103
+- **Type**: `eval₂ (Algebra.ofId ℚ K) θ sqrtNegSixPolynomial = 0`. **How**: `calc` to `θ²+6` then `theta_sq`. **Uses**: [`theta_sq`] — **Lines**: 99-103
 
 ### `private theorem thetaAdjoinRoot_mul_self`
-- **Type**: `thetaAdjoinRoot * thetaAdjoinRoot = (-6) • 1 + 0 • thetaAdjoinRoot`
-- **What**: multiplication table for the `AdjoinRoot` generator (quadratic-algebra form).
-- **How**: rewrite to `^2`, `thetaAdjoinRoot_sq`, simp.
-- **Uses from project**: [`thetaAdjoinRoot`, `thetaAdjoinRoot_sq`, `KAdjoinRoot`]
-- **Visibility**: private
-- **Lines**: 105-110
+- **Type**: `thetaAdjoinRoot * thetaAdjoinRoot = (-6)•1 + 0•thetaAdjoinRoot`. **How**: `thetaAdjoinRoot_sq` + `simp`. **Uses**: [] — **Lines**: 105-110
 
 ### `noncomputable def adjoinRootEquivQuadratic`
-- **Type**: `KAdjoinRoot ≃ₐ[ℚ] K`
-- **What**: equivalence between the `AdjoinRoot` and quadratic-algebra presentations.
-- **How**: `AdjoinRoot.liftAlgHom` one way, `QuadraticAlgebra.lift` the other; `AlgEquiv.ofAlgHom` with `QuadraticAlgebra.algHom_ext` / `AdjoinRoot.algHom_ext` round-trips.
-- **Uses from project**: [`KAdjoinRoot`, `K`, `θ`, `sqrtNegSixPolynomial_aeval_theta`, `thetaAdjoinRoot`, `thetaAdjoinRoot_mul_self`]
-- **Visibility**: public
-- **Lines**: 113-136
-- **Notes**: proof >20 lines.
+- **Type**: `KAdjoinRoot ≃ₐ[ℚ] K`. **What**: equivalence of AdjoinRoot and quadratic-algebra presentations.
+- **How**: `AdjoinRoot.liftAlgHom` and `QuadraticAlgebra.lift`; inverses via `algHom_ext` on both sides.
+- **Uses**: [`theta`, the two aux lemmas] — **Lines**: 113-136 — **Notes**: proof >20 lines.
 
 ### `theorem adjoinRootEquivQuadratic_root`
-- **Type**: `adjoinRootEquivQuadratic thetaAdjoinRoot = θ`
-- **What**: the equivalence maps the formal root to `θ`.
-- **How**: unfolds to `AdjoinRoot.liftAlgHom_root`.
-- **Uses from project**: [`adjoinRootEquivQuadratic`, `thetaAdjoinRoot`, `θ`, `sqrtNegSixPolynomial`, `sqrtNegSixPolynomial_aeval_theta`]
-- **Visibility**: public
-- **Lines**: 138-143
+- **Type**: `adjoinRootEquivQuadratic thetaAdjoinRoot = θ`. **How**: `AdjoinRoot.liftAlgHom_root`. **Uses**: [] — **Lines**: 138-143
 
-**File Summary (Basic.lean)**: 17 decls (1 def + 1 noncomputable def, 7 theorems, 6 abbrevs, 5 instances).
-Key API: `theta_sq` (used 15+×), `K`, `θ`, `degree_eq_two`. Unused outside file: `adjoinRootEquivQuadratic`, `adjoinRootEquivQuadratic_root`, `thetaAdjoinRoot*`, `KAdjoinRoot` (twin/parallel presentation, only consumed in Basic). No sorry, no set_option, no proof >30 lines.
+**File Summary**: Field setup. Establishes `K = ℚ(√-6)` two ways (quadratic-algebra `θ`, `AdjoinRoot`), proves they
+agree, fixes degree 2 and the defining relation `θ²=-6`. The radical model (vs. golden-ratio model of `SqrtFive`)
+because `-6 ≡ 2 (mod 4)` ⇒ naive order already maximal. KEY exports: `K`, `θ`, `degree_eq_two`, `theta_sq`.
 
 ---
 
 ## Galois.lean
 
 ### `noncomputable def idAut`
-- **Type**: `K ≃ₐ[ℚ] K := AlgEquiv.refl`
-- **What**: identity automorphism.
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 32
+- **Type**: `K ≃ₐ[ℚ] K := AlgEquiv.refl`. **Uses**: [] — **Lines**: 32
 
 ### `private noncomputable def conjugationHom`
-- **Type**: `K →ₐ[ℚ] K`
-- **What**: the algebra map `θ ↦ -θ`.
-- **How**: `QuadraticAlgebra.lift` with multiplication-table witness from `omega_mul_omega_eq_add`.
-- **Uses from project**: [`K`]
-- **Visibility**: private
-- **Lines**: 35-39
+- **Type**: `K →ₐ[ℚ] K`. **What**: `θ ↦ -θ` via `QuadraticAlgebra.lift ⟨-omega, …⟩`. **How**: relation from `omega_mul_omega_eq_add` + `neg_mul_neg`. **Uses**: [] — **Lines**: 35-39
 
 ### `private theorem conjugationHom_omega`
-- **Type**: `conjugationHom θ = -θ`
-- **How**: unfold lift, simp.
-- **Uses from project**: [`conjugationHom`, `θ`]
-- **Visibility**: private
-- **Lines**: 41-44
+- **Type**: `conjugationHom θ = -θ`. **How**: `change` to component form + `simp`. **Uses**: [] — **Lines**: 41-44
 
 ### `private theorem conjugationHom_conjugationHom`
-- **Type**: `conjugationHom.comp conjugationHom = AlgHom.id ℚ K`
-- **What**: conjugation is an involution.
-- **How**: `QuadraticAlgebra.algHom_ext`, `conjugationHom_omega`, `neg_neg`.
-- **Uses from project**: [`conjugationHom`, `conjugationHom_omega`, `θ`]
-- **Visibility**: private
-- **Lines**: 46-50
+- **Type**: `conjugationHom.comp conjugationHom = AlgHom.id`. **How**: `QuadraticAlgebra.algHom_ext` + `conjugationHom_omega`, `neg_neg`. **Uses**: [] — **Lines**: 46-50
 
 ### `noncomputable def conjugation`
-- **Type**: `K ≃ₐ[ℚ] K`
-- **What**: the nontrivial conjugation automorphism `θ ↦ -θ`.
-- **How**: `AlgEquiv.ofAlgHom conjugationHom conjugationHom` using the involution lemma both ways.
-- **Uses from project**: [`conjugationHom`, `conjugationHom_conjugationHom`, `K`]
-- **Visibility**: public
-- **Lines**: 54-56
+- **Type**: `K ≃ₐ[ℚ] K`. **What**: nontrivial conjugation `θ ↦ -θ` (complex conj. under any embedding). **How**: `AlgEquiv.ofAlgHom`. **Uses**: [] — **Lines**: 52-56 — **Notes**: KEY.
 
 ### `theorem conjugation_apply_theta`
-- **Type**: `conjugation θ = -θ`
-- **How**: `conjugationHom_omega`.
-- **Uses from project**: [`conjugation`, `θ`, `conjugationHom_omega`]
-- **Visibility**: public
-- **Lines**: 59-60
+- **Type**: `conjugation θ = -θ`. **How**: `conjugationHom_omega`. **Uses**: [] — **Lines**: 58-60
 
 ### `theorem isGalois`
-- **Type**: `IsGalois ℚ K`
-- **How**: `infer_instance`.
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 62-63
+- **Type**: `IsGalois ℚ K`. **How**: `infer_instance` (separable + normal for quadratic). **Uses**: [] — **Lines**: 62-63
 
 ### `theorem aut_eq_or`
-- **Type**: `(σ : K ≃ₐ[ℚ] K) → σ = idAut ∨ σ = conjugation`
-- **What**: every `ℚ`-automorphism is `id` or conjugation.
-- **How**: `(σθ)² = -6 ⇒ (σθ-θ)(σθ+θ)=0`; `QuadraticAlgebra.algHom_ext` to extend equality on the generator.
-- **Uses from project**: [`K`, `θ`, `theta_sq`, `idAut`, `conjugation`, `conjugation_apply_theta`]
-- **Visibility**: public
-- **Lines**: 66-82
-- **Notes**: KEY (used by `prod_auts`, `galoisGroupStructure`).
+- **Type**: `∀ σ, σ = idAut ∨ σ = conjugation`. **What**: only two automorphisms. **How**: `(σθ)²=-6` ⇒ `(σθ-θ)(σθ+θ)=0`; `QuadraticAlgebra.algHom_ext` pins down `σ` by its value on `θ`. **Uses**: [`theta_sq`] — **Lines**: 66-82
 
 ### `private theorem conjugation_ne_id`
-- **Type**: `conjugation ≠ idAut`
-- **How**: would force `2θ=0`, contradicts `theta_sq` via `mul_eq_zero`.
-- **Uses from project**: [`conjugation`, `idAut`, `conjugation_apply_theta`, `θ`, `theta_sq`]
-- **Visibility**: private
-- **Lines**: 84-93
+- **Type**: `conjugation ≠ idAut`. **How**: would give `2θ=0`; rule out via `theta_sq`. **Uses**: [`theta_sq`] — **Lines**: 84-93
 
 ### `theorem prod_auts`
-- **Type**: `(z : K) → ∏ σ : K ≃ₐ[ℚ] K, σ z = z * conjugation z`
-- **What**: product over the Galois group equals `z · conjugation z` (relative norm).
-- **How**: `Finset.univ = {id, conjugation}` via `aut_eq_or`, `Finset.prod_insert`/`prod_singleton`.
-- **Uses from project**: [`K`, `idAut`, `conjugation`, `aut_eq_or`, `conjugation_ne_id`]
-- **Visibility**: public
-- **Lines**: 95-107
+- **Type**: `∏ σ, σ z = z * conjugation z`. **How**: `Finset.univ = {idAut, conjugation}` (from `aut_eq_or`), `prod_insert`/`prod_singleton`. **Uses**: [`aut_eq_or`] — **Lines**: 95-107
 
 ### `theorem galoisGroupStructure`
-- **Type**: `Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (ZMod 2))`
-- **What**: `Gal(K/ℚ) ≅ ℤ/2`.
-- **How**: `Nat.card_eq_two_iff` from `idAut`,`conjugation`; `mulEquivOfPrimeCardEq` (mathlib).
-- **Uses from project**: [`K`, `idAut`, `conjugation`, `conjugation_ne_id`, `aut_eq_or`]
-- **Visibility**: public
-- **Lines**: 109-118
+- **Type**: `Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (ZMod 2))`. **How**: `Nat.card = 2` (from `aut_eq_or`), `mulEquivOfPrimeCardEq`. **Uses**: [`aut_eq_or`, `conjugation_ne_id`] — **Lines**: 109-118
 
-**File Summary (Galois.lean)**: 11 decls (3 defs, 8 theorems). Key API: `aut_eq_or`, `conjugation`, `conjugation_apply_theta`, `theta_sq`. Unused outside file: `prod_auts`, `galoisGroupStructure`, `isGalois`, `idAut` (terminal results). No sorry, no set_option, no proof >30 lines.
+**File Summary**: Galois theory of the quadratic extension. The single nontrivial automorphism is `conjugation`
+(`θ↦-θ`). Proves `IsGalois`, classifies all auts (`aut_eq_or`), Gal group `≅ ℤ/2`. Quadratic so all standard.
 
 ---
 
 ## Embeddings.lean
 
 ### `theorem isTotallyComplex`
-- **Type**: `NumberField.IsTotallyComplex K`
-- **What**: `K` is totally complex (no real embedding).
-- **How**: any embedding has `z²=-6`; real-embedding ⇒ `z.im=0` ⇒ contradiction via `nlinarith [sq_nonneg z.re]`. Uses `ComplexEmbedding.isReal_iff`, `Complex.conj_eq_iff_im`.
-- **Uses from project**: [`K`, `θ`, `theta_sq`]
-- **Visibility**: public
-- **Lines**: 34-48
-- **Notes**: KEY (used by Embeddings, CMField, ClassGroup, LocalGlobal).
+- **Type**: `NumberField.IsTotallyComplex K`. **What**: every infinite place is complex. **How**: under a real embedding `z=σθ` satisfies `z²=-6` with `z.im=0`, contradicting `z.re²<0` via `nlinarith`. **Uses**: [`theta_sq`] — **Lines**: 34-48 — **Notes**: KEY (used in CMField, Units, ClassGroup).
 
 ### `theorem nrRealPlaces_eq_zero`
-- **Type**: `NumberField.InfinitePlace.nrRealPlaces K = 0`
-- **How**: `IsTotallyComplex.nrRealPlaces_eq_zero`.
-- **Uses from project**: [`K`, `isTotallyComplex`]
-- **Visibility**: public
-- **Lines**: 50-52
-- **Notes**: KEY (used 5+×).
+- **Type**: `nrRealPlaces K = 0`. **How**: `IsTotallyComplex.nrRealPlaces_eq_zero`. **Uses**: [`isTotallyComplex`] — **Lines**: 50-52 — **Notes**: KEY.
 
 ### `theorem nrComplexPlaces_eq_one`
-- **Type**: `NumberField.InfinitePlace.nrComplexPlaces K = 1`
-- **How**: `card_add_two_mul_card_eq_rank`, `nrRealPlaces_eq_zero`, `degree_eq_two`, omega.
-- **Uses from project**: [`K`, `nrRealPlaces_eq_zero`, `degree_eq_two`]
-- **Visibility**: public
-- **Lines**: 54-57
-- **Notes**: KEY (used 4+×).
+- **Type**: `nrComplexPlaces K = 1`. **How**: `card_add_two_mul_card_eq_rank` + `nrRealPlaces_eq_zero` + `degree_eq_two` + `omega`. **Uses**: [`nrRealPlaces_eq_zero`, `degree_eq_two`] — **Lines**: 54-57 — **Notes**: KEY (signature `(0,1)`).
 
 ### `theorem infinitePlace_card_eq_one`
-- **Type**: `Fintype.card (NumberField.InfinitePlace K) = 1`
-- **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces` + the two place counts.
-- **Uses from project**: [`K`, `nrRealPlaces_eq_zero`, `nrComplexPlaces_eq_one`]
-- **Visibility**: public
-- **Lines**: 71-74
+- **Type**: `Fintype.card (InfinitePlace K) = 1`. **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces`. **Uses**: [the two place counts] — **Lines**: 71-74
 
 ### `theorem infinitePlace_isComplex`
-- **Type**: `(v : InfinitePlace K) → v.IsComplex`
-- **How**: `isTotallyComplex.isComplex v`.
-- **Uses from project**: [`K`, `isTotallyComplex`]
-- **Visibility**: public
-- **Lines**: 76-78
-- **Notes**: used in LocalGlobal.
+- **Type**: `∀ v, IsComplex v`. **How**: `isTotallyComplex.isComplex`. **Uses**: [`isTotallyComplex`] — **Lines**: 76-78
 
 ### `theorem exists_complexEmbedding_theta_pos`
-- **Type**: `∃ σ : K →+* ℂ, σ θ = Complex.I * (Real.sqrt 6)`
-- **How**: `QuadraticAlgebra.lift` to `I√6` with witness via `Complex.I_mul_I`, `Real.sq_sqrt`.
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: public
-- **Lines**: 80-89
+- **Type**: `∃ σ : K →+* ℂ, σ θ = I·√6`. **How**: `QuadraticAlgebra.lift ⟨I·√6, …⟩`; `(I·√6)²=-6` via `I_mul_I`+`sq_sqrt`. **Uses**: [] — **Lines**: 80-89
 
 ### `theorem exists_complexEmbedding_theta_neg`
-- **Type**: `∃ σ : K →+* ℂ, σ θ = -Complex.I * (Real.sqrt 6)`
-- **How**: as above with `-I√6`.
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: public
-- **Lines**: 91-100
+- **Type**: `∃ σ : K →+* ℂ, σ θ = -I·√6`. **How**: twin of pos, witness `-I·√6`. **Uses**: [] — **Lines**: 91-100
 
-**File Summary (Embeddings.lean)**: 7 theorems. Key API: `isTotallyComplex`, `nrRealPlaces_eq_zero`, `nrComplexPlaces_eq_one`, `infinitePlace_isComplex`. Unused outside file: `infinitePlace_card_eq_one`, `exists_complexEmbedding_theta_pos/neg`. `attribute [-instance] DivisionRing.toRatAlgebra` (set_option-like attribute manipulation, line 26). No sorry. No proof >30 lines.
+**File Summary**: Archimedean data. Signature `(0,1)`: totally complex, `r₁=0`, `r₂=1`, one infinite place. The
+two complex embeddings (`θ↦±I√6`) made explicit. Negative-`d` analogue of `SqrtFive`'s real-places file.
 
 ---
 
 ## RingOfIntegers.lean
 
 ### `theorem theta_integral`
-- **Type**: `θ ∈ integralClosure ℤ K`
-- **What**: `θ` is integral over `ℤ` (root of monic `X²+6`).
-- **How**: provide `X²+6`, `monicity!`, `eval₂` simp + `theta_sq`.
-- **Uses from project**: [`θ`, `K`, `theta_sq`]
-- **Visibility**: public
-- **Lines**: 33-37
-- **Notes**: KEY.
+- **Type**: `θ ∈ integralClosure ℤ K`. **How**: root of monic `X²+6` (`monicity!` + `theta_sq`). **Uses**: [`theta_sq`] — **Lines**: 33-37 — **Notes**: KEY.
 
 ### `noncomputable def thetaInt`
-- **Type**: `𝓞 K := ⟨θ, theta_integral⟩`
-- **What**: `θ` as an algebraic integer.
-- **Uses from project**: [`K`, `θ`, `theta_integral`]
-- **Visibility**: public
-- **Lines**: 40
-- **Notes**: KEY (the central generator, used everywhere downstream).
+- **Type**: `𝓞 K := ⟨θ, theta_integral⟩`. **What**: `√-6` in the ring of integers. **Uses**: [`theta_integral`] — **Lines**: 40 — **Notes**: KEY, pervasive in all integral-arithmetic files.
 
 ### `theorem thetaInt_sq`
-- **Type**: `thetaInt ^ 2 = -6`
-- **How**: `Subtype.ext`, `theta_sq`.
-- **Uses from project**: [`thetaInt`, `θ`, `theta_sq`]
-- **Visibility**: public
-- **Lines**: 43-46
-- **Notes**: KEY (used 20+×).
+- **Type**: `thetaInt ^ 2 = -6`. **How**: `Subtype.ext` + `theta_sq`. **Uses**: [`theta_sq`] — **Lines**: 43-46 — **Notes**: KEY (used throughout PrimeSplitting/UniqueFactorization).
 
 ### `def integralBasisVectors`
-- **Type**: `Fin 2 → K := ![1, θ]`
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: public
-- **Lines**: 49
+- **Type**: `Fin 2 → K := ![1, θ]`. **Uses**: [] — **Lines**: 49
 
 ### `local notation 𝓟₂ / 𝓟₃`
-- ideal `span ℤ {2}` / `span ℤ {3}` (local notation, lines 51-52).
+- `Submodule.span ℤ {2}` / `{3}` — for Eisenstein-at-`p` statements. **Lines**: 51-52
 
-### `private theorem quadraticBasis_zero / quadraticBasis_one`
-- **Type**: `QuadraticAlgebra.basis (-6) 0 0 = 1` / `... 1 = θ`
-- **How**: unfold `Basis.ofEquivFun`/`linearEquivTuple`, simp.
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: private
-- **Lines**: 54-60
+### `private theorem quadraticBasis_zero` / `_one`
+- **Type**: `QuadraticAlgebra.basis (-6) 0` sends `0↦1`, `1↦θ`. **How**: `change`+`simp [basis, ofEquivFun, linearEquivTuple]`. **Uses**: [] — **Lines**: 54-60
 
 ### `noncomputable def sqrtNegSixPowerBasis`
-- **Type**: `PowerBasis ℚ K` (gen `θ`, dim 2, basis `QuadraticAlgebra.basis`)
-- **Uses from project**: [`θ`, `K`, `quadraticBasis_zero`, `quadraticBasis_one`]
-- **Visibility**: public
-- **Lines**: 63-71
+- **Type**: `PowerBasis ℚ K` with `gen=θ`, `dim=2`. **How**: `basis_eq_pow` via the two `quadraticBasis_*`. **Uses**: [] — **Lines**: 62-71
 
 ### `abbrev sqrtNegSixIntegerPolynomial`
-- **Type**: `ℤ[X] := X ^ 2 + C 6`
-- **Uses from project**: []
-- **Visibility**: public
-- **Lines**: 74
+- **Type**: `ℤ[X] := X^2 + C 6`. **Uses**: [] — **Lines**: 74
 
 ### `theorem sqrtNegSix_minpoly_rat`
-- **Type**: `minpoly ℚ θ = sqrtNegSixPolynomial`
-- **How**: `minpoly.eq_of_irreducible_of_monic`, irreducibility `Fact`, `monicity!`.
-- **Uses from project**: [`θ`, `sqrtNegSixPolynomial`, `theta_sq`]
-- **Visibility**: public
-- **Lines**: 77-83
+- **Type**: `minpoly ℚ θ = sqrtNegSixPolynomial`. **How**: `minpoly.eq_of_irreducible_of_monic` (Fact instance + `theta_sq` + `monicity!`). **Uses**: [`theta_sq`] — **Lines**: 76-83
 
 ### `theorem sqrtNegSix_minpoly_int`
-- **Type**: `minpoly ℤ θ = sqrtNegSixIntegerPolynomial`
-- **How**: `map_injective`, `minpoly.isIntegrallyClosed_eq_field_fractions'`, `sqrtNegSix_minpoly_rat`.
-- **Uses from project**: [`θ`, `sqrtNegSixIntegerPolynomial`, `theta_integral`, `sqrtNegSix_minpoly_rat`]
-- **Visibility**: public
-- **Lines**: 87-94
+- **Type**: `minpoly ℤ θ = sqrtNegSixIntegerPolynomial`. **How**: `map_injective` + `minpoly.isIntegrallyClosed_eq_field_fractions'` + `sqrtNegSix_minpoly_rat`. **Uses**: [`sqrtNegSix_minpoly_rat`, `theta_integral`] — **Lines**: 86-94
 
 ### `theorem sqrtNegSix_minpoly_int_isEisensteinAt_two`
-- **Type**: `(minpoly ℤ θ).IsEisensteinAt 𝓟₂`
-- **How**: `monic_X_pow_add_C ... isEisensteinAt_of_mem_of_notMem`; membership of `6` in `(2)`, `6 ∉ (2)²=(4)`.
-- **Uses from project**: [`θ`, `sqrtNegSix_minpoly_int`]
-- **Visibility**: public
-- **Lines**: 97-112
+- **Type**: `(minpoly ℤ θ).IsEisensteinAt 𝓟₂`. **How**: `monic_X_pow_add_C.isEisensteinAt_of_mem_of_notMem` (`6∈(2)`, `6∉(2)²=(4)`). **Uses**: [`sqrtNegSix_minpoly_int`] — **Lines**: 96-112 — **Notes**: drives maximality (`2 ∤ disc index`).
 
 ### `theorem sqrtNegSix_minpoly_int_isEisensteinAt_three`
-- **Type**: `(minpoly ℤ θ).IsEisensteinAt 𝓟₃`
-- **How**: as above at `3` (`6 ∈ (3)`, `6 ∉ (9)`).
-- **Uses from project**: [`θ`, `sqrtNegSix_minpoly_int`]
-- **Visibility**: public
-- **Lines**: 115-130
+- **Type**: `(minpoly ℤ θ).IsEisensteinAt 𝓟₃`. **How**: twin at `3` (`6∈(3)`, `6∉(9)`). **Uses**: [`sqrtNegSix_minpoly_int`] — **Lines**: 114-130
 
 ### `private theorem algebraNorm_eq_quadraticNorm`
-- **Type**: `(z : K) → Algebra.norm ℚ z = QuadraticAlgebra.norm z`
-- **How**: `Algebra.norm_apply`, `QuadraticAlgebra.det_toLinearMap_eq_norm`.
-- **Uses from project**: [`K`]
-- **Visibility**: private
-- **Lines**: 132-135
-- **Notes**: GENERIC-looking — duplicated as inline `have` in `norm_eq_normForm`.
+- **Type**: `Algebra.norm ℚ z = QuadraticAlgebra.norm z`. **How**: `norm_apply` + `det_toLinearMap_eq_norm`. **Uses**: [] — **Lines**: 132-135
 
 ### `theorem sqrtNegSixPowerBasis_discr`
-- **Type**: `Algebra.discr ℚ sqrtNegSixPowerBasis.basis = -24`
-- **How**: `discr_powerBasis_eq_norm`, `degree_eq_two`, derivative `2X`, norm of `2θ`=24.
-- **Uses from project**: [`sqrtNegSixPowerBasis`, `degree_eq_two`, `sqrtNegSix_minpoly_rat`, `θ`, `algebraNorm_eq_quadraticNorm`]
-- **Visibility**: public
-- **Lines**: 138-156
+- **Type**: `Algebra.discr ℚ sqrtNegSixPowerBasis.basis = -24`. **How**: `discr_powerBasis_eq_norm`; `minpoly' = 2X`, `aeval = 2θ`, `norm(2θ)=24` via the quadratic norm form. **Uses**: [`degree_eq_two`, `sqrtNegSix_minpoly_rat`] — **Lines**: 137-156 — **Notes**: KEY (disc `-24`).
 
 ### `private theorem integralClosure_eq_adjoin`
-- **Type**: `integralClosure ℤ K = Algebra.adjoin ℤ {θ}`
-- **What**: `𝓞 K = ℤ[θ]` (maximality of naive order).
-- **How**: `discr_mul_isIntegral_mem_adjoin` gives `24z ∈ ℤ[θ]`; `mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt` strips primes 3 then 2 using Eisenstein lemmas.
-- **Uses from project**: [`K`, `θ`, `sqrtNegSixPowerBasis`, `theta_integral`, `sqrtNegSixPowerBasis_discr`, `sqrtNegSix_minpoly_int_isEisensteinAt_two/three`]
-- **Visibility**: private
-- **Lines**: 158-196
-- **Notes**: proof >30 lines.
+- **Type**: `integralClosure ℤ K = Algebra.adjoin ℤ {θ}`. **What**: maximality of `ℤ[θ]`. **How**: `discr_mul_isIntegral_mem_adjoin` gives `24z ∈ adjoin`; strip `2³` and `3` via `mem_adjoin_of_smul_prime_pow_smul_of_minpoly_isEisensteinAt` at both Eisenstein primes. **Uses**: [`sqrtNegSixPowerBasis_discr`, both Eisenstein lemmas, `theta_integral`] — **Lines**: 158-196 — **Notes**: KEY proof; the heart of "naive order is maximal".
 
 ### `private theorem thetaInt_adjoin_eq_top`
-- **Type**: `Algebra.adjoin ℤ {thetaInt} = ⊤`
-- **How**: lift integral elements through `adjoin_singleton_eq_range_aeval`, `aeval_algHom_apply`.
-- **Uses from project**: [`thetaInt`, `θ`, `integralClosure_eq_adjoin`, `K`]
-- **Visibility**: private
-- **Lines**: 198-214
+- **Type**: `Algebra.adjoin ℤ {thetaInt} = ⊤`. **How**: pull back `integralClosure_eq_adjoin` through `adjoin_singleton_eq_range_aeval`. **Uses**: [`integralClosure_eq_adjoin`] — **Lines**: 198-214
 
 ### `private theorem thetaInt_minpoly`
-- **Type**: `minpoly ℤ thetaInt = sqrtNegSixIntegerPolynomial`
-- **How**: `minpoly.isIntegrallyClosed_eq_field_fractions`, `sqrtNegSix_minpoly_rat`.
-- **Uses from project**: [`thetaInt`, `sqrtNegSixIntegerPolynomial`, `K`, `sqrtNegSix_minpoly_rat`, `θ`]
-- **Visibility**: private
-- **Lines**: 216-234
+- **Type**: `minpoly ℤ thetaInt = sqrtNegSixIntegerPolynomial`. **How**: `minpoly.isIntegrallyClosed_eq_field_fractions` + `sqrtNegSix_minpoly_rat`. **Uses**: [`sqrtNegSix_minpoly_rat`] — **Lines**: 216-234
 
 ### `private noncomputable def sqrtNegSixExplicitIntegralPowerBasis`
-- **Type**: `PowerBasis ℤ (𝓞 K)`
-- **How**: `PowerBasis.ofAdjoinEqTop'`.
-- **Uses from project**: [`thetaInt`, `thetaInt_adjoin_eq_top`, `K`]
-- **Visibility**: private
-- **Lines**: 236-237
+- **Type**: `PowerBasis ℤ (𝓞 K)`. **How**: `PowerBasis.ofAdjoinEqTop'`. **Uses**: [`thetaInt_adjoin_eq_top`] — **Lines**: 236-237
 
 ### `private theorem sqrtNegSixExplicitIntegralPowerBasis_dim`
-- **Type**: `... .dim = 2`
-- **Uses from project**: [`sqrtNegSixExplicitIntegralPowerBasis`, `thetaInt_minpoly`, `sqrtNegSixIntegerPolynomial`]
-- **Visibility**: private
-- **Lines**: 239-243
+- **Type**: `dim = 2`. **How**: `ofAdjoinEqTop'_dim` + `thetaInt_minpoly` + `natDegree_X_pow_add_C`. **Uses**: [`thetaInt_minpoly`] — **Lines**: 239-243
 
 ### `private noncomputable def sqrtNegSixExplicitIntegralBasis`
-- **Type**: `Basis (Fin 2) ℤ (𝓞 K)` (reindexed power basis)
-- **Uses from project**: [`sqrtNegSixExplicitIntegralPowerBasis`, `sqrtNegSixExplicitIntegralPowerBasis_dim`]
-- **Visibility**: private
-- **Lines**: 245-247
+- **Type**: `Basis (Fin 2) ℤ (𝓞 K)`. **How**: reindex the power basis along `dim=2`. **Uses**: [] — **Lines**: 245-247
 
-### `private theorem sqrtNegSixExplicitIntegralBasis_zero / _one`
-- **Type**: `... 0 = 1` / `... 1 = thetaInt`
-- **How**: `Basis.reindex_apply`, `basis_eq_pow`, `ofAdjoinEqTop'_gen`.
-- **Uses from project**: [`sqrtNegSixExplicitIntegralBasis`, `sqrtNegSixExplicitIntegralPowerBasis*`, `thetaInt`]
-- **Visibility**: private
-- **Lines**: 249-267
+### `private theorem sqrtNegSixExplicitIntegralBasis_zero` / `_one`
+- **Type**: basis sends `0↦1`, `1↦thetaInt`. **How**: `basis_eq_pow` + `ofAdjoinEqTop'_gen`. **Uses**: [] — **Lines**: 249-267
 
 ### `private noncomputable def integralBasisVectorsInt`
-- **Type**: `Fin 2 → 𝓞 K := ![1, thetaInt]`
-- **Uses from project**: [`thetaInt`, `K`]
-- **Visibility**: private
-- **Lines**: 269
+- **Type**: `Fin 2 → 𝓞 K := ![1, thetaInt]`. **Uses**: [] — **Lines**: 269
 
 ### `private theorem algebraMap_integralBasisVectorsInt`
-- **Type**: `(fun i => algebraMap (𝓞 K) K (integralBasisVectorsInt i)) = integralBasisVectors`
-- **Uses from project**: [`integralBasisVectorsInt`, `integralBasisVectors`, `thetaInt`, `K`]
-- **Visibility**: private
-- **Lines**: 271-274
+- **Type**: maps to `integralBasisVectors` in `K`. **How**: `fin_cases`+`simp`. **Uses**: [] — **Lines**: 271-274
 
 ### `private noncomputable def ringOfIntegersLinearMap`
-- **Type**: `𝓞 K →ₗ[ℤ] K` (restriction of algebra map)
-- **Uses from project**: [`K`]
-- **Visibility**: private
-- **Lines**: 276-277
-- **Notes**: GENERIC-looking; restrictScalars of `Algebra.linearMap`.
+- **Type**: `𝓞 K →ₗ[ℤ] K`. **How**: `Algebra.linearMap.restrictScalars`. **Uses**: [] — **Lines**: 276-277
 
 ### `private theorem span_integralBasisVectorsInt_eq_top`
-- **Type**: `Submodule.span ℤ (range integralBasisVectorsInt) = ⊤`
-- **Uses from project**: [`sqrtNegSixExplicitIntegralBasis`, `sqrtNegSixExplicitIntegralBasis_zero/_one`, `integralBasisVectorsInt`]
-- **Visibility**: private
-- **Lines**: 279-287
+- **Type**: `span ℤ (range integralBasisVectorsInt) = ⊤`. **How**: `Basis.span_eq` of the explicit basis. **Uses**: [] — **Lines**: 279-287
 
 ### `private theorem sqrtNegSixExplicitIntegralBasis_discr`
-- **Type**: `Algebra.discr ℤ sqrtNegSixExplicitIntegralBasis = -24`
-- **How**: `Algebra.discr_localizationLocalization` + `Basis.localizationLocalization` to descend to `ℚ`, then `discr_reindex` and `sqrtNegSixPowerBasis_discr`.
-- **Uses from project**: [`sqrtNegSixExplicitIntegralBasis`, `sqrtNegSixExplicitIntegralBasis_zero/_one`, `sqrtNegSixPowerBasis`, `quadraticBasis_one`, `thetaInt`, `sqrtNegSixPowerBasis_discr`]
-- **Visibility**: private
-- **Lines**: 289-324
-- **Notes**: proof >30 lines.
+- **Type**: `Algebra.discr ℤ … = -24`. **How**: `discr_localizationLocalization` from `ℤ→ℚ`, transfer to `sqrtNegSixPowerBasis_discr` via `Basis.localizationLocalization`. **Uses**: [`sqrtNegSixPowerBasis_discr`] — **Lines**: 289-324 — **Notes**: heavy localization machinery.
 
 ### `theorem span_integralBasisVectors_eq`
-- **Type**: `Submodule.span ℤ (range integralBasisVectors) = Subalgebra.toSubmodule (integralClosure ℤ K)`
-- **What**: `1,θ` ℤ-span = ring of integers.
-- **How**: image of `span_integralBasisVectorsInt_eq_top` under `ringOfIntegersLinearMap`.
-- **Uses from project**: [`integralBasisVectors`, `K`, `ringOfIntegersLinearMap`, `span_integralBasisVectorsInt_eq_top`, `algebraMap_integralBasisVectorsInt`, `integralBasisVectorsInt`]
-- **Visibility**: public
-- **Lines**: 329-347
+- **Type**: `span ℤ (range integralBasisVectors) = toSubmodule (integralClosure ℤ K)`. **What**: `1,θ` is an integral basis. **How**: push `span_integralBasisVectorsInt_eq_top` through `ringOfIntegersLinearMap`. **Uses**: [those two lemmas] — **Lines**: 326-347 — **Notes**: docstring contrasts with `ℚ(√5)`.
 
 ### `noncomputable def concreteIntegralBasis`
-- **Type**: `Basis (Fin 2) ℤ (𝓞 K)` (= `sqrtNegSixExplicitIntegralBasis`)
-- **Uses from project**: [`sqrtNegSixExplicitIntegralBasis`, `K`]
-- **Visibility**: public
-- **Lines**: 350-351
-- **Notes**: KEY (used in `exists_eq_smul_one_add_smul_theta`, `linearIndependent_one_theta`, discriminant).
+- **Type**: `Basis (Fin 2) ℤ (𝓞 K) := sqrtNegSixExplicitIntegralBasis`. **Uses**: [] — **Lines**: 349-351 — **Notes**: KEY (used in `exists_eq_smul_one_add_smul_theta`).
 
 ### `theorem concreteIntegralBasis_apply`
-- **Type**: `(i : Fin 2) → algebraMap (𝓞 K) K (concreteIntegralBasis i) = integralBasisVectors i`
-- **Uses from project**: [`concreteIntegralBasis`, `sqrtNegSixExplicitIntegralBasis_zero/_one`, `integralBasisVectors`, `thetaInt`, `K`]
-- **Visibility**: public
-- **Lines**: 354-358
+- **Type**: `algebraMap (concreteIntegralBasis i) = integralBasisVectors i`. **How**: `fin_cases`+`simp`. **Uses**: [the basis lemmas] — **Lines**: 353-358
 
 ### `theorem exists_eq_smul_one_add_smul_theta`
-- **Type**: `(z : 𝓞 K) → ∃ x y : ℤ, z = x • 1 + y • thetaInt`
-- **What**: every algebraic integer is `x + yθ`.
-- **How**: `concreteIntegralBasis.repr`/`sum_repr`, `IsFractionRing.injective`.
-- **Uses from project**: [`K`, `thetaInt`, `concreteIntegralBasis`, `concreteIntegralBasis_apply`, `integralBasisVectors`]
-- **Visibility**: public
-- **Lines**: 360-368
-- **Notes**: KEY (used 25+× across folder).
+- **Type**: `∀ z:𝓞 K, ∃ x y:ℤ, z = x•1 + y•thetaInt`. **How**: `concreteIntegralBasis.repr` + `sum_repr`. **Uses**: [`concreteIntegralBasis`] — **Lines**: 360-368 — **Notes**: KEY workhorse — every integral-arithmetic argument reduces to integer coordinates `(x,y)`.
 
 ### `theorem linearIndependent_one_theta`
-- **Type**: `LinearIndependent ℤ ![(1 : 𝓞 K), thetaInt]`
-- **How**: reduce to `concreteIntegralBasis.linearIndependent` via `Fintype.linearIndependent_iff`.
-- **Uses from project**: [`K`, `thetaInt`, `concreteIntegralBasis`, `concreteIntegralBasis_apply`, `integralBasisVectors`]
-- **Visibility**: public
-- **Lines**: 370-386
-- **Notes**: KEY (used in PrimeSplitting non-membership args).
+- **Type**: `LinearIndependent ℤ ![1, thetaInt]`. **How**: transport `concreteIntegralBasis.linearIndependent`. **Uses**: [`concreteIntegralBasis`] — **Lines**: 370-386 — **Notes**: KEY (pins ideal-membership computations in PrimeSplitting).
 
 ### `theorem span_integralBasisVectors_eq_integralBasis`
-- **Type**: `span ℤ (range integralBasisVectors) = span ℤ (range (NumberField.integralBasis K))`
-- **What**: the displayed basis spans the same lattice as mathlib's `integralBasis`.
-- **How**: `span_integralBasisVectors_eq`, `NumberField.mem_span_integralBasis`.
-- **Uses from project**: [`integralBasisVectors`, `K`, `span_integralBasisVectors_eq`]
-- **Visibility**: public
-- **Lines**: 391-402
+- **Type**: span of `1,θ` = span of mathlib's `NumberField.integralBasis K`. **How**: `span_integralBasisVectors_eq` + `mem_span_integralBasis`. **Uses**: [`span_integralBasisVectors_eq`] — **Lines**: 388-402 — **Notes**: equality of lattices, not reindexing.
 
 ### `abbrev concreteRingOfIntegers`
-- **Type**: `Subalgebra ℤ K := Algebra.adjoin ℤ {θ}`
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: public
-- **Lines**: 405
+- **Type**: `Subalgebra ℤ K := Algebra.adjoin ℤ {θ}`. **What**: the order `ℤ[θ]`. **Uses**: [] — **Lines**: 404-405
 
 ### `theorem ringOfIntegers_eq`
-- **Type**: `integralClosure ℤ K = concreteRingOfIntegers`
-- **What**: **ring of integers = `ℤ[θ]`** (main result).
-- **How**: `integralClosure_eq_adjoin`.
-- **Uses from project**: [`K`, `concreteRingOfIntegers`, `integralClosure_eq_adjoin`]
-- **Visibility**: public
-- **Lines**: 409-410
-- **Notes**: MAIN PUBLIC RESULT.
+- **Type**: `integralClosure ℤ K = concreteRingOfIntegers`. **How**: `integralClosure_eq_adjoin`. **Uses**: [`integralClosure_eq_adjoin`] — **Lines**: 407-410 — **Notes**: `𝓞 K = ℤ[√-6]`.
 
 ### `theorem numberField_discr_eq`
-- **Type**: `NumberField.discr K = -24`
-- **What**: **field discriminant = -24** (main result).
-- **How**: `NumberField.discr_eq_discr K concreteIntegralBasis`, `sqrtNegSixExplicitIntegralBasis_discr`.
-- **Uses from project**: [`K`, `concreteIntegralBasis`, `sqrtNegSixExplicitIntegralBasis_discr`]
-- **Visibility**: public
-- **Lines**: 415-417
-- **Notes**: MAIN PUBLIC RESULT; used in ClassGroup (Minkowski) and PrimeSplitting (ramified_iff, different).
+- **Type**: `NumberField.discr K = -24`. **How**: `discr_eq_discr K concreteIntegralBasis` + `sqrtNegSixExplicitIntegralBasis_discr`. **Uses**: [`concreteIntegralBasis`, the basis discr] — **Lines**: 412-417 — **Notes**: KEY (used in Minkowski bound, different, ramification).
 
 ### `theorem concreteIntegralBasis_discr`
-- **Type**: `Algebra.discr ℤ concreteIntegralBasis = -24`
-- **Uses from project**: [`concreteIntegralBasis`, `sqrtNegSixExplicitIntegralBasis_discr`]
-- **Visibility**: public
-- **Lines**: 420-422
+- **Type**: `Algebra.discr ℤ concreteIntegralBasis = -24`. **How**: `sqrtNegSixExplicitIntegralBasis_discr`. **Uses**: [] — **Lines**: 419-422
 
 ### `theorem integralBasis_discr`
-- **Type**: `Algebra.discr ℚ (NumberField.integralBasis K) = -24`
-- **How**: `NumberField.coe_discr`, `numberField_discr_eq`.
-- **Uses from project**: [`K`, `numberField_discr_eq`]
-- **Visibility**: public
-- **Lines**: 425-429
+- **Type**: `Algebra.discr ℚ (NumberField.integralBasis K) = -24`. **How**: `coe_discr` + `numberField_discr_eq`. **Uses**: [`numberField_discr_eq`] — **Lines**: 424-429
 
 ### `theorem norm_eq_normForm`
-- **Type**: `(x y : ℚ) → Algebra.norm ℚ (x • 1 + y • θ) = x ^ 2 + 6 * y ^ 2`
-- **What**: norm form `N(x+yθ) = x²+6y²` over `ℚ`.
-- **How**: `QuadraticAlgebra.det_toLinearMap_eq_norm`, `norm_def`, ring.
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: public
-- **Lines**: 446-454
-- **Notes**: inline re-derivation of `algebraNorm_eq_quadraticNorm`.
+- **Type**: `Algebra.norm ℚ (x•1 + y•θ) = x² + 6y²`. **What**: the (positive-definite) norm form. **How**: `det_toLinearMap_eq_norm` + `QuadraticAlgebra.norm_def`. **Uses**: [] — **Lines**: 444-454 — **Notes**: KEY — positive-definiteness drives ALL negative results (no Pell, units `±1`, unsolvable `=2,3,5`).
 
 ### `theorem intNorm_eq_normForm`
-- **Type**: `(x y : ℤ) → Algebra.norm ℤ (x • 1 + y • thetaInt) = x ^ 2 + 6 * y ^ 2`
-- **What**: integral norm form.
-- **How**: `Algebra.coe_norm_int`, push through algebraMap, `norm_eq_normForm`.
-- **Uses from project**: [`K`, `thetaInt`, `θ`, `norm_eq_normForm`]
-- **Visibility**: public
-- **Lines**: 458-469
-- **Notes**: KEY (used 25+×; the workhorse of all norm computations).
+- **Type**: `Algebra.norm ℤ (x•1 + y•thetaInt) = x² + 6y²` (`x,y:ℤ`). **How**: `coe_norm_int` cast from `norm_eq_normForm`. **Uses**: [`norm_eq_normForm`] — **Lines**: 456-469 — **Notes**: KEY workhorse for all norm computations.
 
 ### `theorem normForm_ne_two`
-- **Type**: `(x y : ℤ) → x ^ 2 + 6 * y ^ 2 ≠ 2`
-- **How**: `nlinarith`/`interval_cases`.
-- **Uses from project**: []
-- **Visibility**: public
-- **Lines**: 471-479
-- **Notes**: KEY (non-principality of `(2,θ)`).
+- **Type**: `x² + 6y² ≠ 2`. **How**: forces `y=0`, `x²=2`, `interval_cases`. **Uses**: [] — **Lines**: 471-479 — **Notes**: KEY — witnesses `(2,θ)` non-principal & `2` irreducible-not-prime.
 
-### `private theorem normForm_ne_three / normForm_ne_five`
-- **Type**: `... ≠ 3` / `... ≠ 5`
-- **How**: same pattern.
-- **Uses from project**: []
-- **Visibility**: private
-- **Lines**: 481-503
+### `private theorem normForm_ne_three`
+- **Type**: `x² + 6y² ≠ 3`. **How**: forces `y=0`, `x²=3`, `interval_cases`. **Uses**: [] — **Lines**: 481-491
+
+### `private theorem normForm_ne_five`
+- **Type**: `x² + 6y² ≠ 5`. **How**: forces `y=0`, `x²=5`, `interval_cases`. **Uses**: [] — **Lines**: 493-503 — **Notes**: drives `(5,θ-2)` non-principal.
 
 ### `theorem isUnit_iff_normForm`
-- **Type**: `(x y : ℤ) → IsUnit (x•1 + y•thetaInt) ↔ x²+6y²=1`
-- **How**: `NumberField.isUnit_iff_norm`, `intNorm_eq_normForm`, `abs_eq`, sign analysis.
-- **Uses from project**: [`K`, `thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public
-- **Lines**: 507-519
-- **Notes**: KEY (units, torsion).
+- **Type**: `IsUnit (x•1 + y•thetaInt) ↔ x²+6y² = 1`. **How**: `isUnit_iff_norm` + `intNorm_eq_normForm`; positive-definite ⇒ no `-1` case. **Uses**: [`intNorm_eq_normForm`] — **Lines**: 505-519 — **Notes**: KEY — only `(±1,0)`, no Pell.
 
 ### `theorem intNorm_nonneg`
-- **Type**: `(z : 𝓞 K) → 0 ≤ Algebra.norm ℤ z`
-- **How**: write `z = x+yθ`, `nlinarith`.
-- **Uses from project**: [`K`, `exists_eq_smul_one_add_smul_theta`, `intNorm_eq_normForm`]
-- **Visibility**: public
-- **Lines**: 521-524
-- **Notes**: KEY (irreducibility/non-principality).
+- **Type**: `0 ≤ Algebra.norm ℤ z`. **How**: reduce to `x²+6y²≥0`. **Uses**: [`exists_eq_smul_one_add_smul_theta`, `intNorm_eq_normForm`] — **Lines**: 521-524 — **Notes**: KEY (norms positive ⇒ many `nlinarith` factor-bounds).
 
 ### `theorem isUnit_iff_intNorm_eq_one`
-- **Type**: `(z : 𝓞 K) → IsUnit z ↔ Algebra.norm ℤ z = 1`
-- **Uses from project**: [`K`, `exists_eq_smul_one_add_smul_theta`, `isUnit_iff_normForm`, `intNorm_eq_normForm`]
-- **Visibility**: public
-- **Lines**: 526-529
-- **Notes**: KEY.
+- **Type**: `IsUnit z ↔ Algebra.norm ℤ z = 1`. **How**: reduce to `isUnit_iff_normForm`. **Uses**: [`exists_eq_smul_one_add_smul_theta`] — **Lines**: 526-529 — **Notes**: KEY.
 
-### `theorem intNorm_ne_two / intNorm_ne_three / intNorm_ne_five`
-- **Type**: `(z : 𝓞 K) → Algebra.norm ℤ z ≠ 2 / 3 / 5`
-- **How**: `exists_eq_smul_one_add_smul_theta`, the `normForm_ne_*` lemmas.
-- **Uses from project**: [`K`, `exists_eq_smul_one_add_smul_theta`, `intNorm_eq_normForm`, `normForm_ne_two/three/five`]
-- **Visibility**: public
-- **Lines**: 531-547
-- **Notes**: KEY.
+### `theorem intNorm_ne_two` / `intNorm_ne_three` / `intNorm_ne_five`
+- **Type**: `Algebra.norm ℤ z ≠ 2 / 3 / 5`. **How**: reduce via coordinates to `normForm_ne_*`. **Uses**: [`exists_eq_smul_one_add_smul_theta`, the `normForm_ne_*`] — **Lines**: 531-547 — **Notes**: KEY — non-attainment of small norms = source of irreducibility & non-principality.
 
-**File Summary (RingOfIntegers.lean)**: ~40 decls (8 defs incl. private, ~30 theorems, 2 abbrevs). Key API: `thetaInt`, `thetaInt_sq`, `concreteIntegralBasis`, `exists_eq_smul_one_add_smul_theta`, `linearIndependent_one_theta`, `intNorm_eq_normForm`, `isUnit_iff_intNorm_eq_one`, `intNorm_nonneg`, `numberField_discr_eq`, `intNorm_ne_two/three/five`. Main public: `ringOfIntegers_eq`, `numberField_discr_eq`. No sorry, no set_option. Proofs >30 lines: `integralClosure_eq_adjoin`, `sqrtNegSixExplicitIntegralBasis_discr`.
-
----
-
-## Discriminant.lean
-
-Empty (only namespace skeleton; discriminant results live in RingOfIntegers). **0 decls.**
+**File Summary**: Ring of integers `𝓞 K = ℤ[√-6]` (maximal order, `-6≡2 mod 4`) with explicit integral basis
+`1,θ`, discriminant `-24` (computed via power-basis + localization), and the positive-definite norm form
+`x²+6y²`. The norm-form non-attainment lemmas (`≠2,3,5`) and `exists_eq_smul_one_add_smul_theta` /
+`linearIndependent_one_theta` are the reusable engine behind every irreducibility, splitting, and
+non-principality proof. KEY exports: `thetaInt`, `thetaInt_sq`, `intNorm_eq_normForm`, `numberField_discr_eq`,
+`isUnit_iff_*`, `intNorm_ne_*`.
 
 ---
 
 ## PrimeSplitting.lean
 
+Imports `Common.lean`. Splitting law, Kummer-Dedekind, ramification, different.
+
 ### `private theorem absNorm_span_natCast`
-- **Type**: `(p : ℕ) → Ideal.absNorm (span {(p:𝓞 K)}) = p ^ 2`
-- **How**: `intNorm_eq_normForm p 0`, `absNorm_span_singleton`.
-- **Uses from project**: [`K`, `thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: private
-- **Lines**: 35-43
-- **Notes**: KEY (used in ramified_iff, split machinery).
+- **Type**: `absNorm (span {(p:ℕ):𝓞 K}) = p²`. **How**: `absNorm_span_natCast` + `RingOfIntegers.rank` + `degree_eq_two`. **Uses**: [`degree_eq_two`] — **Lines**: 35-37
 
 ### `private theorem unit_theta_coeff_not_mem`
-- **Type**: `(p : ℕ) (hp : 2 ≤ p) (A B : ℤ) (hB : B = ±1) → (A) + (B)·θ ∉ span {(p)}`
-- **What**: an element with `θ`-coefficient `±1` is never divisible by `p`.
-- **How**: `linearIndependent_one_theta` extracts coefficient, `Int.le_of_dvd`.
-- **Uses from project**: [`K`, `thetaInt`, `exists_eq_smul_one_add_smul_theta`, `linearIndependent_one_theta`]
-- **Visibility**: private
-- **Lines**: 46-69
-- **Notes**: KEY internal helper (norm-`p` lemmas).
+- **Type**: `A + Bθ` with `B=±1` is never in `(p)` for `p≥2`. **How**: coordinates via `exists_eq_smul_one_add_smul_theta`; `linearIndependent_one_theta` gives `p∣1` contradiction. **Uses**: [`exists_eq_smul_one_add_smul_theta`, `linearIndependent_one_theta`] — **Lines**: 40-63 — **Notes**: KEY helper for all "`(p,θ-c)` norm = `p`" lemmas.
 
 ### `private theorem isSquare_neg_six_iff_mod_twentyfour`
-- **Type**: `(p prime, ≠2,≠3) → IsSquare ((-6):ZMod p) ↔ p%24 ∈ {1,5,7,11}`
-- **How**: `jacobiSym.mod_right`, `ZMod.nonsquare_iff_jacobiSym_eq_neg_one`, `ZMod.isSquare_of_jacobiSym_eq_one`; omega case split mod 24.
-- **Uses from project**: []
-- **Visibility**: private
-- **Lines**: 71-111
-- **Notes**: proof >30 lines. KEY for splitting/inert laws.
+- **Type**: `IsSquare ((-6:ℤ):ZMod p) ↔ p%24 ∈ {1,5,7,11}`. **How**: `jacobiSym.mod_right`, case-split `p%24`, `nonsquare_iff_jacobiSym_eq_neg_one` / `isSquare_of_jacobiSym_eq_one`. **Uses**: [] — **Lines**: 65-105 — **Notes**: KEY — quadratic-reciprocity core of the splitting law.
 
 ### `def primeAboveTwo`
-- **Type**: `Ideal (𝓞 K) := span {2, thetaInt}`
-- **Uses from project**: [`K`, `thetaInt`]
-- **Visibility**: public
-- **Lines**: 115
-- **Notes**: KEY (the nontrivial ideal class generator).
+- **Type**: `Ideal (𝓞 K) := span {2, thetaInt}` = `(2,θ)`. **Uses**: [] — **Lines**: 109 — **Notes**: KEY — the non-principal ramified prime, representative of the nontrivial class.
 
 ### `def primeAboveThree`
-- **Type**: `Ideal (𝓞 K) := span {3, thetaInt}`
-- **Uses from project**: [`K`, `thetaInt`]
-- **Visibility**: public
-- **Lines**: 118
+- **Type**: `span {3, thetaInt}` = `(3,θ)`. **Uses**: [] — **Lines**: 112 — **Notes**: KEY — same class as `primeAboveTwo`.
 
 ### `theorem span_two_eq`
-- **Type**: `span {2} = primeAboveTwo ^ 2`
-- **What**: `2` is ramified.
-- **How**: `span_pair_mul_span_pair`, `le_antisymm`, `thetaInt_sq`.
-- **Uses from project**: [`K`, `primeAboveTwo`, `thetaInt`, `thetaInt_sq`]
-- **Visibility**: public
-- **Lines**: 121-146
-- **Notes**: KEY.
+- **Type**: `(2) = primeAboveTwo²`. **What**: `2` ramifies. **How**: `span_pair_mul_span_pair`, `le_antisymm`, `thetaInt_sq`. **Uses**: [`thetaInt_sq`] — **Lines**: 115-140 — **Notes**: KEY (`(2,θ)²=(2)` ⇒ class² trivial).
 
 ### `theorem isPrime_primeAboveTwo`
-- **Type**: `primeAboveTwo.IsPrime`
-- **How**: `Ideal.isPrime_of_irreducible_absNorm`, norm `=2`.
-- **Uses from project**: [`primeAboveTwo`, `intNorm_eq_normForm`, `thetaInt`, `span_two_eq`]
-- **Visibility**: public
-- **Lines**: 149-161
-- **Notes**: KEY.
+- **Type**: `primeAboveTwo.IsPrime`. **How**: `isPrime_of_irreducible_absNorm`, `absNorm=2` prime. **Uses**: [`span_two_eq`, `intNorm_eq_normForm`] — **Lines**: 143-155
 
 ### `theorem absNorm_primeAboveTwo`
-- **Type**: `Ideal.absNorm primeAboveTwo = 2`
-- **Uses from project**: [`primeAboveTwo`, `intNorm_eq_normForm`, `thetaInt`, `span_two_eq`]
-- **Visibility**: public
-- **Lines**: 164-172
-- **Notes**: KEY (used 10+×).
+- **Type**: `absNorm primeAboveTwo = 2`. **How**: `absNorm(2)=4`, `span_two_eq` ⇒ `absNorm²=4`, `nlinarith`. **Uses**: [`span_two_eq`, `intNorm_eq_normForm`] — **Lines**: 158-166 — **Notes**: KEY.
 
 ### `theorem liesOver_primeAboveTwo`
-- **Type**: `primeAboveTwo.LiesOver (span {(2:ℤ)})`
-- **Uses from project**: [`primeAboveTwo`, `isPrime_primeAboveTwo`]
-- **Visibility**: public
-- **Lines**: 175-180
+- **Type**: `primeAboveTwo.LiesOver (span {(2:ℤ)})`. **How**: `liesOver_span_iff` + `2∈(2,θ)`. **Uses**: [`isPrime_primeAboveTwo`] — **Lines**: 169-174
 
 ### `theorem inertiaDeg_primeAboveTwo`
-- **Type**: `(span {2:ℤ}).inertiaDeg primeAboveTwo = 1`
-- **How**: `absNorm_eq_pow_inertiaDeg'`, `Nat.Prime.pow_eq_iff`.
-- **Uses from project**: [`primeAboveTwo`, `liesOver_primeAboveTwo`, `absNorm_primeAboveTwo`]
-- **Visibility**: public
-- **Lines**: 183-188
+- **Type**: `inertiaDeg = 1`. **How**: `absNorm_eq_pow_inertiaDeg'` + `Prime.pow_eq_iff`. **Uses**: [`liesOver_primeAboveTwo`, `absNorm_primeAboveTwo`] — **Lines**: 177-182
 
 ### `theorem ramificationIdx_primeAboveTwo`
-- **Type**: `(span {2:ℤ}).ramificationIdx primeAboveTwo = 2`
-- **How**: `ramificationIdx_spec`, `span_two_eq`, norm-divisibility bound.
-- **Uses from project**: [`primeAboveTwo`, `span_two_eq`, `intNorm_eq_normForm`, `thetaInt`, `absNorm_primeAboveTwo`]
-- **Visibility**: public
-- **Lines**: 191-211
+- **Type**: `ramificationIdx = 2`. **How**: `ramificationIdx_spec` (`(2)≤P²` from `span_two_eq`; `¬(2)≤P³` via norm `8∤4`). **Uses**: [`span_two_eq`, `absNorm_primeAboveTwo`] — **Lines**: 185-205
 
 ### `theorem not_isPrincipal_primeAboveTwo`
-- **Type**: `¬ Submodule.IsPrincipal primeAboveTwo`
-- **What**: `(2,θ)` is non-principal (no element of norm 2).
-- **How**: generator would have norm `±2`, `normForm_ne_two`.
-- **Uses from project**: [`primeAboveTwo`, `absNorm_primeAboveTwo`, `exists_eq_smul_one_add_smul_theta`, `intNorm_eq_normForm`, `normForm_ne_two`]
-- **Visibility**: public
-- **Lines**: 215-230
-- **Notes**: KEY (class number, Euclidean, ClassGroup).
+- **Type**: `¬ Submodule.IsPrincipal primeAboveTwo`. **What**: **THE central negative result** — exhibits the nontrivial ideal class. **How**: a principal generator would have `|norm|=absNorm=2`, but `x²+6y²=2` is unsolvable (`normForm_ne_two`). **Uses**: [`absNorm_primeAboveTwo`, `exists_eq_smul_one_add_smul_theta`, `intNorm_eq_normForm`, `normForm_ne_two`] — **Lines**: 209-224 — **Notes**: KEY — used by `not_isPrincipalIdealRing`, `classGroup_mk0_ramified_ne_one`, `classNumber_eq_two`.
 
 ### `theorem span_three_eq`
-- **Type**: `span {3} = primeAboveThree ^ 2`
-- **Uses from project**: [`K`, `primeAboveThree`, `thetaInt`, `thetaInt_sq`]
-- **Visibility**: public
-- **Lines**: 233-256
+- **Type**: `(3) = primeAboveThree²`. **How**: twin of `span_two_eq` (`-2·θ²` term). **Uses**: [`thetaInt_sq`] — **Lines**: 227-250
 
 ### `theorem isPrime_primeAboveThree`
-- **Type**: `primeAboveThree.IsPrime`
-- **Uses from project**: [`primeAboveThree`, `intNorm_eq_normForm`, `thetaInt`, `span_three_eq`]
-- **Visibility**: public
-- **Lines**: 260-272
+- **Type**: `primeAboveThree.IsPrime`. **How**: `absNorm=3` prime. **Uses**: [`span_three_eq`, `intNorm_eq_normForm`] — **Lines**: 252-266
 
 ### `theorem absNorm_primeAboveThree`
-- **Type**: `Ideal.absNorm primeAboveThree = 3`
-- **Uses from project**: [`primeAboveThree`, `intNorm_eq_normForm`, `thetaInt`, `span_three_eq`]
-- **Visibility**: public
-- **Lines**: 274-282
-- **Notes**: KEY.
+- **Type**: `absNorm primeAboveThree = 3`. **How**: `absNorm(3)=9`, `nlinarith`. **Uses**: [`span_three_eq`, `intNorm_eq_normForm`] — **Lines**: 268-276 — **Notes**: KEY.
 
-### `theorem liesOver_primeAboveThree`
-- **Type**: `primeAboveThree.LiesOver (span {(3:ℤ)})`
-- **Uses from project**: [`primeAboveThree`, `isPrime_primeAboveThree`]
-- **Visibility**: public
-- **Lines**: 285-290
-
-### `theorem inertiaDeg_primeAboveThree`
-- **Type**: `... .inertiaDeg primeAboveThree = 1`
-- **Uses from project**: [`primeAboveThree`, `liesOver_primeAboveThree`, `absNorm_primeAboveThree`]
-- **Visibility**: public
-- **Lines**: 293-298
-
-### `theorem ramificationIdx_primeAboveThree`
-- **Type**: `... .ramificationIdx primeAboveThree = 2`
-- **Uses from project**: [`primeAboveThree`, `span_three_eq`, `intNorm_eq_normForm`, `thetaInt`, `absNorm_primeAboveThree`]
-- **Visibility**: public
-- **Lines**: 301-321
+### `theorem liesOver_primeAboveThree` / `inertiaDeg_primeAboveThree` / `ramificationIdx_primeAboveThree`
+- **Type**: lies over `(3)`; `inertiaDeg=1`; `ramificationIdx=2`. **How**: twins of the `Two` versions. **Uses**: [the `Three` lemmas] — **Lines**: 278-315
 
 ### `theorem span_theta_eq`
-- **Type**: `span {thetaInt} = primeAboveTwo * primeAboveThree`
-- **What**: `(θ) = (2,θ)(3,θ)` (principal product of the two ramified primes).
-- **Uses from project**: [`primeAboveTwo`, `primeAboveThree`, `thetaInt`, `thetaInt_sq`]
-- **Visibility**: public
-- **Lines**: 324-350
-- **Notes**: KEY (used in ClassGroup to identify the two classes).
+- **Type**: `(θ) = primeAboveTwo * primeAboveThree`. **What**: the principal ideal `(√-6)` factors as the product of the two ramified primes. **How**: `span_pair_mul_span_pair` + `thetaInt_sq`. **Uses**: [`thetaInt_sq`] — **Lines**: 318-344 — **Notes**: KEY — proves classes of `(2,θ)` and `(3,θ)` are *equal* (their product is principal), so the class group has only one nontrivial element.
 
 ### `theorem ideal_eq_primeAboveTwo_of_absNorm_eq_two`
-- **Type**: `(I) → absNorm I = 2 → I = primeAboveTwo`
-- **How**: `isPrime_of_irreducible_absNorm`, membership of 2 and θ (θ²=−6≡0), `eq_of_le_of_absNorm_eq` (Common).
-- **Uses from project**: [`K`, `primeAboveTwo`, `thetaInt`, `thetaInt_sq`, `absNorm_primeAboveTwo`, **Common** `eq_of_le_of_absNorm_eq`]
-- **Visibility**: public
-- **Lines**: 352-389
-- **Notes**: proof >30 lines. KEY (class group representatives).
+- **Type**: `absNorm I = 2 ⇒ I = primeAboveTwo`. **How**: `2∈I`, `θ∈I` (from `θ²=-6∈I` in `𝓞K/I`), then `eq_of_le_of_absNorm_eq` (Common). **Uses**: [`Common.eq_of_le_of_absNorm_eq`, `absNorm_primeAboveTwo`, `thetaInt_sq`] — **Lines**: 346-383 — **Notes**: KEY — uniqueness of the norm-2 ideal, used in class-group enumeration.
 
 ### `theorem ideal_eq_primeAboveThree_of_absNorm_eq_three`
-- **Type**: `(I) → absNorm I = 3 → I = primeAboveThree`
-- **Uses from project**: [`K`, `primeAboveThree`, `thetaInt`, `thetaInt_sq`, `absNorm_primeAboveThree`, **Common** `eq_of_le_of_absNorm_eq`]
-- **Visibility**: public
-- **Lines**: 391-428
-- **Notes**: proof >30 lines. KEY.
+- **Type**: `absNorm I = 3 ⇒ I = primeAboveThree`. **How**: twin. **Uses**: [`Common.eq_of_le_of_absNorm_eq`, `absNorm_primeAboveThree`, `thetaInt_sq`] — **Lines**: 385-422 — **Notes**: KEY.
 
 ### `theorem seven_eq_mul`
-- **Type**: `(7:𝓞 K) = (1+thetaInt)(1-thetaInt)`
-- **Uses from project**: [`K`, `thetaInt`, `thetaInt_sq`]
-- **Visibility**: public
-- **Lines**: 431-432
+- **Type**: `7 = (1+θ)(1-θ)`. **How**: `ring_nf`+`thetaInt_sq`. **Uses**: [`thetaInt_sq`] — **Lines**: 424-426
 
 ### `theorem span_seven_eq`
-- **Type**: `span {7} = span {1+θ} * span {1-θ}` (7 splits, principal factors)
-- **Uses from project**: [`thetaInt`, `seven_eq_mul`]
-- **Visibility**: public
-- **Lines**: 436-438
+- **Type**: `(7) = (1+θ)(1-θ)` (principal factors). **How**: `span_singleton_mul_span_singleton` + `seven_eq_mul`. **Uses**: [`seven_eq_mul`] — **Lines**: 428-432 — **Notes**: `7` splits with *principal* primes (represented by the principal form `1²+6·1²`).
 
-### `theorem absNorm_span_one_add_theta`
-- **Type**: `absNorm (span {1+θ}) = 7`
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public
-- **Lines**: 441-446
+### `theorem absNorm_span_one_add_theta` / `_sub_theta`
+- **Type**: `absNorm (1±θ) = 7`. **How**: `absNorm_span_singleton` + `intNorm_eq_normForm 1 (±1)`. **Uses**: [`intNorm_eq_normForm`] — **Lines**: 435-440, 448-457
 
-### `theorem isPrime_span_one_add_theta`
-- **Type**: `(span {1+θ}).IsPrime`
-- **Uses from project**: [`thetaInt`, `absNorm_span_one_add_theta`]
-- **Visibility**: public
-- **Lines**: 448-451
+### `theorem isPrime_span_one_add_theta` / `_sub_theta`
+- **Type**: `(1±θ).IsPrime`. **How**: `isPrime_of_irreducible_absNorm` (norm 7). **Uses**: [the absNorm lemmas] — **Lines**: 442-445, 459-463
 
-### `theorem absNorm_span_one_sub_theta`
-- **Type**: `absNorm (span {1-θ}) = 7`
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public
-- **Lines**: 454-463
+### `theorem liesOver_span_one_add_theta` / `_sub_theta`
+- **Type**: lie over `(7)`. **How**: `7∈(1±θ)` via `seven_eq_mul`. **Uses**: [`seven_eq_mul`] — **Lines**: 466-485
 
-### `theorem isPrime_span_one_sub_theta`
-- **Type**: `(span {1-θ}).IsPrime`
-- **Uses from project**: [`thetaInt`, `absNorm_span_one_sub_theta`]
-- **Visibility**: public
-- **Lines**: 466-469
+### `theorem inertiaDeg_span_one_add_theta` / `_sub_theta`
+- **Type**: `inertiaDeg = 1`. **How**: `absNorm_eq_pow_inertiaDeg'`. **Uses**: [absNorm lemmas] — **Lines**: 488-505
 
-### `theorem liesOver_span_one_add_theta / _sub_theta`
-- **Type**: lies over `(7:ℤ)`
-- **Uses from project**: [`thetaInt`, `isPrime_span_one_add/sub_theta`, `seven_eq_mul`]
-- **Visibility**: public
-- **Lines**: 472-491
-
-### `theorem inertiaDeg_span_one_add_theta / _sub_theta`
-- **Type**: inertia degree over 7 is `1`
-- **Uses from project**: [`thetaInt`, `liesOver_span_one_add/sub_theta`, `absNorm_span_one_add/sub_theta`]
-- **Visibility**: public
-- **Lines**: 494-511
-
-### `def primeAboveFiveSubTwo / primeAboveFiveAddTwo`
-- **Type**: `Ideal (𝓞 K) := span {5, thetaInt ∓ 2}`
-- **What**: non-principal primes above 5.
-- **Uses from project**: [`K`, `thetaInt`]
-- **Visibility**: public
-- **Lines**: 516-519
+### `def primeAboveFiveSubTwo` / `primeAboveFiveAddTwo`
+- **Type**: `span {5, thetaInt∓2}` = `(5,θ-2)` / `(5,θ+2)`. **What**: the *non-principal* primes above the split prime `5`. **Uses**: [] — **Lines**: 510, 513 — **Notes**: subtle — `5` splits yet its prime factors are non-principal (`5 = 2x²+3y²`, the other genus form).
 
 ### `theorem span_five_eq`
-- **Type**: `span {5} = span {5,θ-2} * span {5,θ+2}`
-- **Uses from project**: [`thetaInt`, `thetaInt_sq`]
-- **Visibility**: public
-- **Lines**: 521-548
+- **Type**: `(5) = (5,θ-2)(5,θ+2)`. **How**: `span_pair_mul_span_pair` + `thetaInt_sq` (`(θ-2)(θ+2)=θ²-4=-10`). **Uses**: [`thetaInt_sq`] — **Lines**: 515-542
 
-### `private theorem span_five_theta_sub_two_ne_top / _add_two_ne_top`
-- **Type**: `span {5, θ∓2} ≠ ⊤`
-- **How**: `mem_span_pair`, `linearIndependent_one_theta`, `5 ∤ 1`.
-- **Uses from project**: [`thetaInt`, `exists_eq_smul_one_add_smul_theta`, `linearIndependent_one_theta`, `thetaInt_sq`]
-- **Visibility**: private
-- **Lines**: 550-603
+### `private theorem span_five_theta_sub_two_ne_top` / `_add_two_ne_top`
+- **Type**: `(5,θ∓2) ≠ ⊤`. **How**: `1∈I` ⇒ coordinates ⇒ `5∣1`, contradiction (`linearIndependent_one_theta`). **Uses**: [`exists_eq_smul_one_add_smul_theta`, `linearIndependent_one_theta`, `thetaInt_sq`] — **Lines**: 544-597
 
-### `theorem absNorm_primeAboveFiveSubTwo / _AddTwo`
-- **Type**: `absNorm primeAboveFive... = 5`
-- **How**: divisor of `25`, `≠1` (proper) and `≠25` (via `unit_theta_coeff_not_mem` + `eq_of_le_of_absNorm_eq`).
-- **Uses from project**: [`primeAboveFive*`, `absNorm_span_natCast`, `unit_theta_coeff_not_mem`, `thetaInt`, `span_five_theta_*_ne_top`, **Common** `eq_of_le_of_absNorm_eq`]
-- **Visibility**: public
-- **Lines**: 606-665
-- **Notes**: each >30 lines.
+### `theorem absNorm_primeAboveFiveSubTwo` / `_AddTwo`
+- **Type**: `absNorm = 5`. **How**: divides `25`, `≠1` (proper), `≠25` (else `θ∓2∈(5)`, ruled out by `unit_theta_coeff_not_mem`); `dvd_prime_pow`+`interval_cases`. **Uses**: [`absNorm_span_natCast`, `Common.eq_of_le_of_absNorm_eq`, `unit_theta_coeff_not_mem`] — **Lines**: 600-659
 
-### `theorem isPrime_primeAboveFiveSubTwo / _AddTwo`
-- **Type**: prime
-- **Uses from project**: [`primeAboveFive*`, `absNorm_primeAboveFive*`]
-- **Visibility**: public
-- **Lines**: 668-677
+### `theorem isPrime_primeAboveFiveSubTwo` / `_AddTwo`
+- **Type**: `.IsPrime`. **How**: `absNorm=5` prime. **Uses**: [absNorm lemmas] — **Lines**: 662-671
 
-### `theorem liesOver_primeAboveFiveSubTwo / _AddTwo`
-- **Type**: lies over `(5:ℤ)`
-- **Uses from project**: [`primeAboveFive*`, `isPrime_primeAboveFive*`, `thetaInt`]
-- **Visibility**: public
-- **Lines**: 680-695
+### `theorem liesOver_primeAboveFiveSubTwo` / `_AddTwo`, `inertiaDeg_primeAboveFiveSubTwo` / `_AddTwo`
+- **Type**: lie over `(5)`; `inertiaDeg=1`. **How**: standard. **Uses**: [the `Five*` lemmas] — **Lines**: 674-709
 
-### `theorem inertiaDeg_primeAboveFiveSubTwo / _AddTwo`
-- **Type**: inertia degree 1 over 5
-- **Uses from project**: [`primeAboveFive*`, `liesOver_primeAboveFive*`, `absNorm_primeAboveFive*`]
-- **Visibility**: public
-- **Lines**: 698-715
-
-### `private theorem intNorm_five / intNorm_theta_sub_two`
-- **Type**: `norm ℤ 5 = 25`, `norm ℤ (θ-2) = 10`
-- **Uses from project**: [`K`, `thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: private
-- **Lines**: 717-729
+### `private theorem intNorm_five` / `intNorm_theta_sub_two`
+- **Type**: `norm(5)=25`, `norm(θ-2)=10`. **How**: `intNorm_eq_normForm`. **Uses**: [`intNorm_eq_normForm`] — **Lines**: 711-723
 
 ### `theorem not_isPrincipal_primeAboveFive`
-- **Type**: `¬ IsPrincipal (span {5, thetaInt - 2})`
-- **What**: `(5,θ-2)` non-principal (5 not represented by `x²+6y²`).
-- **How**: generator divides 5 (norm 25) and θ-2 (norm 10); `intNorm_ne_five`, `interval_cases`.
-- **Uses from project**: [`K`, `span_five_theta_sub_two_ne_top`, `intNorm_five`, `intNorm_theta_sub_two`, `intNorm_nonneg`, `isUnit_iff_intNorm_eq_one`, `intNorm_ne_five`, `thetaInt`]
-- **Visibility**: public
-- **Lines**: 732-779
-- **Notes**: proof >30 lines.
+- **Type**: `¬ IsPrincipal (5,θ-2)`. **What**: second non-principality witness (the split prime over `5`). **How**: a generator `a` would satisfy `A∣25` and `A∣10`, with `A≠1` (proper), `A≠5` (`intNorm_ne_five`); `interval_cases A`+`omega` exhausts. **Uses**: [`Common`, `intNorm_five`, `intNorm_theta_sub_two`, `intNorm_ne_five`, `isUnit_iff_intNorm_eq_one`, `intNorm_nonneg`] — **Lines**: 726-773 — **Notes**: KEY — concretely confirms class number `> 1` from the splitting of `5`.
 
 ### `private theorem absNorm_span_thirteen_aux`
-- **Type**: `absNorm (span {13}) = 169`
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: private
-- **Lines**: 781-787
+- **Type**: `absNorm (13) = 169`. **How**: `intNorm_eq_normForm 13 0`. **Uses**: [`intNorm_eq_normForm`] — **Lines**: 775-781
 
 ### `theorem isPrime_span_thirteen`
-- **Type**: `(span {13}).IsPrime`
-- **What**: `13` is inert (`-6` not square mod 13).
-- **How**: maximal divisor of `169`; rules out norm-13 prime via `ZMod.ringEquivOfPrime` + `decide` (no root of `t²+6`).
-- **Uses from project**: [`K`, `thetaInt`, `thetaInt_sq`, `absNorm_span_thirteen_aux`]
-- **Visibility**: public
-- **Lines**: 790-837
-- **Notes**: proof >30 lines; uses `decide`.
+- **Type**: `(13).IsPrime`. **What**: `13` is **inert**. **How**: any maximal `M ⊇ (13)` has `absNorm∣169`; `≠1`, `≠13` (else `ZMod 13` would contain a root of `t²+6` — ruled out by `decide`), so `=169`, forcing `M=(13)`. **Uses**: [`absNorm_span_thirteen_aux`, `thetaInt_sq`] — **Lines**: 784-831 — **Notes**: KEY — inertness via "no square root of `-6` mod 13".
 
 ### `theorem absNorm_span_thirteen`
-- **Type**: `absNorm (span {13}) = 169`
-- **Uses from project**: [`absNorm_span_thirteen_aux`]
-- **Visibility**: public
-- **Lines**: 839-841
+- **Type**: `absNorm (13) = 169`. **Uses**: [`absNorm_span_thirteen_aux`] — **Lines**: 833-835
 
-### `theorem liesOver_span_thirteen`
-- **Type**: lies over `(13:ℤ)`
-- **Uses from project**: [`isPrime_span_thirteen`]
-- **Visibility**: public
-- **Lines**: 843-849
-
-### `theorem inertiaDeg_span_thirteen`
-- **Type**: inertia degree `2`
-- **Uses from project**: [`liesOver_span_thirteen`, `absNorm_span_thirteen`]
-- **Visibility**: public
-- **Lines**: 851-861
+### `theorem liesOver_span_thirteen` / `inertiaDeg_span_thirteen`
+- **Type**: lies over `(13)`; `inertiaDeg = 2`. **How**: `pow_right_injective` on `13²=13^f`. **Uses**: [`isPrime_span_thirteen`, `absNorm_span_thirteen`] — **Lines**: 837-855 — **Notes**: inert ⇒ `f=2`.
 
 ### `private theorem mod_twentyfour_of_splits`
-- **Type**: `(p prime,≠2,≠3, p splits) → p%24 ∈ {1,5,7,11}`
-- **How**: norm factorisation `=p` via `left_eq_prime_of_mul_eq_prime_sq_of_ne_one` (Common); `ZMod.ringEquivOfPrime`, root of `t²+6`, `isSquare_neg_six_iff_mod_twentyfour`.
-- **Uses from project**: [`K`, `thetaInt`, `thetaInt_sq`, `absNorm_span_natCast`, `isSquare_neg_six_iff_mod_twentyfour`, **Common** `left_eq_prime_of_mul_eq_prime_sq_of_ne_one`]
-- **Visibility**: private
-- **Lines**: 863-901
-- **Notes**: proof >30 lines.
+- **Type**: split (`p%24∉{2,3}`) ⇒ `p%24∈{1,5,7,11}`. **How**: `absNorm P = p` ⇒ `ZMod p ≅ 𝓞K/P` has a root of `t²+6` ⇒ `IsSquare (-6)` ⇒ `isSquare_neg_six_iff_mod_twentyfour`. **Uses**: [`Common.left_eq_prime_of_mul_eq_prime_sq_of_ne_one`, `absNorm_span_natCast`, `thetaInt_sq`, `isSquare_neg_six_iff_mod_twentyfour`] — **Lines**: 857-895
 
 ### `private theorem exists_root_data`
-- **Type**: `(p) (hs : -6 = s·s in ZMod p) → ∃ c d k₁ k₂, ...`
-- **What**: produce integer representatives + divisibility data for the two roots.
-- **How**: `ZMod.natCast_rightInverse`, `intCast_zmod_eq_zero_iff_dvd`, `linear_combination`.
-- **Uses from project**: [`K`, `thetaInt`, `thetaInt_sq`]
-- **Visibility**: private
-- **Lines**: 903-939
+- **Type**: from `-6=s²` mod `p`, produces `c,d,k₁,k₂:ℤ` with `(θ-c)(θ-d)=p·(…)`. **How**: `c=s.val`, `d=(-s).val`, `p∣c+d`, `p∣cd-6`; `linear_combination`. **Uses**: [`thetaInt_sq`] — **Lines**: 897-933 — **Notes**: Kummer-Dedekind factorization data.
 
 ### `private theorem absNorm_span_pair_not_one`
-- **Type**: `... → absNorm (span {p, θ-c}) ≠ 1`
-- **Uses from project**: [`K`, `thetaInt`, `unit_theta_coeff_not_mem`]
-- **Visibility**: private
-- **Lines**: 941-966
+- **Type**: `(p,θ-c) ≠ ⊤` (given the product relation). **How**: `1∈I` ⇒ `θ-d∈(p)`, ruled out by `unit_theta_coeff_not_mem`. **Uses**: [`unit_theta_coeff_not_mem`] — **Lines**: 935-960
 
 ### `private theorem absNorm_span_pair_ne_prime_sq`
-- **Type**: `... → absNorm (span {p, θ-c}) ≠ p²`
-- **Uses from project**: [`K`, `thetaInt`, `absNorm_span_natCast`, `unit_theta_coeff_not_mem`, **Common** `eq_of_le_of_absNorm_eq`]
-- **Visibility**: private
-- **Lines**: 968-983
+- **Type**: `absNorm (p,θ-c) ≠ p²`. **How**: would give `(p,θ-c)=(p)` ⇒ `θ-c∈(p)`, contradiction. **Uses**: [`Common.eq_of_le_of_absNorm_eq`, `absNorm_span_natCast`, `unit_theta_coeff_not_mem`] — **Lines**: 962-977
 
 ### `private theorem absNorm_span_pair_eq_prime`
-- **Type**: `... → absNorm (span {p, θ-c}) = p`
-- **How**: `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq` (Common) + the two helpers above.
-- **Uses from project**: [`K`, `thetaInt`, `absNorm_span_natCast`, `absNorm_span_pair_not_one`, `absNorm_span_pair_ne_prime_sq`, **Common** `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`]
-- **Visibility**: private
-- **Lines**: 985-996
+- **Type**: `absNorm (p,θ-c) = p`. **How**: `Common.eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq` (divides `p²`, `≠1`, `≠p²`). **Uses**: [`Common`, the two prior lemmas, `absNorm_span_natCast`] — **Lines**: 979-990
 
 ### `private theorem root_ne_neg_of_square_neg_six`
-- **Type**: `(p prime,≠2,≠3, -6=s·s) → s ≠ -s`
-- **How**: else `2s=0 ⇒ s=0 ⇒ p∣6`, contradiction.
-- **Uses from project**: []
-- **Visibility**: private
-- **Lines**: 998-1021
+- **Type**: for `p∉{2,3}`, `s ≠ -s`. **How**: `s=-s` ⇒ `2s=0` ⇒ `s=0` ⇒ `p∣6`, contradiction. **Uses**: [] — **Lines**: 992-1015 — **Notes**: distinctness of the two primes over a split `p`.
 
 ### `private theorem span_pair_ne_of_roots_ne`
-- **Type**: distinct roots ⇒ the two prime ideals differ
-- **How**: `exists_int_inverse_mod_prime` (Common) yields `1 ∈` ideal if equal.
-- **Uses from project**: [`K`, `thetaInt`, **Common** `exists_int_inverse_mod_prime`]
-- **Visibility**: private
-- **Lines**: 1023-1052
+- **Type**: `c≢d mod p` ⇒ `(p,θ-c) ≠ (p,θ-d)`. **How**: `exists_int_inverse_mod_prime` (Common) builds `1∈I`, contradicting norm `p`. **Uses**: [`Common.exists_int_inverse_mod_prime`] — **Lines**: 1017-1046
 
 ### `private theorem span_pair_mul_eq_span_natCast`
-- **Type**: `span {p} = span {p,θ-c} * span {p,θ-d}`
-- **Uses from project**: [`K`, `thetaInt`, `absNorm_span_natCast`, **Common** `eq_of_le_of_absNorm_eq`]
-- **Visibility**: private
-- **Lines**: 1054-1082
+- **Type**: `(p) = (p,θ-c)(p,θ-d)`. **How**: `≤` directly; norms force equality via `eq_of_le_of_absNorm_eq`. **Uses**: [`Common.eq_of_le_of_absNorm_eq`, `absNorm_span_natCast`] — **Lines**: 1048-1076
 
 ### `private theorem splits_of_square_neg_six`
-- **Type**: `(p,≠2,≠3, -6 square) → ∃ P Q distinct primes, span {p}=P·Q`
-- **How**: assembles `exists_root_data`, `absNorm_span_pair_eq_prime`, `span_pair_ne_of_roots_ne`, `span_pair_mul_eq_span_natCast`.
-- **Uses from project**: [`K`, `thetaInt`, `exists_root_data`, `absNorm_span_pair_eq_prime`, `root_ne_neg_of_square_neg_six`, `span_pair_ne_of_roots_ne`, `span_pair_mul_eq_span_natCast`]
-- **Visibility**: private
-- **Lines**: 1084-1122
-- **Notes**: proof >30 lines.
+- **Type**: `-6=s²` mod `p` (`p∉{2,3}`) ⇒ `(p)=P·Q`, `P,Q` distinct primes. **How**: assembles `exists_root_data`, the pair-norm lemmas, distinctness, product. **Uses**: [all the private Kummer lemmas above] — **Lines**: 1078-1116
 
 ### `theorem splits_iff_mod_twentyfour`
-- **Type**: `(p,≠2,≠3) → (p splits into 2 distinct primes) ↔ p%24 ∈ {1,5,7,11}`
-- **What**: **splitting law** (main result).
-- **How**: forward `mod_twentyfour_of_splits`; backward `isSquare_neg_six_iff_mod_twentyfour` then `splits_of_square_neg_six`.
-- **Uses from project**: [`K`, `mod_twentyfour_of_splits`, `isSquare_neg_six_iff_mod_twentyfour`, `splits_of_square_neg_six`]
-- **Visibility**: public
-- **Lines**: 1126-1136
-- **Notes**: MAIN PUBLIC RESULT.
+- **Type**: for `p∉{2,3}`: `(p)` splits into two distinct primes ↔ `p%24∈{1,5,7,11}`. **How**: `mod_twentyfour_of_splits` (⇒) and `splits_of_square_neg_six` (⇐). **Uses**: [`isSquare_neg_six_iff_mod_twentyfour`, the two directions] — **Lines**: 1118-1130 — **Notes**: KEY — the full splitting law.
 
 ### `private theorem eq_two_or_eq_three_of_prime_dvd_twentyfour`
-- **Type**: `(p prime, p∣24) → p=2 ∨ p=3`
-- **Uses from project**: []
-- **Visibility**: private
-- **Lines**: 1138-1146
-- **Notes**: GENERIC-looking (number-theoretic, no field data).
+- **Type**: `p prime ∣ 24 ⇒ p=2 ∨ p=3`. **How**: `24=2³·3`, `Prime.dvd_mul`. **Uses**: [] — **Lines**: 1132-1140
 
 ### `theorem ramified_iff`
-- **Type**: `(p prime) → (∃ prime P, span {p} ≤ P²) ↔ p=2 ∨ p=3`
-- **What**: **ramification law**: ramified iff `p ∣ disc = -24`.
-- **How**: forward uses `not_isUnramifiedAt_of_...` + `not_map_span_natCast_le_pow_succ_of_...` (Common), `dvd_differentIdeal_iff`, `absNorm_differentIdeal`, `numberField_discr_eq`; backward `span_two_eq`/`span_three_eq`.
-- **Uses from project**: [`K`, `absNorm_span_natCast`, `numberField_discr_eq`, `primeAboveTwo/Three`, `isPrime_primeAboveTwo/Three`, `span_two_eq`, `span_three_eq`, `eq_two_or_eq_three_of_prime_dvd_twentyfour`, **Common** `not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow`, `not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ`]
-- **Visibility**: public
-- **Lines**: 1150-1194
-- **Notes**: proof >30 lines. MAIN PUBLIC RESULT.
+- **Type**: `(∃ P prime, (p)≤P²) ↔ p∈{2,3}` (`p ∣ disc -24`). **How**: (⇒) `P∣differentIdeal` via `not_isUnramifiedAt_of_…` (Common), `absNorm(different)=24`, so `p∣24`. (⇐) exhibit `primeAboveTwo`/`Three` with `span_two_eq`/`span_three_eq`. **Uses**: [`Common` ramification helpers, `numberField_discr_eq`, `NumberField.absNorm_differentIdeal`, `span_two_eq`, `span_three_eq`] — **Lines**: 1142-1188 — **Notes**: KEY — ramified primes are exactly the divisors of disc `-24`.
 
-### `theorem ramificationIdx_span_one_add_theta / _sub_theta / primeAboveFiveSubTwo / _AddTwo / span_thirteen`
-- **Type**: ramification index `1` (unramified) for the 7-split, 5-split, 13-inert primes.
-- **How**: `ramificationIdx_spec`; would-be `e≥2` contradicts `ramified_iff`.
-- **Uses from project**: [respective `span_*`/`primeAbove*`, `isPrime_*`, `ramified_iff`]
-- **Visibility**: public
-- **Lines**: 1197-1272
+### `theorem ramificationIdx_span_one_add_theta` / `_sub_theta`, `ramificationIdx_primeAboveFiveSubTwo` / `_AddTwo`, `ramificationIdx_span_thirteen`
+- **Type**: ramification index `1` (the split/inert primes are unramified). **How**: `ramificationIdx_spec`; over-2 case ruled out by `ramified_iff` (`7,5,13∉{2,3}`). **Uses**: [`ramified_iff`, the per-prime data] — **Lines**: 1190-1266
 
 ### `abbrev sqrtNegSixPolynomialMod`
-- **Type**: `(p:ℕ) → (ZMod p)[X] := X²+C 6`
-- **Uses from project**: []
-- **Visibility**: public
-- **Lines**: 1290-1291
+- **Type**: `(ZMod p)[X] := X²+C 6`. **What**: reduction of `X²+6` mod `p`. **Uses**: [] — **Lines**: 1284-1285
 
 ### `private theorem sqrtNegSixPolynomialMod_isRoot_iff`
-- **Type**: `IsRoot t ↔ t² = (-6:ZMod p)`
-- **Uses from project**: [`sqrtNegSixPolynomialMod`]
-- **Visibility**: private
-- **Lines**: 1293-1301
+- **Type**: `IsRoot t ↔ t² = ((-6:ℤ):ZMod p)`. **How**: `eval`+`linear_combination`. **Uses**: [] — **Lines**: 1287-1295
 
 ### `private theorem sqrtNegSixPolynomialMod_natDegree`
-- **Type**: `natDegree = 2`
-- **Uses from project**: [`sqrtNegSixPolynomialMod`]
-- **Visibility**: private
-- **Lines**: 1303-1305
+- **Type**: `natDegree = 2`. **How**: `simp`. **Uses**: [] — **Lines**: 1297-1299
 
 ### `private theorem sqrtNegSixPolynomialMod_roots_eq_zero_iff_no_root`
-- **Type**: `roots = 0 ↔ ¬∃ t, t²=(-6)`
-- **Uses from project**: [`sqrtNegSixPolynomialMod`, `sqrtNegSixPolynomialMod_isRoot_iff`, `sqrtNegSixPolynomialMod_natDegree`]
-- **Visibility**: private
-- **Lines**: 1307-1328
+- **Type**: `roots = 0 ↔ ¬∃ t, t²=-6`. **How**: `mem_roots`/`eq_zero_iff_forall_notMem`. **Uses**: [the isRoot lemma] — **Lines**: 1301-1322
 
 ### `private theorem sqrtNegSixPolynomialMod_no_root_iff_inert_mod_twentyfour`
-- **Type**: `(p,≠2,≠3) → (¬∃t, t²=-6) ↔ p%24 ∈ {13,17,19,23}`
-- **How**: `isSquare_neg_six_iff_mod_twentyfour`, omega.
-- **Uses from project**: [`isSquare_neg_six_iff_mod_twentyfour`]
-- **Visibility**: private
-- **Lines**: 1330-1377
-- **Notes**: proof >30 lines. (Kummer-Dedekind inert characterisation; not re-exported publicly.)
+- **Type**: `(¬∃ t, t²=-6) ↔ p%24∈{13,17,19,23}`. **How**: case-split `p%24`, dispatch via `isSquare_neg_six_iff_mod_twentyfour`. **Uses**: [`isSquare_neg_six_iff_mod_twentyfour`] — **Lines**: 1324-1372 — **Notes**: inertness law (Kummer-Dedekind, polynomial-irreducible form).
 
 ### `theorem absNorm_differentIdeal_eq_twentyFour`
-- **Type**: `absNorm (differentIdeal ℤ (𝓞 K)) = 24`
-- **How**: `NumberField.absNorm_differentIdeal`, `numberField_discr_eq`.
-- **Uses from project**: [`K`, `numberField_discr_eq`]
-- **Visibility**: public
-- **Lines**: 1393-1396
+- **Type**: `absNorm (differentIdeal ℤ (𝓞 K)) = 24`. **How**: `NumberField.absNorm_differentIdeal` + `numberField_discr_eq`. **Uses**: [`numberField_discr_eq`] — **Lines**: 1387-1390
 
 ### `theorem prime_dvd_differentIdeal_iff_eq_ramifiedPrime`
-- **Type**: `(P prime, ≠⊥) → P ∣ differentIdeal ↔ P = primeAboveTwo ∨ P = primeAboveThree`
-- **What**: the different is `(2,θ)(3,θ)` (ramified primes).
-- **How**: norm `∣24`, `Nat.absNorm_under_prime`, `eq_two_or_eq_three_of_prime_dvd_twentyfour`, `IsPrime.le_of_pow_le`, `dvd_differentIdeal_iff`.
-- **Uses from project**: [`K`, `absNorm_differentIdeal_eq_twentyFour`, `eq_two_or_eq_three_of_prime_dvd_twentyfour`, `primeAboveTwo/Three`, `span_two_eq`, `span_three_eq`, `absNorm_primeAboveTwo/Three`, `isPrime_primeAboveTwo/Three`, `liesOver_primeAboveTwo/Three`, `ramificationIdx_primeAboveTwo/Three`]
-- **Visibility**: public
-- **Lines**: 1398-1468
-- **Notes**: proof >30 lines. MAIN PUBLIC RESULT.
+- **Type**: `P∣different ↔ P∈{primeAboveTwo, primeAboveThree}`. **How**: (⇒) `absNorm(under P)∣24` ⇒ `under=2 or 3` ⇒ `P=primeAboveTwo/Three` (maximality via `span_*_eq`). (⇐) `dvd_differentIdeal_iff` via `ramificationIdx=2>1`. **Uses**: [`absNorm_differentIdeal_eq_twentyFour`, `eq_two_or_eq_three_…`, `span_two_eq`, `span_three_eq`, `ramificationIdx_primeAbove*`] — **Lines**: 1392-1462 — **Notes**: KEY — the different is supported exactly on the two ramified primes.
 
-**File Summary (PrimeSplitting.lean)**: ~60 decls (4 defs, 2 abbrevs, ~54 theorems). Heavy use of Common helpers. Key API: `primeAboveTwo`, `primeAboveThree`, `span_two_eq`, `span_three_eq`, `span_theta_eq`, `absNorm_primeAboveTwo/Three`, `isPrime_primeAboveTwo/Three`, `not_isPrincipal_primeAboveTwo`, `ideal_eq_primeAboveTwo/Three_of_absNorm_eq_*`, `absNorm_span_natCast`, `isSquare_neg_six_iff_mod_twentyfour`, `unit_theta_coeff_not_mem`. Main public: `splits_iff_mod_twentyfour`, `ramified_iff`, `prime_dvd_differentIdeal_iff_eq_ramifiedPrime`. No sorry, no set_option. Many proofs >30 lines (listed above). The 5/7/13 splitting lemmas are largely unused downstream (illustrative).
+**File Summary**: The largest file; the arithmetic core. Establishes splitting behaviour for `ℚ(√-6)`:
+`2,3` ramify (`(p)=primeAbove_p²`), `7` splits into *principal* primes `(1±θ)`, `5` splits into
+*non-principal* primes `(5,θ∓2)`, `13` is inert; the general law `splits_iff_mod_twentyfour` (split ⇔
+`p%24∈{1,5,7,11}` ⇔ `-6` square mod `p`), the inert law (`{13,17,19,23}`), `ramified_iff` (ramified ⇔
+`p∈{2,3}`=disc divisors), and the different ideal (norm 24, supported on the ramified primes). The
+non-principality witnesses `not_isPrincipal_primeAboveTwo` and `not_isPrincipal_primeAboveFive` live here.
+Heavy use of `Common.lean` (`eq_of_le_of_absNorm_eq`, `eq_prime_of_dvd_prime_sq_…`,
+`left_eq_prime_of_mul_eq_prime_sq_…`, `exists_int_inverse_mod_prime`, ramification helpers).
 
 ---
 
 ## ClassGroup.lean
 
-### `abbrev thetaFractionalIdeal`
-- **Type**: `FractionalIdeal (𝓞 K)⁰ K := spanSingleton ... θ`
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: public
-- **Lines**: 31-32
+Imports `PrimeSplitting.lean`. The class-group machinery (the headline of this case study).
 
-### `abbrev primeAboveTwoFractionalIdeal / primeAboveThreeFractionalIdeal`
-- **Type**: coercions of `primeAboveTwo/Three` to fractional ideals.
-- **Uses from project**: [`primeAboveTwo`, `primeAboveThree`, `K`]
-- **Visibility**: public
-- **Lines**: 34-38
+### `abbrev thetaFractionalIdeal`
+- **Type**: `FractionalIdeal (𝓞 K)⁰ K := spanSingleton θ`. **Uses**: [] — **Lines**: 31-32
+
+### `abbrev primeAboveTwoFractionalIdeal` / `primeAboveThreeFractionalIdeal`
+- **Type**: coercions of `primeAboveTwo`/`Three` to fractional ideals. **Uses**: [`primeAboveTwo`/`Three`] — **Lines**: 34-38
 
 ### `theorem theta_mem_fractionalIdeal`
-- **Type**: `θ ∈ thetaFractionalIdeal`
-- **Uses from project**: [`thetaFractionalIdeal`, `θ`, `K`]
-- **Visibility**: public
-- **Lines**: 40-42
+- **Type**: `θ ∈ thetaFractionalIdeal`. **How**: `mem_spanSingleton_self`. **Uses**: [] — **Lines**: 40-42
 
 ### `theorem thetaFractionalIdeal_absNorm`
-- **Type**: `absNorm thetaFractionalIdeal = |Algebra.norm ℚ θ|`
-- **Uses from project**: [`thetaFractionalIdeal`, `θ`]
-- **Visibility**: public
-- **Lines**: 44-46
+- **Type**: `absNorm = |Algebra.norm ℚ θ|`. **How**: `simp`. **Uses**: [] — **Lines**: 44-46
 
 ### `theorem ramifiedFractionalIdeals_ne_zero`
-- **Type**: `primeAboveTwoFractionalIdeal ≠ 0 ∧ primeAboveThreeFractionalIdeal ≠ 0`
-- **Uses from project**: [`primeAboveTwoFractionalIdeal`, `primeAboveThreeFractionalIdeal`, `absNorm_primeAboveTwo`, `absNorm_primeAboveThree`]
-- **Visibility**: public
-- **Lines**: 48-60
+- **Type**: both ramified fractional ideals `≠ 0`. **How**: `coeIdeal_ne_zero` + `absNorm` nonzero. **Uses**: [`absNorm_primeAboveTwo`/`Three`] — **Lines**: 48-60
 
 ### `noncomputable def ramifiedIdealOverTwo`
-- **Type**: `(Ideal (𝓞 K))⁰ := ⟨primeAboveTwo, ...⟩`
-- **What**: nontrivial class representative.
-- **Uses from project**: [`K`, `primeAboveTwo`, `absNorm_primeAboveTwo`]
-- **Visibility**: public
-- **Lines**: 78-82
-- **Notes**: KEY.
+- **Type**: `(Ideal (𝓞 K))⁰ := ⟨primeAboveTwo, …⟩`. **What**: `(2,θ)` as a nonzero ideal — concrete representative of the nontrivial class. **How**: `absNorm=2≠0`. **Uses**: [`absNorm_primeAboveTwo`] — **Lines**: 76-82 — **Notes**: KEY.
 
 ### `noncomputable def ramifiedIdealOverThree`
-- **Type**: `(Ideal (𝓞 K))⁰ := ⟨primeAboveThree, ...⟩`
-- **Uses from project**: [`K`, `primeAboveThree`, `absNorm_primeAboveThree`]
-- **Visibility**: public
-- **Lines**: 86-90
+- **Type**: `⟨primeAboveThree, …⟩`. **What**: `(3,θ)` nonzero ideal (same class as `OverTwo`). **Uses**: [`absNorm_primeAboveThree`] — **Lines**: 84-90
 
 ### `abbrev unitIdealRepresentative`
-- **Type**: `(Ideal (𝓞 K))⁰ := ⟨⊤, ...⟩`
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 93
+- **Type**: `⟨⊤, …⟩`. **What**: representative of the trivial class. **Uses**: [] — **Lines**: 92-93
 
 ### `private theorem thetaInt_ne_zero`
-- **Type**: `thetaInt ≠ 0`
-- **Uses from project**: [`thetaInt`, `θ`, `theta_sq`]
-- **Visibility**: private
-- **Lines**: 95-100
-- **Notes**: GENERIC-looking; could live in RingOfIntegers.
+- **Type**: `thetaInt ≠ 0`. **How**: else `θ=0` contradicts `theta_sq`. **Uses**: [`theta_sq`] — **Lines**: 95-100
 
 ### `private theorem minkowskiBound_lt_four`
-- **Type**: Minkowski-bound expression `< 4`
-- **What**: `(2/π)√24 ≈ 3.12 < 4`.
-- **How**: rewrite places/disc, `Real.sqrt_lt_sqrt`, `Real.pi_gt_three`, nlinarith.
-- **Uses from project**: [`K`, `nrRealPlaces_eq_zero`, `degree_eq_two`, `numberField_discr_eq`]
-- **Visibility**: private
-- **Lines**: 102-123
-- **Notes**: proof >20 lines.
+- **Type**: Minkowski bound `< 4`. **How**: `(2/π)√24 < 4` via `√24<5` and `π>3` (`nlinarith`); plugs `nrComplexPlaces=1`, `finrank=2`, disc `-24`. **Uses**: [`nrRealPlaces_eq_zero`, `degree_eq_two`, `numberField_discr_eq`] — **Lines**: 102-123 — **Notes**: KEY — bounds the class-group representatives by norm `≤3`.
 
 ### `theorem classGroup_mk0_ramified_ne_one`
-- **Type**: `ClassGroup.mk0 ramifiedIdealOverTwo ≠ 1`
-- **How**: `mk0_eq_one_iff` ⇒ principal, contradicts `not_isPrincipal_primeAboveTwo`.
-- **Uses from project**: [`ramifiedIdealOverTwo`, `not_isPrincipal_primeAboveTwo`]
-- **Visibility**: public
-- **Lines**: 126-132
-- **Notes**: KEY.
+- **Type**: `ClassGroup.mk0 ramifiedIdealOverTwo ≠ 1`. **How**: `=1` would force `primeAboveTwo` principal (`mk0_eq_one_iff`), contradicting `not_isPrincipal_primeAboveTwo`. **Uses**: [`not_isPrincipal_primeAboveTwo`] — **Lines**: 125-132 — **Notes**: KEY — the class is nontrivial.
 
 ### `theorem classGroup_mk0_ramified_sq_eq_one`
-- **Type**: `(ClassGroup.mk0 ramifiedIdealOverTwo) ^ 2 = 1`
-- **How**: `mk0_eq_mk0_inv_iff` via `(2,θ)²=(2)` (`span_two_eq`); self-inverse.
-- **Uses from project**: [`ramifiedIdealOverTwo`, `span_two_eq`]
-- **Visibility**: public
-- **Lines**: 135-144
+- **Type**: `(ClassGroup.mk0 ramifiedIdealOverTwo)² = 1`. **What**: the nontrivial class has order dividing `2`. **How**: `mk0_eq_mk0_inv_iff` with witness `2` (since `(2,θ)²=(2)` principal ⇒ class is its own inverse). **Uses**: [`span_two_eq`] — **Lines**: 134-144 — **Notes**: KEY — `(2,θ)²` principal ⇒ class² trivial.
 
 ### `theorem orderOf_classGroup_mk0_ramified`
-- **Type**: `orderOf (ClassGroup.mk0 ramifiedIdealOverTwo) = 2`
-- **How**: `orderOf_eq_prime`.
-- **Uses from project**: [`ramifiedIdealOverTwo`, `classGroup_mk0_ramified_sq_eq_one`, `classGroup_mk0_ramified_ne_one`]
-- **Visibility**: public
-- **Lines**: 147-151
+- **Type**: `orderOf = 2`. **How**: `orderOf_eq_prime` (sq=1, ≠1). **Uses**: [the two prior] — **Lines**: 146-151 — **Notes**: KEY — the class has order exactly `2`.
 
 ### `theorem class_mk0_primeAboveThree_eq_ramified`
-- **Type**: `mk0 ramifiedIdealOverThree = mk0 ramifiedIdealOverTwo`
-- **How**: both self-inverse / `(θ)=(2,θ)(3,θ)` principal (`span_theta_eq`).
-- **Uses from project**: [`ramifiedIdealOverTwo`, `ramifiedIdealOverThree`, `span_two_eq`, `span_theta_eq`, `thetaInt`, `thetaInt_ne_zero`]
-- **Visibility**: public
-- **Lines**: 154-170
+- **Type**: class of `(3,θ)` = class of `(2,θ)`. **How**: `(2,θ)` self-inverse and `(2,θ)(3,θ)=(θ)` principal (`span_theta_eq`) ⇒ `(3,θ)` is the inverse of the inverse. **Uses**: [`span_two_eq`, `span_theta_eq`, `thetaInt_ne_zero`] — **Lines**: 153-170 — **Notes**: KEY — both ramified primes give the *same* nontrivial class.
 
 ### `private theorem classGroupRepresentatives_aux`
-- **Type**: `(C) → C = 1 ∨ C = mk0 ramifiedIdealOverTwo`
-- **How**: `exists_ideal_in_class_of_norm_le`, `minkowskiBound_lt_four` ⇒ norm ≤3; `ideal_eq_primeAboveTwo/Three_of_absNorm_eq_*`.
-- **Uses from project**: [`K`, `minkowskiBound_lt_four`, `ramifiedIdealOverTwo/Three`, `ideal_eq_primeAboveTwo_of_absNorm_eq_two`, `ideal_eq_primeAboveThree_of_absNorm_eq_three`, `primeAboveTwo/Three`, `class_mk0_primeAboveThree_eq_ramified`]
-- **Visibility**: private
-- **Lines**: 172-207
-- **Notes**: proof >30 lines.
+- **Type**: `∀ C, C=1 ∨ C=mk0 ramifiedIdealOverTwo`. **How**: `exists_ideal_in_class_of_norm_le`, `absNorm ≤ 3` (`minkowskiBound_lt_four`); `interval_cases` on norm `1,2,3` using `Ideal.absNorm_eq_one_iff`, `ideal_eq_primeAboveTwo/Three_of_absNorm_eq_*`, `class_mk0_primeAboveThree_eq_ramified`. **Uses**: [`minkowskiBound_lt_four`, the `ideal_eq_*` lemmas, `class_mk0_primeAboveThree_eq_ramified`] — **Lines**: 172-207 — **Notes**: KEY enumeration.
 
 ### `theorem classNumber_eq_two`
-- **Type**: `NumberField.classNumber K = 2`
-- **What**: **class number = 2** (main result).
-- **How**: `Nat.card_eq_two_iff` from `1` and `mk0 ramifiedIdealOverTwo`, exhaustiveness `classGroupRepresentatives_aux`.
-- **Uses from project**: [`K`, `ramifiedIdealOverTwo`, `classGroup_mk0_ramified_ne_one`, `classGroupRepresentatives_aux`]
-- **Visibility**: public
-- **Lines**: 209-221
-- **Notes**: MAIN PUBLIC RESULT.
+- **Type**: `NumberField.classNumber K = 2`. **What**: **THE headline result**. **How**: `Nat.card (ClassGroup) = 2` via `card_eq_two_iff` with `{1, mk0 ramifiedIdealOverTwo}`, completeness from `classGroupRepresentatives_aux`, nontriviality from `classGroup_mk0_ramified_ne_one`. **Uses**: [`classGroupRepresentatives_aux`, `classGroup_mk0_ramified_ne_one`] — **Lines**: 209-221 — **Notes**: KEY. Docstring states the full argument (Minkowski bound, primes 2,3, classes coincide & nontrivial via `(2,θ)(3,θ)=(θ)`).
 
 ### `theorem classGroupStructure`
-- **Type**: `Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 2))`
-- **What**: **class group ≅ ℤ/2** (main result).
-- **How**: `classNumber_eq_two`, `mulEquivOfPrimeCardEq`.
-- **Uses from project**: [`K`, `classNumber_eq_two`]
-- **Visibility**: public
-- **Lines**: 223-229
-- **Notes**: MAIN PUBLIC RESULT.
+- **Type**: `Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 2))`. **How**: `Nat.card=2` + `mulEquivOfPrimeCardEq`. **Uses**: [`classNumber_eq_two`] — **Lines**: 223-229 — **Notes**: KEY — class group `≅ ℤ/2`.
 
 ### `theorem classGroup_mk0_ramified_ne`
-- **Type**: `mk0 ramifiedIdealOverTwo ≠ mk0 unitIdealRepresentative`
-- **Uses from project**: [`ramifiedIdealOverTwo`, `unitIdealRepresentative`, `not_isPrincipal_primeAboveTwo`]
-- **Visibility**: public
-- **Lines**: 231-240
+- **Type**: `mk0 ramifiedIdealOverTwo ≠ mk0 unitIdealRepresentative`. **How**: else `primeAboveTwo` principal, contradiction. **Uses**: [`not_isPrincipal_primeAboveTwo`] — **Lines**: 231-240
 
 ### `theorem classGroupRepresentatives`
-- **Type**: `(C) → C = mk0 unitIdealRepresentative ∨ C = mk0 ramifiedIdealOverTwo`
-- **How**: `Nat.card_eq_two_iff'` + `classGroup_mk0_ramified_ne`.
-- **Uses from project**: [`K`, `classNumber_eq_two`, `unitIdealRepresentative`, `ramifiedIdealOverTwo`, `classGroup_mk0_ramified_ne`]
-- **Visibility**: public
-- **Lines**: 242-253
+- **Type**: `∀ C, C = mk0 unitIdealRepresentative ∨ C = mk0 ramifiedIdealOverTwo`. **How**: `Nat.card=2` + `card_eq_two_iff'`. **Uses**: [`classNumber_eq_two`, `classGroup_mk0_ramified_ne`] — **Lines**: 242-253
 
-**File Summary (ClassGroup.lean)**: ~18 decls (2 defs, ~13 theorems, 4 abbrevs). Key API: `ramifiedIdealOverTwo`, `classNumber_eq_two`, `classGroup_mk0_ramified_ne_one`. Main public: `classNumber_eq_two`, `classGroupStructure`, `classGroupRepresentatives`. No sorry, no set_option. Proofs >30 lines: `classGroupRepresentatives_aux`. The fractional-ideal abbrevs (`thetaFractionalIdeal`, etc.) are illustrative, unused downstream.
+**File Summary**: The class-group headline. The nontrivial ideal class is exhibited concretely by
+`ramifiedIdealOverTwo = (2,θ)`: nontrivial (`not_isPrincipal_primeAboveTwo`), order 2 (`(2,θ)²=(2)`
+principal), and equal to the class of `(3,θ)` (because `(2,θ)(3,θ)=(θ)` is principal). The Minkowski
+bound `<4` reduces enumeration to norms `1,2,3`, giving exactly two classes ⇒ `classNumber = 2`,
+`ClassGroup ≅ ℤ/2`. Uses `ClassGroup.mk0`, `NumberField.classNumber`, `exists_ideal_in_class_of_norm_le`.
 
 ---
 
 ## Units.lean
 
+Imports `ClassGroup.lean`. Unit group of the imaginary quadratic field.
+
 ### `abbrev torsionGenerator`
-- **Type**: `(𝓞 K)ˣ := -1`
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 34
-- **Notes**: KEY (used in LocalGlobal too).
+- **Type**: `(𝓞 K)ˣ := -1`. **What**: torsion generator (`-1`). **Uses**: [] — **Lines**: 33-34 — **Notes**: KEY (referenced in LocalGlobal too).
 
 ### `def torsionUnits`
-- **Type**: `Set ((𝓞 K)ˣ) := {u | ∃ k : Fin 2, u = torsionGenerator ^ k.val}`
-- **Uses from project**: [`K`, `torsionGenerator`]
-- **Visibility**: public
-- **Lines**: 37
+- **Type**: `Set ((𝓞 K)ˣ) := {u | ∃ k:Fin 2, u = torsionGenerator^k.val}`. **What**: `{1,-1}`. **Uses**: [] — **Lines**: 36-37
 
 ### `theorem torsionUnits_eq`
-- **Type**: `{u | IsOfFinOrder u} = torsionUnits`
-- **What**: torsion subgroup `= {±1}`.
-- **How**: a unit has `x²+6y²=1` ⇒ `(±1,0)` via `isUnit_iff_normForm`; converse `(-1)²=1`.
-- **Uses from project**: [`K`, `exists_eq_smul_one_add_smul_theta`, `thetaInt`, `isUnit_iff_normForm`, `torsionGenerator`, `torsionUnits`]
-- **Visibility**: public
-- **Lines**: 41-68
-- **Notes**: KEY; proof >20 lines.
+- **Type**: `{u | IsOfFinOrder u} = torsionUnits`. **What**: torsion subgroup is exactly `{±1}`. **How**: unit ⇒ `x²+6y²=1` (`isUnit_iff_normForm`) ⇒ `y=0`, `x=±1` (`interval_cases`); conversely `(±1)²=1`. **Uses**: [`exists_eq_smul_one_add_smul_theta`, `isUnit_iff_normForm`] — **Lines**: 39-68 — **Notes**: KEY — no extra roots of unity (disc `≠ -3,-4`).
 
 ### `theorem torsionOrder_eq_two`
-- **Type**: `NumberField.Units.torsionOrder K = 2`
-- **How**: `Nat.card_eq_two_iff` from `1`,`-1`; `torsionUnits_eq` for exhaustiveness.
-- **Uses from project**: [`K`, `torsionUnits_eq`]
-- **Visibility**: public
-- **Lines**: 71-96
-- **Notes**: proof >20 lines.
+- **Type**: `NumberField.Units.torsionOrder K = 2`. **How**: `Nat.card (torsion) = 2` via `{1,-1}` distinct (`2≠0` in `K`); completeness from `torsionUnits_eq`. **Uses**: [`torsionUnits_eq`] — **Lines**: 70-96 — **Notes**: KEY — `μ_K = μ₂`.
 
 ### `theorem unitRank_eq_zero`
-- **Type**: `NumberField.Units.rank K = 0`
-- **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces`, the place counts.
-- **Uses from project**: [`K`, `nrRealPlaces_eq_zero`, `nrComplexPlaces_eq_one`]
-- **Visibility**: public
-- **Lines**: 100-102
-- **Notes**: KEY.
+- **Type**: `NumberField.Units.rank K = 0`. **How**: `rank = #places - 1`; `nrRealPlaces=0`, `nrComplexPlaces=1`. **Uses**: [`nrRealPlaces_eq_zero`, `nrComplexPlaces_eq_one`] — **Lines**: 98-102 — **Notes**: KEY — Dirichlet rank `0` (no fundamental units), signature `(0,1)`.
 
 ### `theorem unit_eq_one_or_neg_one`
-- **Type**: `(u : (𝓞 K)ˣ) → u = 1 ∨ u = -1`
-- **How**: `exist_unique_eq_mul_prod` + `unitRank_eq_zero` ⇒ torsion; `torsionUnits_eq`.
-- **Uses from project**: [`K`, `unitRank_eq_zero`, `torsionUnits_eq`, `torsionGenerator`]
-- **Visibility**: public
-- **Lines**: 105-123
-- **Notes**: KEY.
+- **Type**: `∀ u:(𝓞 K)ˣ, u=1 ∨ u=-1`. **How**: `exist_unique_eq_mul_prod`; rank `0` ⇒ empty fundamental product ⇒ `u` is torsion ⇒ `torsionUnits_eq`. **Uses**: [`unitRank_eq_zero`, `torsionUnits_eq`] — **Lines**: 104-123 — **Notes**: KEY — finite unit group `{±1}`.
 
 ### `theorem unitGroupStructure`
-- **Type**: `Nonempty ((𝓞 K)ˣ ≃* Multiplicative (ZMod 2))`
-- **What**: **unit group ≅ ℤ/2** (= μ₂).
-- **How**: `Nat.card_eq_two_iff`, `unit_eq_one_or_neg_one`, `mulEquivOfPrimeCardEq`.
-- **Uses from project**: [`K`, `unit_eq_one_or_neg_one`]
-- **Visibility**: public
-- **Lines**: 126-140
-- **Notes**: MAIN PUBLIC RESULT.
+- **Type**: `Nonempty ((𝓞 K)ˣ ≃* Multiplicative (ZMod 2))`. **How**: `Nat.card=2` (from `unit_eq_one_or_neg_one`) + `mulEquivOfPrimeCardEq`. **Uses**: [`unit_eq_one_or_neg_one`] — **Lines**: 125-140 — **Notes**: KEY — `(𝓞 K)ˣ ≅ μ₂`.
 
 ### `theorem regulator_eq_one`
-- **Type**: `NumberField.Units.regulator K = 1`
-- **What**: regulator = 1 (empty determinant).
-- **How**: `regulator_eq_det'`, `Matrix.det_eq_one_of_card_eq_zero` (rank 0).
-- **Uses from project**: [`K`, `unitRank_eq_zero`]
-- **Visibility**: public
-- **Lines**: 143-158
-- **Notes**: MAIN PUBLIC RESULT. (Note: NOT blocked here, unlike the real-quadratic twins.)
+- **Type**: `NumberField.Units.regulator K = 1`. **How**: `regulator_eq_det'`; rank `0` ⇒ empty `0×0` determinant `=1` (`det_eq_one_of_card_eq_zero`). **Uses**: [`unitRank_eq_zero`] — **Lines**: 142-158 — **Notes**: regulator trivially `1` (no Artin-bound issue, unlike the real fields).
 
-**File Summary (Units.lean)**: 8 decls (1 def, 1 abbrev, 6 theorems). Key API: `torsionUnits_eq`, `unitRank_eq_zero`, `unit_eq_one_or_neg_one`, `torsionGenerator`. Main public: `torsionOrder_eq_two`, `unitGroupStructure`, `regulator_eq_one`. No sorry, no set_option, no proof >30 lines.
+**File Summary**: Unit group of the imaginary quadratic field. Positive-definite norm form ⇒ no Pell ⇒
+unit group is just torsion `{±1} = μ₂`, rank `0`, regulator `1`. Contrast with the real-field case studies
+where `isFundamental`/`regulator` are blocked on Artin-type bounds — here everything is fully proved
+*because* there are no fundamental units. KEY exports: `torsionGenerator`, `torsionOrder_eq_two`,
+`unitRank_eq_zero`, `unit_eq_one_or_neg_one`. (Trailing empty `## Regulator` section, Lines 162-172.)
 
 ---
 
 ## Euclidean.lean
 
+Imports `Units.lean`. The non-PID / non-Euclidean negative results.
+
 ### `theorem not_isPrincipalIdealRing`
-- **Type**: `¬ IsPrincipalIdealRing (𝓞 K)`
-- **What**: `ℤ[√-6]` is not a PID.
-- **How**: PID would make `primeAboveTwo` principal, contradicts `not_isPrincipal_primeAboveTwo`.
-- **Uses from project**: [`K`, `not_isPrincipal_primeAboveTwo`, `primeAboveTwo`]
-- **Visibility**: public
-- **Lines**: 33-35
-- **Notes**: MAIN PUBLIC RESULT (used by UniqueFactorization).
+- **Type**: `¬ IsPrincipalIdealRing (𝓞 K)`. **What**: `ℤ[√-6]` is **not a PID**. **How**: a PID would make every ideal principal, contradicting `not_isPrincipal_primeAboveTwo` applied to `(2,θ)`. **Uses**: [`not_isPrincipal_primeAboveTwo`, `primeAboveTwo`] — **Lines**: 31-35 — **Notes**: KEY negative result.
 
 ### `theorem not_normEuclidean`
-- **Type**: `¬ ∀ a b, b≠0 → ∃ q r, a = b*q+r ∧ |N r| < |N b|`
-- **What**: `ℤ[√-6]` is not norm-Euclidean.
-- **How**: take `a=θ`, `b=2`: any remainder `r=θ-2q` has norm `(-2x)²+6(1-2y)² ≥ 4 = N(2)`; `nlinarith`.
-- **Uses from project**: [`K`, `thetaInt`, `intNorm_eq_normForm`, `exists_eq_smul_one_add_smul_theta`]
-- **Visibility**: public
-- **Lines**: 38-79
-- **Notes**: MAIN PUBLIC RESULT; proof >30 lines.
+- **Type**: `¬ ∀ a b, b≠0 → ∃ q r, a = b*q+r ∧ |norm r| < |norm b|`. **What**: `ℤ[√-6]` is **not norm-Euclidean**. **How**: take `a=thetaInt`, `b=2`: any remainder `r=θ-2q` has coordinates `(-2x, 1-2y)` (odd second coordinate); `norm r = (-2x)²+6(1-2y)² ≥ 6 > 4 = |norm 2|` (`nlinarith`, since `(1-2y)²≥1`), contradicting the Euclidean inequality. **Uses**: [`thetaInt`, `intNorm_eq_normForm`, `exists_eq_smul_one_add_smul_theta`] — **Lines**: 37-79 — **Notes**: KEY negative result — explicit counterexample pair `(θ, 2)`; the property is stated *inline* (not via a mathlib `EuclideanDomain`/`NormEuclidean` typeclass).
 
-**File Summary (Euclidean.lean)**: 2 theorems. Both main public results. No sorry, no set_option. `not_normEuclidean` >30 lines.
-
----
-
-## LocalGlobal.lean
-
-### `def heightOneTwo / heightOneThree`
-- **Type**: `HeightOneSpectrum (𝓞 K)` over `primeAboveTwo/Three`.
-- **Uses from project**: [`primeAboveTwo/Three`, `isPrime_primeAboveTwo/Three`, `absNorm_primeAboveTwo/Three`, `K`]
-- **Visibility**: public
-- **Lines**: 35-54
-
-### `abbrev vTwo / vThree`
-- **Type**: `NumberField.FinitePlace K := FinitePlace.mk heightOne...`
-- **Uses from project**: [`heightOneTwo/Three`, `K`]
-- **Visibility**: public
-- **Lines**: 56-60
-
-### `example`s (×11)
-- ramificationIdx/inertiaDeg of `heightOne*` (lines 62-76), `InfiniteCompletion ≃+* ℂ` (111-114), product formula (128-146), infinite-adele norm/dense (168-174), fundamentalCone measurability (225-231), house positivity (249-256), zeta positivity/def (316-327). These are unnamed `example`s exercising mathlib API against the field; each cites the matching project lemma (`ramificationIdx_primeAboveTwo`, `infinitePlace_isComplex`, `theta_sq`, `torsionGenerator`, etc.).
-
-### `abbrev CompletionAtTwo / CompletionAtThree`
-- **Type**: `heightOne....adicCompletion K`
-- **Uses from project**: [`heightOneTwo/Three`, `K`]
-- **Visibility**: public
-- **Lines**: 90-95
-
-### `abbrev InfiniteCompletion`
-- **Type**: `(v : InfinitePlace K) → Type := v.Completion`
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 108-109
-
-### `abbrev SqrtNegSixInfiniteAdeleRing`, `infinitePrincipalAdele_theta`, `infinitePrincipalAdele_torsionGenerator`
-- **Type**: infinite adele ring and principal adeles of `θ`, `-1`.
-- **Uses from project**: [`K`, `θ`, `torsionGenerator`]
-- **Visibility**: public
-- **Lines**: 159-166
-
-### `theorem canonicalEmbedding_thetaInt_mem_integerLattice`
-- **Type**: `canonicalEmbedding K (algebraMap (𝓞 K) K thetaInt) ∈ integerLattice K`
-- **Uses from project**: [`K`, `thetaInt`]
-- **Visibility**: public
-- **Lines**: 188-191
-
-### `abbrev mixedEmbedding_theta`
-- **Type**: `mixedEmbedding.mixedSpace K := mixedEmbedding K θ`
-- **Uses from project**: [`K`, `θ`]
-- **Visibility**: public
-- **Lines**: 207
-
-### `theorem mixedEmbedding_theta_mem_convexBodyLT`
-- **Type**: `(f) (hf : ∀ w, w θ < f w) → mixedEmbedding_theta ∈ convexBodyLT K f`
-- **How**: unfold convexBodyLT membership; totally complex ⇒ real component vacuous (`infinitePlace_isComplex`), complex via `norm_embedding_eq`.
-- **Uses from project**: [`K`, `mixedEmbedding_theta`, `infinitePlace_isComplex`, `θ`]
-- **Visibility**: public
-- **Lines**: 210-223
-
-### `theorem polarSpace_nonempty`
-- **Type**: `Nonempty (mixedEmbedding.polarSpace K)`
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 233-235
-
-### `theorem house_torsionGenerator`
-- **Type**: `NumberField.house (algebraMap (𝓞 K) K (-1)) = 1`
-- **Uses from project**: [`K`, `torsionGenerator`]
-- **Visibility**: public
-- **Lines**: 258-260
-
-### `abbrev SqrtNegSixAdeleRing`, `principalAdele_theta`, `principalAdele_torsionGenerator`
-- **Type**: adele ring and principal adeles.
-- **Uses from project**: [`K`, `θ`, `torsionGenerator`]
-- **Visibility**: public
-- **Lines**: 275-282
-
-### `theorem principalAdele_theta_ne_zero`
-- **Type**: `principalAdele_theta ≠ 0`
-- **Uses from project**: [`principalAdele_theta`, `K`, `θ`, `theta_sq`]
-- **Visibility**: public
-- **Lines**: 284-290
-
-### `theorem principalAdele_torsionGenerator_is_unit_everywhere`
-- **Type**: `∀ v : FinitePlace K, v (algebraMap (𝓞 K) K (-1)) = 1`
-- **Uses from project**: [`K`, `torsionGenerator`]
-- **Visibility**: public
-- **Lines**: 292-296
-
-### `abbrev sqrtNegSixDedekindZeta / sqrtNegSixDedekindZetaResidue`
-- **Type**: `dedekindZeta K s` / `dedekindZeta_residue K`
-- **Uses from project**: [`K`]
-- **Visibility**: public
-- **Lines**: 310-314
-
-**File Summary (LocalGlobal.lean)**: ~25 named decls (2 defs, ~6 theorems, ~16 abbrevs) plus 11 unnamed `example`s. Mostly thin wrappers/illustrations of mathlib local-global API specialised to `K`; nothing re-used downstream (terminal file). Key project deps: `primeAboveTwo/Three`, `isPrime_*`, `infinitePlace_isComplex`, `theta_sq`, `torsionGenerator`. No sorry, no set_option, no proof >30 lines.
-
----
-
-## CMField.lean
-
-### `theorem isCMField`
-- **Type**: `NumberField.IsCMField K`
-- **How**: `IsTotallyComplex` (from Embeddings) + `IsCMField.ofCMExtension`.
-- **Uses from project**: [`K`, `isTotallyComplex`]
-- **Visibility**: public
-- **Lines**: 26-28
-- **Notes**: MAIN PUBLIC RESULT.
-
-### `theorem cmField_isTotallyComplex`
-- **Type**: `NumberField.IsTotallyComplex K`
-- **How**: `isTotallyComplex`.
-- **Uses from project**: [`K`, `isTotallyComplex`]
-- **Visibility**: public
-- **Lines**: 30-31
-
-### `theorem cmField_quadratic_over_maximalRealSubfield`
-- **Type**: `Algebra.IsQuadraticExtension (maximalRealSubfield K) K`
-- **How**: `isCMField` + `IsCMField.isQuadraticExtension`.
-- **Uses from project**: [`K`, `isCMField`]
-- **Visibility**: public
-- **Lines**: 33-36
-
-### `theorem cmField_unitsRank_eq_maximalRealSubfield`
-- **Type**: `Units.rank (maximalRealSubfield K) = Units.rank K`
-- **How**: `isCMField` + `IsCMField.units_rank_eq_units_rank`.
-- **Uses from project**: [`K`, `isCMField`]
-- **Visibility**: public
-- **Lines**: 38-42
-
-**File Summary (CMField.lean)**: 4 theorems. Key API: `isCMField`. No sorry, no set_option, no proof >30 lines.
+**File Summary**: The two negative properties. `not_isPrincipalIdealRing` follows immediately from the
+non-principal prime `(2,θ)`. `not_normEuclidean` is an explicit counterexample: dividing `θ` by `2` always
+leaves a remainder of norm `≥6`, exceeding `|norm 2|=4`, because the second coordinate of any remainder is
+forced odd. The non-Euclidean statement is phrased as a concrete `∀…∃…` over `𝓞 K` rather than a
+named typeclass.
 
 ---
 
 ## UniqueFactorization.lean
 
-### `theorem six_eq_neg_theta_sq`
-- **Type**: `(6 : 𝓞 K) = -(thetaInt * thetaInt)`
-- **What**: `6 = -θ²` (the second factorisation of 6).
-- **Uses from project**: [`K`, `thetaInt`, `thetaInt_sq`]
-- **Visibility**: public
-- **Lines**: 29-31
+Imports `Euclidean.lean`. The not-a-UFD negative result via the classic `6 = 2·3 = (√-6)(-√-6)`.
 
-### `private theorem intNorm_two / intNorm_three / intNorm_thetaInt`
-- **Type**: `norm ℤ 2 = 4`, `norm ℤ 3 = 9`, `norm ℤ thetaInt = 6`
-- **Uses from project**: [`K`, `intNorm_eq_normForm`, `thetaInt`]
-- **Visibility**: private
-- **Lines**: 33-52
-- **Notes**: `intNorm_two` duplicates an inline `have` in `Euclidean.not_normEuclidean` and in PrimeSplitting.
+### `theorem six_eq_neg_theta_sq`
+- **Type**: `(6 : 𝓞 K) = -(thetaInt * thetaInt)`. **What**: `6 = -√-6·√-6` — the second factorization of `6`. **How**: `thetaInt_sq` (`θ²=-6`). **Uses**: [`thetaInt_sq`] — **Lines**: 27-31 — **Notes**: KEY — half of the `6 = 2·3 = -θ²` non-unique factorization.
+
+### `private theorem intNorm_two` / `intNorm_three` / `intNorm_thetaInt`
+- **Type**: `norm(2)=4`, `norm(3)=9`, `norm(θ)=6`. **How**: `intNorm_eq_normForm`. **Uses**: [`intNorm_eq_normForm`] — **Lines**: 33-52
 
 ### `theorem irreducible_two`
-- **Type**: `Irreducible (2 : 𝓞 K)`
-- **How**: norm 4; factor norms `A·B=4`, exclude `A∈{1,2}` via unit/`intNorm_ne_two`; `interval_cases`.
-- **Uses from project**: [`K`, `isUnit_iff_intNorm_eq_one`, `intNorm_two`, `intNorm_nonneg`, `intNorm_ne_two`]
-- **Visibility**: public
-- **Lines**: 55-91
-- **Notes**: proof >30 lines.
+- **Type**: `Irreducible (2 : 𝓞 K)`. **How**: not a unit (`norm 4≠1`); any factor norm divides `4`, is `≠1` (non-unit), `≠2` (`intNorm_ne_two`), so one factor has norm `1` ⇒ unit; `interval_cases`+`nlinarith`. **Uses**: [`intNorm_two`, `isUnit_iff_intNorm_eq_one`, `intNorm_ne_two`, `intNorm_nonneg`] — **Lines**: 54-91 — **Notes**: KEY — `2` irreducible (but not prime, below).
 
 ### `theorem irreducible_three`
-- **Type**: `Irreducible (3 : 𝓞 K)`
-- **How**: norm 9; `A·B=9`, exclude `A∈{1,3}`; `interval_cases`.
-- **Uses from project**: [`K`, `isUnit_iff_intNorm_eq_one`, `intNorm_three`, `intNorm_nonneg`, `intNorm_ne_three`]
-- **Visibility**: public
-- **Lines**: 94-135
-- **Notes**: proof >30 lines.
+- **Type**: `Irreducible (3 : 𝓞 K)`. **How**: twin (`norm 9`, `≠3` via `intNorm_ne_three`). **Uses**: [`intNorm_three`, `intNorm_ne_three`, …] — **Lines**: 93-135 — **Notes**: KEY.
 
 ### `theorem irreducible_theta`
-- **Type**: `Irreducible thetaInt`
-- **How**: norm 6; `A·B=6`, exclude `A∈{1,2,3}`; `interval_cases`.
-- **Uses from project**: [`K`, `thetaInt`, `isUnit_iff_intNorm_eq_one`, `intNorm_thetaInt`, `intNorm_nonneg`, `intNorm_ne_two`, `intNorm_ne_three`]
-- **Visibility**: public
-- **Lines**: 139-180
-- **Notes**: proof >30 lines.
+- **Type**: `Irreducible thetaInt`. **How**: `norm 6 = 2·3`; factor norms must avoid `2` and `3` (`intNorm_ne_two/three`), so one is `1` ⇒ unit. **Uses**: [`intNorm_thetaInt`, `intNorm_ne_two`, `intNorm_ne_three`, …] — **Lines**: 137-180 — **Notes**: KEY — `√-6` irreducible, completing the two distinct irreducible factorizations of `6`.
 
 ### `theorem two_not_prime`
-- **Type**: `¬ Prime (2 : 𝓞 K)`
-- **What**: 2 is irreducible but not prime (`2 ∣ θ² = -6` but `2 ∤ θ`).
-- **How**: `2 ∤ θ` since `(2,θ)=(2)` would force norm contradiction (`absNorm_primeAboveTwo` vs `4`); `dvd_or_dvd`.
-- **Uses from project**: [`K`, `thetaInt`, `primeAboveTwo`, `absNorm_primeAboveTwo`, `intNorm_eq_normForm`, `thetaInt_sq`]
-- **Visibility**: public
-- **Lines**: 184-218
-- **Notes**: proof >30 lines.
+- **Type**: `¬ Prime (2 : 𝓞 K)`. **What**: `2` irreducible but **not prime**. **How**: `2 ∣ θ·θ = -6` but `2 ∤ θ` (else `θ∈(2)`, but `absNorm(2,θ)=2 ≠ 4=absNorm(2)`, so `(2,θ)≠(2)`); `dvd_or_dvd` fails. **Uses**: [`primeAboveTwo`, `absNorm_primeAboveTwo`, `intNorm_eq_normForm`, `thetaInt_sq`] — **Lines**: 182-218 — **Notes**: KEY — the explicit irreducible-not-prime element, the mechanism of UFD failure.
 
 ### `theorem not_uniqueFactorizationMonoid`
-- **Type**: `¬ UniqueFactorizationMonoid (𝓞 K)`
-- **What**: **`ℤ[√-6]` is not a UFD** (main result).
-- **How**: UFM + Dedekind ⇒ PID (`IsPrincipalIdealRing.of_isDedekindDomain_of_uniqueFactorizationMonoid`), contradicts `not_isPrincipalIdealRing`.
-- **Uses from project**: [`K`, `not_isPrincipalIdealRing`]
-- **Visibility**: public
-- **Lines**: 221-225
-- **Notes**: MAIN PUBLIC RESULT.
+- **Type**: `¬ UniqueFactorizationMonoid (𝓞 K)`. **What**: `ℤ[√-6]` is **not a UFD**. **How**: a UFM Dedekind domain would be a PID (`IsPrincipalIdealRing.of_isDedekindDomain_of_uniqueFactorizationMonoid`), contradicting `not_isPrincipalIdealRing`. **Uses**: [`not_isPrincipalIdealRing`] — **Lines**: 220-225 — **Notes**: KEY negative result — stated as `¬ UniqueFactorizationMonoid`, proved cleanly via the Dedekind⇒(UFD⟺PID) bridge. The concrete `6=2·3=-θ²` counterexample (irreducibles `2,3,θ`, `2` not prime) is also fully formalised above as the *constructive* explanation.
 
-**File Summary (UniqueFactorization.lean)**: 8 decls (all theorems; 3 private). Key API: `intNorm_two`. Main public: `not_uniqueFactorizationMonoid` (+ `irreducible_two/three/theta`, `two_not_prime` as witnesses). No sorry, no set_option. Proofs >30 lines: `irreducible_two/three/theta`, `two_not_prime`.
+**File Summary**: The not-a-UFD result, two ways. (1) Constructively: `6 = 2·3 = -(√-6)²` with `2,3,√-6`
+all irreducible (norms `4,9,6`, none equal to a forbidden small norm) and `2` *not prime* (divides `θ²`
+but not `θ`) — the textbook failure of unique factorization. (2) Abstractly: `not_uniqueFactorizationMonoid`
+via the Dedekind-domain equivalence `UFM ⟺ PID`, reducing to the already-proved `not_isPrincipalIdealRing`.
 
 ---
 
-## Cross-folder / Common observations
+## CMField.lean
 
-- **Common.lean helpers actually used** by SqrtNegSix: `eq_of_le_of_absNorm_eq`, `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`, `left_eq_prime_of_mul_eq_prime_sq_of_ne_one`, `exists_int_inverse_mod_prime`, `not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ`, `not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow` (all in PrimeSplitting). `mulEquivOfPrimeCardEq` is **mathlib**, not Common.
-- `torsionPowerHom`, `rankOnePowerHom`, `natAbs_lt_of_abs_ratCast_lt`, `two_le_ramificationIdx_of_...`, `ramificationIdx_ne_one_of_...` from Common are **not** used by SqrtNegSix (used by other twins / real-quadratic regulator work).
+Imports `Embeddings.lean`. CM-field structure (special topic).
+
+### `theorem isCMField`
+- **Type**: `NumberField.IsCMField K`. **How**: totally complex (`isTotallyComplex`) quadratic over `ℚ` ⇒ `IsCMField.ofCMExtension ℚ K`. **Uses**: [`isTotallyComplex`] — **Lines**: 26-28 — **Notes**: KEY — `ℚ(√-6)` is a CM field (imaginary quadratic).
+
+### `theorem cmField_isTotallyComplex`
+- **Type**: `NumberField.IsTotallyComplex K`. **How**: `isTotallyComplex`. **Uses**: [`isTotallyComplex`] — **Lines**: 30-31
+
+### `theorem cmField_quadratic_over_maximalRealSubfield`
+- **Type**: `IsQuadraticExtension (maximalRealSubfield K) K`. **How**: `IsCMField.isQuadraticExtension` (max real subfield is `ℚ`). **Uses**: [`isCMField`] — **Lines**: 33-36
+
+### `theorem cmField_unitsRank_eq_maximalRealSubfield`
+- **Type**: `Units.rank (maximalRealSubfield K) = Units.rank K`. **How**: `IsCMField.units_rank_eq_units_rank`. **Uses**: [`isCMField`] — **Lines**: 38-42 — **Notes**: both ranks `0` (CM ⇒ same unit rank as max real subfield `ℚ`).
+
+**File Summary**: Records that `ℚ(√-6)` is a CM field (a totally complex quadratic extension of the totally
+real `ℚ`). Thin wrapper over mathlib's `NumberField.IsCMField` API: CM structure, quadratic over the
+maximal real subfield, and equal unit ranks. Depends only on `isTotallyComplex` from Embeddings.
+
+---
+
+## LocalGlobal.lean
+
+Imports `Euclidean.lean`. Finite/infinite places, completions, product formula, canonical embedding,
+adeles, zeta — mostly `example`s exercising mathlib's local-global API on this field.
+
+### `def heightOneTwo` / `heightOneThree`
+- **Type**: `HeightOneSpectrum (𝓞 K)` with `asIdeal = primeAboveTwo`/`Three`. **What**: the finite places over `2`/`3`, *represented by the non-principal ramified primes*. **How**: `isPrime_*`, `ne_bot` from nonzero `absNorm`. **Uses**: [`isPrime_primeAboveTwo`/`Three`, `absNorm_primeAboveTwo`/`Three`] — **Lines**: 34-54 — **Notes**: notable — `HeightOneSpectrum` accommodates non-principal primes seamlessly.
+
+### `abbrev vTwo` / `vThree`
+- **Type**: `NumberField.FinitePlace K := FinitePlace.mk heightOne*`. **Uses**: [`heightOne*`] — **Lines**: 56-60
+
+### `example` (×4): ramification/inertia of `vTwo`, `vThree`
+- ramificationIdx `2` (×2), inertiaDeg `1` (×2). **How**: the `PrimeSplitting` ramification/inertia lemmas. **Uses**: [`ramificationIdx_primeAbove*`, `inertiaDeg_primeAbove*`] — **Lines**: 62-76
+
+### `abbrev CompletionAtTwo` / `CompletionAtThree`
+- **Type**: `heightOne*.adicCompletion K`. **Uses**: [`heightOne*`] — **Lines**: 90-94
+
+### `abbrev InfiniteCompletion`
+- **Type**: `(v : InfinitePlace K) → v.Completion`. **Uses**: [] — **Lines**: 108-109
+
+### `example`: `Nonempty (InfiniteCompletion v ≃+* ℂ)`
+- **How**: `Completion.ringEquivComplexOfIsComplex` + `infinitePlace_isComplex`. **Uses**: [`infinitePlace_isComplex`] — **Lines**: 111-114 — **Notes**: every infinite completion is `ℂ`.
+
+### `example` (×2): product formula for `θ` and for `torsionGenerator`
+- `(∏ infinite places)·(∏ finite places) = 1`. **How**: `NumberField.prod_abs_eq_one`. **Uses**: [`theta_sq`, `torsionGenerator`] — **Lines**: 128-146
+
+### `abbrev SqrtNegSixInfiniteAdeleRing`, `infinitePrincipalAdele_theta`, `infinitePrincipalAdele_torsionGenerator`
+- infinite adele ring and two principal adeles. **Uses**: [`θ`, `torsionGenerator`] — **Lines**: 159-166
+
+### `example` (×2): infinite-adele norm of `θ`; dense range of `K`
+- `‖·‖ = |norm ℚ θ|`; `DenseRange (algebraMap K …)`. **How**: `coe_norm_eq_abs_norm`, `denseRange_algebraMap`. **Uses**: [] — **Lines**: 168-174
+
+### `theorem canonicalEmbedding_thetaInt_mem_integerLattice`
+- **Type**: `canonicalEmbedding K (algebraMap thetaInt) ∈ integerLattice K`. **How**: `simp`. **Uses**: [`thetaInt`] — **Lines**: 188-191
+
+### `abbrev mixedEmbedding_theta`
+- **Type**: `mixedEmbedding.mixedSpace K := mixedEmbedding K θ`. **Uses**: [`θ`] — **Lines**: 207-208
+
+### `theorem mixedEmbedding_theta_mem_convexBodyLT`
+- **Type**: if `∀ w, w θ < f w` then `mixedEmbedding_theta ∈ convexBodyLT K f`. **How**: unfold convex-body membership; only complex places (`infinitePlace_isComplex`), `norm_embedding_eq`. **Uses**: [`infinitePlace_isComplex`] — **Lines**: 210-223
+
+### `example` (×2): measurability of `fundamentalCone`, `normLeOne`
+- **How**: `measurableSet_fundamentalCone`, `measurableSet_normLeOne`. **Uses**: [] — **Lines**: 225-231
+
+### `theorem polarSpace_nonempty`
+- **Type**: `Nonempty (polarSpace K)`. **How**: `infer_instance`. **Uses**: [] — **Lines**: 233-235
+
+### `example`: `0 < house θ`
+- **How**: `one_le_house_of_isIntegral theta_integral`. **Uses**: [`theta_integral`, `theta_sq`] — **Lines**: 249-256
+
+### `theorem house_torsionGenerator`
+- **Type**: `house (algebraMap torsionGenerator) = 1`. **How**: `house_intCast (-1)`. **Uses**: [`torsionGenerator`] — **Lines**: 258-260
+
+### `abbrev SqrtNegSixAdeleRing`, `principalAdele_theta`, `principalAdele_torsionGenerator`
+- the adele ring `AdeleRing (𝓞 K) K` and two principal adeles. **Uses**: [`θ`, `torsionGenerator`] — **Lines**: 275-282
+
+### `theorem principalAdele_theta_ne_zero`
+- **Type**: `principalAdele_theta ≠ 0`. **How**: `AdeleRing.algebraMap_injective` + `theta_sq`. **Uses**: [`theta_sq`] — **Lines**: 284-290
+
+### `theorem principalAdele_torsionGenerator_is_unit_everywhere`
+- **Type**: `∀ v finite place, v (algebraMap torsionGenerator) = 1`. **How**: `simp [torsionGenerator]` (`-1` is a unit everywhere). **Uses**: [`torsionGenerator`] — **Lines**: 292-296
+
+### `abbrev sqrtNegSixDedekindZeta`, `sqrtNegSixDedekindZetaResidue`
+- `dedekindZeta K s` and its residue. **Uses**: [] — **Lines**: 310-314
+
+### `example` (×2): residue positive; residue class-number formula
+- `0 < residue`; residue `= (2^r₁(2π)^r₂ · reg · h)/(w·√|disc|)`. **How**: `dedekindZeta_residue_pos`, `dedekindZeta_residue_def`. **Uses**: [] — **Lines**: 316-326 — **Notes**: the analytic class-number formula instantiated; all ingredients (`reg=1`, `h=2`, `w=2`, `disc=-24`) are proven elsewhere.
+
+**File Summary**: Exercises mathlib's local-global / adelic / analytic API on `ℚ(√-6)`. Notable that the
+finite places over the ramified `2,3` are represented by `HeightOneSpectrum` carrying the *non-principal*
+prime ideals — the non-PID nature causes no friction here. Mostly `example`s confirming completions are `ℂ`,
+product formula, canonical/mixed embeddings, house, adeles, and the Dedekind-zeta residue class-number
+formula. Depends on `torsionGenerator`, `theta`/`theta_sq`, and the splitting/ramification data.
+
+---
+
+## Overall
+
+Sorry-free across all 11 files. The case study is the project's unique **non-PID / non-UFD / non-Euclidean**
+example, and all three negative results are fully formalised: class number `2` and `ClassGroup ≅ ℤ/2`
+(`ClassGroup.lean`), `¬ IsPrincipalIdealRing` and `¬ normEuclidean` (`Euclidean.lean`), `¬ UniqueFactorizationMonoid`
+plus the constructive `6 = 2·3 = -(√-6)²` counterexample (`UniqueFactorization.lean`). The whole edifice
+rests on the positive-definite norm form `x²+6y²` (no Pell, no fundamental units) and the non-principal
+ramified prime `(2,θ)` exhibited via the unsolvability of `x²+6y² = 2`. Unlike the real-field case studies,
+nothing is blocked on Artin-type unit bounds — `regulator` and the unit structure are trivial here.

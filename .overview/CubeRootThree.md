@@ -1,89 +1,99 @@
 # CubeRootThree declaration inventory
 
-Folder: `XYin/NumberField/FieldExamples/CubeRootThree/`
-Field: `K = ℚ(∛3) = AdjoinRoot (X³ - 3)`, generator `θ = ∛3`.
-Shared helpers live in `XYin/NumberField/FieldExamples/Common.lean` (namespace `NumberField.FieldExamples`).
+Field: `K = ℚ(∛3) = AdjoinRoot (X³ - 3)`, generator `θ = ∛3`. Pure **cubic** field (the only
+degree>2 and only non-Galois example in `FieldExamples`): signature `(r₁,r₂) = (1,1)`, ring of
+integers `ℤ[θ]` (monogenic, maximal order), discriminant `-243 = -3⁵`, class number `1`,
+unit group `μ₂ × ℤ` (Dirichlet rank `1`, fundamental unit `θ² - 2 = ∛9 - 2`). `K/ℚ` is **not**
+Galois (`Aut = 1`); its Galois closure is the `S₃`-splitting field `ℚ(∛3, ζ₃)` of degree `6`.
+Two genuine sorries remain: `fundamentalUnitSystem_isFundamental` (Artin-type unit-index bound)
+and `normEuclidean` (geometry-of-numbers covering argument).
 
-All declarations are in namespace `NumberField.CubeRootThree` unless noted.
+All declarations live in `namespace NumberField.CubeRootThree` unless noted. `𝓞 K` denotes
+`NumberField.RingOfIntegers K`; `θ = cubeRootThree`, `thetaInt` its integral lift in `𝓞 K`.
+Common helpers referenced live in `namespace NumberField.FieldExamples`
+(file `FieldExamples/Common.lean`). Import chain:
+`Basic → Galois → Embeddings → RingOfIntegers → Discriminant → PrimeSplitting → ClassGroup →
+Units → Euclidean → LocalGlobal`.
 
 ---
 
 ## Basic.lean
 
 ### `abbrev cubePolynomial`
-- **Type**: `cubePolynomial : ℚ[X] := X ^ 3 - C (3 : ℚ)`
-- **What**: The defining polynomial `X³ - 3` of `ℚ(∛3)`.
-- **How**: Definitional abbrev.
-- **Hypotheses**: none
+- **Type**: `ℚ[X] := X ^ 3 - C (3 : ℚ)`
+- **What**: Defining polynomial `X³ - 3` of `ℚ(∛3)`.
+- **How**: definitional abbrev.
 - **Uses from project**: []
 - **Visibility**: public
 - **Lines**: 31-32
-- **Notes**: —
 
 ### `instance : Fact (Irreducible cubePolynomial)`
 - **Type**: `Fact (Irreducible cubePolynomial)`
-- **What**: `X³ - 3` is irreducible over `ℚ`.
-- **How**: `X_pow_sub_C_irreducible_of_prime`; reduce to "3 has no rational cube root" via `IsIntegrallyClosed.isIntegral_iff`, then `interval_cases`/`omega` over divisors of 3.
-- **Hypotheses**: none
-- **Uses from project**: []
+- **What**: `X³ - 3` irreducible over `ℚ`.
+- **How**: `X_pow_sub_C_irreducible_of_prime` (3 prime); reduce "3 has no rational cube root" to integral case via `IsIntegrallyClosed.isIntegral_iff`, then `interval_cases n <;> omega` over divisors of 3.
+- **Uses from project**: [`cubePolynomial`]
 - **Visibility**: public (instance)
 - **Lines**: 34-50
-- **Notes**: —
 
 ### `abbrev K`
-- **Type**: `K : Type := AdjoinRoot cubePolynomial`
+- **Type**: `Type := AdjoinRoot cubePolynomial`
 - **What**: The number field `ℚ(∛3)`.
+- **How**: definitional.
 - **Uses from project**: [`cubePolynomial`]
 - **Visibility**: public
 - **Lines**: 52-53
 
 ### `abbrev cubeRootThree`
-- **Type**: `cubeRootThree : K := AdjoinRoot.root cubePolynomial`
-- **What**: The distinguished root `θ = ∛3`.
-- **Uses from project**: [`cubePolynomial`, `K`]
+- **Type**: `K := AdjoinRoot.root cubePolynomial`
+- **What**: The distinguished cube root `θ = ∛3`.
+- **How**: definitional.
+- **Uses from project**: [`cubePolynomial`]
 - **Visibility**: public
 - **Lines**: 55-56
 
 ### `instance : Field K`, `instance : NumberField K`
-- **Type**: `Field K`, `NumberField K`
-- **What**: Field and number-field structures on `K`.
-- **How**: `infer_instance`.
+- **Type**: `Field K`; `NumberField K`
+- **What**: Field / number-field structure on `K`.
+- **How**: `infer_instance` (both from `AdjoinRoot` + irreducibility `Fact`).
 - **Uses from project**: [`K`]
 - **Visibility**: public (instances)
 - **Lines**: 58-64
 
 ### `theorem cubePolynomial_ne_zero`
 - **Type**: `cubePolynomial ≠ 0`
-- **What**: The defining polynomial is nonzero.
-- **How**: `congrArg natDegree` (its degree is 3 ≠ 0). NOTE: this exact one-liner is inlined ~7× elsewhere as `by intro h; simpa using congrArg natDegree h` rather than reusing this lemma.
+- **What**: Defining polynomial is nonzero.
+- **How**: `congrArg natDegree` (degree 3 ≠ 0). Recomputed inline (as `hf`) in several later files.
 - **Uses from project**: [`cubePolynomial`]
 - **Visibility**: public
 - **Lines**: 67-69
 
 ### `abbrev cubeRootThreePowerBasis`
-- **Type**: `PowerBasis ℚ K := AdjoinRoot.powerBasis cubePolynomial_ne_zero`
-- **What**: The power basis `1, θ, θ²`.
-- **Uses from project**: [`cubePolynomial_ne_zero`, `K`]
+- **Type**: `PowerBasis ℚ K`
+- **What**: Power basis `1, θ, θ²`.
+- **How**: `AdjoinRoot.powerBasis cubePolynomial_ne_zero`.
+- **Uses from project**: [`cubePolynomial_ne_zero`]
 - **Visibility**: public
 - **Lines**: 71-73
 
-### `theorem cubeRootThreePowerBasis_gen` (`@[simp]`)
+### `theorem cubeRootThreePowerBasis_gen` `[simp]`
 - **Type**: `cubeRootThreePowerBasis.gen = cubeRootThree`
+- **What**: Power-basis generator is `θ`.
 - **How**: `AdjoinRoot.powerBasis_gen`.
-- **Uses from project**: [`cubeRootThreePowerBasis`, `cubeRootThree`, `cubePolynomial_ne_zero`]
+- **Uses from project**: [`cubeRootThreePowerBasis`, `cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 75-77
 
 ### `theorem cubeRootThreePowerBasis_dim`
 - **Type**: `cubeRootThreePowerBasis.dim = 3`
+- **What**: Power basis has dimension 3.
 - **How**: `AdjoinRoot.powerBasis_dim` + `natDegree_X_pow_sub_C`.
-- **Uses from project**: [`cubeRootThreePowerBasis`, `cubePolynomial_ne_zero`]
+- **Uses from project**: [`cubeRootThreePowerBasis`]
 - **Visibility**: public
 - **Lines**: 79-81
 
-### `theorem degree_eq_three`  ★ headline
+### `theorem degree_eq_three`
 - **Type**: `Module.finrank ℚ K = 3`
-- **What**: `[K : ℚ] = 3`.
+- **What**: `[ℚ(∛3) : ℚ] = 3`. Workhorse used in almost every later file.
 - **How**: `PowerBasis.finrank` + `cubeRootThreePowerBasis_dim`.
 - **Uses from project**: [`cubeRootThreePowerBasis`, `cubeRootThreePowerBasis_dim`]
 - **Visibility**: public
@@ -91,29 +101,29 @@ All declarations are in namespace `NumberField.CubeRootThree` unless noted.
 
 ### `theorem cubeRootThree_cube`
 - **Type**: `cubeRootThree ^ 3 = 3`
-- **What**: `θ³ = 3`.
-- **How**: `AdjoinRoot.mk_self` then `linear_combination`. Heavily reused across the folder.
-- **Uses from project**: [`cubeRootThree`, `cubePolynomial`]
+- **What**: `θ³ = 3`. Fundamental algebraic relation, used pervasively.
+- **How**: `AdjoinRoot.mk_self` of `X³ - 3`, then `linear_combination`.
+- **Uses from project**: [`cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 88-92
 
 ### `theorem cubeRootThree_minpoly_rat`
 - **Type**: `minpoly ℚ cubeRootThree = cubePolynomial`
-- **How**: `AdjoinRoot.minpoly_root` and irreducibility.
+- **What**: Rational minimal polynomial of `θ`.
+- **How**: `AdjoinRoot.minpoly_root` (monic so `C leadingCoeff⁻¹ = 1`).
 - **Uses from project**: [`cubeRootThree`, `cubePolynomial`]
 - **Visibility**: public
 - **Lines**: 94-99
-- **Notes**: appears unused inside this folder (RingOfIntegers/Discriminant re-derive minpoly).
 
 ### `theorem adjoin_cubeRootThree_eq_top`
 - **Type**: `Algebra.adjoin ℚ {cubeRootThree} = ⊤`
-- **How**: `PowerBasis.adjoin_gen_eq_top`.
-- **Uses from project**: [`cubeRootThreePowerBasis`, `cubeRootThreePowerBasis_gen`, `cubeRootThree`]
+- **What**: `K` generated by `θ` over `ℚ`.
+- **How**: `PowerBasis.adjoin_gen_eq_top` rewritten through the gen lemma.
+- **Uses from project**: [`cubeRootThreePowerBasis_gen`, `cubeRootThreePowerBasis`]
 - **Visibility**: public
 - **Lines**: 101-104
-- **Notes**: appears unused in folder.
 
-**File Summary — Basic.lean**: 5 abbrevs, 7 theorems, 2 instances + 1 Fact-instance. Key API used by 3+: `K`, `cubeRootThree`, `cubePolynomial`, `cubeRootThree_cube`, `degree_eq_three`. Likely unused: `cubeRootThree_minpoly_rat`, `adjoin_cubeRootThree_eq_top`. No sorry, no set_option, no proof >30 lines.
+**File Summary (Basic.lean)**: 12 decls (3 abbrevs, 2 instances, 1 instance `Fact`, 6 theorems). Key API exported everywhere: `cubeRootThree_cube`, `degree_eq_three`, `cubePolynomial`/`K`/`cubeRootThree`, `cubeRootThreePowerBasis`. No sorry, no set_option, all proofs <20 lines.
 
 ---
 
@@ -121,85 +131,93 @@ All declarations are in namespace `NumberField.CubeRootThree` unless noted.
 
 ### `def idAut`
 - **Type**: `K ≃ₐ[ℚ] K := AlgEquiv.refl`
-- **What**: identity automorphism.
+- **What**: Identity automorphism.
+- **How**: definitional.
 - **Uses from project**: [`K`]
-- **Visibility**: public
+- **Visibility**: public (noncomputable)
 - **Lines**: 31-32
 
 ### `theorem no_primitive_cube_root`
 - **Type**: `(z : K) → z ^ 2 + z + 1 ≠ 0`
-- **What**: `K` has no primitive cube root of unity.
-- **How**: `Φ₃ = X²+X+1` is irreducible (`cyclotomic_prime`, `cyclotomic.irreducible_rat`); a root would force `minpoly` of degree 2 | finrank 3.
-- **Uses from project**: [`degree_eq_three`, `K`]
+- **What**: `K` contains no primitive cube root of unity (`ζ₃ ∉ K`); this is what makes `K/ℚ` non-normal.
+- **How**: such `z` would have minpoly `cyclotomic 3 = X²+X+1` (irreducible over ℚ), degree `2 ∤ 3 = [K:ℚ]` — contradiction via `minpoly.degree_dvd`.
+- **Uses from project**: [`degree_eq_three`]
 - **Visibility**: public
-- **Lines**: 34-49
+- **Lines**: 35-49
 
 ### `theorem cube_root_one`
 - **Type**: `(w : K) → w ^ 3 = 1 → w = 1`
-- **How**: factor `w³-1 = (w-1)(w²+w+1)`, second factor nonzero by `no_primitive_cube_root`.
+- **What**: Only cube root of `1` in `K` is `1`.
+- **How**: factor `(w-1)(w²+w+1)=0`; second factor nonzero by `no_primitive_cube_root`.
 - **Uses from project**: [`no_primitive_cube_root`]
 - **Visibility**: public
 - **Lines**: 51-56
 
 ### `theorem aut_eq_id`
 - **Type**: `(σ : K ≃ₐ[ℚ] K) → σ = idAut`
-- **What**: every ℚ-automorphism is the identity.
-- **How**: `σθ` is a cube root of 3, ratio to `θ` is a cube root of 1 = 1 (`cube_root_one`); then `AdjoinRoot.algHom_ext`.
-- **Uses from project**: [`cubeRootThree_cube`, `cube_root_one`, `idAut`, `cubeRootThree`]
+- **What**: Every ℚ-automorphism is the identity (so `Aut(K/ℚ)` is trivial — the cubic field is **rigid**).
+- **How**: `σθ/θ` is a cube root of 1, hence `=1` by `cube_root_one`, so `σθ=θ`; `AdjoinRoot.algHom_ext`.
+- **Uses from project**: [`cubeRootThree_cube`, `cube_root_one`, `idAut`]
 - **Visibility**: public
 - **Lines**: 58-72
 
-### `theorem not_isGalois`  ★ headline
+### `theorem not_isGalois`
 - **Type**: `¬ IsGalois ℚ K`
-- **How**: `IsGalois.card_aut_eq_finrank`: would force `Nat.card aut = 3`, but `aut` is subsingleton (`aut_eq_id`); `omega`.
+- **What**: `ℚ(∛3)/ℚ` is **not Galois**.
+- **How**: Galois ⟹ `card Aut = finrank = 3`, but `Aut` is `Subsingleton` (via `aut_eq_id`), so `card = 1`; `omega`.
 - **Uses from project**: [`degree_eq_three`, `aut_eq_id`, `idAut`]
 - **Visibility**: public
 - **Lines**: 74-83
 
 ### `theorem galoisGroupStructure`
 - **Type**: `Nonempty ((K ≃ₐ[ℚ] K) ≃* Multiplicative (ZMod 1))`
-- **How**: `Unique` aut group via `aut_eq_id`, `MulEquiv.ofUnique`.
+- **What**: Automorphism group of `K` is trivial (`≅ ZMod 1`).
+- **How**: `Unique (K ≃ₐ[ℚ] K)` from `aut_eq_id`, then `MulEquiv.ofUnique`.
 - **Uses from project**: [`idAut`, `aut_eq_id`]
 - **Visibility**: public
 - **Lines**: 85-88
 
 ### `abbrev galoisClosure`
 - **Type**: `Type := cubePolynomial.SplittingField`
+- **What**: The Galois closure of `K`, mathematically `ℚ(∛3, ζ₃)` — the splitting field of `X³-3`. This is how the S₃ closure is **formalised: as mathlib's `Polynomial.SplittingField`**, not a bespoke field.
+- **How**: definitional.
 - **Uses from project**: [`cubePolynomial`]
 - **Visibility**: public
 - **Lines**: 90-92
 
 ### `theorem isGalois_galoisClosure`
 - **Type**: `IsGalois ℚ galoisClosure`
-- **How**: `IsGalois.of_separable_splitting_field` + separability of irreducible in char 0.
-- **Uses from project**: [`galoisClosure`, `cubePolynomial`]
+- **What**: The closure is Galois over ℚ.
+- **How**: `IsGalois.of_separable_splitting_field` (`X³-3` separable in char 0).
+- **Uses from project**: [`galoisClosure`]
 - **Visibility**: public
 - **Lines**: 94-100
 
 ### `theorem nonempty_algHom_galoisClosure`
 - **Type**: `Nonempty (K →ₐ[ℚ] galoisClosure)`
-- **How**: pick a root of `X³-3` in splitting field (`exists_eval_eq_zero`), use `AdjoinRoot.liftAlgHom`.
-- **Uses from project**: [`K`, `galoisClosure`, `cubePolynomial`]
+- **What**: `K` embeds in its closure (as one of three conjugate cubic subfields).
+- **How**: closure splits `X³-3`, pick a root via `splits.exists_eval_eq_zero`, lift `AdjoinRoot.liftAlgHom`.
+- **Uses from project**: [`galoisClosure`, `K`]
 - **Visibility**: public
 - **Lines**: 102-111
 
-### `theorem galoisClosureGroupStructure`  ★ headline
+### `theorem galoisClosureGroupStructure`
 - **Type**: `Nonempty ((galoisClosure ≃ₐ[ℚ] galoisClosure) ≃* Equiv.Perm (Fin 3))`
-- **What**: Galois group of closure is `S₃`.
-- **How**: prime-degree irreducible with exactly 2 non-real roots; counts `rootSet ℂ = 3`, `rootSet ℝ = 1` then `Polynomial.Gal.galActionHom_bijective_of_prime_degree`.
-- **Uses from project**: [`cubePolynomial`, `galoisClosure`]
+- **What**: Galois group of the closure is the **full symmetric group `S₃`**, acting by permuting the three cube roots of 3.
+- **How**: `Polynomial.Gal.galActionHom_bijective_of_prime_degree` — `X³-3` irreducible of prime degree 3 with exactly 2 non-real roots (computes `card rootSet ℂ = 3`, `card rootSet ℝ = 1` via `3^(1/3)` real-root uniqueness from `Odd.strictMono_pow`); then `Fintype.equivFinOfCardEq.permCongrHom`.
+- **Uses from project**: [`galoisClosure`, `cubePolynomial`]
 - **Visibility**: public
 - **Lines**: 113-148
-- **Notes**: proof >30 lines (uses `Real.rpow_natCast`, `Odd.strictMono_pow`).
 
 ### `theorem finrank_galoisClosure`
 - **Type**: `Module.finrank ℚ galoisClosure = 6`
-- **How**: Galois ⇒ finrank = |Gal| = |S₃| = 6 via `galoisClosureGroupStructure`, `Fintype.card_perm`.
+- **What**: `[ℚ(∛3,ζ₃) : ℚ] = 6 = |S₃|`.
+- **How**: closure Galois ⟹ `finrank = card Aut = card (Perm (Fin 3)) = 3! = 6`.
 - **Uses from project**: [`galoisClosure`, `isGalois_galoisClosure`, `galoisClosureGroupStructure`]
 - **Visibility**: public
 - **Lines**: 150-158
 
-**File Summary — Galois.lean**: 1 def, 8 theorems, 2 abbrevs. Key API (3+): `aut_eq_id`, `idAut`, `galoisClosure`, `degree_eq_three`(imported). Possibly unused downstream: `galoisGroupStructure`, `nonempty_algHom_galoisClosure`, `finrank_galoisClosure`. No sorry/set_option. 1 proof >30 lines (`galoisClosureGroupStructure`).
+**File Summary (Galois.lean)**: 11 decls (1 def, 1 abbrev, 9 theorems). The non-Galois heart of the project: trivial `Aut(K/ℚ)` (`aut_eq_id`/`not_isGalois`/`galoisGroupStructure`) contrasted with the `S₃`-closure (`galoisClosure`/`galoisClosureGroupStructure`/`finrank_galoisClosure`). S₃ structure obtained cleanly from `Polynomial.Gal.galActionHom_bijective_of_prime_degree`. No sorry, no set_option; longest proof `galoisClosureGroupStructure` ~35 lines.
 
 ---
 
@@ -207,56 +225,62 @@ All declarations are in namespace `NumberField.CubeRootThree` unless noted.
 
 ### `theorem not_totallyReal`
 - **Type**: `¬ NumberField.IsTotallyReal K`
-- **How**: build a complex root of `X³-3` with nonzero imaginary part (`c₀ζ`), produce embedding `K →+* ℂ` via `AdjoinRoot.lift`; totally-real would force it real (`ComplexEmbedding.isReal_iff`), contradiction.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `K`]
+- **What**: `K` is not totally real (it has a complex place).
+- **How**: build `c ∈ ℂ` with `c³ = 3`, `c.im ≠ 0` (using a primitive cube root `ζ₃` of unity scaled into a non-real cube root of 3); the corresponding embedding `AdjoinRoot.lift` is not real (its conjugate disagrees on `θ`).
+- **Uses from project**: [`cubePolynomial`, `cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 34-68
-- **Notes**: proof >30 lines.
+- **Notes**: `attribute [-instance] DivisionRing.toRatAlgebra` active in this section (line 26).
 
-### `theorem nrComplexPlaces_eq_one`  ★ headline
-- **Type**: `InfinitePlace.nrComplexPlaces K = 1`
-- **How**: signature equation `r₁ + 2r₂ = 3` (`card_add_two_mul_card_eq_rank`), `r₂ ≠ 0` from `not_totallyReal`, `omega`.
+### `theorem nrComplexPlaces_eq_one`
+- **Type**: `NumberField.InfinitePlace.nrComplexPlaces K = 1`
+- **What**: Exactly one complex place (`r₂ = 1`).
+- **How**: signature relation `r₁ + 2 r₂ = finrank = 3` (`card_add_two_mul_card_eq_rank`) with `r₂ ≠ 0` (`not_totallyReal` via `nrComplexPlaces_eq_zero_iff`); `omega`.
 - **Uses from project**: [`degree_eq_three`, `not_totallyReal`]
 - **Visibility**: public
 - **Lines**: 70-76
 
-### `theorem nrRealPlaces_eq_one`  ★ headline
-- **Type**: `InfinitePlace.nrRealPlaces K = 1`
-- **How**: same signature equation + `nrComplexPlaces_eq_one`, `omega`.
+### `theorem nrRealPlaces_eq_one`
+- **Type**: `NumberField.InfinitePlace.nrRealPlaces K = 1`
+- **What**: Exactly one real place (`r₁ = 1`).
+- **How**: same signature relation with `r₂ = 1`; `omega`.
 - **Uses from project**: [`degree_eq_three`, `nrComplexPlaces_eq_one`]
 - **Visibility**: public
 - **Lines**: 78-83
 
 ### `theorem infinitePlace_card_eq_two`
-- **Type**: `Fintype.card (InfinitePlace K) = 2`
-- **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces` + the two place counts.
+- **Type**: `Fintype.card (NumberField.InfinitePlace K) = 2`
+- **What**: `K` has 2 infinite places (`r₁ + r₂ = 2`). Used by regulator computation.
+- **How**: `card_eq_nrRealPlaces_add_nrComplexPlaces` + the two counts.
 - **Uses from project**: [`nrRealPlaces_eq_one`, `nrComplexPlaces_eq_one`]
 - **Visibility**: public
 - **Lines**: 97-100
 
 ### `theorem infinitePlace_signature`
 - **Type**: `nrRealPlaces K = 1 ∧ nrComplexPlaces K = 1`
+- **What**: Packaged signature `(1,1)`.
+- **How**: conjunction of the two count lemmas.
 - **Uses from project**: [`nrRealPlaces_eq_one`, `nrComplexPlaces_eq_one`]
 - **Visibility**: public
 - **Lines**: 102-105
-- **Notes**: unused in folder.
 
 ### `theorem exists_realEmbedding_cubeRootThree`
 - **Type**: `∃ σ : K →ₐ[ℚ] ℝ, σ cubeRootThree = (3:ℝ)^(1/3)`
-- **How**: `AdjoinRoot.liftAlgHom` with the real cube root; `Real.rpow_natCast`/`rpow_mul`.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `K`]
+- **What**: The real embedding sends `θ ↦ ∛3`. Used by regulator computation.
+- **How**: `AdjoinRoot.liftAlgHom` to `ℝ` at `3^(1/3)` (`rpow` identity `(3^(1/3))³ = 3`).
+- **Uses from project**: [`cubePolynomial`, `cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 107-117
 
 ### `theorem exists_complexEmbedding_cubeRootThree`
 - **Type**: `∃ σ : K →+* ℂ, σ cubeRootThree ^ 3 = 3`
+- **What**: A complex embedding with `σθ` a cube root of 3.
 - **How**: compose the real embedding with `Complex.ofRealHom`.
-- **Uses from project**: [`exists_realEmbedding_cubeRootThree`, `cubeRootThree`]
+- **Uses from project**: [`exists_realEmbedding_cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 119-128
-- **Notes**: unused in folder.
 
-**File Summary — Embeddings.lean**: 7 theorems. Key API (3+): `nrComplexPlaces_eq_one`, `nrRealPlaces_eq_one`, `not_totallyReal`, `infinitePlace_card_eq_two`, `exists_realEmbedding_cubeRootThree`. Unused: `infinitePlace_signature`, `exists_complexEmbedding_cubeRootThree`. No sorry/set_option. 1 proof >30 lines (`not_totallyReal`). NOTE: `attribute [-instance] DivisionRing.toRatAlgebra` is set in first section.
+**File Summary (Embeddings.lean)**: 7 theorems. Establishes signature `(1,1)` via the rank relation `card_add_two_mul_card_eq_rank` plus the non-totally-real fact `not_totallyReal` (the cubic-specific ingredient: a non-real cube root of 3 built from `ζ₃`). Real embedding lemma feeds the regulator. `attribute [-instance] DivisionRing.toRatAlgebra` in first section. No sorry; longest proof `not_totallyReal` ~35 lines.
 
 ---
 
@@ -264,754 +288,858 @@ All declarations are in namespace `NumberField.CubeRootThree` unless noted.
 
 ### `theorem cubeRootThree_integral`
 - **Type**: `cubeRootThree ∈ integralClosure ℤ K`
-- **How**: root of monic `X³ - C 3`.
-- **Uses from project**: [`cubeRootThree`, `cubeRootThree_cube`]
+- **What**: `θ` is integral over ℤ (root of monic `X³-3`).
+- **How**: exhibit `X³-C 3` monic with `θ` a root via `cubeRootThree_cube`.
+- **Uses from project**: [`cubeRootThree_cube`]
 - **Visibility**: public
-- **Lines**: 31-38
+- **Lines**: 33-38
 
 ### `def thetaInt`
 - **Type**: `𝓞 K := ⟨cubeRootThree, cubeRootThree_integral⟩`
-- **What**: `θ` as an element of `𝓞 K`. Central object reused folder-wide.
-- **Uses from project**: [`cubeRootThree`, `cubeRootThree_integral`]
-- **Visibility**: public
+- **What**: `θ` as an element of `𝓞 K`. Central object throughout PrimeSplitting/ClassGroup/Units.
+- **How**: subtype constructor.
+- **Uses from project**: [`cubeRootThree_integral`]
+- **Visibility**: public (noncomputable)
 - **Lines**: 40-41
 
 ### `theorem thetaInt_cube`
-- **Type**: `thetaInt ^ 3 = 3` (in `𝓞 K`)
-- **How**: push through `algebraMap (𝓞 K) K` (`RingOfIntegers.map_mk`), use `cubeRootThree_cube`, injectivity.
-- **Uses from project**: [`thetaInt`, `cubeRootThree`, `cubeRootThree_integral`, `cubeRootThree_cube`]
+- **Type**: `thetaInt ^ 3 = 3`
+- **What**: `θ³ = 3` inside `𝓞 K`. Used in nearly every ideal computation.
+- **How**: push through injective `algebraMap (𝓞 K) K` to `cubeRootThree_cube`.
+- **Uses from project**: [`thetaInt`, `cubeRootThree_cube`]
 - **Visibility**: public
 - **Lines**: 43-49
-- **Notes**: heavily reused.
 
 ### `def integralBasisVectors`
 - **Type**: `Fin 3 → K := ![1, cubeRootThree, cubeRootThree ^ 2]`
+- **What**: Displayed integral basis vectors `1, θ, θ²` in `K`.
+- **How**: definitional.
 - **Uses from project**: [`cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 51-52
 
 ### `theorem mem_adjoin_iff`
-- **Type**: `x ∈ Algebra.adjoin ℤ {cubeRootThree} ↔ ∃ a b c : ℤ, x = a•1 + b•θ + c•θ²`
-- **How**: `Algebra.adjoin_induction`; multiplication case uses `θ³=3`, `θ⁴=3θ` and `ring`.
+- **Type**: `x ∈ Algebra.adjoin ℤ {θ} ↔ ∃ a b c : ℤ, x = a•1 + b•θ + c•θ²`
+- **What**: `ℤ[θ]` is exactly ℤ-combinations of `1, θ, θ²`.
+- **How**: `Algebra.adjoin_induction`; mul-case uses `θ³=3, θ⁴=3θ` reductions + `ring`.
 - **Uses from project**: [`cubeRootThree`, `cubeRootThree_cube`]
 - **Visibility**: public
 - **Lines**: 54-88
-- **Notes**: proof >30 lines.
 
 ### `theorem span_adjoin_eq`
-- **Type**: `Subalgebra.toSubmodule (Algebra.adjoin ℤ {θ}) = Submodule.span ℤ (range integralBasisVectors)`
-- **How**: double inclusion via `mem_adjoin_iff` and `Submodule.span_induction`.
-- **Uses from project**: [`mem_adjoin_iff`, `integralBasisVectors`, `cubeRootThree`]
+- **Type**: `Subalgebra.toSubmodule (adjoin ℤ {θ}) = span ℤ (range integralBasisVectors)`
+- **What**: submodule form of `mem_adjoin_iff`.
+- **How**: `mem_adjoin_iff` + `Submodule.span_induction`.
+- **Uses from project**: [`mem_adjoin_iff`, `integralBasisVectors`]
 - **Visibility**: public
 - **Lines**: 90-120
 
 ### `theorem norm_eq_normForm`
 - **Type**: `Algebra.norm ℚ (x•1 + y•θ + z•θ²) = x³ + 3y³ + 9z³ - 9xyz`
-- **What**: explicit cubic norm form in the power basis.
-- **How**: compute `leftMulMatrix θ = companion matrix`, then `Algebra.norm_eq_matrix_det`, `Matrix.det_fin_three`.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `cubeRootThree_cube`]
+- **What**: The cubic **norm form** of `ℚ(∛3)`. Backbone of all norm/ideal computations.
+- **How**: `leftMulMatrix` of `θ` is the companion matrix `!![0,0,3;1,0,0;0,1,0]`; `Algebra.norm_eq_matrix_det` + `Matrix.det_fin_three` + `ring`.
+- **Uses from project**: [`cubeRootThree_cube`]
 - **Visibility**: public
 - **Lines**: 122-162
-- **Notes**: proof >30 lines. Core reusable engine.
 
 ### `theorem discr_powerBasis_eq`
 - **Type**: `Algebra.discr ℚ (AdjoinRoot.powerBasis _).basis = -243`
-- **How**: `Algebra.discr_powerBasis_eq_norm`, `minpoly` derivative `3X²`, `norm_eq_normForm 0 0 3`.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `degree_eq_three`, `norm_eq_normForm`]
+- **What**: Discriminant of the power basis `1, θ, θ²` is `-243 = -3⁵`.
+- **How**: `Algebra.discr_powerBasis_eq_norm` → `N(f'(θ)) = N(3θ²) = 243` via `norm_eq_normForm 0 0 3`, sign from `(-1)^(3·2/2)`.
+- **Uses from project**: [`degree_eq_three`, `norm_eq_normForm`]
 - **Visibility**: public
 - **Lines**: 164-190
-- **Notes**: proof >30 lines.
 
 ### `theorem three_dvd_of_normForm_eq`
-- **Type**: `(a b c m : ℤ) → a³+3b³+9c³-9abc = 27m → 3∣a ∧ 3∣b ∧ 3∣c`
-- **How**: pure ℤ descent using `Int.prime_three`, `Prime.dvd_of_dvd_pow`, `mul_left_cancel₀`, `linear_combination`.
+- **Type**: pure-ℤ: `a³+3b³+9c³-9abc = 27m → 3∣a ∧ 3∣b ∧ 3∣c`
+- **What**: divisibility input to the peeling step.
+- **How**: `Int.prime_three`; successively extract `3∣a`, then `3∣b`, then `3∣c` by `dvd_of_dvd_pow` + cancellation.
 - **Uses from project**: []
 - **Visibility**: public
 - **Lines**: 192-212
-- **Notes**: GENERIC-looking ℤ lemma (no field content). proof >10 lines.
 
 ### `theorem exists_intCast_norm`
-- **Type**: `(z : K) → IsIntegral ℤ z → ∃ m : ℤ, Algebra.norm ℚ z = m`
+- **Type**: `IsIntegral ℤ z → ∃ m : ℤ, Algebra.norm ℚ z = m`
+- **What**: norm of an integral element is a rational integer.
 - **How**: `Algebra.isIntegral_norm` + `IsIntegrallyClosed.isIntegral_iff`.
-- **Uses from project**: [`K`]
+- **Uses from project**: []
 - **Visibility**: public
 - **Lines**: 214-219
-- **Notes**: GENERIC (works for any number field).
 
 ### `theorem peel`
-- **Type**: `(z : K) → IsIntegral ℤ z → 3*z ∈ ℤ[θ] → z ∈ ℤ[θ]`
-- **What**: the index-peeling step at p=3.
-- **How**: write `3z = a+bθ+cθ²`, norm of `3z` is `27m`, apply `three_dvd_of_normForm_eq` then cancel.
-- **Uses from project**: [`mem_adjoin_iff`, `exists_intCast_norm`, `norm_eq_normForm`, `three_dvd_of_normForm_eq`, `degree_eq_three`, `cubeRootThree`]
+- **Type**: `IsIntegral ℤ z → 3z ∈ ℤ[θ] → z ∈ ℤ[θ]`
+- **What**: peeling lemma — heart of the index argument (`[𝓞 K : ℤ[θ]]` not divisible by 3).
+- **How**: write `3z = a•1+b•θ+c•θ²`; `N(3z)=27 N(z)` so norm form `≡0 (mod 27)`; `three_dvd_of_normForm_eq` gives `3∣a,b,c`; divide.
+- **Uses from project**: [`mem_adjoin_iff`, `exists_intCast_norm`, `degree_eq_three`, `norm_eq_normForm`, `three_dvd_of_normForm_eq`, `cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 221-246
-- **Notes**: proof >10 lines.
 
-### `theorem integralClosure_eq_adjoin`  ★ headline
-- **Type**: `integralClosure ℤ K = Algebra.adjoin ℤ {cubeRootThree}`
-- **What**: `𝓞 K = ℤ[θ]` (monogenic).
-- **How**: `Algebra.discr_mul_isIntegral_mem_adjoin` puts `243·z ∈ ℤ[θ]`, then 5 rounds of `peel`.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `discr_powerBasis_eq`, `peel`, `cubeRootThree_integral`]
+### `theorem integralClosure_eq_adjoin`
+- **Type**: `integralClosure ℤ K = Algebra.adjoin ℤ {θ}`
+- **What**: `ℤ[θ]` is the maximal order — the field is **monogenic** (`3 ≢ ±1 mod 9`).
+- **How**: `⊇` trivial; `⊆`: `Algebra.discr_mul_isIntegral_mem_adjoin` puts `discr·z = -243 z ∈ ℤ[θ]`, then **five rounds of `peel`** strip `3⁵`.
+- **Uses from project**: [`cubePolynomial`, `discr_powerBasis_eq`, `peel`, `cubeRootThree_integral`]
 - **Visibility**: public
 - **Lines**: 248-287
-- **Notes**: proof >30 lines.
 
 ### `theorem span_integralBasisVectors_eq`
-- **Type**: `Submodule.span ℤ (range integralBasisVectors) = Subalgebra.toSubmodule (integralClosure ℤ K)`
-- **Uses from project**: [`integralClosure_eq_adjoin`, `span_adjoin_eq`, `integralBasisVectors`]
+- **Type**: `span ℤ (range integralBasisVectors) = Subalgebra.toSubmodule (integralClosure ℤ K)`
+- **What**: `1, θ, θ²` span `𝓞 K` as ℤ-lattice in `K`.
+- **How**: `integralClosure_eq_adjoin` + `span_adjoin_eq`.
+- **Uses from project**: [`integralClosure_eq_adjoin`, `span_adjoin_eq`]
 - **Visibility**: public
 - **Lines**: 289-296
 
 ### `def integralBasisVectorsInt`
 - **Type**: `Fin 3 → 𝓞 K := ![1, thetaInt, thetaInt ^ 2]`
+- **What**: integral basis vectors as elements of `𝓞 K`.
+- **How**: definitional.
 - **Uses from project**: [`thetaInt`]
-- **Visibility**: public
+- **Visibility**: public (noncomputable)
 - **Lines**: 298-299
 
 ### `def ringOfIntegersLinearMap`
-- **Type**: `𝓞 K →ₗ[ℤ] K := (Algebra.linearMap (𝓞 K) K).restrictScalars ℤ`
-- **Uses from project**: [`K`]
-- **Visibility**: public
+- **Type**: `𝓞 K →ₗ[ℤ] K`
+- **What**: ℤ-linear embedding `𝓞 K ↪ K`.
+- **How**: `(Algebra.linearMap (𝓞 K) K).restrictScalars ℤ`.
+- **Uses from project**: []
+- **Visibility**: public (noncomputable)
 - **Lines**: 301-303
-- **Notes**: GENERIC (no field content).
 
 ### `theorem ringOfIntegersLinearMap_injective`
 - **Type**: `Function.Injective ringOfIntegersLinearMap`
+- **What**: that embedding is injective.
 - **How**: `FaithfulSMul.algebraMap_injective`.
 - **Uses from project**: [`ringOfIntegersLinearMap`]
 - **Visibility**: public
 - **Lines**: 305-307
-- **Notes**: GENERIC.
 
 ### `theorem algebraMap_integralBasisVectorsInt`
 - **Type**: `(fun i => algebraMap (𝓞 K) K (integralBasisVectorsInt i)) = integralBasisVectors`
-- **Uses from project**: [`integralBasisVectorsInt`, `integralBasisVectors`, `thetaInt`, `cubeRootThree`, `cubeRootThree_integral`]
+- **What**: embedding sends `𝓞 K`-generators to `K`-vectors.
+- **How**: `fin_cases` + `RingOfIntegers.map_mk`.
+- **Uses from project**: [`integralBasisVectorsInt`, `integralBasisVectors`, `thetaInt`, `cubeRootThree_integral`]
 - **Visibility**: public
 - **Lines**: 309-315
 
 ### `theorem linearIndependent_integralBasisVectorsInt`
 - **Type**: `LinearIndependent ℤ integralBasisVectorsInt`
-- **How**: ℚ-independence of power basis → `restrict_scalars'` → `of_comp` along the injective `ringOfIntegersLinearMap`.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `integralBasisVectors`, `algebraMap_integralBasisVectorsInt`, `ringOfIntegersLinearMap`]
+- **What**: `1, θ, θ²` ℤ-independent in `𝓞 K`.
+- **How**: ℚ-independence of power basis → `restrict_scalars'` → `of_comp` along injective embedding.
+- **Uses from project**: [`cubePolynomial`, `integralBasisVectors`, `algebraMap_integralBasisVectorsInt`, `ringOfIntegersLinearMap`]
 - **Visibility**: public
 - **Lines**: 317-335
-- **Notes**: proof >10 lines.
 
 ### `theorem span_integralBasisVectorsInt_eq_top`
-- **Type**: `Submodule.span ℤ (range integralBasisVectorsInt) = ⊤`
-- **How**: map through injective linear map, `span_integralBasisVectors_eq`.
-- **Uses from project**: [`ringOfIntegersLinearMap_injective`, `integralBasisVectorsInt`, `integralBasisVectors`, `span_integralBasisVectors_eq`, `algebraMap_integralBasisVectorsInt`, `ringOfIntegersLinearMap`]
+- **Type**: `span ℤ (range integralBasisVectorsInt) = ⊤`
+- **What**: `1, θ, θ²` span `𝓞 K`.
+- **How**: push span through injective embedding to `span_integralBasisVectors_eq`.
+- **Uses from project**: [`ringOfIntegersLinearMap_injective`, `algebraMap_integralBasisVectorsInt`, `span_integralBasisVectors_eq`]
 - **Visibility**: public
 - **Lines**: 337-351
 
-### `def concreteIntegralBasis`  ★ headline
-- **Type**: `Basis (Fin 3) ℤ (𝓞 K) := Basis.mk _ _`
-- **What**: integral basis `1, θ, θ²` of `𝓞 K`.
+### `def concreteIntegralBasis`
+- **Type**: `Basis (Fin 3) ℤ (𝓞 K)`
+- **What**: genuine ℤ-basis `1, θ, θ²` of `𝓞 K`. Used to compute `finrank ℤ (𝓞 K) = 3`.
+- **How**: `Basis.mk` from independence + spanning.
 - **Uses from project**: [`linearIndependent_integralBasisVectorsInt`, `span_integralBasisVectorsInt_eq_top`]
-- **Visibility**: public
+- **Visibility**: public (noncomputable)
 - **Lines**: 353-356
 
 ### `theorem concreteIntegralBasis_apply`
 - **Type**: `algebraMap (𝓞 K) K (concreteIntegralBasis i) = integralBasisVectors i`
-- **Uses from project**: [`concreteIntegralBasis`, `integralBasisVectors`, `algebraMap_integralBasisVectorsInt`]
+- **What**: basis vectors are the displayed `1, θ, θ²`.
+- **How**: `Basis.mk_apply` + `algebraMap_integralBasisVectorsInt`.
+- **Uses from project**: [`concreteIntegralBasis`, `algebraMap_integralBasisVectorsInt`, `integralBasisVectors`]
 - **Visibility**: public
 - **Lines**: 358-362
-- **Notes**: unused in folder.
 
 ### `theorem span_integralBasisVectors_eq_integralBasis`
 - **Type**: `span ℤ (range integralBasisVectors) = span ℤ (range (NumberField.integralBasis K))`
-- **How**: both equal `toSubmodule (𝓞 K)` via `mem_span_integralBasis`.
+- **What**: displayed basis spans the same lattice as mathlib's `NumberField.integralBasis K` (unimodular change of basis, not a reindexing).
+- **How**: `span_integralBasisVectors_eq` + `NumberField.mem_span_integralBasis` both directions.
 - **Uses from project**: [`span_integralBasisVectors_eq`, `integralBasisVectors`]
 - **Visibility**: public
 - **Lines**: 364-377
 
 ### `abbrev concreteRingOfIntegers`
 - **Type**: `Subalgebra ℤ K := Algebra.adjoin ℤ {cubeRootThree}`
+- **What**: the order `ℤ[θ]` inside `K`.
+- **How**: definitional.
 - **Uses from project**: [`cubeRootThree`]
 - **Visibility**: public
 - **Lines**: 379-380
 
-### `theorem ringOfIntegers_eq`  ★ headline
+### `theorem ringOfIntegers_eq`
 - **Type**: `integralClosure ℤ K = concreteRingOfIntegers`
+- **What**: `𝓞 K = ℤ[θ]` (subalgebra restatement; monogenic).
+- **How**: `integralClosure_eq_adjoin`.
 - **Uses from project**: [`integralClosure_eq_adjoin`, `concreteRingOfIntegers`]
 - **Visibility**: public
 - **Lines**: 382-385
 
-### `theorem intNorm_eq_normForm`
-- **Type**: `Algebra.norm ℤ (x•1 + y•θ + z•θ²) = x³+3y³+9z³-9xyz` (`x,y,z : ℤ`)
+### `theorem intNorm_eq_normForm`  (§ Norm Form)
+- **Type**: `Algebra.norm ℤ (x•1 + y•thetaInt + z•thetaInt²) = x³ + 3y³ + 9z³ - 9xyz` for `x y z : ℤ`
+- **What**: integral norm form on `𝓞 K`. The single most-reused lemma in PrimeSplitting.
 - **How**: cast to ℚ via `Algebra.coe_norm_int`, reduce to `norm_eq_normForm`.
-- **Uses from project**: [`thetaInt`, `cubeRootThree`, `cubeRootThree_integral`, `norm_eq_normForm`]
+- **Uses from project**: [`thetaInt`, `cubeRootThree_integral`, `norm_eq_normForm`]
 - **Visibility**: public
-- **Lines**: 400-413
-- **Notes**: The workhorse for all PrimeSplitting norm computations.
+- **Lines**: 402-413
 
-### `theorem isUnit_iff_normForm`
-- **Type**: `IsUnit (x•1+y•θ+z•θ²) ↔ normForm = 1 ∨ normForm = -1`
-- **How**: `NumberField.isUnit_iff_norm`, `intNorm_eq_normForm`, `abs_eq`.
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
+### `theorem isUnit_iff_normForm`  (§ Norm Form)
+- **Type**: `IsUnit (x•1 + y•θ + z•θ²) ↔ N = 1 ∨ N = -1` (the "cubic Pell equation")
+- **What**: units of `ℤ[θ]` ↔ `x³+3y³+9z³-9xyz = ±1`.
+- **How**: `NumberField.isUnit_iff_norm` + `intNorm_eq_normForm` + `abs_eq`.
+- **Uses from project**: [`intNorm_eq_normForm`, `thetaInt`]
 - **Visibility**: public
-- **Lines**: 415-431
-- **Notes**: unused in folder (advertised "cubic Pell equation").
+- **Lines**: 418-431
 
-**File Summary — RingOfIntegers.lean**: 8 defs, 17 theorems. Key API (3+): `thetaInt`, `thetaInt_cube`, `norm_eq_normForm`, `intNorm_eq_normForm`, `integralBasisVectors`, `concreteIntegralBasis`, `integralClosure_eq_adjoin`. Unused: `concreteIntegralBasis_apply`, `isUnit_iff_normForm`. No sorry/set_option. Proofs >30 lines: `mem_adjoin_iff`, `norm_eq_normForm`, `integralClosure_eq_adjoin` (and `span_adjoin_eq` near 30). GENERIC candidates: `three_dvd_of_normForm_eq`, `exists_intCast_norm`, `ringOfIntegersLinearMap`(+_injective).
+**File Summary (RingOfIntegers.lean)**: 27 decls (5 defs/abbrevs, rest theorems). The technical core: cubic norm form `norm_eq_normForm`/`intNorm_eq_normForm`, discriminant `-243` of the power basis, and the **monogenicity proof** `integralClosure_eq_adjoin` via the `peel`+`three_dvd_of_normForm_eq` index argument (five peeling rounds off `discr = -3⁵`). Establishes the concrete ℤ-basis `concreteIntegralBasis` and agreement with `NumberField.integralBasis`. No sorry; longest proofs `norm_eq_normForm`/`integralClosure_eq_adjoin` ~40 lines.
 
 ---
 
 ## Discriminant.lean
 
-### `theorem numberField_discr_eq`  ★ headline
+### `theorem numberField_discr_eq`
 - **Type**: `NumberField.discr K = -243`
-- **How**: change-of-basis to power basis is integral both ways (`Basis.toMatrix`, `mem_span_iff_repr_mem`), `Algebra.discr_eq_discr_of_toMatrix_coeff_isIntegral`, then `discr_powerBasis_eq`.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `integralBasisVectors`, `span_integralBasisVectors_eq_integralBasis`, `discr_powerBasis_eq`]
+- **What**: field discriminant `disc(ℚ(∛3)) = -243 = -3⁵` (so `3` is the only ramified prime).
+- **How**: power basis `1,θ,θ²` and `NumberField.integralBasis K` span the same lattice (unimodular change-of-basis), so `Algebra.discr_eq_discr_of_toMatrix_coeff_isIntegral` transfers `discr_powerBasis_eq = -243`; cast ℚ→ℤ.
+- **Uses from project**: [`cubePolynomial`, `integralBasisVectors`, `span_integralBasisVectors_eq_integralBasis`, `discr_powerBasis_eq`]
 - **Visibility**: public
-- **Lines**: 33-71
-- **Notes**: proof >30 lines.
+- **Lines**: 31-71
 
 ### `theorem integralBasis_discr`
 - **Type**: `Algebra.discr ℚ (NumberField.integralBasis K) = -243`
+- **What**: discriminant of mathlib's canonical integral basis is `-243`.
 - **How**: `NumberField.coe_discr` + `numberField_discr_eq`.
 - **Uses from project**: [`numberField_discr_eq`]
 - **Visibility**: public
 - **Lines**: 73-78
-- **Notes**: unused in folder.
 
-**File Summary — Discriminant.lean**: 2 theorems. Key API: `numberField_discr_eq` (used in PrimeSplitting + ClassGroup). Unused: `integralBasis_discr`. No sorry/set_option. 1 proof >30 lines.
+**File Summary (Discriminant.lean)**: 2 theorems. Promotes the power-basis discriminant to the genuine `NumberField.discr K = -243` via lattice-equality transfer (`discr_eq_discr_of_toMatrix_coeff_isIntegral`). No sorry, no set_option.
 
 ---
 
 ## PrimeSplitting.lean
 
-(imports `Common.lean`; `open NumberField.FieldExamples`)
+(Imports `Common.lean`; uses Common's generic Kummer–Dedekind `ResidueHom` section.)
 
 ### `theorem span_three_eq`
 - **Type**: `Ideal.span {(3:𝓞 K)} = Ideal.span {thetaInt} ^ 3`
-- **How**: `span_singleton_pow` + `thetaInt_cube`.
-- **Uses from project**: [`thetaInt`, `thetaInt_cube`]
-- **Visibility**: public · **Lines**: 32-35
+- **What**: `3` totally ramified: `(3) = (θ)³`.
+- **How**: `Ideal.span_singleton_pow` + `thetaInt_cube`.
+- **Uses from project**: [`thetaInt_cube`]
+- **Visibility**: public
+- **Lines**: 32-35
 
 ### `theorem absNorm_span_theta`
 - **Type**: `Ideal.absNorm (span {thetaInt}) = 3`
-- **How**: `intNorm_eq_normForm 0 1 0`, `absNorm_span_singleton`.
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public · **Lines**: 37-42
+- **What**: `(θ)` has norm 3 (`f = 1`).
+- **How**: `intNorm_eq_normForm 0 1 0` (= 3) + `absNorm_span_singleton`.
+- **Uses from project**: [`intNorm_eq_normForm`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 37-42
 
 ### `theorem isPrime_span_theta`
 - **Type**: `(span {thetaInt}).IsPrime`
-- **How**: `Ideal.isPrime_of_irreducible_absNorm` with norm 3 prime.
-- **Uses from project**: [`thetaInt`, `absNorm_span_theta`]
-- **Visibility**: public · **Lines**: 44-48
+- **What**: `(θ)` is prime.
+- **How**: `Ideal.isPrime_of_irreducible_absNorm` (norm 3 prime).
+- **Uses from project**: [`absNorm_span_theta`]
+- **Visibility**: public
+- **Lines**: 44-48
 
 ### `theorem liesOver_span_theta`
 - **Type**: `(span {thetaInt}).LiesOver (span {(3:ℤ)})`
-- **Uses from project**: [`thetaInt`, `isPrime_span_theta`, `span_three_eq`]
-- **Visibility**: public · **Lines**: 50-58
+- **What**: `(θ)` lies over `(3)`.
+- **How**: `Ideal.liesOver_span_iff` + `span_three_eq`.
+- **Uses from project**: [`isPrime_span_theta`, `span_three_eq`]
+- **Visibility**: public
+- **Lines**: 50-58
 
 ### `theorem inertiaDeg_span_theta`
 - **Type**: `(span {(3:ℤ)}).inertiaDeg (span {thetaInt}) = 1`
-- **How**: `Ideal.absNorm_eq_pow_inertiaDeg'` + `absNorm_span_theta`.
-- **Uses from project**: [`thetaInt`, `liesOver_span_theta`, `absNorm_span_theta`]
-- **Visibility**: public · **Lines**: 60-68
+- **What**: residue degree `f = 1` over 3.
+- **How**: `Ideal.absNorm_eq_pow_inertiaDeg'` (`3 = 3^f ⟹ f = 1`).
+- **Uses from project**: [`liesOver_span_theta`, `absNorm_span_theta`]
+- **Visibility**: public
+- **Lines**: 60-68
 
 ### `theorem ramificationIdx_span_theta`
 - **Type**: `(span {(3:ℤ)}).ramificationIdx (span {thetaInt}) = 3`
-- **How**: `Ideal.ramificationIdx_spec`; upper bound via absNorm divisibility (81 ∤ 27).
-- **Uses from project**: [`thetaInt`, `span_three_eq`, `concreteIntegralBasis`, `absNorm_span_theta`]
-- **Visibility**: public · **Lines**: 70-93
+- **What**: ramification index `e = 3` (totally ramified).
+- **How**: `Ideal.ramificationIdx_spec`: `(3) ⊆ (θ)³` from `span_three_eq`, and `⊄ (θ)⁴` via norm bound (`81 ∤ 27`).
+- **Uses from project**: [`span_three_eq`, `concreteIntegralBasis`, `absNorm_span_theta`]
+- **Visibility**: public
+- **Lines**: 70-93
 
 ### `theorem eq_span_theta_of_three_mem`
-- **Type**: `(P : Ideal (𝓞 K)) → P.IsPrime → 3 ∈ P → P = span {thetaInt}`
-- **How**: `θ ∈ P` (prime, `θ³=3`); `(θ)` is maximal (`isPrime_span_theta.isMaximal`), `eq_of_le`.
-- **Uses from project**: [`thetaInt`, `thetaInt_cube`, `absNorm_span_theta`, `isPrime_span_theta`]
-- **Visibility**: public · **Lines**: 95-106
+- **Type**: prime `P ∋ 3 ⟹ P = (θ)`
+- **What**: uniqueness of the prime above 3.
+- **How**: `3 = θ³ ∈ P ⟹ θ ∈ P` (`mem_of_pow_mem`), then maximality `eq_of_le`.
+- **Uses from project**: [`thetaInt_cube`, `absNorm_span_theta`, `isPrime_span_theta`]
+- **Visibility**: public
+- **Lines**: 95-106
 
 ### `theorem two_eq_mul`
 - **Type**: `(2:𝓞 K) = (thetaInt - 1)(thetaInt² + thetaInt + 1)`
+- **What**: factorization of 2 in `ℤ[θ]`.
 - **How**: `linear_combination -thetaInt_cube`.
-- **Uses from project**: [`thetaInt`, `thetaInt_cube`]
-- **Visibility**: public · **Lines**: 108-110
+- **Uses from project**: [`thetaInt_cube`]
+- **Visibility**: public
+- **Lines**: 108-110
 
 ### `theorem span_two_eq`
-- **Type**: `span {2} = span {θ-1} * span {θ²+θ+1}`
-- **Uses from project**: [`thetaInt`, `two_eq_mul`]
-- **Visibility**: public · **Lines**: 112-117
+- **Type**: `span {(2:𝓞 K)} = span {θ-1} * span {θ²+θ+1}`
+- **What**: `2` splits as degree-1 × degree-2 prime (matching `X³-3 ≡ (X+1)(X²+X+1) mod 2`).
+- **How**: `span_singleton_mul_span_singleton` + `two_eq_mul`.
+- **Uses from project**: [`two_eq_mul`]
+- **Visibility**: public
+- **Lines**: 112-117
 
 ### `theorem absNorm_span_theta_sub_one`
 - **Type**: `absNorm (span {θ - 1}) = 2`
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public · **Lines**: 119-127
+- **What**: `(θ-1)` has norm 2 (`f = 1`).
+- **How**: `intNorm_eq_normForm (-1) 1 0`.
+- **Uses from project**: [`intNorm_eq_normForm`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 119-127
 
 ### `theorem isPrime_span_theta_sub_one`
-- **Type**: `(span {θ - 1}).IsPrime`  (norm 2 prime)
-- **Uses from project**: [`thetaInt`, `absNorm_span_theta_sub_one`]
-- **Visibility**: public · **Lines**: 129-133
+- **Type**: `(span {θ-1}).IsPrime`
+- **What**: `(θ-1)` prime.
+- **How**: `isPrime_of_irreducible_absNorm` (norm 2).
+- **Uses from project**: [`absNorm_span_theta_sub_one`]
+- **Visibility**: public
+- **Lines**: 129-133
 
 ### `theorem absNorm_span_theta_sq_add_theta_add_one`
 - **Type**: `absNorm (span {θ²+θ+1}) = 4`
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public · **Lines**: 135-144
+- **What**: degree-2 prime above 2 has norm 4 (`f = 2`).
+- **How**: `intNorm_eq_normForm 1 1 1`.
+- **Uses from project**: [`intNorm_eq_normForm`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 135-144
 
 ### `theorem absNorm_ne_two_of_quadFactor_mem`
-- **Type**: `(P : Ideal) → P.IsMaximal → θ²+θ+1 ∈ P → absNorm P ≠ 2`
-- **What**: `X²+X+1` has no root in `𝔽₂`.
-- **How**: residue field has 2 elements, every element is 0/1, `t²+t+1≠0` by case-check.
-- **Uses from project**: [`thetaInt`]
-- **Visibility**: public · **Lines**: 146-182
-- **Notes**: proof >30 lines.
+- **Type**: maximal `P ∋ θ²+θ+1 ⟹ absNorm P ≠ 2`
+- **What**: no norm-2 prime contains `θ²+θ+1` (formal "`X²+X+1` irreducible mod 2").
+- **How**: residue field `𝔽₂` has only `0,1`; `t²+t+1 = 0` has no root (case split).
+- **Uses from project**: []
+- **Visibility**: public
+- **Lines**: 146-182
 
 ### `theorem eq_span_quadFactor_of_mem`
-- **Type**: `(P) → P.IsPrime → θ²+θ+1 ∈ P → P = span {θ²+θ+1}`
-- **How**: norm of P divides 4, ≠1, ≠2 → =4, force equality (`absNorm_eq_one_iff`).
-- **Uses from project**: [`thetaInt`, `absNorm_span_theta_sq_add_theta_add_one`, `absNorm_ne_two_of_quadFactor_mem`]
-- **Visibility**: public · **Lines**: 184-213
-- **Notes**: proof >10 lines.
+- **Type**: prime `P ∋ θ²+θ+1 ⟹ P = (θ²+θ+1)`
+- **What**: uniqueness of the degree-2 prime above 2.
+- **How**: norm `P ∣ 4`, `≠1`, `≠2` ⟹ `=4`; cofactor norm 1 hence `⊤`.
+- **Uses from project**: [`absNorm_span_theta_sq_add_theta_add_one`, `absNorm_ne_two_of_quadFactor_mem`]
+- **Visibility**: public
+- **Lines**: 184-213
 
 ### `theorem isPrime_span_theta_sq_add_theta_add_one`
 - **Type**: `(span {θ²+θ+1}).IsPrime`
-- **Uses from project**: [`thetaInt`, `absNorm_span_theta_sq_add_theta_add_one`, `eq_span_quadFactor_of_mem`]
-- **Visibility**: public · **Lines**: 215-226
+- **What**: `(θ²+θ+1)` prime.
+- **How**: enclose in maximal `P`, `eq_span_quadFactor_of_mem` forces equality.
+- **Uses from project**: [`absNorm_span_theta_sq_add_theta_add_one`, `eq_span_quadFactor_of_mem`]
+- **Visibility**: public
+- **Lines**: 215-226
 
-### `theorem liesOver_span_theta_sub_one`, `theorem liesOver_span_theta_sq_add_theta_add_one`
-- **Type**: each `LiesOver (span {(2:ℤ)})`
-- **Uses from project**: [`thetaInt`, `isPrime_span_theta_sub_one`/`..sq..`, `two_eq_mul`]
-- **Visibility**: public · **Lines**: 228-248
+### `theorem liesOver_span_theta_sub_one`, `liesOver_span_theta_sq_add_theta_add_one`
+- **Type**: each prime above 2 `LiesOver (span {(2:ℤ)})`
+- **What**: both primes lie over `(2)`.
+- **How**: `liesOver_span_iff` + `two_eq_mul` membership.
+- **Uses from project**: [`isPrime_span_theta_sub_one`/`..._sq_add_theta_add_one`, `two_eq_mul`]
+- **Visibility**: public
+- **Lines**: 228-248
 
-### `theorem inertiaDeg_span_theta_sub_one`, `theorem inertiaDeg_span_theta_sq_add_theta_add_one`
-- **Type**: inertia degrees `1` and `2` over `2`.
-- **Uses from project**: [`thetaInt`, the corresponding `liesOver`/`absNorm` lemmas]
-- **Visibility**: public · **Lines**: 250-270
+### `theorem inertiaDeg_span_theta_sub_one`, `inertiaDeg_span_theta_sq_add_theta_add_one`
+- **Type**: `f = 1` resp. `f = 2` over 2
+- **What**: residue degrees of the two primes above 2.
+- **How**: `absNorm_eq_pow_inertiaDeg'` (`2 = 2^f`, `4 = 2^f`); `Nat.pow_right_injective`.
+- **Uses from project**: [`liesOver_*`, `absNorm_*`]
+- **Visibility**: public
+- **Lines**: 250-270
 
-### `theorem eq_of_two_mem`  ★ (splitting of 2)
-- **Type**: `(P) → P.IsPrime → 2 ∈ P → P = span{θ-1} ∨ P = span{θ²+θ+1}`
-- **How**: prime contains product `(θ-1)(θ²+θ+1)`, split, use the two uniqueness lemmas.
-- **Uses from project**: [`thetaInt`, `two_eq_mul`, `absNorm_span_theta_sub_one`, `isPrime_span_theta_sub_one`, `eq_span_quadFactor_of_mem`]
-- **Visibility**: public · **Lines**: 272-289
+### `theorem eq_of_two_mem`
+- **Type**: prime `P ∋ 2 ⟹ P = (θ-1) ∨ P = (θ²+θ+1)`
+- **What**: only primes above 2 are these two principal ones (drives class-number argument at `p=2`).
+- **How**: `two_eq_mul ∈ P` ⟹ one factor in `P`; then the respective uniqueness lemma.
+- **Uses from project**: [`two_eq_mul`, `absNorm_span_theta_sub_one`, `isPrime_span_theta_sub_one`, `eq_span_quadFactor_of_mem`]
+- **Visibility**: public
+- **Lines**: 272-289
 
 ### `theorem absNorm_span_seven`
 - **Type**: `absNorm (span {(7:𝓞 K)}) = 343`
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public · **Lines**: 291-299
+- **What**: `(7)` has norm `7³` (inert).
+- **How**: `intNorm_eq_normForm 7 0 0` = 343.
+- **Uses from project**: [`intNorm_eq_normForm`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 291-299
 
 ### `theorem absNorm_ne_seven`
-- **Type**: `(P) → P.IsMaximal → absNorm P ≠ 7`
-- **What**: 3 is not a cube mod 7.
-- **How**: residue field ≅ `ZMod 7` (`ZMod.ringEquivOfPrime`), `decide` over all `s : ZMod 7`.
-- **Uses from project**: [`thetaInt`, `thetaInt_cube`]
-- **Visibility**: public · **Lines**: 301-317
+- **Type**: maximal `P ⟹ absNorm P ≠ 7`
+- **What**: no prime with residue field `𝔽₇`: **3 is not a cube mod 7**.
+- **How**: `ZMod.ringEquivOfPrime` gives `(𝓞 K)/P ≅ ZMod 7`; image `s` of `θ` satisfies `s³ = 3`; `revert s; decide` (no solution).
+- **Uses from project**: [`thetaInt_cube`]
+- **Visibility**: public
+- **Lines**: 301-317
 
-### `theorem isPrime_span_seven`  ★ (7 inert)
+### `theorem isPrime_span_seven`
 - **Type**: `(span {(7:𝓞 K)}).IsPrime`
-- **How**: any maximal P above has norm dividing 343, ≠1,7,49 → 343, so equals (7).
+- **What**: `7` inert (`(7)` prime, `f = 3`).
+- **How**: maximal `P ⊇ (7)` has norm `∣ 7³`, `≠1,7,49` (no norm-7 prime; norm-49 would force one), hence `343 ⟹ P = (7)`.
 - **Uses from project**: [`absNorm_span_seven`, `absNorm_ne_seven`]
-- **Visibility**: public · **Lines**: 319-362
-- **Notes**: proof >30 lines.
+- **Visibility**: public
+- **Lines**: 319-362
 
 ### `theorem liesOver_span_seven`, `inertiaDeg_span_seven`
-- **Type**: lies over `(7)`; inertia degree `3`.
+- **Type**: `(7)` over `(7:ℤ)` with `f = 3`
+- **What**: inert prime data.
+- **How**: `liesOver_span_iff`; `absNorm_eq_pow_inertiaDeg'` (`7³ = 7^f`).
 - **Uses from project**: [`isPrime_span_seven`, `absNorm_span_seven`, `liesOver_span_seven`]
-- **Visibility**: public · **Lines**: 364-382
+- **Visibility**: public
+- **Lines**: 364-382
 
-### `def primeAbove61`
-- **Type**: `(r : ℤ) → Ideal (𝓞 K) := span {61, θ - r}`
+### `def primeAbove61 (r : ℤ)`
+- **Type**: `Ideal (𝓞 K) := span {(61:𝓞 K), thetaInt - r}`
+- **What**: the prime `(61, θ - r)` above 61, for `r` a cube root of 3 mod 61 (`r ∈ {4,5,52}`).
+- **How**: definitional.
 - **Uses from project**: [`thetaInt`]
-- **Visibility**: public · **Lines**: 384-386
+- **Visibility**: public
+- **Lines**: 384-386
 
 ### `theorem absNorm_span_theta_sub_four`, `absNorm_span_gen_five`, `absNorm_span_gen_fiftytwo`
-- **Type**: norms `61` of `θ-4`, `1+2θ+2θ²`, `2-2θ-θ²`.
-- **Uses from project**: [`thetaInt`, `intNorm_eq_normForm`]
-- **Visibility**: public · **Lines**: 388-418
+- **Type**: norms of `θ-4`, `1+2θ+2θ²`, `2-2θ-θ²` all `= 61`
+- **What**: the three principal generators above 61 each have norm 61.
+- **How**: `intNorm_eq_normForm` at `(-4,1,0)`, `(1,2,2)`, `(2,-2,-1)`.
+- **Uses from project**: [`intNorm_eq_normForm`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 388-418
 
 ### `theorem primeAbove61_four_eq`, `primeAbove61_five_eq`, `primeAbove61_fiftytwo_eq`
-- **Type**: each `primeAbove61 r = span {generator}` (principal)
-- **How**: `le_antisymm`; membership via `absNorm_mem` and explicit `linear_combination ... thetaInt_cube`.
-- **Uses from project**: [`primeAbove61`, `thetaInt`, `thetaInt_cube`, the `absNorm_*` lemmas]
-- **Visibility**: public · **Lines**: 420-466
+- **Type**: `primeAbove61 r = span {gen_r}` for `r = 4, 5, 52`
+- **What**: each `(61, θ-r)` is **principal** (concrete split-prime witnesses).
+- **How**: `le_antisymm`: `61 ∈ (gen)` via `absNorm_mem`, and explicit `linear_combination`/`mem_span_pair` cofactor identities (e.g. `θ-5 = (1+2θ+2θ²)(1-θ)`).
+- **Uses from project**: [`primeAbove61`, `absNorm_span_*`, `thetaInt_cube`]
+- **Visibility**: public
+- **Lines**: 420-466
 
-### `theorem span_sixtyOne_eq`  ★ (61 splits completely)
+### `theorem span_sixtyOne_eq`
 - **Type**: `span {(61:𝓞 K)} = primeAbove61 4 * primeAbove61 5 * primeAbove61 52`
-- **How**: rewrite to principal generators, `linear_combination ... thetaInt_cube`.
-- **Uses from project**: [`primeAbove61_*_eq`, `thetaInt`, `thetaInt_cube`]
-- **Visibility**: public · **Lines**: 468-478
+- **What**: `61` **splits completely**: `61 ≡ 1 (mod 3)` and `3` is a cubic residue mod 61.
+- **How**: rewrite each prime as a principal span; product `linear_combination` from `θ³=3`.
+- **Uses from project**: [`primeAbove61_*_eq`, `thetaInt_cube`]
+- **Visibility**: public
+- **Lines**: 468-478
 
 ### `theorem isPrime_primeAbove61`, `absNorm_primeAbove61`, `liesOver_primeAbove61`, `inertiaDeg_primeAbove61`
-- **Type**: for `r ∈ {4,5,52}`: prime / norm 61 / lies over (61) / inertia degree 1.
-- **Uses from project**: [`primeAbove61`, the `primeAbove61_*_eq` and `absNorm_*` lemmas]
-- **Visibility**: public · **Lines**: 480-517
+- **Type**: for `r ∈ {4,5,52}`: prime, norm 61, lies over `(61)`, `f = 1`
+- **What**: split-prime data above 61.
+- **How**: reduce to principal forms; `isPrime_of_irreducible_absNorm`; `absNorm_eq_pow_inertiaDeg'`.
+- **Uses from project**: [`primeAbove61_*_eq`, `absNorm_span_*`, `primeAbove61`]
+- **Visibility**: public
+- **Lines**: 480-517
 
 ### `theorem primeAbove61_pairwise_ne`
-- **Type**: the three primes over 61 are pairwise distinct.
-- **How**: differences of generators are units mod each prime (explicit `norm_num` Bezout identities).
-- **Uses from project**: [`primeAbove61`, `thetaInt`, `isPrime_primeAbove61`]
-- **Visibility**: public · **Lines**: 519-555
-- **Notes**: proof >30 lines.
+- **Type**: the three primes above 61 are pairwise distinct.
+- **What**: confirms `61` splits completely (3 distinct primes, unramified).
+- **How**: differences `θ-r − θ-s` give a unit in any shared prime (ℤ-combination yielding 1) — contradiction with `ne_top`.
+- **Uses from project**: [`primeAbove61`, `isPrime_primeAbove61`]
+- **Visibility**: public
+- **Lines**: 519-555
 
-### `private theorem adjoin_thetaInt_eq_top`
+### `theorem adjoin_thetaInt_eq_top` (private)
 - **Type**: `Algebra.adjoin ℤ {thetaInt} = ⊤`
-- **Uses from project**: [`thetaInt`, `integralBasisVectorsInt`, `span_integralBasisVectorsInt_eq_top`]
-- **Visibility**: private · **Lines**: 557-576
-- **Notes**: proof >10 lines.
+- **What**: `𝓞 K = ℤ[thetaInt]` at the `𝓞 K`-level (for the power basis below).
+- **How**: `span_integralBasisVectorsInt_eq_top` + `Submodule.span_induction`.
+- **Uses from project**: [`span_integralBasisVectorsInt_eq_top`, `integralBasisVectorsInt`, `thetaInt`]
+- **Visibility**: private
+- **Lines**: 557-576
 
-### `private abbrev thetaIntPowerBasis`
-- **Type**: `PowerBasis ℤ (𝓞 K)`
-- **Uses from project**: [`thetaInt`, `adjoin_thetaInt_eq_top`]
-- **Visibility**: private · **Lines**: 578-580
+### `abbrev thetaIntPowerBasis` (private), `theorem thetaIntPowerBasis_gen` (private)
+- **Type**: `PowerBasis ℤ (𝓞 K)`; its gen `= thetaInt`
+- **What**: the ℤ-power-basis of `𝓞 K` generated by `θ`. Feeds Common's `ResidueHom` machinery.
+- **How**: `PowerBasis.ofAdjoinEqTop'` from `adjoin_thetaInt_eq_top`.
+- **Uses from project**: [`adjoin_thetaInt_eq_top`, `thetaInt`]
+- **Visibility**: private (noncomputable)
+- **Lines**: 578-584
 
-### `private theorem thetaIntPowerBasis_gen`
-- **Type**: `thetaIntPowerBasis.gen = thetaInt`
-- **Uses from project**: [`thetaIntPowerBasis`, `thetaInt`, `adjoin_thetaInt_eq_top`]
-- **Visibility**: private · **Lines**: 582-584
-
-### `private theorem thetaInt_minpoly_eq`
+### `theorem thetaInt_minpoly_eq` (private)
 - **Type**: `minpoly ℤ thetaInt = X³ - C 3`
-- **How**: `minpoly.isIntegrallyClosed_eq_field_fractions`, `RingOfIntegers.minpoly_coe`, `map_injective`.
-- **Uses from project**: [`cubePolynomial`, `cubeRootThree`, `thetaInt`, `cubeRootThree_integral`]
-- **Visibility**: private · **Lines**: 586-609
-- **Notes**: proof >10 lines.
+- **What**: integral minimal polynomial of `θ`.
+- **How**: `minpoly.isIntegrallyClosed_eq_field_fractions` lifts the ℚ-minpoly; `map_injective` ℤ→ℚ.
+- **Uses from project**: [`cubePolynomial`, `cubeRootThree_integral`, `thetaInt`]
+- **Visibility**: private
+- **Lines**: 586-609
 
-### `private def residueHom`
-- **Type**: `(p : ℕ)(r : ℤ)(hr : (r:ZMod p)³=3) → (𝓞 K) →ₐ[ℤ] ZMod p`
-- **How**: `PowerBasis.lift` sending θ ↦ r.
-- **Uses from project**: [`thetaIntPowerBasis`, `thetaIntPowerBasis_gen`, `thetaInt_minpoly_eq`]
-- **Visibility**: private · **Lines**: 611-616
-- **Notes**: GENERIC machinery (mirrors ζ₈/ζ₅ residueHom per memory).
+### `theorem isMaximal_span_pair` (private), `absNorm_span_pair` (private)
+- **Type**: for prime `p`, root `r` of `X³-3 mod p`: `(p, θ-r)` maximal with norm `p`.
+- **What**: generic Kummer–Dedekind degree-1 prime constructor.
+- **How**: delegate to **Common** `isMaximal_span_gen_sub` / `absNorm_span_gen_sub` on `thetaIntPowerBasis` (root condition from `thetaInt_minpoly_eq`).
+- **Uses from project**: [`thetaIntPowerBasis`, `thetaInt_minpoly_eq`, Common `isMaximal_span_gen_sub`/`absNorm_span_gen_sub`]
+- **Visibility**: private
+- **Lines**: 611-626
 
-### `private theorem residueHom_thetaInt`
-- **Type**: `residueHom p r hr thetaInt = (r : ZMod p)`
-- **Uses from project**: [`residueHom`, `thetaIntPowerBasis`, `thetaIntPowerBasis_gen`, `thetaInt`]
-- **Visibility**: private · **Lines**: 618-621
+### `theorem exists_degree_one_prime_iff_cube_root_mod_p`
+- **Type**: for prime `p ≠ 3`: `(∃ degree-1 prime above p) ↔ ∃ r : ZMod p, r³ = 3`
+- **What**: the **cubic residue splitting law** away from the ramified prime.
+- **How**: `→` residue field `ZMod p` (`ringEquivOfPrime`) gives `s³ = 3`; `←` build `(p, θ-r)` via `isMaximal_span_pair`/`absNorm_span_pair`.
+- **Uses from project**: [`thetaInt_cube`, `isMaximal_span_pair`, `absNorm_span_pair`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 628-658
 
-### `private theorem ker_residueHom`
-- **Type**: `ker (residueHom p r hr).toRingHom = span {p, θ - r}`
-- **How**: `PowerBasis.exists_eq_aeval`, `Polynomial.sub_dvd_eval_sub`, `ZMod.intCast_zmod_eq_zero_iff_dvd`.
-- **Uses from project**: [`residueHom`, `thetaIntPowerBasis`, `thetaIntPowerBasis_gen`, `residueHom_thetaInt`, `thetaInt`]
-- **Visibility**: private · **Lines**: 623-670
-- **Notes**: proof >30 lines.
-
-### `private theorem residueHom_surjective`
-- **Type**: `Function.Surjective (residueHom p r hr)`
-- **Uses from project**: [`residueHom`]
-- **Visibility**: private · **Lines**: 672-676
-
-### `private theorem isMaximal_span_pair`
-- **Type**: `[Fact p.Prime] → (span {p, θ - r}).IsMaximal`
-- **How**: `RingHom.ker_isMaximal_of_surjective` + `ker_residueHom`.
-- **Uses from project**: [`ker_residueHom`, `residueHom_surjective`, `thetaInt`]
-- **Visibility**: private · **Lines**: 678-682
-
-### `private theorem absNorm_span_pair`
-- **Type**: `absNorm (span {p, θ - r}) = p`
-- **Uses from project**: [`ker_residueHom`, `residueHom_surjective`, `thetaInt`]
-- **Visibility**: private · **Lines**: 684-689
-
-### `theorem exists_degree_one_prime_iff_cube_root_mod_p`  ★ (splitting law)
-- **Type**: `(p prime, p≠3) → (∃ residue-degree-1 prime above p) ↔ ∃ r:ZMod p, r³=3`
-- **How**: forward via residue field ≅ ZMod p; backward via `isMaximal_span_pair`/`absNorm_span_pair`.
-- **Uses from project**: [`thetaInt`, `thetaInt_cube`, `isMaximal_span_pair`, `absNorm_span_pair`]
-- **Visibility**: public · **Lines**: 691-721
-- **Notes**: proof >30 lines.
-
-### `theorem ramified_iff_eq_three`  ★ (ramification law)
-- **Type**: `(p prime) → (∃ P prime, span{p} ≤ P²) ↔ p = 3`
-- **How**: ramified ⇒ P ∣ differentIdeal (`dvd_differentIdeal_iff`, `not_isUnramifiedAt_...` from Common), norm ∣ 243 ⇒ p=3; converse via `span_three_eq`.
-- **Uses from project**: [Common: `not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow`, `not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ`; local: `concreteIntegralBasis`, `numberField_discr_eq`, `isPrime_span_theta`, `span_three_eq`]
-- **Visibility**: public · **Lines**: 723-771
-- **Notes**: proof >30 lines.
+### `theorem ramified_iff_eq_three`
+- **Type**: for prime `p`: `(∃ prime P, (p) ⊆ P²) ↔ p = 3`
+- **What**: the **ramification law**: `p` ramifies iff `p = 3` (iff `p ∣ disc = -3⁵`).
+- **How**: `→` ramified ⟹ `¬ IsUnramifiedAt` (Common helpers `not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow`, `not_isUnramifiedAt_of_...`) ⟹ `P ∣ differentIdeal`; `absNorm P ∣ 243` (via `absNorm_differentIdeal`) forces `p ∣ 3`. `←` `span_three_eq`.
+- **Uses from project**: [`concreteIntegralBasis`, `numberField_discr_eq`, `isPrime_span_theta`, `span_three_eq`, Common ramification helpers]
+- **Visibility**: public
+- **Lines**: 660-708
 
 ### `theorem ramificationIdx_span_theta_sub_one`, `..._sq_add_theta_add_one`, `ramificationIdx_span_seven`, `ramificationIdx_primeAbove61`
-- **Type**: each ramification index `= 1` (unramified).
-- **How**: `ramificationIdx_spec`; non-ramification via `ramified_iff_eq_three` contradiction.
-- **Uses from project**: [`thetaInt`, `span_two_eq`, the `isPrime_*` lemmas, `ramified_iff_eq_three`, `primeAbove61`]
-- **Visibility**: public · **Lines**: 773-836
+- **Type**: all unramified (`e = 1`) for the primes above 2, 7, 61.
+- **What**: confirm 2, 7, 61 unramified.
+- **How**: `ramificationIdx_spec`: `(p) ⊆ P¹`, and `⊄ P²` since `ramified_iff_eq_three` would force `p = 3`.
+- **Uses from project**: [`span_two_eq`, `isPrime_*`, `ramified_iff_eq_three`, `primeAbove61`]
+- **Visibility**: public
+- **Lines**: 710-773
 
-### `abbrev cubeRootThreePolynomialMod`
-- **Type**: `(p : ℕ) → (ZMod p)[X] := X³ - C 3`
+### `abbrev cubeRootThreePolynomialMod (p : ℕ)`  (§ Kummer-Dedekind)
+- **Type**: `(ZMod p)[X] := X³ - C 3`
+- **What**: reduction of `X³-3 mod p`.
+- **How**: definitional.
 - **Uses from project**: []
-- **Visibility**: public · **Lines**: 853-855
-- **Notes**: unused.
+- **Visibility**: public
+- **Lines**: 790-792
 
-### `theorem absNorm_differentIdeal_eq_twoHundredFortyThree`
+### `theorem absNorm_differentIdeal_eq_twoHundredFortyThree`  (§ Different)
 - **Type**: `absNorm (differentIdeal ℤ (𝓞 K)) = 243`
+- **What**: the different has norm 243 = `|disc|`.
 - **How**: `NumberField.absNorm_differentIdeal` + `numberField_discr_eq`.
 - **Uses from project**: [`numberField_discr_eq`]
-- **Visibility**: public · **Lines**: 871-874
+- **Visibility**: public
+- **Lines**: 808-811
 
-### `theorem prime_dvd_differentIdeal_iff_eq_span_theta`
-- **Type**: `(P prime, P≠⊥) → P ∣ differentIdeal ↔ P = span {thetaInt}`
-- **How**: norm of P ∣ 243 ⇒ 3 ∈ P ⇒ P=(θ) (`eq_span_theta_of_three_mem`); converse via `ramificationIdx_span_theta`.
-- **Uses from project**: [`thetaInt`, `absNorm_differentIdeal_eq_twoHundredFortyThree`, `eq_span_theta_of_three_mem`, `isPrime_span_theta`, `liesOver_span_theta`, `ramificationIdx_span_theta`]
-- **Visibility**: public · **Lines**: 876-904
-- **Notes**: proof >10 lines.
+### `theorem prime_dvd_differentIdeal_iff_eq_span_theta`  (§ Different)
+- **Type**: prime `P ≠ ⊥`: `P ∣ differentIdeal ℤ (𝓞 K) ↔ P = (θ)`
+- **What**: `(θ)` is the only prime dividing the different (only ramified prime).
+- **How**: `→` `absNorm P ∣ 243 = 3⁵` ⟹ `3 ∈ P` ⟹ `P = (θ)`; `←` `dvd_differentIdeal_iff` + `ramificationIdx_span_theta = 3 ≠ 1`.
+- **Uses from project**: [`absNorm_differentIdeal_eq_twoHundredFortyThree`, `eq_span_theta_of_three_mem`, `isPrime_span_theta`, `liesOver_span_theta`, `ramificationIdx_span_theta`]
+- **Visibility**: public
+- **Lines**: 813-841
 
-**File Summary — PrimeSplitting.lean**: ~3 defs/abbrevs + ~50 theorems (many private). Key API (3+): `thetaInt`/`thetaInt_cube`/`intNorm_eq_normForm`(imported), `absNorm_span_theta`, `isPrime_span_theta`, `eq_span_theta_of_three_mem`, `span_three_eq`, `ramified_iff_eq_three`, `primeAbove61`, `residueHom` chain. Unused: `cubeRootThreePolynomialMod`. No sorry. No set_option. Many proofs >30 lines (`absNorm_ne_two_of_quadFactor_mem`, `isPrime_span_seven`, `primeAbove61_pairwise_ne`, `ker_residueHom`, `exists_degree_one_prime_iff_cube_root_mod_p`, `ramified_iff_eq_three`).
+**File Summary (PrimeSplitting.lean)**: ~40 decls (1 def, 2 abbrevs, several private helpers, rest theorems). Worked examples of the cubic splitting law: `3` totally ramified `(θ)³`, `2` split `1·1 + 1·2`, `7` inert, `61` split completely (3 distinct principal primes). General laws `exists_degree_one_prime_iff_cube_root_mod_p` (cubic-residue criterion) and `ramified_iff_eq_three` (ramified ⟺ `p=3 ⟺ p∣disc`), plus the different `(θ)`-only result. Heavy use of `intNorm_eq_normForm` and **Common**'s generic Kummer–Dedekind (`isMaximal_span_gen_sub`, `absNorm_span_gen_sub`) and ramification helpers. No sorry; longest proofs `ramified_iff_eq_three`/`isPrime_span_seven` ~45 lines.
 
 ---
 
 ## ClassGroup.lean
 
-### `abbrev cubeRootThreeFractionalIdeal`, `ramifiedPrimeFractionalIdeal`
-- **Type**: `FractionalIdeal (𝓞 K)⁰ K` — `spanSingleton θ` and `(θ)`.
+### `abbrev cubeRootThreeFractionalIdeal`, `ramifiedPrimeFractionalIdeal`  (§ Fractional Ideals)
+- **Type**: `FractionalIdeal (𝓞 K)⁰ K`
+- **What**: principal fractional ideal `(∛3)`; and `(θ)` as a fractional ideal.
+- **How**: `FractionalIdeal.spanSingleton`; coercion of `Ideal.span {thetaInt}`.
 - **Uses from project**: [`cubeRootThree`, `thetaInt`]
-- **Visibility**: public · **Lines**: 31-35
+- **Visibility**: public
+- **Lines**: 31-35
 
-### `theorem cubeRootThree_mem_fractionalIdeal`, `cubeRootThreeFractionalIdeal_absNorm`, `ramifiedPrimeFractionalIdeal_ne_zero`
-- **Type**: membership / norm / nonzero facts for the fractional ideals.
-- **Uses from project**: [`cubeRootThreeFractionalIdeal`, `cubeRootThree`, `ramifiedPrimeFractionalIdeal`, `thetaInt`, `absNorm_span_theta`]
-- **Visibility**: public · **Lines**: 37-53
-- **Notes**: all three appear unused downstream.
+### `theorem cubeRootThree_mem_fractionalIdeal`, `cubeRootThreeFractionalIdeal_absNorm`
+- **Type**: membership; `absNorm = |N(∛3)|`
+- **What**: basic facts on the principal fractional ideal `(∛3)`.
+- **How**: `mem_spanSingleton_self`; `FractionalIdeal.absNorm_span_singleton`.
+- **Uses from project**: [`cubeRootThreeFractionalIdeal`, `cubeRootThree`]
+- **Visibility**: public
+- **Lines**: 37-43
 
-### `theorem sqrt_243_bounds`
+### `theorem ramifiedPrimeFractionalIdeal_ne_zero`
+- **Type**: `ramifiedPrimeFractionalIdeal ≠ 0`
+- **What**: `(θ)` nonzero as fractional ideal.
+- **How**: `coeIdeal_ne_zero` + `absNorm_span_theta = 3 ≠ 0`.
+- **Uses from project**: [`ramifiedPrimeFractionalIdeal`, `absNorm_span_theta`]
+- **Visibility**: public
+- **Lines**: 45-53
+
+### `theorem sqrt_243_bounds`  (§ Class Group)
 - **Type**: `15.58 < √243 ∧ √243 < 15.59`
-- **How**: `Real.sq_sqrt`, `nlinarith`. Used in Minkowski bound.
+- **What**: numerical bound for the Minkowski computation (`√243 = 9√3 ≈ 15.588`).
+- **How**: `Real.sq_sqrt` + `nlinarith`.
 - **Uses from project**: []
-- **Visibility**: public · **Lines**: 68-74
-- **Notes**: GENERIC numeric helper.
+- **Visibility**: public
+- **Lines**: 68-74
 
-### `theorem classNumber_eq_one`  ★ headline
+### `theorem classNumber_eq_one`
 - **Type**: `NumberField.classNumber K = 1`
-- **How**: `classNumber_eq_one_iff` + `RingOfIntegers.isPrincipalIdealRing_of_isPrincipal_of_pow_le_of_mem_primesOver_of_mem_Icc`; Minkowski bound < 5 (`sqrt_243_bounds`, `Real.pi_gt_d2`), `interval_cases p` over 2,3, principal generators from `eq_of_two_mem`/`eq_span_theta_of_three_mem`.
-- **Uses from project**: [`nrComplexPlaces_eq_one`, `degree_eq_three`, `numberField_discr_eq`, `sqrt_243_bounds`, `eq_of_two_mem`, `eq_span_theta_of_three_mem`, `thetaInt`]
-- **Visibility**: public · **Lines**: 76-117
-- **Notes**: proof >30 lines.
+- **What**: **class number 1**.
+- **How**: `classNumber_eq_one_iff` + `isPrincipalIdealRing_of_isPrincipal_of_pow_le_of_mem_primesOver_of_mem_Icc`; Minkowski bound `(4/π)·(3!/3³)·√243 ≈ 4.41 < 5` (`Nat.floor_lt`, `pi_gt_d2`, `sqrt_243_bounds`), so only `p = 2, 3` matter; their primes are principal (`eq_of_two_mem`, `eq_span_theta_of_three_mem`, explicit generators `θ-1`, `θ²+θ+1`, `θ`).
+- **Uses from project**: [`sqrt_243_bounds`, `nrComplexPlaces_eq_one`, `degree_eq_three`, `numberField_discr_eq`, `eq_of_two_mem`, `eq_span_theta_of_three_mem`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 76-117
 
-### `theorem isPrincipalIdealRing`  ★ headline
+### `theorem isPrincipalIdealRing`
 - **Type**: `IsPrincipalIdealRing (𝓞 K)`
+- **What**: `ℤ[θ]` is a PID.
+- **How**: `classNumber_eq_one_iff` ← `classNumber_eq_one`.
 - **Uses from project**: [`classNumber_eq_one`]
-- **Visibility**: public · **Lines**: 119-123
+- **Visibility**: public
+- **Lines**: 119-123
 
 ### `theorem uniqueFactorizationMonoid`
 - **Type**: `UniqueFactorizationMonoid (𝓞 K)`
+- **What**: `ℤ[θ]` is a UFD.
+- **How**: `infer_instance` from PID.
 - **Uses from project**: [`isPrincipalIdealRing`]
-- **Visibility**: public · **Lines**: 125-128
+- **Visibility**: public
+- **Lines**: 125-128
 
-### `theorem classGroupStructure`  ★ headline
+### `theorem classGroupStructure`
 - **Type**: `Nonempty (ClassGroup (𝓞 K) ≃* Multiplicative (ZMod 1))`
+- **What**: class group trivial.
+- **How**: `card = 1` ⟹ `Unique` ⟹ `MulEquiv.ofUnique`.
 - **Uses from project**: [`classNumber_eq_one`]
-- **Visibility**: public · **Lines**: 130-136
+- **Visibility**: public
+- **Lines**: 130-136
 
-### `abbrev unitIdealRepresentative`
-- **Type**: `(Ideal (𝓞 K))⁰ := ⟨⊤, _⟩`
-- **Uses from project**: []
-- **Visibility**: public · **Lines**: 138-139
+### `abbrev unitIdealRepresentative`, `theorem classGroupRepresentative`
+- **Type**: `(Ideal (𝓞 K))⁰`; every class `= mk0 ⊤`
+- **What**: unit ideal represents the unique class.
+- **How**: `Subsingleton.elim`.
+- **Uses from project**: [`classNumber_eq_one`]
+- **Visibility**: public
+- **Lines**: 138-147
 
-### `theorem classGroupRepresentative`
-- **Type**: `(C : ClassGroup (𝓞 K)) → C = ClassGroup.mk0 unitIdealRepresentative`
-- **Uses from project**: [`classNumber_eq_one`, `unitIdealRepresentative`]
-- **Visibility**: public · **Lines**: 141-147
-- **Notes**: unused downstream.
-
-**File Summary — ClassGroup.lean**: 4 abbrevs, 8 theorems. Key API (3+): `classNumber_eq_one`. Unused: the 3 fractional-ideal lemmas, `classGroupRepresentative`. No sorry/set_option. 1 proof >30 lines (`classNumber_eq_one`). GENERIC: `sqrt_243_bounds` (number-specific but pattern shared across twins).
+**File Summary (ClassGroup.lean)**: 11 decls (3 abbrevs, rest theorems). Class number 1 via the Minkowski-bound route (`isPrincipalIdealRing_of_..._mem_Icc`, bound `≈ 4.41`), reducing to the explicitly-principal primes over 2 and 3 from PrimeSplitting; downstream PID/UFD/trivial-class-group corollaries. No sorry; longest proof `classNumber_eq_one` ~40 lines.
 
 ---
 
 ## Units.lean
 
-(`open NumberField.FieldExamples` for `torsionPowerHom`, `rankOnePowerHom`)
-
-### `abbrev torsionGenerator`
-- **Type**: `(𝓞 K)ˣ := -1`
+### `abbrev torsionGenerator`, `def torsionUnits`
+- **Type**: `(𝓞 K)ˣ := -1`; set `{u | ∃ k : Fin 2, u = (-1)^k}`
+- **What**: torsion generator `-1` and the concrete torsion set `{1,-1}`.
+- **How**: definitional.
 - **Uses from project**: []
-- **Visibility**: public · **Lines**: 33-34
-
-### `def torsionUnits`
-- **Type**: `Set ((𝓞 K)ˣ) := {u | ∃ k : Fin 2, u = torsionGenerator ^ k.val}`
-- **Uses from project**: [`torsionGenerator`]
-- **Visibility**: public · **Lines**: 36-37
+- **Visibility**: public
+- **Lines**: 33-37
 
 ### `theorem torsionUnits_eq`
 - **Type**: `{u | IsOfFinOrder u} = torsionUnits`
-- **How**: odd finrank ⇒ `torsion_eq_one_or_neg_one_of_odd_finrank`.
+- **What**: torsion of `𝓞 Kˣ` is exactly `{±1}` (odd-degree field has a real place ⟹ only roots of unity `±1`).
+- **How**: `torsion_eq_one_or_neg_one_of_odd_finrank` (degree 3 odd).
 - **Uses from project**: [`degree_eq_three`, `torsionUnits`, `torsionGenerator`]
-- **Visibility**: public · **Lines**: 39-54
+- **Visibility**: public
+- **Lines**: 39-54
 
-### `theorem torsionOrder_eq_two`  ★ headline
+### `theorem torsionOrder_eq_two`
 - **Type**: `NumberField.Units.torsionOrder K = 2`
+- **What**: `|μ(K)| = 2`.
 - **How**: `torsionOrder_eq_two_of_odd_finrank`.
 - **Uses from project**: [`degree_eq_three`]
-- **Visibility**: public · **Lines**: 56-59
+- **Visibility**: public
+- **Lines**: 56-59
 
-### `theorem unitRank_eq_one`  ★ headline
+### `theorem unitRank_eq_one`
 - **Type**: `NumberField.Units.rank K = 1`
-- **How**: signature `(1,1)` ⇒ rank = card places − 1.
+- **What**: **Dirichlet rank 1** (`r₁ + r₂ - 1 = 1`).
+- **How**: `Units.rank` def + `card InfinitePlace = 2` (from signature `(1,1)`).
 - **Uses from project**: [`degree_eq_three`, `not_totallyReal`]
-- **Visibility**: public · **Lines**: 61-71
+- **Visibility**: public
+- **Lines**: 61-71
 
-### `def fundamentalUnit`  ★ headline
-- **Type**: `(𝓞 K)ˣ` with `val = θ²-2`, explicit inverse `2θ²+3θ+4`.
-- **How**: `val_inv`/`inv_val` by `linear_combination ... thetaInt_cube`.
+### `def fundamentalUnit`
+- **Type**: `(𝓞 K)ˣ` with `val = thetaInt² - 2`, `inv = 2θ² + 3θ + 4`
+- **What**: the **fundamental unit `θ² - 2 = ∛9 - 2`** (norm 1), with explicit inverse.
+- **How**: `val_inv`/`inv_val` by `linear_combination (2θ+3)·thetaInt_cube`.
 - **Uses from project**: [`thetaInt`, `thetaInt_cube`]
-- **Visibility**: public · **Lines**: 73-79
+- **Visibility**: public (noncomputable)
+- **Lines**: 73-79
 
 ### `def fundamentalUnitSystem`
 - **Type**: `Fin (rank K) → (𝓞 K)ˣ := fun _ => fundamentalUnit`
+- **What**: the rank-1 system of fundamental units (single unit `θ²-2`).
+- **How**: constant function.
 - **Uses from project**: [`fundamentalUnit`]
-- **Visibility**: public · **Lines**: 81-83
+- **Visibility**: public (noncomputable)
+- **Lines**: 81-83
 
-### `theorem fundamentalUnitSystem_isFundamental`  ★ headline (SORRY)
+### `theorem fundamentalUnitSystem_isFundamental`  ⚠️ **SORRY**
 - **Type**: `Subgroup.closure (range fundamentalUnitSystem) ⊔ torsion K = ⊤`
-- **What**: `θ²-2` is a genuine fundamental unit.
+- **What**: `θ²-2` (with torsion) generates all units — i.e. `θ²-2` is a **genuine** fundamental unit (not a proper power times a root of unity).
+- **How**: `sorry`. **Needs**: an Artin-type unit-index bound — that no unit `η` with `1 < η_real < |∛9-2|` exists below the candidate, equivalently `[𝓞 Kˣ : ⟨-1, θ²-2⟩] = 1`. Mathlib has `fundSystem K` (an abstract fundamental system) but **no lemma identifying a given explicit unit as fundamental** via a regulator/embedding lower bound. Discharging it needs either a covolume/regulator-minimality comparison or an effective lower bound on unit logarithms — neither in mathlib.
 - **Uses from project**: [`fundamentalUnitSystem`]
-- **Visibility**: public · **Lines**: 88-90
-- **Notes**: **SORRY** — needs Artin-type unit bound (per memory, the only genuinely blocked class alongside regulator).
+- **Visibility**: public
+- **Lines**: 88-90
 
 ### `theorem unit_eq_torsion_mul_fundamentalUnit_zpow`
-- **Type**: `(u) → ∃ ζ∈torsion, ∃ n:ℤ, u = ζ·fundamentalUnit^n`
-- **How**: `Subgroup.mem_sup` on `fundamentalUnitSystem_isFundamental`, `mem_closure_singleton`.
-- **Uses from project**: [`fundamentalUnitSystem`, `fundamentalUnitSystem_isFundamental`, `unitRank_eq_one`, `fundamentalUnit`]
-- **Visibility**: public · **Lines**: 92-108
-- **Notes**: depends on sorry transitively.
+- **Type**: `∀ u, ∃ ζ ∈ torsion K, ∃ n : ℤ, u = ζ · fundamentalUnit ^ n`
+- **What**: every unit is `±(θ²-2)ⁿ` (all solutions of the cubic Pell eqn).
+- **How**: `Subgroup.mem_sup` + `mem_closure_singleton` on `fundamentalUnitSystem_isFundamental` (inherits the sorry).
+- **Uses from project**: [`fundamentalUnitSystem_isFundamental`, `unitRank_eq_one`, `fundamentalUnit`]
+- **Visibility**: public
+- **Lines**: 92-108
 
 ### `theorem exists_eq_torsion_mul_fundSystem_zpow`
-- **Type**: `(i₀)(u) → ∃ ζ∈torsion, ∃ n, u = ζ·(fundSystem K i₀)^n`
-- **How**: `closure_fundSystem_sup_torsion_eq_top` + subsingleton of `Fin (rank)`.
+- **Type**: with mathlib's `fundSystem K i₀`: `u = ζ · fundSystem K i₀ ^ n`
+- **What**: rank-1 specialization using mathlib's **abstract** `fundSystem` (sorry-free).
+- **How**: `closure_fundSystem_sup_torsion_eq_top` + `Subsingleton (Fin (rank K))` + `mem_closure_singleton`.
 - **Uses from project**: [`unitRank_eq_one`]
-- **Visibility**: public · **Lines**: 110-134
-- **Notes**: this is the SORRY-FREE abstract version (uses mathlib fundSystem, not `fundamentalUnit`).
+- **Visibility**: public
+- **Lines**: 110-134
 
 ### `theorem fundSystem_zpow_mem_torsion`
-- **Type**: `(i₀)(n) → fundSystem K i₀ ^ n ∈ torsion → n = 0`
-- **How**: image in free quotient mod torsion is a basis vector (`basisModTorsion`, `repr_self`).
+- **Type**: `fundSystem K i₀ ^ n ∈ torsion K → n = 0`
+- **What**: the abstract fundamental unit has infinite order mod torsion (image is a basis vector).
+- **How**: project to free quotient `(𝓞 Kˣ)/torsion` via `basisModTorsion`; `repr_self`.
 - **Uses from project**: []
-- **Visibility**: public · **Lines**: 136-150
-- **Notes**: GENERIC (rank-agnostic mechanism).
+- **Visibility**: public
+- **Lines**: 136-150
 
 ### `theorem eq_one_or_neg_one_of_mem_torsion`
-- **Type**: `ζ ∈ torsion → ζ = 1 ∨ ζ = -1`
+- **Type**: `ζ ∈ torsion K → ζ = 1 ∨ ζ = -1`
+- **What**: pointwise torsion classification.
+- **How**: `torsionUnits_eq` + `fin_cases`.
 - **Uses from project**: [`torsionUnits_eq`]
-- **Visibility**: public · **Lines**: 152-161
+- **Visibility**: public
+- **Lines**: 152-161
 
-### `private theorem unitGroupStructure_bijective`
-- **Type**: bijectivity of `(torsionPowerHom 2 (-1)).coprod (rankOnePowerHom η)`.
-- **How**: injective (kernel trivial via `fundSystem_zpow_mem_torsion` + ZMod 2 case split); surjective via `exists_eq_torsion_mul_fundSystem_zpow`.
-- **Uses from project**: [Common: `torsionPowerHom`, `rankOnePowerHom`; local: `fundSystem_zpow_mem_torsion`, `exists_eq_torsion_mul_fundSystem_zpow`, `eq_one_or_neg_one_of_mem_torsion`]
-- **Visibility**: private · **Lines**: 163-205
-- **Notes**: proof >30 lines.
+### `theorem unitGroupStructure_bijective` (private)
+- **Type**: `Function.Bijective ((torsionPowerHom 2 (-1)).coprod (rankOnePowerHom η))`
+- **What**: the structure map `μ₂ × ℤ → 𝓞 Kˣ` is bijective.
+- **How**: injectivity from `fundSystem_zpow_mem_torsion` + `(-1)` not in trivial-exponent image; surjectivity from `exists_eq_torsion_mul_fundSystem_zpow` + `eq_one_or_neg_one_of_mem_torsion`. Uses **Common** `torsionPowerHom`, `rankOnePowerHom`.
+- **Uses from project**: [`exists_eq_torsion_mul_fundSystem_zpow`, `fundSystem_zpow_mem_torsion`, `eq_one_or_neg_one_of_mem_torsion`, Common `torsionPowerHom`/`rankOnePowerHom`]
+- **Visibility**: private
+- **Lines**: 163-205
 
-### `theorem unitGroupStructure`  ★ headline
+### `theorem unitGroupStructure`
 - **Type**: `Nonempty ((𝓞 K)ˣ ≃* (Multiplicative (ZMod 2) × Multiplicative (Fin 1 → ℤ)))`
-- **What**: unit group `≅ μ₂ × ℤ`.
-- **How**: `MulEquiv.ofBijective` of the coprod hom, via `unitGroupStructure_bijective`. SORRY-FREE (uses abstract `fundSystem`).
-- **Uses from project**: [Common: `torsionPowerHom`, `rankOnePowerHom`; local: `unitRank_eq_one`, `unitGroupStructure_bijective`]
-- **Visibility**: public · **Lines**: 207-222
+- **What**: **unit group `≅ μ₂ × ℤ`** (rank-1 structure). Sorry-free (uses abstract `fundSystem`).
+- **How**: `MulEquiv.ofBijective` of the coprod map, via `unitGroupStructure_bijective`.
+- **Uses from project**: [`unitRank_eq_one`, `unitGroupStructure_bijective`, Common `torsionPowerHom`/`rankOnePowerHom`]
+- **Visibility**: public
+- **Lines**: 207-222
 
-### `theorem regulator_eq`  ★ headline (depends on sorry)
-- **Type**: `Units.regulator K = |Real.log ((3:ℝ)^(2/3) - 2)|`
-- **How**: pick real embedding, `regOfFamily_div_regulator` + `fundamentalUnitSystem_isFundamental`, `regOfFamily_eq_det`, `Matrix.det_eq_elem_of_subsingleton`.
-- **Uses from project**: [`exists_realEmbedding_cubeRootThree`, `thetaInt`, `cubeRootThree_integral`, `fundamentalUnit`, `infinitePlace_card_eq_two`, `unitRank_eq_one`, `fundamentalUnitSystem_isFundamental`]
-- **Visibility**: public · **Lines**: 224-297
-- **Notes**: proof >30 lines; transitively depends on the `fundamentalUnitSystem_isFundamental` SORRY.
+### `theorem regulator_eq`
+- **Type**: `NumberField.Units.regulator K = |log((3:ℝ)^(2/3) - 2)|`
+- **What**: **regulator** `= |log(∛9 - 2)| ≈ 2.5246` (covolume of the unit lattice). Analytic restatement that `θ²-2` is fundamental.
+- **How**: real embedding `σ` sends the fundamental unit to `3^(2/3) - 2 > 0`; `regOfFamily_div_regulator` with index 1 (depends on `fundamentalUnitSystem_isFundamental` SORRY), then `regOfFamily_eq_det` collapses the `1×1` log matrix (`Matrix.det_eq_elem_of_subsingleton`).
+- **Uses from project**: [`exists_realEmbedding_cubeRootThree`, `fundamentalUnit`, `cubeRootThree_integral`, `infinitePlace_card_eq_two`, `unitRank_eq_one`, `fundamentalUnitSystem`, `fundamentalUnitSystem_isFundamental` (⚠️ via sorry)]
+- **Visibility**: public
+- **Lines**: 224-297
+- **Notes**: depends transitively on the `fundamentalUnitSystem_isFundamental` sorry through `hreg`.
 
-**File Summary — Units.lean**: 4 defs/abbrevs, 10 theorems. Key API (3+): `fundamentalUnit`, `unitRank_eq_one`, `fundamentalUnitSystem_isFundamental`, `torsionUnits_eq`. Sorry: `fundamentalUnitSystem_isFundamental` (and `regulator_eq`/`unit_eq_torsion_mul_fundamentalUnit_zpow` depend on it). No set_option. Proofs >30 lines: `unitGroupStructure_bijective`, `regulator_eq`. GENERIC: `fundSystem_zpow_mem_torsion`, `exists_eq_torsion_mul_fundSystem_zpow`, `unitGroupStructure_bijective` (all rank-1 generic; shared with twins per memory).
+**File Summary (Units.lean)**: 15 decls (torsion def/abbrev, `fundamentalUnit`/`fundamentalUnitSystem`, rest theorems). Torsion `= μ₂` (odd degree), Dirichlet rank 1, explicit fundamental unit `θ²-2`, abstract structure `𝓞 Kˣ ≅ μ₂ × ℤ` (sorry-free via mathlib `fundSystem`), regulator `|log(∛9-2)|`. **One sorry** (`fundamentalUnitSystem_isFundamental`, Artin-type index bound) inherited by `unit_eq_torsion_mul_fundamentalUnit_zpow` and `regulator_eq`; the abstract `unitGroupStructure` sidesteps it via `fundSystem`. Uses Common `torsionPowerHom`/`rankOnePowerHom`. Longest proofs ~40 lines.
 
 ---
 
 ## Euclidean.lean
 
-### `theorem normEuclidean`  ★ headline (SORRY)
-- **Type**: `(a b : 𝓞 K) → b ≠ 0 → ∃ q r, a = b*q+r ∧ (norm r).natAbs < (norm b).natAbs`
-- **What**: `ℚ(∛3)` is norm-Euclidean.
-- **How**: —
-- **Uses from project**: [`K`]
-- **Visibility**: public · **Lines**: 34-37
-- **Notes**: **SORRY** — needs the covering / division-with-remainder geometric argument (per memory).
+### `theorem normEuclidean`  ⚠️ **SORRY**
+- **Type**: `(a b : 𝓞 K) → b ≠ 0 → ∃ q r, a = b·q + r ∧ (N r).natAbs < (N b).natAbs`
+- **What**: `ℚ(∛3)` is **norm-Euclidean** — division-with-remainder in `ℤ[θ]` for `|field norm|`. Classical for the smallest-discriminant pure cubic; strengthens `isPrincipalIdealRing`.
+- **How**: `sorry`. **Needs**: a **geometry-of-numbers / covering argument** — for every `x ∈ K` there is `m ∈ ℤ[θ]` with `|N(x - m)| < 1` (inhomogeneous minimum of the cubic norm form `< 1`), by partitioning the fundamental domain and bounding `|x³+3y³+9z³-9xyz|` over the unit cube. Mathlib has **no norm-Euclidean API** and exposes no effective Minkowski/covering bound for an explicit norm form (only `EuclideanDomain` structures and the abstract `convexBodyLT`/`fundamentalCone` measure theory). Would be built from scratch as an interval/case analysis over the cube.
+- **Uses from project**: []
+- **Visibility**: public
+- **Lines**: 34-37
 
-**File Summary — Euclidean.lean**: 1 theorem, sorry. No set_option.
+**File Summary (Euclidean.lean)**: 1 theorem, **a single sorry** (`normEuclidean`). Nothing downstream depends on it (LocalGlobal imports but does not use it). Genuine API gap: no mathlib norm-Euclidean / effective covering lemma. No set_option.
 
 ---
 
 ## LocalGlobal.lean
 
-### `def heightOneThree`, `heightOneTwoLinear`, `heightOneTwoQuadratic`, `heightOneSeven`, `heightOneSixtyOneFour/Five/FiftyTwo`
-- **Type**: `HeightOneSpectrum (𝓞 K)` for each finite place.
-- **How**: bundle `asIdeal` + isPrime (`isPrime_*`) + ne_bot (`absNorm_*` ≠ 0).
-- **Uses from project**: [`thetaInt`, `isPrime_span_theta`/`...sub_one`/`...sq...`/`isPrime_span_seven`/`isPrime_primeAbove61`, corresponding `absNorm_*`, `primeAbove61`]
-- **Visibility**: public · **Lines**: 35-109
+### `def heightOneThree`, `heightOneTwoLinear`, `heightOneTwoQuadratic`, `heightOneSeven`, `heightOneSixtyOneFour`, `heightOneSixtyOneFive`, `heightOneSixtyOneFiftyTwo`  (§ Finite Places)
+- **Type**: `HeightOneSpectrum (𝓞 K)`
+- **What**: the worked finite places — `(θ)` over 3, `(θ-1)`/`(θ²+θ+1)` over 2, `(7)` inert, the three primes over 61.
+- **How**: package each prime ideal with `isPrime_*` and `ne_bot` from its nonzero norm.
+- **Uses from project**: [`isPrime_span_*`, `isPrime_primeAbove61`, `absNorm_*`, `primeAbove61`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 34-109
 
-### `abbrev vThree`
-- **Type**: `FinitePlace K := FinitePlace.mk heightOneThree`
-- **Uses from project**: [`heightOneThree`]
-- **Visibility**: public · **Lines**: 111-112
+### `abbrev vThree` + 6 ramification/inertia `example`s
+- **Type**: `FinitePlace K` (`mk heightOneThree`); examples asserting `e=3,f=1` over 3, `f=1,2` over 2, `f=3` over 7, `f=1` over 61.
+- **What**: confirm the splitting data at the finite-place level.
+- **How**: discharge by the corresponding PrimeSplitting `ramificationIdx_*`/`inertiaDeg_*` lemmas.
+- **Uses from project**: [`ramificationIdx_span_theta`, `inertiaDeg_*`, `heightOne*`]
+- **Visibility**: public (`vThree` abbrev; rest `example`)
+- **Lines**: 111-140
 
-### (6 `example`s, lines 114-140) ramification/inertia degrees at the height-one primes
-- **Uses from project**: [`heightOne*`, `ramificationIdx_span_theta`, `inertiaDeg_*`, `inertiaDeg_primeAbove61`]
-- **Notes**: `example`s, not named declarations.
-
-### `abbrev CompletionAtThree`
+### `abbrev CompletionAtThree`  (§ Completions)
 - **Type**: `Type := heightOneThree.adicCompletion K`
+- **What**: completion of `K` at the totally-ramified place over 3.
+- **How**: definitional.
 - **Uses from project**: [`heightOneThree`]
-- **Visibility**: public · **Lines**: 154-157
+- **Visibility**: public
+- **Lines**: 155-156
 
-### `abbrev InfiniteCompletion`
-- **Type**: `(v : InfinitePlace K) → Type := v.Completion`
+### `abbrev InfiniteCompletion (v)` + two `example`s  (§ Infinite Completions)
+- **Type**: `v.Completion`; examples: real place `≃+* ℝ`, complex place `≃+* ℂ`.
+- **What**: archimedean completions are `ℝ` (the one real place) and `ℂ` (the one complex place).
+- **How**: `ringEquivRealOfIsReal` / `ringEquivComplexOfIsComplex`.
 - **Uses from project**: []
-- **Visibility**: public · **Lines**: 170-171
-- **Notes**: followed by 2 `example`s for real/complex completions.
+- **Visibility**: public (abbrev) / `example`
+- **Lines**: 170-181
 
-### `theorem product_formula_cubeRootThree`
-- **Type**: `(∏ w, w θ ^ w.mult) * ∏ᶠ v, v θ = 1`
-- **How**: `NumberField.prod_abs_eq_one`.
-- **Uses from project**: [`cubeRootThree`, `cubeRootThree_cube`]
-- **Visibility**: public · **Lines**: 195-203
-- **Notes**: followed by an `example` for the fundamental unit.
+### `theorem product_formula_cubeRootThree` + one `example`  (§ Product Formula)
+- **Type**: `(∏ infinite places · mult)·(∏ finite places) of cubeRootThree = 1` (and same for the fundamental unit)
+- **What**: the **product formula** for `∛3` and for `θ²-2`.
+- **How**: `NumberField.prod_abs_eq_one` (`∛3 ≠ 0`, fundamental unit `≠ 0`).
+- **Uses from project**: [`cubeRootThree_cube`, `fundamentalUnit`, `cubeRootThree`]
+- **Visibility**: public (theorem) / `example`
+- **Lines**: 195-216
 
-### `abbrev CubeRootThreeInfiniteAdeleRing`, `infinitePrincipalAdele_cubeRootThree`, `infinitePrincipalAdele_fundamentalUnit`
-- **Type**: `InfiniteAdeleRing K` and principal adeles.
-- **Uses from project**: [`K`, `cubeRootThree`, `fundamentalUnit`]
-- **Visibility**: public · **Lines**: 230-237
-- **Notes**: followed by 2 `example`s (norm, dense range).
+### §`Infinite Adele Ring` abbrevs + 2 `example`s
+- **Type**: `CubeRootThreeInfiniteAdeleRing`; principal adeles of `∛3` and the fundamental unit; examples on norm and `DenseRange`.
+- **What**: infinite-adele packaging.
+- **How**: `coe_norm_eq_abs_norm`; `denseRange_algebraMap`.
+- **Uses from project**: [`cubeRootThree`, `fundamentalUnit`]
+- **Visibility**: public (abbrevs) / `example`
+- **Lines**: 230-245
 
-### `theorem canonicalEmbedding_thetaInt_mem_integerLattice`
+### `theorem canonicalEmbedding_thetaInt_mem_integerLattice`  (§ Canonical Embedding)
 - **Type**: `canonicalEmbedding K (algebraMap (𝓞 K) K thetaInt) ∈ integerLattice K`
+- **What**: `θ` lands in the integer lattice.
 - **How**: `simp [integerLattice]`.
 - **Uses from project**: [`thetaInt`]
-- **Visibility**: public · **Lines**: 259-262
+- **Visibility**: public
+- **Lines**: 259-262
 
-### `abbrev mixedEmbedding_cubeRootThree`
-- **Type**: `mixedEmbedding.mixedSpace K := mixedEmbedding K cubeRootThree`
+### §`Canonical Embedding Geometry`: `mixedEmbedding_cubeRootThree` abbrev, 3 `example`s, `theorem polarSpace_nonempty`
+- **Type**: mixed-space image of `∛3`; examples on `convexBodyLT`, measurability of `fundamentalCone`/`normLeOne`; `Nonempty (polarSpace K)`.
+- **What**: Minkowski-geometry packaging in the mixed space.
+- **How**: `convexBodyLT_mem`; `measurableSet_*`; `infer_instance`.
 - **Uses from project**: [`cubeRootThree`]
-- **Visibility**: public · **Lines**: 278-279
-- **Notes**: followed by 3 `example`s (convexBodyLT, measurableSet fundamentalCone/normLeOne).
+- **Visibility**: public (abbrev/theorem) / `example`
+- **Lines**: 278-298
 
-### `theorem polarSpace_nonempty`
-- **Type**: `Nonempty (mixedEmbedding.polarSpace K)`
+### `theorem house_cubeRootThree_pos`, `house_thetaInt_pos`  (§ House)
+- **Type**: `0 < NumberField.house cubeRootThree` (and for `thetaInt`)
+- **What**: the **house** of `∛3` is positive.
+- **How**: `one_le_house_of_isIntegral` (`∛3` integral, nonzero).
+- **Uses from project**: [`cubeRootThree_integral`, `cubeRootThree_cube`, `thetaInt`]
+- **Visibility**: public
+- **Lines**: 311-325
+
+### §`Adele Ring`: `CubeRootThreeAdeleRing` etc.
+- **Type**: full adele ring; principal adeles; `principalAdele_cubeRootThree_ne_zero`; `principalAdele_fundamentalUnit_is_unit_everywhere`.
+- **What**: full-adele packaging; the fundamental unit is a unit at **every** finite place.
+- **How**: `AdeleRing.algebraMap_injective`; `norm_eq_one_iff_notMem` (a unit lies in no maximal ideal).
+- **Uses from project**: [`cubeRootThree`, `fundamentalUnit`, `cubeRootThree_cube`]
+- **Visibility**: public
+- **Lines**: 340-367
+
+### §`Dedekind Zeta`: `cubeRootThreeDedekindZeta`, `...Residue`, 2 `example`s
+- **Type**: `dedekindZeta K s`; residue; examples: residue `> 0` and the **class-number formula** `= (2^r₁ (2π)^r₂ · Reg · h)/(w · √|disc|)`.
+- **What**: Dedekind zeta and its residue via the analytic class number formula, all invariants instantiated (`r₁=r₂=1`, `Reg`, `h=1`, `w=2`, `|disc|=243`).
+- **How**: `dedekindZeta_residue_pos`; the formula by `rfl`.
 - **Uses from project**: []
-- **Visibility**: public · **Lines**: 295-297
+- **Visibility**: public (abbrevs) / `example`
+- **Lines**: 381-397
 
-### `theorem house_cubeRootThree_pos`, `house_thetaInt_pos`
-- **Type**: `0 < NumberField.house cubeRootThree` (and via `thetaInt`).
-- **How**: `one_le_house_of_isIntegral` + `cubeRootThree_integral`.
-- **Uses from project**: [`cubeRootThree`, `cubeRootThree_integral`, `cubeRootThree_cube`, `thetaInt`, `house_cubeRootThree_pos`]
-- **Visibility**: public · **Lines**: 311-325
-
-### `abbrev CubeRootThreeAdeleRing`, `principalAdele_cubeRootThree`, `principalAdele_fundamentalUnit`
-- **Type**: `AdeleRing (𝓞 K) K` and principal adeles.
-- **Uses from project**: [`K`, `cubeRootThree`, `fundamentalUnit`]
-- **Visibility**: public · **Lines**: 340-347
-
-### `theorem principalAdele_cubeRootThree_ne_zero`
-- **Type**: `principalAdele_cubeRootThree ≠ 0`
-- **How**: `AdeleRing.algebraMap_injective` + `cubeRootThree_cube`.
-- **Uses from project**: [`principalAdele_cubeRootThree`, `cubeRootThree`, `cubeRootThree_cube`]
-- **Visibility**: public · **Lines**: 349-355
-
-### `theorem principalAdele_fundamentalUnit_is_unit_everywhere`
-- **Type**: `∀ v : FinitePlace K, v (algebraMap (𝓞 K) K fundamentalUnit) = 1`
-- **How**: unit ∉ each maximal ideal; `FinitePlace.norm_eq_one_iff_notMem`.
-- **Uses from project**: [`fundamentalUnit`]
-- **Visibility**: public · **Lines**: 357-367
-
-### `abbrev cubeRootThreeDedekindZeta`, `cubeRootThreeDedekindZetaResidue`
-- **Type**: `dedekindZeta K s` and its residue.
-- **Uses from project**: [`K`]
-- **Visibility**: public · **Lines**: 381-385
-- **Notes**: followed by 2 `example`s (residue positive; class-number formula `rfl`).
-
-**File Summary — LocalGlobal.lean**: ~25 abbrevs/defs + 7 theorems + many `example`s. Key API: `heightOneThree`, `fundamentalUnit`, `thetaInt`, `cubeRootThree`. No sorry, no set_option. No proof >30 lines. Mostly thin wrappers tying earlier results to mathlib's place/adele/zeta API; many `example`s serve as compile-checks rather than reusable lemmas.
+**File Summary (LocalGlobal.lean)**: ~30 decls (mostly `def`/`abbrev` place packaging, several `example` sanity checks, a handful of theorems). Ties the explicit primes into `HeightOneSpectrum`/`FinitePlace`, archimedean completions `ℝ` and `ℂ`, product formula, canonical & mixed embeddings, house, adeles, and the Dedekind-zeta class number formula. Imports Euclidean but does **not** use `normEuclidean`. No sorry, no set_option.
 
 ---
 
-## Cross-folder / Common.lean usage
+## Global notes
 
-PrimeSplitting and Units `import`/`open NumberField.FieldExamples` and use from **Common.lean**:
-- `torsionPowerHom`, `rankOnePowerHom` (Units)
-- `not_isUnramifiedAt_of_map_span_natCast_le_sq_of_not_le_pow_succ`, `not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow` (PrimeSplitting `ramified_iff_eq_three`)
-
-Common.lean lemmas NOT used by this folder but plausibly should be (smell): `eq_prime_of_dvd_prime_sq_of_ne_one_of_ne_sq`, `left_eq_prime_of_mul_eq_prime_sq_of_ne_one`, `exists_int_inverse_mod_prime`, `eq_of_le_of_absNorm_eq`, `natAbs_lt_of_abs_ratCast_lt`. This folder re-derives several of these patterns inline (see below).
+- **Two sorries total**, both isolated: `Units.fundamentalUnitSystem_isFundamental` (Artin-type unit-index / regulator-minimality bound) and `Euclidean.normEuclidean` (geometry-of-numbers covering argument). `regulator_eq` and `unit_eq_torsion_mul_fundamentalUnit_zpow` depend transitively on the first; `unitGroupStructure`, class number, discriminant, splitting, and all of LocalGlobal are sorry-free.
+- **Cubic-specific machinery**: the norm form `x³+3y³+9z³-9xyz` (`norm_eq_normForm`/`intNorm_eq_normForm`) underlies every norm computation; monogenicity proved by a `peel`-based index argument off `disc = -3⁵`.
+- **Non-Galois treatment**: `Aut(K/ℚ)` proved trivial (`aut_eq_id`); the `S₃` Galois closure is mathlib's `Polynomial.SplittingField` with group from `Polynomial.Gal.galActionHom_bijective_of_prime_degree`.
+- **Common.lean usage**: generic Kummer–Dedekind `isMaximal_span_gen_sub`/`absNorm_span_gen_sub`, ramification helpers `not_map_span_natCast_le_pow_succ_of_absNorm_span_eq_pow`/`not_isUnramifiedAt_of_...`, and unit homomorphisms `torsionPowerHom`/`rankOnePowerHom`.
