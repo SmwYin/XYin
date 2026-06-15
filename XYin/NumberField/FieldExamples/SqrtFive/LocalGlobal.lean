@@ -275,7 +275,56 @@ theorem house_goldenRoot_pos :
 theorem house_fundamentalUnit :
     NumberField.house (algebraMap (𝓞 K) K (fundamentalUnit : 𝓞 K)) =
       (1 + Real.sqrt 5) / 2 := by
-  sorry
+  change NumberField.house goldenRoot = (1 + Real.sqrt 5) / 2
+  have hrootvals : ∀ φ : K →+* ℂ,
+      φ goldenRoot = ((1 + Real.sqrt 5) / 2 : ℂ) ∨
+        φ goldenRoot = ((1 - Real.sqrt 5) / 2 : ℂ) := by
+    intro φ
+    have hsq : (φ goldenRoot) ^ 2 = φ goldenRoot + 1 := by
+      rw [← map_pow, goldenRoot_sq, map_add, map_one]
+    have h2 : (2 * φ goldenRoot - 1) ^ 2 = (5 : ℂ) := by
+      linear_combination 4 * hsq
+    have hsqrt : ((Real.sqrt 5 : ℂ) ^ 2) = (5 : ℂ) := by
+      rw [sq, ← Complex.ofReal_mul, Real.mul_self_sqrt]
+      · norm_num
+      · norm_num
+    have h2' : (2 * φ goldenRoot - 1) ^ 2 = (Real.sqrt 5 : ℂ) ^ 2 := by
+      rw [h2, hsqrt]
+    rcases sq_eq_sq_iff_eq_or_eq_neg.mp h2' with h | h
+    · left
+      ring_nf at h ⊢
+      linear_combination (1 / 2 : ℂ) * h
+    · right
+      ring_nf at h ⊢
+      linear_combination (1 / 2 : ℂ) * h
+  have hconj_le : ‖(1 - (Real.sqrt 5 : ℂ)) / 2‖ ≤ (1 + Real.sqrt 5) / 2 := by
+    rw [show (1 - (Real.sqrt 5 : ℂ)) / 2 =
+        (((1 - Real.sqrt 5) / 2 : ℝ) : ℂ) by norm_num]
+    rw [Complex.norm_real, Real.norm_eq_abs]
+    rw [abs_le]
+    constructor <;> nlinarith [Real.sqrt_nonneg (5 : ℝ)]
+  apply le_antisymm
+  · rw [NumberField.house, NumberField.canonicalEmbedding.norm_le_iff]
+    intro φ
+    rcases hrootvals φ with hφ | hφ
+    · rw [hφ]
+      rw [show (1 + (Real.sqrt 5 : ℂ)) / 2 =
+          (((1 + Real.sqrt 5) / 2 : ℝ) : ℂ) by norm_num]
+      rw [Complex.norm_of_nonneg]
+      positivity
+    · rw [hφ]
+      exact hconj_le
+  · rw [NumberField.house]
+    obtain ⟨σ, hσ⟩ := exists_realEmbedding_goldenRatio
+    let φ : K →+* ℂ := Complex.ofRealHom.comp σ.toRingHom
+    calc
+      (1 + Real.sqrt 5) / 2 = ‖φ goldenRoot‖ := by
+        change (1 + Real.sqrt 5) / 2 = ‖((σ goldenRoot : ℝ) : ℂ)‖
+        rw [hσ, Complex.norm_of_nonneg]
+        positivity
+      _ = ‖NumberField.canonicalEmbedding K goldenRoot φ‖ := by
+        rw [NumberField.canonicalEmbedding.apply_at]
+      _ ≤ ‖NumberField.canonicalEmbedding K goldenRoot‖ := norm_le_pi_norm _ φ
 
 end NumberField.SqrtFive
 

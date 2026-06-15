@@ -5,6 +5,7 @@ Authors: SmwYin
 -/
 import XYin.NumberField.FieldExamples.SqrtNegSix.Discriminant
 import XYin.NumberField.FieldExamples.Common
+import Mathlib.Algebra.Polynomial.SpecificDegree
 
 /-!
 # `ℚ(√-6)` PrimeSplitting
@@ -1290,6 +1291,92 @@ namespace NumberField.SqrtNegSix
 abbrev sqrtNegSixPolynomialMod (p : ℕ) : (ZMod p)[X] :=
   X ^ 2 + C (6 : ZMod p)
 
+private theorem sqrtNegSixPolynomialMod_isRoot_iff (p : ℕ) (t : ZMod p) :
+    (sqrtNegSixPolynomialMod p).IsRoot t ↔ t ^ 2 = ((-6 : ℤ) : ZMod p) := by
+  rw [Polynomial.IsRoot.def]
+  simp only [sqrtNegSixPolynomialMod, eval_add, eval_pow, eval_X, eval_C]
+  constructor
+  · intro h
+    linear_combination h
+  · intro h
+    linear_combination h
+
+private theorem sqrtNegSixPolynomialMod_natDegree (p : ℕ) [Fact p.Prime] :
+    (sqrtNegSixPolynomialMod p).natDegree = 2 := by
+  simp [sqrtNegSixPolynomialMod, mul_comm]
+
+private theorem sqrtNegSixPolynomialMod_roots_eq_zero_iff_no_root (p : ℕ) [Fact p.Prime] :
+    (sqrtNegSixPolynomialMod p).roots = 0 ↔
+      ¬ ∃ t : ZMod p, t ^ 2 = ((-6 : ℤ) : ZMod p) := by
+  have hdeg2 : 2 ≤ (sqrtNegSixPolynomialMod p).natDegree := by
+    rw [sqrtNegSixPolynomialMod_natDegree]
+  have hp0 : sqrtNegSixPolynomialMod p ≠ 0 := by
+    intro hzero
+    rw [hzero, natDegree_zero] at hdeg2
+    omega
+  constructor
+  · intro hroots
+    rintro ⟨t, ht⟩
+    have htroot : (sqrtNegSixPolynomialMod p).IsRoot t :=
+      (sqrtNegSixPolynomialMod_isRoot_iff p t).mpr ht
+    have htmem : t ∈ (sqrtNegSixPolynomialMod p).roots := (Polynomial.mem_roots hp0).mpr htroot
+    simp [hroots] at htmem
+  · intro hnoroot
+    rw [Multiset.eq_zero_iff_forall_notMem]
+    intro t htmem
+    apply hnoroot
+    refine ⟨t, ?_⟩
+    exact (sqrtNegSixPolynomialMod_isRoot_iff p t).mp ((Polynomial.mem_roots hp0).mp htmem)
+
+private theorem sqrtNegSixPolynomialMod_no_root_iff_inert_mod_twentyfour
+    (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
+    (¬ ∃ t : ZMod p, t ^ 2 = ((-6 : ℤ) : ZMod p)) ↔
+      p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23 := by
+  have hcases : p % 24 = 1 ∨ p % 24 = 5 ∨ p % 24 = 7 ∨ p % 24 = 11 ∨
+      p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23 := by
+    have hpmod2 : p % 2 ≠ 0 := by
+      intro h0
+      exact hp2 (((Nat.prime_dvd_prime_iff_eq (by norm_num) hp).mp
+        (Nat.dvd_of_mod_eq_zero h0)).symm)
+    have hpmod3 : p % 3 ≠ 0 := by
+      intro h0
+      exact hp3 (((Nat.prime_dvd_prime_iff_eq (by norm_num) hp).mp
+        (Nat.dvd_of_mod_eq_zero h0)).symm)
+    omega
+  have hroot_of_square : IsSquare (((-6 : ℤ) : ZMod p)) →
+      ∃ t : ZMod p, t ^ 2 = ((-6 : ℤ) : ZMod p) := by
+    rintro ⟨t, ht⟩
+    refine ⟨t, ?_⟩
+    simpa [sq] using ht.symm
+  constructor
+  · intro hnoroot
+    have hnotSquare : ¬ IsSquare (((-6 : ℤ) : ZMod p)) := by
+      intro hs
+      exact hnoroot (hroot_of_square hs)
+    rcases hcases with h | h | h | h | h | h | h | h
+    · exfalso
+      exact hnotSquare ((isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mpr (Or.inl h))
+    · exfalso
+      exact hnotSquare ((isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mpr
+        (Or.inr (Or.inl h)))
+    · exfalso
+      exact hnotSquare ((isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mpr
+        (Or.inr (Or.inr (Or.inl h))))
+    · exfalso
+      exact hnotSquare ((isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mpr
+        (Or.inr (Or.inr (Or.inr h))))
+    · exact Or.inl h
+    · exact Or.inr (Or.inl h)
+    · exact Or.inr (Or.inr (Or.inl h))
+    · exact Or.inr (Or.inr (Or.inr h))
+  · intro hmod
+    rintro ⟨t, ht⟩
+    have hsquare : IsSquare (((-6 : ℤ) : ZMod p)) := by
+      refine ⟨t, ?_⟩
+      simpa [sq] using ht.symm
+    have hsplit := (isSquare_neg_six_iff_mod_twentyfour p hp hp2 hp3).mp hsquare
+    rcases hmod with h | h | h | h <;> rcases hsplit with h' | h' | h' | h' <;> omega
+
 theorem kummerDedekind_splits_iff_mod_twentyfour
     (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
     (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
@@ -1301,7 +1388,15 @@ theorem kummerDedekind_inert_iff_mod_twentyfour
     (p : ℕ) (hp : p.Prime) (hp2 : p ≠ 2) (hp3 : p ≠ 3) :
     Irreducible (sqrtNegSixPolynomialMod p) ↔
       p % 24 = 13 ∨ p % 24 = 17 ∨ p % 24 = 19 ∨ p % 24 = 23 := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hdeg2 : 2 ≤ (sqrtNegSixPolynomialMod p).natDegree := by
+    rw [sqrtNegSixPolynomialMod_natDegree]
+  have hdeg3 : (sqrtNegSixPolynomialMod p).natDegree ≤ 3 := by
+    rw [sqrtNegSixPolynomialMod_natDegree]
+    norm_num
+  rw [Polynomial.irreducible_iff_roots_eq_zero_of_degree_le_three hdeg2 hdeg3,
+    sqrtNegSixPolynomialMod_roots_eq_zero_iff_no_root p,
+    sqrtNegSixPolynomialMod_no_root_iff_inert_mod_twentyfour p hp hp2 hp3]
 
 theorem kummerDedekind_ramified_iff_two_or_three (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔
@@ -1341,6 +1436,73 @@ theorem absNorm_differentIdeal_eq_twentyFour :
 theorem prime_dvd_differentIdeal_iff_eq_ramifiedPrime
     (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
     P ∣ differentIdeal ℤ (𝓞 K) ↔ P = primeAboveTwo ∨ P = primeAboveThree := by
-  sorry
+  constructor
+  · intro hdiv
+    haveI : P.IsPrime := _hP
+    haveI : NeZero P := ⟨_hP0⟩
+    have hnormdvd : Ideal.absNorm P ∣ 24 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hdiv)
+      rw [absNorm_differentIdeal_eq_twentyFour] at h
+      exact h
+    have hqprime : (Ideal.absNorm (Ideal.under ℤ P)).Prime := Nat.absNorm_under_prime P
+    have hq_dvd_abs : Ideal.absNorm (Ideal.under ℤ P) ∣ Ideal.absNorm P :=
+      Int.absNorm_under_dvd_absNorm P
+    have hq_dvd_24 : Ideal.absNorm (Ideal.under ℤ P) ∣ 24 := hq_dvd_abs.trans hnormdvd
+    have hqmem : ((Ideal.absNorm (Ideal.under ℤ P) : ℕ) : 𝓞 K) ∈ P := by
+      simpa using Int.absNorm_under_mem P
+    rcases eq_two_or_eq_three_of_prime_dvd_twentyfour hqprime hq_dvd_24 with hq2 | hq3
+    · left
+      have h2mem : (2 : 𝓞 K) ∈ P := by
+        simpa [hq2] using hqmem
+      have hspanle : Ideal.span {(2 : 𝓞 K)} ≤ P :=
+        (Ideal.span_singleton_le_iff_mem _).mpr h2mem
+      have hpowle : primeAboveTwo ^ 2 ≤ P := by
+        simpa [span_two_eq] using hspanle
+      have hle : primeAboveTwo ≤ P :=
+        Ideal.IsPrime.le_of_pow_le (I := primeAboveTwo) (P := P) hpowle
+      have hbot : primeAboveTwo ≠ ⊥ := by
+        intro h
+        have hnorm := absNorm_primeAboveTwo
+        rw [h, Ideal.absNorm_bot] at hnorm
+        norm_num at hnorm
+      exact ((Ideal.IsPrime.isMaximal isPrime_primeAboveTwo hbot).eq_of_le _hP.ne_top hle).symm
+    · right
+      have h3mem : (3 : 𝓞 K) ∈ P := by
+        simpa [hq3] using hqmem
+      have hspanle : Ideal.span {(3 : 𝓞 K)} ≤ P :=
+        (Ideal.span_singleton_le_iff_mem _).mpr h3mem
+      have hpowle : primeAboveThree ^ 2 ≤ P := by
+        simpa [span_three_eq] using hspanle
+      have hle : primeAboveThree ≤ P :=
+        Ideal.IsPrime.le_of_pow_le (I := primeAboveThree) (P := P) hpowle
+      have hbot : primeAboveThree ≠ ⊥ := by
+        intro h
+        have hnorm := absNorm_primeAboveThree
+        rw [h, Ideal.absNorm_bot] at hnorm
+        norm_num at hnorm
+      exact ((Ideal.IsPrime.isMaximal isPrime_primeAboveThree hbot).eq_of_le _hP.ne_top hle).symm
+  · rintro (rfl | rfl)
+    · haveI : primeAboveTwo.IsPrime := isPrime_primeAboveTwo
+      rw [dvd_differentIdeal_iff]
+      have hbot : primeAboveTwo ≠ ⊥ := by
+        intro h
+        have hnorm := absNorm_primeAboveTwo
+        rw [h, Ideal.absNorm_bot] at hnorm
+        norm_num at hnorm
+      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hbot]
+      rw [← liesOver_primeAboveTwo.over]
+      rw [ramificationIdx_primeAboveTwo]
+      norm_num
+    · haveI : primeAboveThree.IsPrime := isPrime_primeAboveThree
+      rw [dvd_differentIdeal_iff]
+      have hbot : primeAboveThree ≠ ⊥ := by
+        intro h
+        have hnorm := absNorm_primeAboveThree
+        rw [h, Ideal.absNorm_bot] at hnorm
+        norm_num at hnorm
+      rw [Algebra.isUnramifiedAt_iff_of_isDedekindDomain hbot]
+      rw [← liesOver_primeAboveThree.over]
+      rw [ramificationIdx_primeAboveThree]
+      norm_num
 
 end NumberField.SqrtNegSix

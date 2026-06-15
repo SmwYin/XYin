@@ -5,6 +5,7 @@ Authors: SmwYin
 -/
 import XYin.NumberField.FieldExamples.CyclotomicFive.Discriminant
 import XYin.NumberField.FieldExamples.Common
+import Mathlib.RingTheory.Polynomial.Cyclotomic.Factorization
 
 /-!
 # `ℚ(ζ₅)` PrimeSplitting
@@ -1184,6 +1185,108 @@ namespace NumberField.CyclotomicFive
 abbrev zetaFivePolynomialMod (p : ℕ) : (ZMod p)[X] :=
   X ^ 4 + X ^ 3 + X ^ 2 + X + C (1 : ZMod p)
 
+private theorem orderOf_unitOfCoprime_five_eq_four_iff
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) (hcop : p.Coprime 5) :
+    orderOf (ZMod.unitOfCoprime p hcop) = 4 ↔ p % 5 = 2 ∨ p % 5 = 3 := by
+  have hcases : p % 5 = 0 ∨ p % 5 = 1 ∨ p % 5 = 2 ∨ p % 5 = 3 ∨ p % 5 = 4 := by
+    omega
+  have hne0 : p % 5 ≠ 0 := by
+    intro h0
+    exact hp5 (((Nat.prime_dvd_prime_iff_eq (by norm_num : Nat.Prime 5) hp).mp
+      (Nat.dvd_of_mod_eq_zero h0)).symm)
+  rcases hcases with h0 | h1 | h2 | h3 | h4
+  · exact absurd h0 hne0
+  · constructor
+    · intro h
+      exfalso
+      have hu : ZMod.unitOfCoprime p hcop = 1 := by
+        ext
+        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 1 by
+          rw [← ZMod.natCast_mod p 5, h1]
+          norm_num]
+      rw [hu, orderOf_one] at h
+      norm_num at h
+    · intro h
+      omega
+  · constructor
+    · intro _
+      exact Or.inl h2
+    · intro _
+      have hu : ZMod.unitOfCoprime p hcop =
+          ZMod.unitOfCoprime 2 (by decide : Nat.Coprime 2 5) := by
+        ext
+        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 2 by
+          rw [← ZMod.natCast_mod p 5, h2]
+          norm_num]
+      rw [hu]
+      rw [orderOf_eq_iff (by norm_num : 0 < 4)]
+      constructor
+      · ext
+        decide
+      · intro m hm hm0 hpow
+        interval_cases m
+        · have hc := congrArg Units.val hpow
+          norm_num [ZMod.coe_unitOfCoprime] at hc
+          exact (by decide : ¬ ((2 : ZMod 5) = 1)) hc
+        · have hc := congrArg Units.val hpow
+          norm_num [ZMod.coe_unitOfCoprime] at hc
+          exact (by decide : ¬ ((4 : ZMod 5) = 1)) hc
+        · have hc := congrArg Units.val hpow
+          norm_num [ZMod.coe_unitOfCoprime] at hc
+          exact (by decide : ¬ ((8 : ZMod 5) = 1)) hc
+  · constructor
+    · intro _
+      exact Or.inr h3
+    · intro _
+      have hu : ZMod.unitOfCoprime p hcop =
+          ZMod.unitOfCoprime 3 (by decide : Nat.Coprime 3 5) := by
+        ext
+        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 3 by
+          rw [← ZMod.natCast_mod p 5, h3]
+          norm_num]
+      rw [hu]
+      rw [orderOf_eq_iff (by norm_num : 0 < 4)]
+      constructor
+      · ext
+        decide
+      · intro m hm hm0 hpow
+        interval_cases m
+        · have hc := congrArg Units.val hpow
+          norm_num [ZMod.coe_unitOfCoprime] at hc
+          exact (by decide : ¬ ((3 : ZMod 5) = 1)) hc
+        · have hc := congrArg Units.val hpow
+          norm_num [ZMod.coe_unitOfCoprime] at hc
+          exact (by decide : ¬ ((9 : ZMod 5) = 1)) hc
+        · have hc := congrArg Units.val hpow
+          norm_num [ZMod.coe_unitOfCoprime] at hc
+          exact (by decide : ¬ ((27 : ZMod 5) = 1)) hc
+  · constructor
+    · intro h
+      exfalso
+      have hu : ZMod.unitOfCoprime p hcop =
+          ZMod.unitOfCoprime 4 (by decide : Nat.Coprime 4 5) := by
+        ext
+        simp [ZMod.coe_unitOfCoprime, show ((p : ℕ) : ZMod 5) = 4 by
+          rw [← ZMod.natCast_mod p 5, h4]
+          norm_num]
+      rw [hu] at h
+      have hpow : (ZMod.unitOfCoprime 4 (by decide : Nat.Coprime 4 5)) ^ 2 = 1 := by
+        ext
+        decide
+      have hdvd : orderOf (ZMod.unitOfCoprime 4 (by decide : Nat.Coprime 4 5)) ∣ 2 :=
+        orderOf_dvd_iff_pow_eq_one.mpr hpow
+      rw [h] at hdvd
+      norm_num at hdvd
+    · intro h
+      omega
+
+private theorem zetaFivePolynomialMod_eq_cyclotomic (p : ℕ) :
+    zetaFivePolynomialMod p = Polynomial.cyclotomic 5 (ZMod p) := by
+  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  rw [zetaFivePolynomialMod, Polynomial.cyclotomic_prime]
+  norm_num [Finset.sum_range_succ]
+  ring
+
 theorem kummerDedekind_splitsCompletely_iff_one_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ∧
@@ -1200,7 +1303,32 @@ theorem kummerDedekind_two_quadratic_primes_iff_four_mod_five
 theorem kummerDedekind_inert_iff_two_or_three_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     Irreducible (zetaFivePolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3 := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hnotdvd : ¬ p ∣ 5 := by
+    intro hpdvd
+    exact hp5 ((Nat.prime_dvd_prime_iff_eq hp (by norm_num : Nat.Prime 5)).mp hpdvd)
+  have hcop : p.Coprime 5 := hp.coprime_iff_not_dvd.mpr hnotdvd
+  have hpoly : zetaFivePolynomialMod p = Polynomial.cyclotomic 5 (ZMod p) :=
+    zetaFivePolynomialMod_eq_cyclotomic p
+  have hdiv : zetaFivePolynomialMod p ∣ Polynomial.cyclotomic 5 (ZMod p) := by
+    rw [← hpoly]
+  have hdeg : (zetaFivePolynomialMod p).natDegree = 4 := by
+    rw [zetaFivePolynomialMod]
+    compute_degree!
+  constructor
+  · intro hirr
+    have hdeg_order := Polynomial.natDegree_of_dvd_cyclotomic_of_irreducible
+      (K := ZMod p) (p := p) (f := 1) (n := 5) (P := zetaFivePolynomialMod p)
+      (by simp) hcop hdiv hirr
+    have horder : orderOf (ZMod.unitOfCoprime p hcop) = 4 := by
+      rw [hdeg] at hdeg_order
+      simpa [pow_one] using hdeg_order.symm
+    exact (orderOf_unitOfCoprime_five_eq_four_iff p hp hp5 hcop).mp horder
+  · intro hmod
+    have horder : orderOf (ZMod.unitOfCoprime p hcop) = 4 :=
+      (orderOf_unitOfCoprime_five_eq_four_iff p hp hp5 hcop).mpr hmod
+    exact ZMod.irreducible_of_dvd_cyclotomic_of_natDegree (p := p) (n := 5)
+      (P := zetaFivePolynomialMod p) hnotdvd hdiv (by rw [hdeg, horder])
 
 theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
@@ -1241,6 +1369,47 @@ theorem absNorm_differentIdeal_eq_oneHundredTwentyFive :
 theorem prime_dvd_differentIdeal_iff_eq_span_one_sub_zeta
     (P : Ideal (𝓞 K)) (_hP : P.IsPrime) (_hP0 : P ≠ ⊥) :
     P ∣ differentIdeal ℤ (𝓞 K) ↔ P = Ideal.span {1 - zetaInt} := by
-  sorry
+  constructor
+  · intro hdiv
+    haveI : P.IsPrime := _hP
+    have hnormdvd : Ideal.absNorm P ∣ 125 := by
+      have h := Ideal.absNorm_dvd_absNorm_of_le (Ideal.le_of_dvd hdiv)
+      rw [absNorm_differentIdeal_eq_oneHundredTwentyFive] at h
+      exact h
+    rw [show (125 : ℕ) = 5 ^ 3 by norm_num] at hnormdvd
+    obtain ⟨k, _hk, hkeq⟩ := (Nat.dvd_prime_pow (by norm_num : Nat.Prime 5)).mp hnormdvd
+    have hmem_norm := Ideal.absNorm_mem P
+    rw [hkeq] at hmem_norm
+    have hpow_mem : (5 : 𝓞 K) ^ k ∈ P := by
+      simpa [Nat.cast_pow] using hmem_norm
+    have h5mem : (5 : 𝓞 K) ∈ P := _hP.mem_of_pow_mem k hpow_mem
+    have hle : Ideal.span {(5 : 𝓞 K)} ≤ P := (Ideal.span_singleton_le_iff_mem _).mpr h5mem
+    have h4 : (1 - zetaInt) ^ 4 ∈ P := by
+      apply hle
+      rw [span_five_eq, Ideal.span_singleton_pow]
+      exact Ideal.mem_span_singleton_self _
+    have h1 : 1 - zetaInt ∈ P := _hP.mem_of_pow_mem 4 h4
+    have hbot : Ideal.span {1 - zetaInt} ≠ ⊥ := by
+      intro h
+      have hnorm := absNorm_span_one_sub_zeta
+      rw [h, Ideal.absNorm_bot] at hnorm
+      norm_num at hnorm
+    have hmax : (Ideal.span {1 - zetaInt}).IsMaximal :=
+      isPrime_span_one_sub_zeta.isMaximal hbot
+    exact (hmax.eq_of_le _hP.ne_top ((Ideal.span_singleton_le_iff_mem _).mpr h1)).symm
+  · intro h
+    rw [h]
+    have hpow : Ideal.span {1 - zetaInt} ^ (4 - 1) ∣ differentIdeal ℤ (𝓞 K) := by
+      haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+      haveI : (Ideal.span {(5 : ℤ)}).IsMaximal := Int.ideal_span_isMaximal_of_prime 5
+      refine pow_sub_one_dvd_differentIdeal (A := ℤ) (B := 𝓞 K)
+        (p := Ideal.span {(5 : ℤ)}) (P := Ideal.span {1 - zetaInt}) 4 ?_ ?_
+      · intro hbot
+        have hzero : (5 : ℤ) = 0 := Ideal.span_singleton_eq_bot.mp hbot
+        norm_num at hzero
+      · rw [Ideal.map_span, Set.image_singleton]
+        change Ideal.span {1 - zetaInt} ^ 4 ∣ Ideal.span {(5 : 𝓞 K)}
+        rw [span_five_eq]
+    exact (dvd_pow_self (Ideal.span {1 - zetaInt}) (by norm_num : 4 - 1 ≠ 0)).trans hpow
 
 end NumberField.CyclotomicFive

@@ -3,6 +3,7 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
+import Mathlib.Algebra.Polynomial.SpecificDegree
 import XYin.NumberField.FieldExamples.SqrtFive.Discriminant
 import XYin.NumberField.FieldExamples.Common
 
@@ -991,6 +992,89 @@ namespace NumberField.SqrtFive
 abbrev goldenPolynomialMod (p : ℕ) : (ZMod p)[X] :=
   X ^ 2 - X - C (1 : ZMod p)
 
+private theorem goldenPolynomialMod_isRoot_iff (p : ℕ) (t : ZMod p) :
+    (goldenPolynomialMod p).IsRoot t ↔ t ^ 2 = t + 1 := by
+  rw [Polynomial.IsRoot.def]
+  simp only [goldenPolynomialMod, eval_sub, eval_pow, eval_X, map_one, eval_one]
+  constructor
+  · intro h
+    linear_combination h
+  · intro h
+    linear_combination h
+
+private theorem goldenPolynomialMod_natDegree (p : ℕ) [Fact p.Prime] :
+    (goldenPolynomialMod p).natDegree = 2 := by
+  simpa [goldenPolynomialMod, mul_comm] using
+    (Polynomial.natDegree_quadratic (a := (1 : ZMod p)) (b := (-1 : ZMod p))
+      (c := (-1 : ZMod p)) (by norm_num : (1 : ZMod p) ≠ 0))
+
+private theorem goldenPolynomialMod_roots_eq_zero_iff_no_root (p : ℕ) [Fact p.Prime] :
+    (goldenPolynomialMod p).roots = 0 ↔ ¬ ∃ t : ZMod p, t ^ 2 = t + 1 := by
+  have hdeg2 : 2 ≤ (goldenPolynomialMod p).natDegree := by
+    rw [goldenPolynomialMod_natDegree]
+  have hp0 : goldenPolynomialMod p ≠ 0 := by
+    intro hzero
+    rw [hzero, natDegree_zero] at hdeg2
+    omega
+  constructor
+  · intro hroots
+    rintro ⟨t, ht⟩
+    have htroot : (goldenPolynomialMod p).IsRoot t :=
+      (goldenPolynomialMod_isRoot_iff p t).mpr ht
+    have htmem : t ∈ (goldenPolynomialMod p).roots := (Polynomial.mem_roots hp0).mpr htroot
+    simp [hroots] at htmem
+  · intro hnoroot
+    rw [Multiset.eq_zero_iff_forall_notMem]
+    intro t htmem
+    apply hnoroot
+    refine ⟨t, ?_⟩
+    exact (goldenPolynomialMod_isRoot_iff p t).mp ((Polynomial.mem_roots hp0).mp htmem)
+
+private theorem goldenPolynomialMod_no_root_iff_two_or_three_mod_five
+    (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
+    (¬ ∃ t : ZMod p, t ^ 2 = t + 1) ↔ p % 5 = 2 ∨ p % 5 = 3 := by
+  have hnsq2 : ¬ IsSquare ((2 : ℕ) : ZMod 5) := by decide
+  have hnsq3 : ¬ IsSquare ((3 : ℕ) : ZMod 5) := by decide
+  constructor
+  · intro hnoroot
+    have hne0 : p % 5 ≠ 0 := by
+      intro h0
+      exact hp5 (((Nat.prime_dvd_prime_iff_eq (by norm_num) hp).mp
+        (Nat.dvd_of_mod_eq_zero h0)).symm)
+    have hcases : p % 5 = 0 ∨ p % 5 = 1 ∨ p % 5 = 2 ∨ p % 5 = 3 ∨ p % 5 = 4 := by
+      omega
+    rcases hcases with h | h | h | h | h
+    · exact absurd h hne0
+    · exfalso
+      exact hnoroot (exists_golden_root_of_pm_one_mod_five p hp (Or.inl h))
+    · exact Or.inl h
+    · exact Or.inr h
+    · exfalso
+      exact hnoroot (exists_golden_root_of_pm_one_mod_five p hp (Or.inr h))
+  · intro hmod
+    rintro ⟨t, ht2⟩
+    by_cases hp2 : p = 2
+    · subst p
+      revert t
+      decide
+    · have hsq5 : IsSquare ((5 : ℕ) : ZMod p) := by
+        refine ⟨2 * t - 1, ?_⟩
+        push_cast
+        linear_combination -4 * ht2
+      haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+      haveI : Fact (Nat.Prime p) := ⟨hp⟩
+      have hsqp : IsSquare ((p : ℕ) : ZMod 5) :=
+        (ZMod.exists_sq_eq_prime_iff_of_mod_four_eq_one (p := 5) (q := p)
+          (by norm_num) hp2).mpr hsq5
+      have hcast : ((p : ℕ) : ZMod 5) = ((p % 5 : ℕ) : ZMod 5) :=
+        (ZMod.natCast_mod p 5).symm
+      rw [hcast] at hsqp
+      rcases hmod with h | h
+      · rw [h] at hsqp
+        exact hnsq2 hsqp
+      · rw [h] at hsqp
+        exact hnsq3 hsqp
+
 theorem kummerDedekind_splits_iff_pm_one_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     (∃ P Q : Ideal (𝓞 K), P.IsPrime ∧ Q.IsPrime ∧ P ≠ Q ∧
@@ -1000,7 +1084,15 @@ theorem kummerDedekind_splits_iff_pm_one_mod_five
 theorem kummerDedekind_inert_iff_two_or_three_mod_five
     (p : ℕ) (hp : p.Prime) (hp5 : p ≠ 5) :
     Irreducible (goldenPolynomialMod p) ↔ p % 5 = 2 ∨ p % 5 = 3 := by
-  sorry
+  haveI : Fact p.Prime := ⟨hp⟩
+  have hdeg2 : 2 ≤ (goldenPolynomialMod p).natDegree := by
+    rw [goldenPolynomialMod_natDegree]
+  have hdeg3 : (goldenPolynomialMod p).natDegree ≤ 3 := by
+    rw [goldenPolynomialMod_natDegree]
+    norm_num
+  rw [Polynomial.irreducible_iff_roots_eq_zero_of_degree_le_three hdeg2 hdeg3,
+    goldenPolynomialMod_roots_eq_zero_iff_no_root p,
+    goldenPolynomialMod_no_root_iff_two_or_three_mod_five p hp hp5]
 
 theorem kummerDedekind_ramified_iff_eq_five (p : ℕ) (hp : p.Prime) :
     (∃ P : Ideal (𝓞 K), P.IsPrime ∧ Ideal.span {(p : 𝓞 K)} ≤ P ^ 2) ↔ p = 5 := by
