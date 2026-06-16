@@ -3,9 +3,9 @@ Copyright (c) 2026 SmwYin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SmwYin
 -/
-import XYin.NumberField.FieldExamples.CyclotomicFive.Discriminant
-import XYin.NumberField.FieldExamples.Common
 import Mathlib.RingTheory.Polynomial.Cyclotomic.Factorization
+import XYin.NumberField.FieldExamples.Common
+import XYin.NumberField.FieldExamples.CyclotomicFive.Discriminant
 
 /-!
 # `ℚ(ζ₅)` PrimeSplitting
@@ -19,10 +19,6 @@ ClassGroup → Units → Euclidean → LocalGlobal`, with a few field-specific s
 kept separate.
 -/
 
-/-!
-## Prime Splitting
--/
-
 noncomputable section
 
 open Module Polynomial
@@ -32,96 +28,51 @@ open scoped NumberField nonZeroDivisors
 namespace NumberField.CyclotomicFive
 section PrivateMachinery
 
-private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt := by
-  rw [zeta_isPrimitiveRoot.integralPowerBasis_gen]; rfl
+private theorem gen_eq_zetaInt : zeta_isPrimitiveRoot.integralPowerBasis.gen = zetaInt :=
+  zeta_isPrimitiveRoot.integralPowerBasis_gen
 
-/-- Private forward copy of `sigmaTwo` (the public definition appears in section 9). -/
-private noncomputable def sig2 : K ≃ₐ[ℚ] K :=
-  IsCyclotomicExtension.fromZetaAut (zeta_isPrimitiveRoot.pow_of_coprime 2 (by norm_num))
-    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
-
-private noncomputable def sig3 : K ≃ₐ[ℚ] K :=
-  IsCyclotomicExtension.fromZetaAut (zeta_isPrimitiveRoot.pow_of_coprime 3 (by norm_num))
-    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
-
-private noncomputable def sig4 : K ≃ₐ[ℚ] K :=
-  IsCyclotomicExtension.fromZetaAut (zeta_isPrimitiveRoot.pow_of_coprime 4 (by norm_num))
-    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
-
-private theorem sig2_zeta : sig2 ζ = ζ ^ 2 :=
-  IsCyclotomicExtension.fromZetaAut_spec (zeta_isPrimitiveRoot.pow_of_coprime 2 (by norm_num))
-    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
-
-private theorem sig3_zeta : sig3 ζ = ζ ^ 3 :=
-  IsCyclotomicExtension.fromZetaAut_spec (zeta_isPrimitiveRoot.pow_of_coprime 3 (by norm_num))
-    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
-
-private theorem sig4_zeta : sig4 ζ = ζ ^ 4 :=
-  IsCyclotomicExtension.fromZetaAut_spec (zeta_isPrimitiveRoot.pow_of_coprime 4 (by norm_num))
-    (Polynomial.cyclotomic.irreducible_rat (by norm_num))
-
-private theorem autEq' (σ : K ≃ₐ[ℚ] K) : σ = 1 ∨ σ = sig2 ∨ σ = sig3 ∨ σ = sig4 := by
-  have hval : ∀ t : (ZMod 5)ˣ, (t : ZMod 5).val = 1 ∨ (t : ZMod 5).val = 2 ∨
-      (t : ZMod 5).val = 3 ∨ (t : ZMod 5).val = 4 := by decide
-  have hspec := IsPrimitiveRoot.autToPow_spec ℚ zeta_isPrimitiveRoot σ
-  have hext : ∀ τ : K ≃ₐ[ℚ] K, σ ζ = τ ζ → σ = τ := by
-    intro τ h
-    have hgen := (zeta_isPrimitiveRoot.powerBasis ℚ).algHom_ext
-      (f := (σ : K →ₐ[ℚ] K)) (g := (τ : K →ₐ[ℚ] K))
-      (by rwa [IsPrimitiveRoot.powerBasis_gen])
-    exact AlgEquiv.ext fun x => AlgHom.congr_fun hgen x
-  rcases hval (IsPrimitiveRoot.autToPow ℚ zeta_isPrimitiveRoot σ) with h | h | h | h <;>
-    rw [h] at hspec
-  · exact Or.inl (hext 1 (by rw [← hspec, pow_one]; rfl))
-  · exact Or.inr (Or.inl (hext sig2 (by rw [← hspec, sig2_zeta])))
-  · exact Or.inr (Or.inr (Or.inl (hext sig3 (by rw [← hspec, sig3_zeta]))))
-  · exact Or.inr (Or.inr (Or.inr (hext sig4 (by rw [← hspec, sig4_zeta]))))
+private theorem autEq' (σ : K ≃ₐ[ℚ] K) : σ = 1 ∨ σ = sigmaTwo ∨ σ = sigmaThree ∨ σ = sigmaFour :=
+  aut_eq σ
 
 /-- The product of the four Galois conjugates computes the field norm. -/
 private theorem prod_aut_apply (x : K) :
-    ∏ σ : K ≃ₐ[ℚ] K, σ x = x * sig2 x * sig3 x * sig4 x := by
+    ∏ σ : K ≃ₐ[ℚ] K, σ x = x * sigmaTwo x * sigmaThree x * sigmaFour x := by
   classical
   have hne : ∀ (i j : ℕ) (σ τ : K ≃ₐ[ℚ] K), i < 5 → j < 5 → i ≠ j →
       σ ζ = ζ ^ i → τ ζ = ζ ^ j → σ ≠ τ := fun i j σ τ hi hj hij hσ hτ hστ =>
     hij (zeta_isPrimitiveRoot.pow_inj hi hj (by rw [← hσ, ← hτ, hστ]))
   have hid : (1 : K ≃ₐ[ℚ] K) ζ = ζ ^ 1 := by rw [pow_one]; rfl
-  have h1 : (1 : K ≃ₐ[ℚ] K) ≠ sig2 :=
-    hne 1 2 _ _ (by norm_num) (by norm_num) (by norm_num) hid sig2_zeta
-  have h2 : (1 : K ≃ₐ[ℚ] K) ≠ sig3 :=
-    hne 1 3 _ _ (by norm_num) (by norm_num) (by norm_num) hid sig3_zeta
-  have h3 : (1 : K ≃ₐ[ℚ] K) ≠ sig4 :=
-    hne 1 4 _ _ (by norm_num) (by norm_num) (by norm_num) hid sig4_zeta
-  have h4 : sig2 ≠ sig3 := hne 2 3 _ _ (by norm_num) (by norm_num) (by norm_num)
-    sig2_zeta sig3_zeta
-  have h5 : sig2 ≠ sig4 := hne 2 4 _ _ (by norm_num) (by norm_num) (by norm_num)
-    sig2_zeta sig4_zeta
-  have h6 : sig3 ≠ sig4 := hne 3 4 _ _ (by norm_num) (by norm_num) (by norm_num)
-    sig3_zeta sig4_zeta
-  have huniv : (Finset.univ : Finset (K ≃ₐ[ℚ] K)) = {1, sig2, sig3, sig4} := by
+  have h1 : (1 : K ≃ₐ[ℚ] K) ≠ sigmaTwo :=
+    hne 1 2 _ _ (by norm_num) (by norm_num) (by norm_num) hid sigmaTwo_apply_zeta
+  have h2 : (1 : K ≃ₐ[ℚ] K) ≠ sigmaThree :=
+    hne 1 3 _ _ (by norm_num) (by norm_num) (by norm_num) hid sigmaThree_apply_zeta
+  have h3 : (1 : K ≃ₐ[ℚ] K) ≠ sigmaFour :=
+    hne 1 4 _ _ (by norm_num) (by norm_num) (by norm_num) hid sigmaFour_apply_zeta
+  have h4 : sigmaTwo ≠ sigmaThree := hne 2 3 _ _ (by norm_num) (by norm_num) (by norm_num)
+    sigmaTwo_apply_zeta sigmaThree_apply_zeta
+  have h5 : sigmaTwo ≠ sigmaFour := hne 2 4 _ _ (by norm_num) (by norm_num) (by norm_num)
+    sigmaTwo_apply_zeta sigmaFour_apply_zeta
+  have h6 : sigmaThree ≠ sigmaFour := hne 3 4 _ _ (by norm_num) (by norm_num) (by norm_num)
+    sigmaThree_apply_zeta sigmaFour_apply_zeta
+  have huniv : (Finset.univ : Finset (K ≃ₐ[ℚ] K)) = {1, sigmaTwo, sigmaThree, sigmaFour} := by
     refine (Finset.eq_univ_iff_forall.mpr fun σ => ?_).symm
     rcases autEq' σ with h | h | h | h <;> simp [h]
   rw [huniv, Finset.prod_insert (by simp [h1, h2, h3]), Finset.prod_insert (by simp [h4, h5]),
     Finset.prod_pair h6]
-  change x * (sig2 x * (sig3 x * sig4 x)) = _
-  ring
+  simp [mul_assoc]
 
-/-- Computing integral norms via the four Galois conjugates. -/
 private theorem intNorm_eq (x : 𝓞 K) (n : ℤ)
-    (h : algebraMap (𝓞 K) K x * sig2 (algebraMap (𝓞 K) K x) *
-      sig3 (algebraMap (𝓞 K) K x) * sig4 (algebraMap (𝓞 K) K x) = (n : K)) :
+    (h : algebraMap (𝓞 K) K x * sigmaTwo (algebraMap (𝓞 K) K x) *
+      sigmaThree (algebraMap (𝓞 K) K x) * sigmaFour (algebraMap (𝓞 K) K x) = (n : K)) :
     Algebra.norm ℤ x = n := by
   haveI := IsCyclotomicExtension.isGalois {5} ℚ K
-  have h1 : algebraMap ℚ K (Algebra.norm ℚ (algebraMap (𝓞 K) K x)) = ((n : ℚ) : K) := by
-    rw [Algebra.norm_eq_prod_automorphisms, prod_aut_apply, h]
-    push_cast
-    ring
   have h2 : Algebra.norm ℚ (algebraMap (𝓞 K) K x) = (n : ℚ) := by
     apply (algebraMap ℚ K).injective
-    rw [h1, eq_ratCast (algebraMap ℚ K) (n : ℚ)]
-  have h3 : ((Algebra.norm ℤ x : ℤ) : ℚ) = Algebra.norm ℚ (algebraMap (𝓞 K) K x) :=
-    Algebra.coe_norm_int x
-  rw [h2] at h3
-  exact_mod_cast h3
+    rw [eq_ratCast (algebraMap ℚ K) (n : ℚ), Algebra.norm_eq_prod_automorphisms,
+      prod_aut_apply, h]
+    push_cast
+    ring
+  exact_mod_cast (Algebra.coe_norm_int x).trans h2
 
 private theorem minpoly_gen_eq :
     minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen =
@@ -129,33 +80,20 @@ private theorem minpoly_gen_eq :
         Polynomial.C 1 := by
   set q : Polynomial ℤ := Polynomial.X ^ 4 + Polynomial.X ^ 3 + Polynomial.X ^ 2 +
     Polynomial.X + Polynomial.C 1 with hq
-  have hint : IsIntegral ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen :=
-    zeta_isPrimitiveRoot.integralPowerBasis.isIntegral_gen
-  have hdvd : minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen ∣ q := by
-    refine minpoly.isIntegrallyClosed_dvd hint ?_
-    rw [gen_eq_zetaInt, hq]
-    simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
-    linear_combination zetaInt_sum_eq_zero
-  have hmonic := minpoly.monic hint
   have hdeg : (minpoly ℤ zeta_isPrimitiveRoot.integralPowerBasis.gen).natDegree = 4 := by
     rw [zeta_isPrimitiveRoot.integralPowerBasis.natDegree_minpoly,
       zeta_isPrimitiveRoot.integralPowerBasis_dim]
     rfl
-  have hXmonic : q.Monic := by
-    rw [hq]
+  refine (minpoly.IsIntegrallyClosed.unique_of_degree_le_degree_minpoly ?_ ?_ ?_).symm
+  · rw [hq]
     monicity!
-  obtain ⟨c, hc⟩ := hdvd
-  have hcmonic : c.Monic := hmonic.of_mul_monic_left (hc ▸ hXmonic)
-  have hdegc : c.natDegree = 0 := by
-    have h4 : q.natDegree = 4 := by
-      rw [hq]
-      compute_degree!
-    have hcong := congrArg Polynomial.natDegree hc
-    rw [h4, Polynomial.natDegree_mul (minpoly.ne_zero hint) hcmonic.ne_zero, hdeg] at hcong
-    omega
-  rw [hc, Polynomial.eq_one_of_monic_natDegree_zero hcmonic hdegc, mul_one]
+  · rw [gen_eq_zetaInt, hq]
+    simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
+    linear_combination zetaInt_sum_eq_zero
+  · rw [hq, Polynomial.degree_eq_natDegree (minpoly.ne_zero
+      zeta_isPrimitiveRoot.integralPowerBasis.isIntegral_gen), hdeg]
+    compute_degree!
 
-/-- Reduction `𝓞 K → 𝔽_p` sending `ζ ↦ r`, for `r` a root of `Φ₅` mod `p`. -/
 private theorem isMaximal_span_pair (p : ℕ) [Fact p.Prime] (r : ℤ)
     (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
     (Ideal.span {(p : 𝓞 K), zetaInt - (r : 𝓞 K)}).IsMaximal := by
@@ -163,8 +101,7 @@ private theorem isMaximal_span_pair (p : ℕ) [Fact p.Prime] (r : ℤ)
   exact NumberField.FieldExamples.isMaximal_span_gen_sub
     zeta_isPrimitiveRoot.integralPowerBasis p r
     (by rw [minpoly_gen_eq]
-        simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
-        linear_combination hr)
+        simpa using hr)
 
 private theorem absNorm_span_pair (p : ℕ) (r : ℤ)
     (hr : ((r : ZMod p)) ^ 4 + ((r : ZMod p)) ^ 3 + ((r : ZMod p)) ^ 2 + (r : ZMod p) + 1 = 0) :
@@ -173,45 +110,35 @@ private theorem absNorm_span_pair (p : ℕ) (r : ℤ)
   exact NumberField.FieldExamples.absNorm_span_gen_sub
     zeta_isPrimitiveRoot.integralPowerBasis p r
     (by rw [minpoly_gen_eq]
-        simp only [map_add, map_pow, Polynomial.aeval_X, map_one]
-        linear_combination hr)
+        simpa using hr)
 
 end PrivateMachinery
 
 /-- The norm of `1 - ζ` is `Φ₅(1) = 5`: the standard generator of the unique prime above
 `5`. -/
 theorem norm_one_sub_zeta : Algebra.norm ℚ (1 - ζ) = 5 := by
-  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  have : Fact (Nat.Prime 5) := ⟨by norm_num⟩
   have h := zeta_isPrimitiveRoot.sub_one_norm_isPrimePow
     ((by norm_num : Nat.Prime 5).isPrimePow)
     (Polynomial.cyclotomic.irreducible_rat (by norm_num)) (by norm_num)
-  have hneg : (1 : K) - ζ = -(ζ - 1) := by ring
-  have hnormneg : Algebra.norm ℚ (-(ζ - 1)) = Algebra.norm ℚ (ζ - 1) := by
-    rw [show -(ζ - 1) = (-1 : K) * (ζ - 1) by ring, map_mul,
-      show (-1 : K) = algebraMap ℚ K (-1) by norm_num, Algebra.norm_algebraMap,
-      degree_eq_four]
-    norm_num
-  rw [hneg, hnormneg, h, show Nat.minFac 5 = 5 by norm_num]
+  rw [show (1 : K) - ζ = (-1 : K) * (ζ - 1) by ring, map_mul,
+    show (-1 : K) = algebraMap ℚ K (-1) by norm_num, Algebra.norm_algebraMap,
+    degree_eq_four, h, show Nat.minFac 5 = 5 by norm_num]
   norm_num
 
 /-- The norm of `1 + ζ` is `Φ₅(-1) = 1`: hence `1 + ζ` is a unit of `ℤ[ζ]` (a *cyclotomic
 unit*). -/
 theorem norm_one_add_zeta : Algebra.norm ℚ (1 + ζ) = 1 := by
-  haveI : Fact (Nat.Prime 5) := ⟨by norm_num⟩
+  have : Fact (Nat.Prime 5) := ⟨by norm_num⟩
   have h2 : IsPrimitiveRoot (ζ ^ 2) 5 := zeta_isPrimitiveRoot.pow_of_coprime 2 (by norm_num)
   have hn2 : Algebra.norm ℚ (1 - ζ ^ 2) = 5 := by
     have h := h2.sub_one_norm_isPrimePow ((by norm_num : Nat.Prime 5).isPrimePow)
       (Polynomial.cyclotomic.irreducible_rat (by norm_num)) (by norm_num)
-    have hneg : (1 : K) - ζ ^ 2 = -(ζ ^ 2 - 1) := by ring
-    have hnormneg : Algebra.norm ℚ (-(ζ ^ 2 - 1)) = Algebra.norm ℚ (ζ ^ 2 - 1) := by
-      rw [show -(ζ ^ 2 - 1) = (-1 : K) * (ζ ^ 2 - 1) by ring, map_mul,
-        show (-1 : K) = algebraMap ℚ K (-1) by norm_num, Algebra.norm_algebraMap,
-        degree_eq_four]
-      norm_num
-    rw [hneg, hnormneg, h, show Nat.minFac 5 = 5 by norm_num]
+    rw [show (1 : K) - ζ ^ 2 = (-1 : K) * (ζ ^ 2 - 1) by ring, map_mul,
+      show (-1 : K) = algebraMap ℚ K (-1) by norm_num, Algebra.norm_algebraMap,
+      degree_eq_four, h, show Nat.minFac 5 = 5 by norm_num]
     norm_num
-  have hfact : (1 : K) - ζ ^ 2 = (1 - ζ) * (1 + ζ) := by ring
-  rw [hfact, map_mul, norm_one_sub_zeta] at hn2
+  rw [show (1 : K) - ζ ^ 2 = (1 - ζ) * (1 + ζ) by ring, map_mul, norm_one_sub_zeta] at hn2
   linarith
 
 /-- The quartic norm form of `ℚ(ζ₅)` in the integral basis `1, ζ, ζ², ζ³`. -/
@@ -242,13 +169,9 @@ private def normPairC (a b c d : ℚ) : K :=
 private def zetaPair : K := ζ ^ 2 + ζ ^ 3
 
 private theorem sig2_zetaCoords (a b c d : ℚ) :
-    sig2 (zetaCoords a b c d) =
+    sigmaTwo (zetaCoords a b c d) =
       (a : K) - c + (d - c) * ζ + (b - c) * ζ ^ 2 - c * ζ ^ 3 := by
-  simp only [zetaCoords, map_add, map_mul, map_pow, sig2_zeta]
-  rw [show sig2 (a : K) = (a : K) by simp,
-    show sig2 (b : K) = (b : K) by simp,
-    show sig2 (c : K) = (c : K) by simp,
-    show sig2 (d : K) = (d : K) by simp]
+  simp only [zetaCoords, map_add, map_mul, map_pow, sigmaTwo_apply_zeta, map_ratCast]
   have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
     linear_combination zeta_sum_eq_zero
   have h6 : ζ ^ 6 = ζ := by linear_combination ζ * zeta_pow_five
@@ -257,13 +180,9 @@ private theorem sig2_zetaCoords (a b c d : ℚ) :
   ring
 
 private theorem sig3_zetaCoords (a b c d : ℚ) :
-    sig3 (zetaCoords a b c d) =
+    sigmaThree (zetaCoords a b c d) =
       (a : K) - d + (c - d) * ζ - d * ζ ^ 2 + (b - d) * ζ ^ 3 := by
-  simp only [zetaCoords, map_add, map_mul, map_pow, sig3_zeta]
-  rw [show sig3 (a : K) = (a : K) by simp,
-    show sig3 (b : K) = (b : K) by simp,
-    show sig3 (c : K) = (c : K) by simp,
-    show sig3 (d : K) = (d : K) by simp]
+  simp only [zetaCoords, map_add, map_mul, map_pow, map_ratCast, sigmaThree_apply_zeta]
   have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
     linear_combination zeta_sum_eq_zero
   have h6 : ζ ^ 6 = ζ := by linear_combination ζ * zeta_pow_five
@@ -273,21 +192,11 @@ private theorem sig3_zetaCoords (a b c d : ℚ) :
   ring
 
 private theorem sig4_zetaCoords (a b c d : ℚ) :
-    sig4 (zetaCoords a b c d) =
+    sigmaFour (zetaCoords a b c d) =
       (a : K) - b - b * ζ + (d - b) * ζ ^ 2 + (c - b) * ζ ^ 3 := by
-  simp only [zetaCoords, map_add, map_mul, map_pow, sig4_zeta]
-  rw [show sig4 (a : K) = (a : K) by simp,
-    show sig4 (b : K) = (b : K) by simp,
-    show sig4 (c : K) = (c : K) by simp,
-    show sig4 (d : K) = (d : K) by simp]
-  have h4 : ζ ^ 4 = -1 - ζ - ζ ^ 2 - ζ ^ 3 := by
-    linear_combination zeta_sum_eq_zero
-  have h8 : ζ ^ 8 = ζ ^ 3 := by linear_combination ζ ^ 3 * zeta_pow_five
-  have h7 : ζ ^ 7 = ζ ^ 2 := by linear_combination ζ ^ 2 * zeta_pow_five
-  have h12 : ζ ^ 12 = ζ ^ 7 := by linear_combination ζ ^ 7 * zeta_pow_five
-  rw [show (ζ ^ 4) ^ 2 = ζ ^ 8 by ring,
-    show (ζ ^ 4) ^ 3 = ζ ^ 12 by ring, h4, h8, h12, h7]
-  ring
+  simp only [zetaCoords, map_add, map_mul, map_pow, sigmaFour_apply_zeta, map_ratCast]
+  linear_combination (c * ζ ^ 3 + d * ζ ^ 2 * (ζ ^ 5 + 1)) * zeta_pow_five +
+    b * zeta_sum_eq_zero
 
 private theorem zetaCoords_mul_sig4 (a b c d : ℚ) :
     zetaCoords a b c d *
@@ -407,7 +316,6 @@ theorem span_five_eq : Ideal.span {(5 : 𝓞 K)} = Ideal.span {1 - zetaInt} ^ 4 
   refine ⟨⟨-zetaInt ^ 3 + zetaInt ^ 2 - zetaInt, zetaInt ^ 4 + 2 * zetaInt ^ 3 + zetaInt ^ 2,
     by linear_combination (-zetaInt ^ 3) * zetaInt_sum_eq_zero + zetaInt_pow_five,
     by linear_combination (-zetaInt ^ 3) * zetaInt_sum_eq_zero + zetaInt_pow_five⟩, ?_⟩
-  change (5 : 𝓞 K) * (-zetaInt ^ 3 + zetaInt ^ 2 - zetaInt) = (1 - zetaInt) ^ 4
   linear_combination -zetaInt_sum_eq_zero
 
 private theorem span_one_sub_zetaInt_eq_pair :
@@ -628,14 +536,14 @@ private theorem absNorm_span_x :
     have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 + 5 * zetaInt + 1) = ζ ^ 2 + 5 * ζ + 1 := by
       simp [map_add, map_mul, map_pow, map_one, map_ofNat, zetaInt]
     rw [e0]
-    have e2 : sig2 (ζ ^ 2 + 5 * ζ + 1) = ζ ^ 4 + 5 * ζ ^ 2 + 1 := by
-      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sig2_zeta]
+    have e2 : sigmaTwo (ζ ^ 2 + 5 * ζ + 1) = ζ ^ 4 + 5 * ζ ^ 2 + 1 := by
+      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sigmaTwo_apply_zeta]
       ring
-    have e3 : sig3 (ζ ^ 2 + 5 * ζ + 1) = ζ + 5 * ζ ^ 3 + 1 := by
-      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sig3_zeta]
+    have e3 : sigmaThree (ζ ^ 2 + 5 * ζ + 1) = ζ + 5 * ζ ^ 3 + 1 := by
+      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sigmaThree_apply_zeta]
       linear_combination ζ * zeta_pow_five
-    have e4 : sig4 (ζ ^ 2 + 5 * ζ + 1) = ζ ^ 3 + 5 * ζ ^ 4 + 1 := by
-      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sig4_zeta]
+    have e4 : sigmaFour (ζ ^ 2 + 5 * ζ + 1) = ζ ^ 3 + 5 * ζ ^ 4 + 1 := by
+      simp only [map_add, map_pow, map_mul, map_one, map_ofNat, sigmaFour_apply_zeta]
       linear_combination ζ ^ 3 * zeta_pow_five
     rw [e2, e3, e4]
     push_cast
@@ -660,14 +568,14 @@ private theorem absNorm_span_y :
     have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 - 4 * zetaInt + 1) = ζ ^ 2 - 4 * ζ + 1 := by
       simp [map_add, map_sub, map_mul, map_pow, map_one, map_ofNat, zetaInt]
     rw [e0]
-    have e2 : sig2 (ζ ^ 2 - 4 * ζ + 1) = ζ ^ 4 - 4 * ζ ^ 2 + 1 := by
-      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sig2_zeta]
+    have e2 : sigmaTwo (ζ ^ 2 - 4 * ζ + 1) = ζ ^ 4 - 4 * ζ ^ 2 + 1 := by
+      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sigmaTwo_apply_zeta]
       ring
-    have e3 : sig3 (ζ ^ 2 - 4 * ζ + 1) = ζ - 4 * ζ ^ 3 + 1 := by
-      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sig3_zeta]
+    have e3 : sigmaThree (ζ ^ 2 - 4 * ζ + 1) = ζ - 4 * ζ ^ 3 + 1 := by
+      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sigmaThree_apply_zeta]
       linear_combination ζ * zeta_pow_five
-    have e4 : sig4 (ζ ^ 2 - 4 * ζ + 1) = ζ ^ 3 - 4 * ζ ^ 4 + 1 := by
-      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sig4_zeta]
+    have e4 : sigmaFour (ζ ^ 2 - 4 * ζ + 1) = ζ ^ 3 - 4 * ζ ^ 4 + 1 := by
+      simp only [map_add, map_sub, map_pow, map_mul, map_one, map_ofNat, sigmaFour_apply_zeta]
       linear_combination ζ ^ 3 * zeta_pow_five
     rw [e2, e3, e4]
     push_cast
@@ -768,8 +676,8 @@ private theorem elevenC : (ζ ^ 4 - 2 * ζ + 2) * (-(2 * ζ ^ 4) + ζ + 2) = 11 
 /-- Norm computation shared by the four primes above `11`: the Galois orbit of `ζ² + ζ - 1`
 is `{ζ² + ζ - 1, ζ⁴ + ζ² - 1, ζ³ + ζ - 1, ζ⁴ + ζ³ - 1}` with product `11`. -/
 private theorem norm_eleven_orbit {w : 𝓞 K}
-    (hw : algebraMap (𝓞 K) K w * sig2 (algebraMap (𝓞 K) K w) *
-      sig3 (algebraMap (𝓞 K) K w) * sig4 (algebraMap (𝓞 K) K w) =
+    (hw : algebraMap (𝓞 K) K w * sigmaTwo (algebraMap (𝓞 K) K w) *
+      sigmaThree (algebraMap (𝓞 K) K w) * sigmaFour (algebraMap (𝓞 K) K w) =
         (ζ ^ 2 + ζ - 1) * (ζ ^ 3 + ζ - 1) * ((ζ ^ 4 + ζ ^ 2 - 1) * (ζ ^ 4 + ζ ^ 3 - 1))) :
     Ideal.absNorm (Ideal.span {w}) = 11 := by
   have hn : Algebra.norm ℤ w = 11 := by
@@ -786,14 +694,14 @@ private theorem absNorm_span_u3 :
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 2 + zetaInt - 1) = ζ ^ 2 + ζ - 1 := by
     simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
-  have e2 : sig2 (ζ ^ 2 + ζ - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+  have e2 : sigmaTwo (ζ ^ 2 + ζ - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaTwo_apply_zeta]
     ring
-  have e3 : sig3 (ζ ^ 2 + ζ - 1) = ζ ^ 3 + ζ - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+  have e3 : sigmaThree (ζ ^ 2 + ζ - 1) = ζ ^ 3 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaThree_apply_zeta]
     linear_combination ζ * zeta_pow_five
-  have e4 : sig4 (ζ ^ 2 + ζ - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+  have e4 : sigmaFour (ζ ^ 2 + ζ - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaFour_apply_zeta]
     linear_combination ζ ^ 3 * zeta_pow_five
   rw [e2, e3, e4]
   ring
@@ -804,14 +712,14 @@ private theorem absNorm_span_u4 :
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 4 + zetaInt ^ 3 - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
     simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
-  have e2 : sig2 (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 3 + ζ - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+  have e2 : sigmaTwo (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 3 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaTwo_apply_zeta]
     linear_combination (ζ ^ 3 + ζ) * zeta_pow_five
-  have e3 : sig3 (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+  have e3 : sigmaThree (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaThree_apply_zeta]
     linear_combination (ζ ^ 7 + ζ ^ 2 + ζ ^ 4) * zeta_pow_five
-  have e4 : sig4 (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 2 + ζ - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+  have e4 : sigmaFour (ζ ^ 4 + ζ ^ 3 - 1) = ζ ^ 2 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaFour_apply_zeta]
     linear_combination (ζ ^ 11 + ζ ^ 6 + ζ + ζ ^ 7 + ζ ^ 2) * zeta_pow_five
   rw [e2, e3, e4]
   ring
@@ -822,14 +730,14 @@ private theorem absNorm_span_u5 :
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 4 + zetaInt ^ 2 - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
     simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
-  have e2 : sig2 (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+  have e2 : sigmaTwo (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaTwo_apply_zeta]
     linear_combination ζ ^ 3 * zeta_pow_five
-  have e3 : sig3 (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 2 + ζ - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+  have e3 : sigmaThree (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 2 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaThree_apply_zeta]
     linear_combination (ζ ^ 7 + ζ ^ 2 + ζ) * zeta_pow_five
-  have e4 : sig4 (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 3 + ζ - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+  have e4 : sigmaFour (ζ ^ 4 + ζ ^ 2 - 1) = ζ ^ 3 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaFour_apply_zeta]
     linear_combination (ζ ^ 11 + ζ ^ 6 + ζ + ζ ^ 3) * zeta_pow_five
   rw [e2, e3, e4]
   ring
@@ -840,14 +748,14 @@ private theorem absNorm_span_u9 :
   have e0 : algebraMap (𝓞 K) K (zetaInt ^ 3 + zetaInt - 1) = ζ ^ 3 + ζ - 1 := by
     simp [map_add, map_sub, map_pow, map_one, zetaInt]
   rw [e0]
-  have e2 : sig2 (ζ ^ 3 + ζ - 1) = ζ ^ 2 + ζ - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig2_zeta]
+  have e2 : sigmaTwo (ζ ^ 3 + ζ - 1) = ζ ^ 2 + ζ - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaTwo_apply_zeta]
     linear_combination ζ * zeta_pow_five
-  have e3 : sig3 (ζ ^ 3 + ζ - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig3_zeta]
+  have e3 : sigmaThree (ζ ^ 3 + ζ - 1) = ζ ^ 4 + ζ ^ 3 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaThree_apply_zeta]
     linear_combination ζ ^ 4 * zeta_pow_five
-  have e4 : sig4 (ζ ^ 3 + ζ - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
-    simp only [map_add, map_sub, map_pow, map_one, sig4_zeta]
+  have e4 : sigmaFour (ζ ^ 3 + ζ - 1) = ζ ^ 4 + ζ ^ 2 - 1 := by
+    simp only [map_add, map_sub, map_pow, map_one, sigmaFour_apply_zeta]
     linear_combination (ζ ^ 7 + ζ ^ 2) * zeta_pow_five
   rw [e2, e3, e4]
   ring
@@ -1099,10 +1007,6 @@ theorem ramificationIdx_span_two :
     norm_num at h
 
 end NumberField.CyclotomicFive
-
-/-!
-## Different
--/
 
 noncomputable section
 
