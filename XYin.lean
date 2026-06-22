@@ -1,30 +1,4 @@
 import XYin.Basic
-import XYin.IntegralPowerSeries.HasIntegralQExpansion
-import XYin.IntegralPowerSeries.IntegralPowerSeries
-import XYin.LaurentQExpansion.LaurentQExpansion
-import XYin.Modularforms.AtImInfty
-import XYin.Modularforms.BigO
-import XYin.Modularforms.Delta
-import XYin.Modularforms.DimensionFormulas
-import XYin.Modularforms.E2
-import XYin.Modularforms.Eisenstein
-import XYin.Modularforms.Eisensteinqexpansions
-import XYin.Modularforms.ForMathlib_Cusps
-import XYin.Modularforms.IsCuspForm
-import XYin.Modularforms.NormNumI
-import XYin.Modularforms.ResToImagAxis
-import XYin.Modularforms.SlashActionAuxil
-import XYin.Modularforms.clog_arg_lems
-import XYin.Modularforms.csqrt
-import XYin.Modularforms.equivs
-import XYin.Modularforms.eta
-import XYin.Modularforms.exp_lems
-import XYin.Modularforms.iteratedderivs
-import XYin.Modularforms.multipliable_lems
-import XYin.Modularforms.qExpansion_lems
-import XYin.Modularforms.summable_lems
-import XYin.Modularforms.tsumderivWithin
-import XYin.Modularforms.upperhalfplane
 import XYin.NumberField.DescentExample
 import XYin.NumberField.FieldExamples.Common
 import XYin.NumberField.FieldExamples.CubeRootThree.Basic
@@ -101,31 +75,4 @@ import XYin.NumberField.FieldExamples.SqrtTwo.ClassGroup
 import XYin.NumberField.FieldExamples.SqrtTwo.Units
 import XYin.NumberField.FieldExamples.SqrtTwo.Euclidean
 import XYin.NumberField.FieldExamples.SqrtTwo.LocalGlobal
-import XYin.NumberField.NormEuclideanOrderEqRingOfIntegers
-import XYin.NumberField.FieldExamplesSorryWorkbench
-/-
-import XYin.NumberField.Thue_Equation
 import XYin.NumberField.Thue_Equation_copy
--/
-import XYin.Tactic2.LaurentQExpSimpTests
-import XYin.Tactic2.QExpSimpAttr
-import XYin.Tactic2.QExpSimpConditionTests
-import XYin.Tactic2.qexp_simp
-/-
-import XYin.Test.JLevelN.Existence
-import XYin.Test.JLevelN.JN
-import XYin.Test.JLevelN.Lemma1110
-import XYin.Test.JLevelN.Lemma1111
-import XYin.Test.JLevelN.LevelTwo
-import XYin.Test.LaurentQExpansion
-import XYin.Test.jfunction
-import XYin.Test.jfunctionLaurent
--/
-import XYin.jFunction.Deltaqexpansions
-import XYin.jFunction.jInvariantLink
-import XYin.jFunction.jLevelN
-import XYin.jFunction.jfunction
-import XYin.jFunction.qexp_coeffs
-import XYin.qExpansion_tactic.Examples
-import XYin.qExpansion_tactic.Qj
-import XYin.qExpansion_tactic.link
