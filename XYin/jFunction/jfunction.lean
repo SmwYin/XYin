@@ -1,10 +1,14 @@
-import XYin.jFunction.generalised
-import XYin.jFunction.HasIntegralQExpansion
+import Mathlib.NumberTheory.ModularForms.LevelOne.Basic
+import Mathlib.NumberTheory.ModularForms.QExpansion
+import XYin.IntegralPowerSeries.HasIntegralQExpansion
 import XYin.jFunction.Deltaqexpansions
-import XYin.jFunction.LaurentQExpansion
+import XYin.LaurentQExpansion.LaurentQExpansion
+
+set_option linter.style.header false
 
 open Complex Filter ModularForm ModularFormClass UpperHalfPlane MatrixGroups PowerSeries
   SlashInvariantFormClass Real Function IntegralPowerSeries
+open scoped Manifold
 
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
@@ -24,12 +28,12 @@ lemma j_slashInvariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
       (Subgroup.mem_map_iff_mem (Matrix.SpecialLinearGroup.mapGL_injective)).mpr (by apply
       CongruenceSubgroup.mem_Gamma_one ))) z
   rw [← ModularForm.SL_slash] at h1 h2
-  simp only [ModularForm.slash_action_eq'_iff, Nat.cast_ofNat, SlashInvariantForm.toFun_eq_coe,
+  simp only [ModularForm.slash_action_eq'_iff, SlashInvariantForm.toFun_eq_coe,
     toSlashInvariantForm_coe, Fin.isValue] at h1
   rw [ModularForm.slash_action_eq'_iff, CuspForm_apply, CuspForm_apply] at h2
   rw [h1, h2]
   ring_nf
-  have h3 := pow_ne_zero  12 (denom_ne_zero γ z)
+  have h3 := pow_ne_zero 12 (denom_ne_zero γ z)
   rw [ModularGroup.denom_apply] at h3
   rw [← zpow_natCast, ← zpow_mul]
   ring_nf
@@ -42,8 +46,8 @@ lemma j_slashInvariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
 
 def Deltaoverq : ℍ → ℂ := fun z ↦ ∏' (n : ℕ), (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
-lemma DeltaoverqIdentity : Deltaoverq = (fun z ↦ 1 / cexp (2 * π * Complex.I * z) : ℍ → ℂ) * Delta
-    := by
+lemma DeltaoverqIdentity :
+    Deltaoverq = (fun z ↦ 1 / cexp (2 * π * Complex.I * z) : ℍ → ℂ) * Delta := by
   ext z
   simp [Deltaoverq, Delta_apply, Δ, Pi.mul_apply, mul_assoc]
 
@@ -62,10 +66,13 @@ lemma InfSumDeltashift_eq_Deltaoverq : InfSumDeltashift = Deltaoverq := by
   let q : ℂ := cexp (2 * π * Complex.I * z)
   let a : ℕ → ℂ := fun n => (qExpansion 1 Delta).coeff n * q ^ n
   have hcoeff0 : (qExpansion 1 Delta).coeff 0 = 0 := by simpa [qExpansion_coeff] using
-      (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) one_mem_strictPeriods_SL2Z)
+      (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) (by simp))
   have hq : q ≠ 0 := by simp [q]
-  have hs : HasSum a (Delta z) := by simpa [a, q, smul_eq_mul, Periodic.qParam] using
-      (hasSum_qExpansion Delta (by norm_num) one_mem_strictPeriods_SL2Z z)
+  have hs : HasSum a (Delta z) := by
+    have hDelta := UpperHalfPlane.hasSum_qExpansion (h := 1) (f := Delta) (by norm_num)
+        (SlashInvariantFormClass.periodic_comp_ofComplex Delta (by simp))
+        (ModularFormClass.holo Delta) (ModularFormClass.bdd_at_infty Delta) z
+    simpa [a, q, smul_eq_mul, Periodic.qParam] using hDelta
   have hs_shift : HasSum (fun n => a (n + 1)) (Delta z) := by
     have hs' : HasSum (fun n => a (n + 1)) (Delta z - ∑ i ∈ Finset.range 1, a i) :=
       (hasSum_nat_add_iff' 1).2 hs
@@ -88,9 +95,12 @@ lemma InfSumDeltashift_hasSum (z : ℍ) : HasSum
   have hq : q ≠ 0 := by simp [q, Periodic.qParam]
   have hcoeff0 : (qExpansion 1 Delta).coeff 0 = 0 := by
     simpa [qExpansion_coeff] using
-        (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) one_mem_strictPeriods_SL2Z)
+        (CuspFormClass.cuspFunction_apply_zero Delta (by norm_num) (by simp))
   have hs : HasSum (fun m => (qExpansion 1 Delta).coeff m • q ^ m) (Delta z) := by
-    simpa [q] using (hasSum_qExpansion Delta (by norm_num) one_mem_strictPeriods_SL2Z z)
+    have hDelta := UpperHalfPlane.hasSum_qExpansion (h := 1) (f := Delta) (by norm_num)
+        (SlashInvariantFormClass.periodic_comp_ofComplex Delta (by simp))
+        (ModularFormClass.holo Delta) (ModularFormClass.bdd_at_infty Delta) z
+    simpa [q] using hDelta
   have hs_shift :
     HasSum (fun m => (qExpansion 1 Delta).coeff (m + 1) • q ^ (m + 1)) (Delta z) := by
     have hs' : HasSum (fun m => (qExpansion 1 Delta).coeff (m + 1) • q ^ (m + 1))
@@ -179,8 +189,8 @@ lemma InfSumDeltashift_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 InfSumDeltash
 lemma InfSumDeltashift_coeff_eq (n : ℕ) :
     (qExpansion 1 InfSumDeltashift).coeff n = (qExpansion 1 Delta).coeff (n + 1) := by
   let cshift : ℕ → ℂ := fun m => (qExpansion 1 Delta).coeff (m + 1)
-  simpa [cshift] using (qExpansion_coeff_unique'
-      (by norm_num) InfSumDeltashift_AnalyticAt InfSumDeltashift_hasSum n).symm
+  simpa [cshift] using (UpperHalfPlane.qExpansion_coeff_unique (f := InfSumDeltashift)
+      (h := 1) (by norm_num) InfSumDeltashift_AnalyticAt InfSumDeltashift_hasSum n).symm
 
 lemma DeltaoverqIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 Deltaoverq) := by
   rw [int_iff]
@@ -205,7 +215,7 @@ lemma DeltaoverqIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 Delt
 def integralDeltaoverq : PowerSeries ℤ := toIntegralPowerSeries DeltaoverqIsIntegralPowerSeries
 
 lemma coeTo_of_integralDeltaoverq :
-    coeToComplexPowerSeries.ringHom integralDeltaoverq = qExpansion 1 Deltaoverq := by
+    (coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq = qExpansion 1 Deltaoverq := by
   exact coeTo_of_toIntegralPowerSeries DeltaoverqIsIntegralPowerSeries
 
 lemma integralDeltaoverq_constantCoeff_isUnit : IsUnit (constantCoeff integralDeltaoverq : ℤ) := by
@@ -220,8 +230,13 @@ lemma integralDeltaoverq_constantCoeff_isUnit : IsUnit (constantCoeff integralDe
   have hcoeff0C : (qExpansion 1 Deltaoverq).coeff 0 = 1 := by simp [qExpansion_coeff, hcusp0]
   have hcast : ((constantCoeff integralDeltaoverq : ℤ) : ℂ) = 1 := by
     have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
-    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map,
-      PowerSeries.coeff_zero_eq_constantCoeff, hcoeff0C] using h0
+    have hmap : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq) =
+        ((PowerSeries.coeff 0 integralDeltaoverq : ℤ) : ℂ) := by
+      simp [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom,
+        PowerSeries.coeff_zero_eq_constantCoeff]
+    have hcoeff0 : ((PowerSeries.coeff 0 integralDeltaoverq : ℤ) : ℂ) = 1 :=
+      hmap.symm.trans (by simpa [hcoeff0C] using h0)
+    simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hcoeff0
   have hZ : (constantCoeff integralDeltaoverq : ℤ) = 1 := by
     norm_num at hcast ⊢
     exact_mod_cast hcast
@@ -289,7 +304,7 @@ lemma qoverDelta_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 qoverDelta) 0 := by
   simpa [cuspFunction_qoverDelta_EqInv] using Deltaoverq_Inv_AnalyticAt
 
 lemma E4_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 E4) 0 := by
-  exact analyticAt_cuspFunction_zero E4 (by norm_num) one_mem_strictPeriods_SL2Z
+  exact ModularFormClass.analyticAt_cuspFunction_zero E4 (by norm_num) (by simp)
 
 lemma E4cubed_isModularForm : ∃ f : ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
     (CongruenceSubgroup.Gamma 1)) 12, (f : ℍ → ℂ) = E4 ^ 3 := by
@@ -299,10 +314,11 @@ lemma E4cubed_isModularForm : ∃ f : ModularForm (Subgroup.map (Matrix.SpecialL
 
 lemma E4cubed_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 (E4 ^ 3)) 0 := by
   rcases E4cubed_isModularForm with ⟨f, hf⟩
-  simpa [hf] using (analyticAt_cuspFunction_zero f (by norm_num) one_mem_strictPeriods_SL2Z)
+  simpa [hf] using
+    (ModularFormClass.analyticAt_cuspFunction_zero f (by norm_num) (by simp))
 
 lemma integralDeltaoverq_mul_qoverDelta_qExpansion :
-    coeToComplexPowerSeries.ringHom integralDeltaoverq * qExpansion 1 qoverDelta = 1 := by
+    (coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq * qExpansion 1 qoverDelta = 1 := by
   rw [coeTo_of_integralDeltaoverq]
   have h :
       qExpansion 1 (Deltaoverq * qoverDelta) = qExpansion 1 Deltaoverq * qExpansion 1 qoverDelta
@@ -319,11 +335,11 @@ lemma integralDeltaoverq_mul_qoverDelta_qExpansion :
   ext z
   rw [qExpansion_coeff]
   by_cases hz : z = 0
-  · simp only [hz, Nat.factorial_zero, Nat.cast_one, inv_one, SlashInvariantFormClass.cuspFunction,
+  · simp only [hz, Nat.factorial_zero, Nat.cast_one, inv_one, UpperHalfPlane.cuspFunction,
         Pi.one_comp, iteratedDeriv_zero, one_mul, coeff_one, ↓reduceIte, Periodic.cuspFunction,
         Pi.one_comp, update_self]
     exact Tendsto.limUnder_eq tendsto_const_nhds
-  · simp only [SlashInvariantFormClass.cuspFunction, Pi.one_comp, coeff_one, hz, ↓reduceIte,
+  · simp only [UpperHalfPlane.cuspFunction, Pi.one_comp, coeff_one, hz, ↓reduceIte,
         mul_eq_zero, _root_.inv_eq_zero, Nat.cast_eq_zero]
     right
     have h3 : Periodic.cuspFunction 1 (1 : ℂ → ℂ) = (fun _ : ℂ => (1 : ℂ)) := by
@@ -340,26 +356,30 @@ lemma qoverDeltaIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 qove
   rw [IsIntegralPowerSeries]
   obtain ⟨u, hu⟩ := integralDeltaoverq_isUnit
   refine ⟨(↑(u⁻¹) : PowerSeries ℤ), ?_⟩
-  have h : coeToComplexPowerSeries.ringHom integralDeltaoverq
-      * coeToComplexPowerSeries.ringHom (↑(u⁻¹) : PowerSeries ℤ) = 1 := by
+  have h : (coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq
+      * (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ) = 1 := by
     calc
-    _ = coeToComplexPowerSeries.ringHom (↑u)
-        * coeToComplexPowerSeries.ringHom (↑(u⁻¹) : PowerSeries ℤ) := by simp [hu]
-    _ = coeToComplexPowerSeries.ringHom ((↑u) * (↑(u⁻¹) : PowerSeries ℤ)) := by
+    _ = (coeToComplexPowerSeries.ringHom ℤ) (↑u)
+        * (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ) := by simp [hu]
+    _ = (coeToComplexPowerSeries.ringHom ℤ) ((↑u) * (↑(u⁻¹) : PowerSeries ℤ)) := by
       rw [← map_mul]
     _ = _ := by simp
   symm
   calc
   _ = 1 * qExpansion 1 qoverDelta := by simp
-  _ = (coeToComplexPowerSeries.ringHom integralDeltaoverq * coeToComplexPowerSeries.ringHom
-      (↑(u⁻¹) : PowerSeries ℤ)) * qExpansion 1 qoverDelta := by simp [h]
-  _ = coeToComplexPowerSeries.ringHom (↑(u⁻¹) : PowerSeries ℤ) * (coeToComplexPowerSeries.ringHom
-      integralDeltaoverq * qExpansion 1 qoverDelta) := by ring
-  _ = _ := by simp [integralDeltaoverq_mul_qoverDelta_qExpansion]
+  _ = ((coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq *
+        (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ)) *
+      qExpansion 1 qoverDelta := by rw [← h]
+  _ = (coeToComplexPowerSeries.ringHom ℤ) (↑(u⁻¹) : PowerSeries ℤ) *
+      ((coeToComplexPowerSeries.ringHom ℤ) integralDeltaoverq *
+        qExpansion 1 qoverDelta) := by ring
+  _ = _ := by
+    rw [integralDeltaoverq_mul_qoverDelta_qExpansion]
+    simp
 
 lemma qjauxIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 (E4 ^ 3 * qoverDelta)) := by
-  simp [qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt, IsIntegralPowerSeries,
-    IntegralPowerSeriesSubring.mul_mem E4CubedIsIntegralPowerSeries qoverDeltaIsIntegralPowerSeries]
+  rw [qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt]
+  exact hasCoeffsIn_mul ℤ ℂ E4CubedIsIntegralPowerSeries qoverDeltaIsIntegralPowerSeries
 
 theorem qjIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 qj) := by
   simpa using qjIdentity ▸ qjauxIsIntegralPowerSeries
@@ -379,12 +399,10 @@ lemma qj_periodic : Periodic (qj ∘ UpperHalfPlane.ofComplex) 1 := by
       simp [τ, UpperHalfPlane.ofComplex_apply_of_im_pos hw1, UpperHalfPlane.coe_vadd, add_comm]
     have hE4 : E4 ((1 : ℝ) +ᵥ τ) = E4 τ := by
       simpa using
-        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := E4) (τ := τ)
-          (hH := one_mem_strictPeriods_SL2Z))
+        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := E4) (τ := τ) (hH := by simp))
     have hDelta : Delta ((1 : ℝ) +ᵥ τ) = Delta τ := by
       simpa using
-        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := Delta) (τ := τ)
-          (hH := one_mem_strictPeriods_SL2Z))
+        (SlashInvariantForm.vAdd_apply_of_mem_strictPeriods (f := Delta) (τ := τ) (hH := by simp))
     have hj : j ((1 : ℝ) +ᵥ τ) = j τ := by
       simp [j, hE4, hDelta]
     have hexp :
@@ -423,15 +441,20 @@ lemma qj_holomorphic : ∀ z : ℂ, 0 < Complex.im z →
       (((fun τ : ℍ ↦ cexp (2 * π * Complex.I * (τ : ℂ))) ∘ UpperHalfPlane.ofComplex)) z := by
     exact hexp.congr_of_eventuallyEq hEqExp
   have hE4 : DifferentiableAt ℂ (E4 ∘ UpperHalfPlane.ofComplex) z :=
-    ModularFormClass.differentiableAt_comp_ofComplex (f := E4) hz
+    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo E4 ⟨z, hz⟩)
   have hDelta : DifferentiableAt ℂ (Delta ∘ UpperHalfPlane.ofComplex) z :=
-    ModularFormClass.differentiableAt_comp_ofComplex (f := Delta) hz
+    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo Delta ⟨z, hz⟩)
   have hDelta0 : (Delta ∘ UpperHalfPlane.ofComplex) z ≠ 0 := by
     simpa [comp, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Delta_apply] using
       (Δ_ne_zero (UpperHalfPlane.ofComplex z))
   have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) z := by
     simpa [j, comp] using (hE4.pow 3).div hDelta hDelta0
   simpa [qj, comp, Pi.mul_apply] using hexpH.mul hj
+
+lemma qj_MDifferentiable : MDiff qj := by
+  rw [UpperHalfPlane.mdifferentiable_iff]
+  intro z hz
+  exact (qj_holomorphic z hz).differentiableWithinAt
 
 lemma E4_IsBoundedAtImInfty : IsBoundedAtImInfty E4 := by simp [ModularFormClass.bdd_at_infty]
 
@@ -463,7 +486,8 @@ lemma qj_IsBoundedAtImInfty : IsBoundedAtImInfty qj := by
 
 lemma hasSum_qExpansion_qj {τ : ℍ} :
     HasSum (fun m : ℕ ↦ (qExpansion 1 qj).coeff m • 𝕢 1 τ ^ m) (qj τ) := by
-  exact hasSum_qExpansion' (by positivity) qj_periodic qj_holomorphic qj_IsBoundedAtImInfty τ
+  exact UpperHalfPlane.hasSum_qExpansion (h := 1) (f := qj) (by positivity) qj_periodic
+    qj_MDifferentiable qj_IsBoundedAtImInfty τ
 
 lemma InfSumqj_Summable {z : ℍ} :
     Summable (fun n : ℕ => (qj_coeffs n) * cexp (2 * π * Complex.I * z) ^ n) := by
@@ -562,7 +586,7 @@ lemma cancelout2 (z : ℍ) :
     field_simp [hq, mul_assoc]
   _ = _ := by simp [q]
 
-lemma qj_exp_zero : (qExpansion 1 qj).coeff 0 = 1 := by
+private lemma qj_exp_zero_for_jfunction : (qExpansion 1 qj).coeff 0 = 1 := by
   have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
     simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
   have hmul :
@@ -570,7 +594,7 @@ lemma qj_exp_zero : (qExpansion 1 qj).coeff 0 = 1 := by
     exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
   have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
+      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE4coeff0 : (qExpansion 1 E4).coeff 0 = 1 := by
     simpa [E4] using congr_fun E4_q_exp 0
   have hE4pow0 : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
@@ -585,1101 +609,6 @@ lemma qj_exp_zero : (qExpansion 1 qj).coeff 0 = 1 := by
   _ = (qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta).coeff 0 := by rw [hmul]
   _ = (qExpansion 1 (E4 ^ 3)).coeff 0 * (qExpansion 1 qoverDelta).coeff 0 := by simp
   _ = _ := by simp [hE4pow0, hqover0]
-
-lemma qj_exp_zero' : qj_coeffs 0 = 1 := by
-  have h0 : ((qj_coeffs 0 : ℤ) : ℂ) = (qExpansion 1 qj).coeff 0 := by
-    simpa [qj_coeffs] using
-        congrArg (PowerSeries.coeff 0) (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
-  have h1 : ((qj_coeffs 0 : ℤ) : ℂ) = 1 := by
-    calc
-    _ = (qExpansion 1 qj).coeff 0 := h0
-    _ = _ := qj_exp_zero
-  exact_mod_cast h1
-
-lemma Delta_exp_two : (qExpansion 1 Delta).coeff 2 = -24 := by
-  have hDeltaaux2 := congrArg (PowerSeries.coeff 2) Deltaaux
-  have hqsub : qExpansion 1 (E4 ^ 3 - E6 ^ 2) = qExpansion 1 (E4 ^ 3) - qExpansion 1 (E6 ^ 2) := by
-    calc
-      _ = qExpansion 1 ((E4.mul (E4.mul E4)) - (E6.mul E6)) := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-      _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
-      _ = _ := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE42 : (qExpansion 1 E4).coeff 2 = 2160 := by
-    have h := congr_fun E4_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE60 : (qExpansion 1 E6).coeff 0 = 1 := by
-    simpa [E6] using congr_fun E6_q_exp 0
-  have hE61 : (qExpansion 1 E6).coeff 1 = -504 := by
-    simpa [E6] using congr_fun E6_q_exp 1
-  have hE62 : (qExpansion 1 E6).coeff 2 = -16632 := by
-    have h := congr_fun E6_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hantidiag2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-    rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-    simp [hE40, hE41]
-    norm_num
-  have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-    rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-    simp [hE40, hE41, hE42]
-    norm_num
-  have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-    simpa [pow_two] using hE4sq1
-  have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-    simpa [pow_two] using hE4sq2
-  have hE4pow2 : (qExpansion 1 (E4 ^ 3)).coeff 2 = 179280 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag2]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE4mul1, hE4mul2, hE4const]
-    norm_num
-  have hE6pow2 : (qExpansion 1 (E6 ^ 2)).coeff 2 = 220752 := by
-    rw [hE6pow, pow_two, PowerSeries.coeff_mul, hantidiag2]
-    simp [hE60, hE61, hE62]
-    norm_num
-  calc
-    (qExpansion 1 Delta).coeff 2 = ((1 / 1728 : ℂ) • qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 2 := by
-      simpa using hDeltaaux2
-    _ = (1 / 1728 : ℂ) * (qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 2 := by simp
-    _ = (1 / 1728 : ℂ) *
-        ((qExpansion 1 (E4 ^ 3)).coeff 2 - (qExpansion 1 (E6 ^ 2)).coeff 2) := by
-          simp [hqsub]
-    _ = (1 / 1728 : ℂ) * (179280 - 220752) := by simp [hE4pow2, hE6pow2]
-    _ = -24 := by norm_num
-
-lemma Delta_exp_three : (qExpansion 1 Delta).coeff 3 = 252 := by
-  have hDeltaaux3 := congrArg (PowerSeries.coeff 3) Deltaaux
-  have hqsub : qExpansion 1 (E4 ^ 3 - E6 ^ 2) = qExpansion 1 (E4 ^ 3) - qExpansion 1 (E6 ^ 2) := by
-    calc
-      _ = qExpansion 1 ((E4.mul (E4.mul E4)) - (E6.mul E6)) := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-      _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
-      _ = _ := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE42 : (qExpansion 1 E4).coeff 2 = 2160 := by
-    have h := congr_fun E4_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE43 : (qExpansion 1 E4).coeff 3 = 6720 := by
-    have h := congr_fun E4_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE60 : (qExpansion 1 E6).coeff 0 = 1 := by
-    simpa [E6] using congr_fun E6_q_exp 0
-  have hE61 : (qExpansion 1 E6).coeff 1 = -504 := by
-    simpa [E6] using congr_fun E6_q_exp 1
-  have hE62 : (qExpansion 1 E6).coeff 2 = -16632 := by
-    have h := congr_fun E6_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE63 : (qExpansion 1 E6).coeff 3 = -122976 := by
-    have h := congr_fun E6_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hantidiag2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag3 : Finset.antidiagonal 3 = {(0, 3), (1, 2), (2, 1), (3, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hE4pow3 : (qExpansion 1 (E4 ^ 3)).coeff 3 = 16954560 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag3]
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4sq3 : (qExpansion 1 E4 ^ 2).coeff 3 = 1050240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag3]
-      simp [hE40, hE41, hE42, hE43]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    have hE4mul3 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 3 = 1050240 := by
-      simpa [pow_two] using hE4sq3
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE43, hE4mul1, hE4mul2, hE4mul3, hE4const]
-    norm_num
-  have hE6pow3 : (qExpansion 1 (E6 ^ 2)).coeff 3 = 16519104 := by
-    rw [hE6pow, pow_two, PowerSeries.coeff_mul, hantidiag3]
-    simp [hE60, hE61, hE62, hE63]
-    norm_num
-  calc
-    (qExpansion 1 Delta).coeff 3 = ((1 / 1728 : ℂ) • qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 3 := by
-      simpa using hDeltaaux3
-    _ = (1 / 1728 : ℂ) * (qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 3 := by simp
-    _ = (1 / 1728 : ℂ) *
-        ((qExpansion 1 (E4 ^ 3)).coeff 3 - (qExpansion 1 (E6 ^ 2)).coeff 3) := by
-          simp [hqsub]
-    _ = (1 / 1728 : ℂ) * (16954560 - 16519104) := by simp [hE4pow3, hE6pow3]
-    _ = 252 := by norm_num
-
-lemma Delta_exp_four : (qExpansion 1 Delta).coeff 4 = -1472 := by
-  have hDeltaaux4 := congrArg (PowerSeries.coeff 4) Deltaaux
-  have hqsub : qExpansion 1 (E4 ^ 3 - E6 ^ 2) = qExpansion 1 (E4 ^ 3) - qExpansion 1 (E6 ^ 2) := by
-    calc
-      _ = qExpansion 1 ((E4.mul (E4.mul E4)) - (E6.mul E6)) := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-      _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
-      _ = _ := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE42 : (qExpansion 1 E4).coeff 2 = 2160 := by
-    have h := congr_fun E4_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE43 : (qExpansion 1 E4).coeff 3 = 6720 := by
-    have h := congr_fun E4_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE44 : (qExpansion 1 E4).coeff 4 = 17520 := by
-    have h : (qExpansion 1 E4).coeff 4 = (240 : ℂ) * ArithmeticFunction.sigma 3 4 := by
-      simpa [E4] using (congr_fun E4_q_exp 4)
-    have hsigma : ArithmeticFunction.sigma 3 4 = 73 := by decide
-    calc
-      _ = (240 : ℂ) * ArithmeticFunction.sigma 3 4 := h
-      _ = (240 : ℂ) * 73 := by simp [hsigma]
-      _ = 17520 := by norm_num
-  have hE60 : (qExpansion 1 E6).coeff 0 = 1 := by
-    simpa [E6] using congr_fun E6_q_exp 0
-  have hE61 : (qExpansion 1 E6).coeff 1 = -504 := by
-    simpa [E6] using congr_fun E6_q_exp 1
-  have hE62 : (qExpansion 1 E6).coeff 2 = -16632 := by
-    have h := congr_fun E6_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE63 : (qExpansion 1 E6).coeff 3 = -122976 := by
-    have h := congr_fun E6_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE64 : (qExpansion 1 E6).coeff 4 = -532728 := by
-    have h : (qExpansion 1 E6).coeff 4 = -(504 : ℂ) * ArithmeticFunction.sigma 5 4 := by
-      simpa [E6] using (congr_fun E6_q_exp 4)
-    have hsigma : ArithmeticFunction.sigma 5 4 = 1057 := by decide
-    calc
-      _ = -(504 : ℂ) * ArithmeticFunction.sigma 5 4 := h
-      _ = -(504 : ℂ) * 1057 := by simp [hsigma]
-      _ = -532728 := by norm_num
-  have hantidiag2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag3 : Finset.antidiagonal 3 = {(0, 3), (1, 2), (2, 1), (3, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag4 : Finset.antidiagonal 4 = {(0, 4), (1, 3), (2, 2), (3, 1), (4, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hE4pow4 : (qExpansion 1 (E4 ^ 3)).coeff 4 = 396974160 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag4]
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4sq3 : (qExpansion 1 E4 ^ 2).coeff 3 = 1050240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag3]
-      simp [hE40, hE41, hE42, hE43]
-      norm_num
-    have hE4sq4 : (qExpansion 1 E4 ^ 2).coeff 4 = 7926240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag4]
-      simp [hE40, hE41, hE42, hE43, hE44]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    have hE4mul3 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 3 = 1050240 := by
-      simpa [pow_two] using hE4sq3
-    have hE4mul4 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 4 = 7926240 := by
-      simpa [pow_two] using hE4sq4
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE43, hE44, hE4mul1, hE4mul2, hE4mul3, hE4mul4, hE4const]
-    norm_num
-  have hE6pow4 : (qExpansion 1 (E6 ^ 2)).coeff 4 = 399517776 := by
-    rw [hE6pow, pow_two, PowerSeries.coeff_mul, hantidiag4]
-    simp [hE60, hE61, hE62, hE63, hE64]
-    norm_num
-  calc
-    (qExpansion 1 Delta).coeff 4 = ((1 / 1728 : ℂ) • qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 4 := by
-      simpa using hDeltaaux4
-    _ = (1 / 1728 : ℂ) * (qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 4 := by simp
-    _ = (1 / 1728 : ℂ) *
-        ((qExpansion 1 (E4 ^ 3)).coeff 4 - (qExpansion 1 (E6 ^ 2)).coeff 4) := by
-          simp [hqsub]
-    _ = (1 / 1728 : ℂ) * (396974160 - 399517776) := by simp [hE4pow4, hE6pow4]
-    _ = -1472 := by norm_num
-
-lemma Delta_exp_five : (qExpansion 1 Delta).coeff 5 = 4830 := by
-  have hDeltaaux5 := congrArg (PowerSeries.coeff 5) Deltaaux
-  have hqsub : qExpansion 1 (E4 ^ 3 - E6 ^ 2) = qExpansion 1 (E4 ^ 3) - qExpansion 1 (E6 ^ 2) := by
-    calc
-      _ = qExpansion 1 ((E4.mul (E4.mul E4)) - (E6.mul E6)) := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-      _ = qExpansion 1 (E4.mul (E4.mul E4)) - qExpansion 1 (E6.mul E6) := by
-        simpa using (_root_.qExpansion_sub (h := (1 : ℝ)) (hh := by norm_num)
-          (hΓ := one_mem_strictPeriods_SL2Z) (f := E4.mul (E4.mul E4)) (g := E6.mul E6))
-      _ = _ := by
-        have hf : (⇑E4 * (⇑E4 * ⇑E4)) = ⇑(E4.mul (E4.mul E4)) := by rfl
-        have hg : (⇑E6 * ⇑E6) = ⇑(E6.mul E6) := by rfl
-        simp [pow_three, pow_two, hf, hg]
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE6pow : qExpansion 1 (E6 ^ 2) = (qExpansion 1 E6) ^ 2 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (6 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E6 2
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE42 : (qExpansion 1 E4).coeff 2 = 2160 := by
-    have h := congr_fun E4_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE43 : (qExpansion 1 E4).coeff 3 = 6720 := by
-    have h := congr_fun E4_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE44 : (qExpansion 1 E4).coeff 4 = 17520 := by
-    have h : (qExpansion 1 E4).coeff 4 = (240 : ℂ) * ArithmeticFunction.sigma 3 4 := by
-      simpa [E4] using (congr_fun E4_q_exp 4)
-    have hsigma : ArithmeticFunction.sigma 3 4 = 73 := by decide
-    calc
-      _ = (240 : ℂ) * ArithmeticFunction.sigma 3 4 := h
-      _ = (240 : ℂ) * 73 := by simp [hsigma]
-      _ = 17520 := by norm_num
-  have hE45 : (qExpansion 1 E4).coeff 5 = 30240 := by
-    have h : (qExpansion 1 E4).coeff 5 = (240 : ℂ) * ArithmeticFunction.sigma 3 5 := by
-      simpa [E4] using (congr_fun E4_q_exp 5)
-    have hsigma : ArithmeticFunction.sigma 3 5 = 126 := by decide
-    calc
-      _ = (240 : ℂ) * ArithmeticFunction.sigma 3 5 := h
-      _ = (240 : ℂ) * 126 := by simp [hsigma]
-      _ = 30240 := by norm_num
-  have hE60 : (qExpansion 1 E6).coeff 0 = 1 := by
-    simpa [E6] using congr_fun E6_q_exp 0
-  have hE61 : (qExpansion 1 E6).coeff 1 = -504 := by
-    simpa [E6] using congr_fun E6_q_exp 1
-  have hE62 : (qExpansion 1 E6).coeff 2 = -16632 := by
-    have h := congr_fun E6_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE63 : (qExpansion 1 E6).coeff 3 = -122976 := by
-    have h := congr_fun E6_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE64 : (qExpansion 1 E6).coeff 4 = -532728 := by
-    have h : (qExpansion 1 E6).coeff 4 = -(504 : ℂ) * ArithmeticFunction.sigma 5 4 := by
-      simpa [E6] using (congr_fun E6_q_exp 4)
-    have hsigma : ArithmeticFunction.sigma 5 4 = 1057 := by decide
-    calc
-      _ = -(504 : ℂ) * ArithmeticFunction.sigma 5 4 := h
-      _ = -(504 : ℂ) * 1057 := by simp [hsigma]
-      _ = -532728 := by norm_num
-  have hE65 : (qExpansion 1 E6).coeff 5 = -1575504 := by
-    have h : (qExpansion 1 E6).coeff 5 = -(504 : ℂ) * ArithmeticFunction.sigma 5 5 := by
-      simpa [E6] using (congr_fun E6_q_exp 5)
-    have hsigma : ArithmeticFunction.sigma 5 5 = 3126 := by decide
-    calc
-      _ = -(504 : ℂ) * ArithmeticFunction.sigma 5 5 := h
-      _ = -(504 : ℂ) * 3126 := by simp [hsigma]
-      _ = -1575504 := by norm_num
-  have hantidiag2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag3 : Finset.antidiagonal 3 = {(0, 3), (1, 2), (2, 1), (3, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag4 : Finset.antidiagonal 4 = {(0, 4), (1, 3), (2, 2), (3, 1), (4, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag5 : Finset.antidiagonal 5 = {(0, 5), (1, 4), (2, 3), (3, 2), (4, 1), (5, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hE4pow5 : (qExpansion 1 (E4 ^ 3)).coeff 5 = 4632858720 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag5]
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4sq3 : (qExpansion 1 E4 ^ 2).coeff 3 = 1050240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag3]
-      simp [hE40, hE41, hE42, hE43]
-      norm_num
-    have hE4sq4 : (qExpansion 1 E4 ^ 2).coeff 4 = 7926240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag4]
-      simp [hE40, hE41, hE42, hE43, hE44]
-      norm_num
-    have hE4sq5 : (qExpansion 1 E4 ^ 2).coeff 5 = 37500480 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag5]
-      simp [hE40, hE41, hE42, hE43, hE44, hE45]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    have hE4mul3 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 3 = 1050240 := by
-      simpa [pow_two] using hE4sq3
-    have hE4mul4 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 4 = 7926240 := by
-      simpa [pow_two] using hE4sq4
-    have hE4mul5 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 5 = 37500480 := by
-      simpa [pow_two] using hE4sq5
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE43, hE44, hE45, hE4mul1, hE4mul2, hE4mul3, hE4mul4, hE4mul5,
-      hE4const]
-    norm_num
-  have hE6pow5 : (qExpansion 1 (E6 ^ 2)).coeff 5 = 4624512480 := by
-    rw [hE6pow, pow_two, PowerSeries.coeff_mul, hantidiag5]
-    simp [hE60, hE61, hE62, hE63, hE64, hE65]
-    norm_num
-  calc
-    (qExpansion 1 Delta).coeff 5 = ((1 / 1728 : ℂ) • qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 5 := by
-      simpa using hDeltaaux5
-    _ = (1 / 1728 : ℂ) * (qExpansion 1 (E4 ^ 3 - E6 ^ 2)).coeff 5 := by simp
-    _ = (1 / 1728 : ℂ) *
-        ((qExpansion 1 (E4 ^ 3)).coeff 5 - (qExpansion 1 (E6 ^ 2)).coeff 5) := by
-          simp [hqsub]
-    _ = (1 / 1728 : ℂ) * (4632858720 - 4624512480) := by simp [hE4pow5, hE6pow5]
-    _ = 4830 := by norm_num
-
-lemma qj_exp_one : (qExpansion 1 qj).coeff 1 = 744 := by
-  have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
-    simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
-  have hmul :
-      qExpansion 1 (E4 ^ 3 * qoverDelta) = qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta := by
-    exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE4pow0 : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
-    rw [hE4pow]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [PowerSeries.coeff_zero_eq_constantCoeff, hE4const]
-  have hE4pow1 : (qExpansion 1 (E4 ^ 3)).coeff 1 = 720 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, antidiagonal_one]
-    simp [PowerSeries.coeff_mul, antidiagonal_one, hE40, hE41]
-    norm_num
-  have hqover0 : (qExpansion 1 qoverDelta).coeff 0 = 1 := by
-    simp [qExpansion_coeff, cuspFunction_qoverDelta_zero]
-  have hDeltaoverq1 : (qExpansion 1 Deltaoverq).coeff 1 = -24 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 1 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 2 := by simpa using InfSumDeltashift_coeff_eq 1
-      _ = -24 := Delta_exp_two
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
-    have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
-    simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
-    have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq1] using h1
-  have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
-    have hcoeff1 := congrArg (PowerSeries.coeff 1) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have hadd' : (-24 : ℂ) + (qExpansion 1 qoverDelta).coeff 1 = 0 := by
-      simpa [PowerSeries.coeff_mul, antidiagonal_one, hmap0, hmap1, hqover0] using hcoeff1
-    have hadd : (qExpansion 1 qoverDelta).coeff 1 + (-24 : ℂ) = 0 := by
-      simpa [add_comm] using hadd'
-    have hneg : (qExpansion 1 qoverDelta).coeff 1 = -(-24 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  calc
-  _ = (qExpansion 1 (E4 ^ 3 * qoverDelta)).coeff 1 := by rw [hqj]
-  _ = (qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta).coeff 1 := by rw [hmul]
-  _ = (qExpansion 1 (E4 ^ 3)).coeff 0 * (qExpansion 1 qoverDelta).coeff 1
-      + (qExpansion 1 (E4 ^ 3)).coeff 1 * (qExpansion 1 qoverDelta).coeff 0 := by
-      rw [PowerSeries.coeff_mul, antidiagonal_one]
-      simp [add_comm, mul_comm]
-  _ = _ := by
-      simp [hE4pow0, hE4pow1, hqover0, hqover1]
-      norm_num
-
-lemma qj_exp_one' : qj_coeffs 1 = 744 := by
-  have h1 : ((qj_coeffs 1 : ℤ) : ℂ) = (qExpansion 1 qj).coeff 1 := by
-    simpa [qj_coeffs] using
-        congrArg (PowerSeries.coeff 1) (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
-  have h2 : ((qj_coeffs 1 : ℤ) : ℂ) = 744 := by
-    calc
-    _ = (qExpansion 1 qj).coeff 1 := h1
-    _ = _ := qj_exp_one
-  exact_mod_cast h2
-
-lemma qj_exp_two : (qExpansion 1 qj).coeff 2 = 196884 := by
-  have hantidiag2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
-    simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
-  have hmul :
-      qExpansion 1 (E4 ^ 3 * qoverDelta) = qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta := by
-    exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE42 : (qExpansion 1 E4).coeff 2 = 2160 := by
-    have h := congr_fun E4_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE4pow0 : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
-    rw [hE4pow]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [PowerSeries.coeff_zero_eq_constantCoeff, hE4const]
-  have hE4pow1 : (qExpansion 1 (E4 ^ 3)).coeff 1 = 720 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, antidiagonal_one]
-    simp [PowerSeries.coeff_mul, antidiagonal_one, hE40, hE41]
-    norm_num
-  have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-    rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-    simp [hE40, hE41]
-    norm_num
-  have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-    rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-    simp [hE40, hE41, hE42]
-    norm_num
-  have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-    simpa [pow_two] using hE4sq1
-  have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-    simpa [pow_two] using hE4sq2
-  have hE4pow2 : (qExpansion 1 (E4 ^ 3)).coeff 2 = 179280 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag2]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE4mul1, hE4mul2, hE4const]
-    norm_num
-  have hqover0 : (qExpansion 1 qoverDelta).coeff 0 = 1 := by
-    simp [qExpansion_coeff, cuspFunction_qoverDelta_zero]
-  have hDeltaoverq1 : (qExpansion 1 Deltaoverq).coeff 1 = -24 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 1 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 2 := by simpa using InfSumDeltashift_coeff_eq 1
-      _ = -24 := Delta_exp_two
-  have hDeltaoverq2 : (qExpansion 1 Deltaoverq).coeff 2 = 252 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 2 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 3 := by simpa using InfSumDeltashift_coeff_eq 2
-      _ = 252 := Delta_exp_three
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
-    have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
-    simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
-    have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq1] using h1
-  have hmap2 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 2 = 252 := by
-    have h2 := congrArg (PowerSeries.coeff 2) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq2] using h2
-  have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
-    have hcoeff1 := congrArg (PowerSeries.coeff 1) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have hadd' : (-24 : ℂ) + (qExpansion 1 qoverDelta).coeff 1 = 0 := by
-      simpa [PowerSeries.coeff_mul, antidiagonal_one, hmap0, hmap1, hqover0] using hcoeff1
-    have hadd : (qExpansion 1 qoverDelta).coeff 1 + (-24 : ℂ) = 0 := by
-      simpa [add_comm] using hadd'
-    have hneg : (qExpansion 1 qoverDelta).coeff 1 = -(-24 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  have hqover2 : (qExpansion 1 qoverDelta).coeff 2 = 324 := by
-    have hcoeff2 := congrArg (PowerSeries.coeff 2) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have h2eq : (qExpansion 1 qoverDelta).coeff 2 + (-24 : ℂ) * (qExpansion 1 qoverDelta).coeff 1
-        + (252 : ℂ) = 0 := by
-      simpa [PowerSeries.coeff_mul, hantidiag2, hmap0, hmap1, hmap2, hqover0, add_assoc, add_comm,
-        add_left_comm, mul_comm, mul_left_comm, mul_assoc] using hcoeff2
-    rw [hqover1] at h2eq
-    have hadd : (qExpansion 1 qoverDelta).coeff 2 + (-324 : ℂ) = 0 := by
-      have h2eq' := h2eq
-      ring_nf at h2eq'
-      simpa [add_comm] using h2eq'
-    have hneg : (qExpansion 1 qoverDelta).coeff 2 = -(-324 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  calc
-  _ = (qExpansion 1 (E4 ^ 3 * qoverDelta)).coeff 2 := by rw [hqj]
-  _ = (qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta).coeff 2 := by rw [hmul]
-  _ = (qExpansion 1 (E4 ^ 3)).coeff 0 * (qExpansion 1 qoverDelta).coeff 2
-      + (qExpansion 1 (E4 ^ 3)).coeff 1 * (qExpansion 1 qoverDelta).coeff 1
-      + (qExpansion 1 (E4 ^ 3)).coeff 2 * (qExpansion 1 qoverDelta).coeff 0 := by
-      rw [PowerSeries.coeff_mul, hantidiag2]
-      simp [add_assoc, add_comm, mul_comm]
-  _ = _ := by
-      simp [hE4pow0, hE4pow1, hE4pow2, hqover0, hqover1, hqover2]
-      norm_num
-
-lemma qj_exp_two' : qj_coeffs 2 = 196884 := by
-  have h1 : ((qj_coeffs 2 : ℤ) : ℂ) = (qExpansion 1 qj).coeff 2 := by
-    simpa [qj_coeffs] using
-        congrArg (PowerSeries.coeff 2) (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
-  have h2 : ((qj_coeffs 2 : ℤ) : ℂ) = 196884 := by
-    calc
-    _ = (qExpansion 1 qj).coeff 2 := h1
-    _ = _ := qj_exp_two
-  exact_mod_cast h2
-
-lemma qj_exp_three : (qExpansion 1 qj).coeff 3 = 21493760 := by
-  have hantidiag2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag3 : Finset.antidiagonal 3 = {(0, 3), (1, 2), (2, 1), (3, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
-    simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
-  have hmul :
-      qExpansion 1 (E4 ^ 3 * qoverDelta) = qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta := by
-    exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE42 : (qExpansion 1 E4).coeff 2 = 2160 := by
-    have h := congr_fun E4_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE43 : (qExpansion 1 E4).coeff 3 = 6720 := by
-    have h := congr_fun E4_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE4pow0 : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
-    rw [hE4pow]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [PowerSeries.coeff_zero_eq_constantCoeff, hE4const]
-  have hE4pow1 : (qExpansion 1 (E4 ^ 3)).coeff 1 = 720 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, antidiagonal_one]
-    simp [PowerSeries.coeff_mul, antidiagonal_one, hE40, hE41]
-    norm_num
-  have hE4pow2 : (qExpansion 1 (E4 ^ 3)).coeff 2 = 179280 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag2]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    simp [hE40, hE41, hE42, hE4mul1, hE4mul2, hE4const]
-    norm_num
-  have hE4pow3 : (qExpansion 1 (E4 ^ 3)).coeff 3 = 16954560 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag3]
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4sq3 : (qExpansion 1 E4 ^ 2).coeff 3 = 1050240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag3]
-      simp [hE40, hE41, hE42, hE43]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    have hE4mul3 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 3 = 1050240 := by
-      simpa [pow_two] using hE4sq3
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE43, hE4mul1, hE4mul2, hE4mul3, hE4const]
-    norm_num
-  have hqover0 : (qExpansion 1 qoverDelta).coeff 0 = 1 := by
-    simp [qExpansion_coeff, cuspFunction_qoverDelta_zero]
-  have hDeltaoverq1 : (qExpansion 1 Deltaoverq).coeff 1 = -24 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 1 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 2 := by simpa using InfSumDeltashift_coeff_eq 1
-      _ = -24 := Delta_exp_two
-  have hDeltaoverq2 : (qExpansion 1 Deltaoverq).coeff 2 = 252 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 2 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 3 := by simpa using InfSumDeltashift_coeff_eq 2
-      _ = 252 := Delta_exp_three
-  have hDeltaoverq3 : (qExpansion 1 Deltaoverq).coeff 3 = -1472 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 3 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 4 := by simpa using InfSumDeltashift_coeff_eq 3
-      _ = -1472 := Delta_exp_four
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
-    have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
-    simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
-    have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq1] using h1
-  have hmap2 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 2 = 252 := by
-    have h2 := congrArg (PowerSeries.coeff 2) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq2] using h2
-  have hmap3 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 3 = -1472 := by
-    have h3 := congrArg (PowerSeries.coeff 3) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq3] using h3
-  have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
-    have hcoeff1 := congrArg (PowerSeries.coeff 1) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have hadd' : (-24 : ℂ) + (qExpansion 1 qoverDelta).coeff 1 = 0 := by
-      simpa [PowerSeries.coeff_mul, antidiagonal_one, hmap0, hmap1, hqover0] using hcoeff1
-    have hadd : (qExpansion 1 qoverDelta).coeff 1 + (-24 : ℂ) = 0 := by
-      simpa [add_comm] using hadd'
-    have hneg : (qExpansion 1 qoverDelta).coeff 1 = -(-24 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  have hqover2 : (qExpansion 1 qoverDelta).coeff 2 = 324 := by
-    have hcoeff2 := congrArg (PowerSeries.coeff 2) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have h2eq : (qExpansion 1 qoverDelta).coeff 2 + (-24 : ℂ) * (qExpansion 1 qoverDelta).coeff 1
-        + (252 : ℂ) = 0 := by
-      simpa [PowerSeries.coeff_mul, hantidiag2, hmap0, hmap1, hmap2, hqover0, add_assoc, add_comm,
-        add_left_comm, mul_comm, mul_left_comm, mul_assoc] using hcoeff2
-    rw [hqover1] at h2eq
-    have hadd : (qExpansion 1 qoverDelta).coeff 2 + (-324 : ℂ) = 0 := by
-      have h2eq' := h2eq
-      ring_nf at h2eq'
-      simpa [add_comm] using h2eq'
-    have hneg : (qExpansion 1 qoverDelta).coeff 2 = -(-324 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  have hqover3 : (qExpansion 1 qoverDelta).coeff 3 = 3200 := by
-    have hcoeff3 := congrArg (PowerSeries.coeff 3) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have h3eq : (qExpansion 1 qoverDelta).coeff 3
-        + (-24 : ℂ) * (qExpansion 1 qoverDelta).coeff 2
-        + (252 : ℂ) * (qExpansion 1 qoverDelta).coeff 1
-        + (-1472 : ℂ) = 0 := by
-      simpa [PowerSeries.coeff_mul, hantidiag3, hmap0, hmap1, hmap2, hmap3, hqover0, add_assoc,
-        add_comm, add_left_comm, mul_comm, mul_left_comm, mul_assoc] using hcoeff3
-    rw [hqover1, hqover2] at h3eq
-    have hadd : (qExpansion 1 qoverDelta).coeff 3 + (-3200 : ℂ) = 0 := by
-      have h3eq' := h3eq
-      ring_nf at h3eq'
-      simpa [add_comm] using h3eq'
-    have hneg : (qExpansion 1 qoverDelta).coeff 3 = -(-3200 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  calc
-  _ = (qExpansion 1 (E4 ^ 3 * qoverDelta)).coeff 3 := by rw [hqj]
-  _ = (qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta).coeff 3 := by rw [hmul]
-  _ = (qExpansion 1 (E4 ^ 3)).coeff 0 * (qExpansion 1 qoverDelta).coeff 3
-      + (qExpansion 1 (E4 ^ 3)).coeff 1 * (qExpansion 1 qoverDelta).coeff 2
-      + (qExpansion 1 (E4 ^ 3)).coeff 2 * (qExpansion 1 qoverDelta).coeff 1
-      + (qExpansion 1 (E4 ^ 3)).coeff 3 * (qExpansion 1 qoverDelta).coeff 0 := by
-      rw [PowerSeries.coeff_mul, hantidiag3]
-      simp [add_assoc, add_comm, mul_comm]
-  _ = _ := by
-      simp [hE4pow0, hE4pow1, hE4pow2, hE4pow3, hqover0, hqover1, hqover2, hqover3]
-      norm_num
-
-lemma qj_exp_three' : qj_coeffs 3 = 21493760 := by
-  have h1 : ((qj_coeffs 3 : ℤ) : ℂ) = (qExpansion 1 qj).coeff 3 := by
-    simpa [qj_coeffs] using
-        congrArg (PowerSeries.coeff 3) (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
-  have h2 : ((qj_coeffs 3 : ℤ) : ℂ) = 21493760 := by
-    calc
-    _ = (qExpansion 1 qj).coeff 3 := h1
-    _ = _ := qj_exp_three
-  exact_mod_cast h2
-
-lemma qj_exp_four : (qExpansion 1 qj).coeff 4 = 864299970 := by
-  have hantidiag2 : Finset.antidiagonal 2 = {(0, 2), (1, 1), (2, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag3 : Finset.antidiagonal 3 = {(0, 3), (1, 2), (2, 1), (3, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hantidiag4 : Finset.antidiagonal 4 = {(0, 4), (1, 3), (2, 2), (3, 1), (4, 0)} := by
-    ext p
-    rcases p with ⟨a, b⟩
-    simp
-    omega
-  have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
-    simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
-  have hmul :
-      qExpansion 1 (E4 ^ 3 * qoverDelta) = qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta := by
-    exact qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt
-  have hE4pow : qExpansion 1 (E4 ^ 3) = (qExpansion 1 E4) ^ 3 := by
-    simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
-      (k := (4 : ℤ)) (hh := by norm_num) (hΓ := one_mem_strictPeriods_SL2Z) E4 3
-  have hE40 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
-  have hE41 : (qExpansion 1 E4).coeff 1 = 240 := by
-    simpa [E4] using congr_fun E4_q_exp 1
-  have hE42 : (qExpansion 1 E4).coeff 2 = 2160 := by
-    have h := congr_fun E4_q_exp 2
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE43 : (qExpansion 1 E4).coeff 3 = 6720 := by
-    have h := congr_fun E4_q_exp 3
-    norm_num [ArithmeticFunction.sigma] at h ⊢
-    exact h
-  have hE44 : (qExpansion 1 E4).coeff 4 = 17520 := by
-    have h : (qExpansion 1 E4).coeff 4 = (240 : ℂ) * ArithmeticFunction.sigma 3 4 := by
-      simpa [E4] using (congr_fun E4_q_exp 4)
-    have hsigma : ArithmeticFunction.sigma 3 4 = 73 := by
-      decide
-    calc
-      _ = (240 : ℂ) * ArithmeticFunction.sigma 3 4 := h
-      _ = (240 : ℂ) * 73 := by simp [hsigma]
-      _ = 17520 := by norm_num
-  have hE4pow0 : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
-    rw [hE4pow]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [PowerSeries.coeff_zero_eq_constantCoeff, hE4const]
-  have hE4pow1 : (qExpansion 1 (E4 ^ 3)).coeff 1 = 720 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, antidiagonal_one]
-    simp [PowerSeries.coeff_mul, antidiagonal_one, hE40, hE41]
-    norm_num
-  have hE4pow2 : (qExpansion 1 (E4 ^ 3)).coeff 2 = 179280 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag2]
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    simp [hE40, hE41, hE42, hE4mul1, hE4mul2, hE4const]
-    norm_num
-  have hE4pow3 : (qExpansion 1 (E4 ^ 3)).coeff 3 = 16954560 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag3]
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4sq3 : (qExpansion 1 E4 ^ 2).coeff 3 = 1050240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag3]
-      simp [hE40, hE41, hE42, hE43]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    have hE4mul3 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 3 = 1050240 := by
-      simpa [pow_two] using hE4sq3
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE43, hE4mul1, hE4mul2, hE4mul3, hE4const]
-    norm_num
-  have hE4pow4 : (qExpansion 1 (E4 ^ 3)).coeff 4 = 396974160 := by
-    rw [hE4pow, pow_three, PowerSeries.coeff_mul, hantidiag4]
-    have hE4sq1 : (qExpansion 1 E4 ^ 2).coeff 1 = 480 := by
-      rw [pow_two, PowerSeries.coeff_mul, antidiagonal_one]
-      simp [hE40, hE41]
-      norm_num
-    have hE4sq2 : (qExpansion 1 E4 ^ 2).coeff 2 = 61920 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag2]
-      simp [hE40, hE41, hE42]
-      norm_num
-    have hE4sq3 : (qExpansion 1 E4 ^ 2).coeff 3 = 1050240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag3]
-      simp [hE40, hE41, hE42, hE43]
-      norm_num
-    have hE4sq4 : (qExpansion 1 E4 ^ 2).coeff 4 = 7926240 := by
-      rw [pow_two, PowerSeries.coeff_mul, hantidiag4]
-      simp [hE40, hE41, hE42, hE43, hE44]
-      norm_num
-    have hE4mul1 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 1 = 480 := by
-      simpa [pow_two] using hE4sq1
-    have hE4mul2 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 2 = 61920 := by
-      simpa [pow_two] using hE4sq2
-    have hE4mul3 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 3 = 1050240 := by
-      simpa [pow_two] using hE4sq3
-    have hE4mul4 : (qExpansion 1 E4 * qExpansion 1 E4).coeff 4 = 7926240 := by
-      simpa [pow_two] using hE4sq4
-    have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
-      simpa [PowerSeries.coeff_zero_eq_constantCoeff] using hE40
-    simp [hE40, hE41, hE42, hE43, hE44, hE4mul1, hE4mul2, hE4mul3, hE4mul4, hE4const]
-    norm_num
-  have hqover0 : (qExpansion 1 qoverDelta).coeff 0 = 1 := by
-    simp [qExpansion_coeff, cuspFunction_qoverDelta_zero]
-  have hDeltaoverq1 : (qExpansion 1 Deltaoverq).coeff 1 = -24 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 1 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 2 := by simpa using InfSumDeltashift_coeff_eq 1
-      _ = -24 := Delta_exp_two
-  have hDeltaoverq2 : (qExpansion 1 Deltaoverq).coeff 2 = 252 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 2 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 3 := by simpa using InfSumDeltashift_coeff_eq 2
-      _ = 252 := Delta_exp_three
-  have hDeltaoverq3 : (qExpansion 1 Deltaoverq).coeff 3 = -1472 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 3 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 4 := by simpa using InfSumDeltashift_coeff_eq 3
-      _ = -1472 := Delta_exp_four
-  have hDeltaoverq4 : (qExpansion 1 Deltaoverq).coeff 4 = 4830 := by
-    have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-      simpa using qExpansion_ext Deltaoverq InfSumDeltashift (InfSumDeltashift_eq_Deltaoverq.symm)
-    calc
-      _ = (qExpansion 1 InfSumDeltashift).coeff 4 := by simp [hq]
-      _ = (qExpansion 1 Delta).coeff 5 := by simpa using InfSumDeltashift_coeff_eq 4
-      _ = 4830 := Delta_exp_five
-  have hmap0 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 0 = 1 := by
-    have h0 := congrArg (PowerSeries.coeff 0) coeTo_of_integralDeltaoverq
-    simpa [qExpansion_coeff, cuspFunction_Deltaoverq_zero] using h0
-  have hmap1 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 1 = -24 := by
-    have h1 := congrArg (PowerSeries.coeff 1) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq1] using h1
-  have hmap2 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 2 = 252 := by
-    have h2 := congrArg (PowerSeries.coeff 2) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq2] using h2
-  have hmap3 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 3 = -1472 := by
-    have h3 := congrArg (PowerSeries.coeff 3) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq3] using h3
-  have hmap4 : (coeToComplexPowerSeries.ringHom integralDeltaoverq).coeff 4 = 4830 := by
-    have h4 := congrArg (PowerSeries.coeff 4) coeTo_of_integralDeltaoverq
-    simpa [hDeltaoverq4] using h4
-  have hqover1 : (qExpansion 1 qoverDelta).coeff 1 = 24 := by
-    have hcoeff1 := congrArg (PowerSeries.coeff 1) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have hadd' : (-24 : ℂ) + (qExpansion 1 qoverDelta).coeff 1 = 0 := by
-      simpa [PowerSeries.coeff_mul, antidiagonal_one, hmap0, hmap1, hqover0] using hcoeff1
-    have hadd : (qExpansion 1 qoverDelta).coeff 1 + (-24 : ℂ) = 0 := by
-      simpa [add_comm] using hadd'
-    have hneg : (qExpansion 1 qoverDelta).coeff 1 = -(-24 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  have hqover2 : (qExpansion 1 qoverDelta).coeff 2 = 324 := by
-    have hcoeff2 := congrArg (PowerSeries.coeff 2) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have h2eq : (qExpansion 1 qoverDelta).coeff 2 + (-24 : ℂ) * (qExpansion 1 qoverDelta).coeff 1
-        + (252 : ℂ) = 0 := by
-      simpa [PowerSeries.coeff_mul, hantidiag2, hmap0, hmap1, hmap2, hqover0, add_assoc, add_comm,
-        add_left_comm, mul_comm, mul_left_comm, mul_assoc] using hcoeff2
-    rw [hqover1] at h2eq
-    have hadd : (qExpansion 1 qoverDelta).coeff 2 + (-324 : ℂ) = 0 := by
-      have h2eq' := h2eq
-      ring_nf at h2eq'
-      simpa [add_comm] using h2eq'
-    have hneg : (qExpansion 1 qoverDelta).coeff 2 = -(-324 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  have hqover3 : (qExpansion 1 qoverDelta).coeff 3 = 3200 := by
-    have hcoeff3 := congrArg (PowerSeries.coeff 3) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have h3eq : (qExpansion 1 qoverDelta).coeff 3
-        + (-24 : ℂ) * (qExpansion 1 qoverDelta).coeff 2
-        + (252 : ℂ) * (qExpansion 1 qoverDelta).coeff 1
-        + (-1472 : ℂ) = 0 := by
-      simpa [PowerSeries.coeff_mul, hantidiag3, hmap0, hmap1, hmap2, hmap3, hqover0, add_assoc,
-        add_comm, add_left_comm, mul_comm, mul_left_comm, mul_assoc] using hcoeff3
-    rw [hqover1, hqover2] at h3eq
-    have hadd : (qExpansion 1 qoverDelta).coeff 3 + (-3200 : ℂ) = 0 := by
-      have h3eq' := h3eq
-      ring_nf at h3eq'
-      simpa [add_comm] using h3eq'
-    have hneg : (qExpansion 1 qoverDelta).coeff 3 = -(-3200 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  have hqover4 : (qExpansion 1 qoverDelta).coeff 4 = 25650 := by
-    have hcoeff4 := congrArg (PowerSeries.coeff 4) integralDeltaoverq_mul_qoverDelta_qExpansion
-    have h4eq : (qExpansion 1 qoverDelta).coeff 4
-        + (-24 : ℂ) * (qExpansion 1 qoverDelta).coeff 3
-        + (252 : ℂ) * (qExpansion 1 qoverDelta).coeff 2
-        + (-1472 : ℂ) * (qExpansion 1 qoverDelta).coeff 1
-        + (4830 : ℂ) = 0 := by
-      simpa [PowerSeries.coeff_mul, hantidiag4, hmap0, hmap1, hmap2, hmap3, hmap4, hqover0,
-        add_assoc, add_comm, add_left_comm, mul_comm, mul_left_comm, mul_assoc] using hcoeff4
-    rw [hqover1, hqover2, hqover3] at h4eq
-    have hadd : (qExpansion 1 qoverDelta).coeff 4 + (-25650 : ℂ) = 0 := by
-      have h4eq' := h4eq
-      ring_nf at h4eq'
-      simpa [add_comm] using h4eq'
-    have hneg : (qExpansion 1 qoverDelta).coeff 4 = -(-25650 : ℂ) :=
-      (eq_neg_iff_add_eq_zero).2 hadd
-    simpa using hneg
-  calc
-  _ = (qExpansion 1 (E4 ^ 3 * qoverDelta)).coeff 4 := by rw [hqj]
-  _ = (qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta).coeff 4 := by rw [hmul]
-  _ = (qExpansion 1 (E4 ^ 3)).coeff 0 * (qExpansion 1 qoverDelta).coeff 4
-      + (qExpansion 1 (E4 ^ 3)).coeff 1 * (qExpansion 1 qoverDelta).coeff 3
-      + (qExpansion 1 (E4 ^ 3)).coeff 2 * (qExpansion 1 qoverDelta).coeff 2
-      + (qExpansion 1 (E4 ^ 3)).coeff 3 * (qExpansion 1 qoverDelta).coeff 1
-      + (qExpansion 1 (E4 ^ 3)).coeff 4 * (qExpansion 1 qoverDelta).coeff 0 := by
-      rw [PowerSeries.coeff_mul, hantidiag4]
-      simp [add_assoc, add_comm, mul_comm]
-  _ = _ := by
-    simp [hE4pow0, hE4pow1, hE4pow2, hE4pow3, hE4pow4, hqover0, hqover1, hqover2, hqover3, hqover4]
-    norm_num
-
-lemma qj_exp_four' : qj_coeffs 4 = 864299970 := by
-  have h1 : ((qj_coeffs 4 : ℤ) : ℂ) = (qExpansion 1 qj).coeff 4 := by
-    simpa [qj_coeffs] using
-        congrArg (PowerSeries.coeff 4) (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
-  have h2 : ((qj_coeffs 4 : ℤ) : ℂ) = 864299970 := by
-    calc
-    _ = (qExpansion 1 qj).coeff 4 := h1
-    _ = _ := qj_exp_four
-  exact_mod_cast h2
-
-lemma j_exp : ∀ z : ℍ, j z = (qj_coeffs 0 / cexp (2 * π * Complex.I * z))
-    + ∑' n, (qj_coeffs (n + 1)) * cexp (2 * π * Complex.I * z) ^ n := by
-  intro z
-  rw [← cancelout1, ← cancelout2]
-  exact qj_exp_dvd z
-
-lemma j_exp' : ∃ (c : ℕ → ℤ), ∀ z : ℍ, j z = (c 0 / cexp (2 * π * Complex.I * z))
-    + ∑' n, (c (n + 1)) * cexp (2 * π * Complex.I * z) ^ n := by
-  refine ⟨qj_coeffs, ?_⟩
-  exact j_exp
-
-lemma j_exp_to_minusone : ∃ (c : ℕ → ℤ), ∀ z : ℍ, j z =
-    (1 / cexp (2 * π * Complex.I * z)) + ∑' n, (c n) * cexp (2 * π * Complex.I * z) ^ n := by
-  let c : ℕ → ℤ := fun n ↦ qj_coeffs (n + 1)
-  use c
-  intro z
-  have h := j_exp z
-  rw [qj_exp_zero'] at h
-  exact_mod_cast h
-
-lemma j_exp_to_three : ∃ (c : ℕ → ℤ), c 0 = 744 ∧ c 1 = 196884 ∧ c 2 = 21493760 ∧ c 3 = 864299970
-    ∧ ∀ z : ℍ, j z =
-    (1 / cexp (2 * π * Complex.I * z)) + ∑' n, (c n) * cexp (2 * π * Complex.I * z) ^ n := by
-  let c : ℕ → ℤ := fun n ↦ qj_coeffs (n + 1)
-  refine ⟨c, ?_, ?_, ?_, ?_, ?_⟩
-  · simpa [c] using qj_exp_one'
-  · simpa [c] using qj_exp_two'
-  · simpa [c] using qj_exp_three'
-  · simpa [c] using qj_exp_four'
-  · intro z
-    have h := j_exp z
-    rw [qj_exp_zero'] at h
-    simpa [c] using h
 
 theorem Delta_HasIntegralQExpansion : HasIntegralQExpansion 1 Delta :=
   HasIntegralQExpansion_ofPowerSeries DeltaIsIntegralPowerSeries
@@ -1697,8 +626,8 @@ theorem j_HasIntegralQExpansion : HasIntegralQExpansion 1 j := by
 end
 
 lemma qj_cuspFunction_DifferentiableOn : DifferentiableOn ℂ (cuspFunction 1 qj) (Metric.ball 0 1) :=
-  differentiableOn_cuspFunction_ball' (h := 1) (f := qj) (by norm_num)
-    qj_periodic qj_holomorphic qj_IsBoundedAtImInfty
+  UpperHalfPlane.differentiableOn_cuspFunction_ball (h := 1) (f := qj) (by norm_num)
+    qj_periodic qj_MDifferentiable qj_IsBoundedAtImInfty
 
 lemma qj_cuspFunction_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 qj) 0 :=
   DifferentiableOn.analyticAt
@@ -1740,7 +669,7 @@ lemma j_cuspFunction_Meromorphic : MeromorphicAt (cuspFunction 1 j) (0 : ℂ) :=
 
 lemma j_cuspFunction_notAnalytic : ¬ AnalyticAt ℂ (cuspFunction 1 j) 0 := by
   have hqj0 : cuspFunction 1 qj 0 = 1 := by
-    simpa [qExpansion_coeff] using qj_exp_zero
+    simpa [qExpansion_coeff] using qj_exp_zero_for_jfunction
   intro hjan
   have hmul_tendsto :
       Tendsto (fun q : ℂ ↦ q * cuspFunction 1 j q)
@@ -1771,7 +700,7 @@ lemma j_cuspFunction_notAnalytic : ¬ AnalyticAt ℂ (cuspFunction 1 j) 0 := by
 lemma j_poleOrder : poleOrder 1 j = 1 := by
   let F : ℂ → ℂ := cuspFunction 1 qj
   have hqj0 : F 0 = 1 := by
-    simpa [F, qExpansion_coeff] using qj_exp_zero
+    simpa [F, qExpansion_coeff] using qj_exp_zero_for_jfunction
   have hnorm0 : {q : ℂ | ‖q‖ < 1} ∈ nhds (0 : ℂ) := by
     simpa [Metric.ball, dist_eq_norm] using (Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
   have hnorm : {q : ℂ | ‖q‖ < 1} ∈ nhdsWithin (0 : ℂ) ({0}ᶜ) :=
@@ -1837,244 +766,13 @@ theorem jLaurentqExpansion_isIntegral {n : ℤ} :
   · refine ⟨qj_coeffs (Int.toNat (n + 1)), ?_⟩
     have hge : -(poleOrder 1 j : ℤ) ≤ n := by
       simpa [j_poleOrder] using le_of_not_gt hn
-    have hcoeff :
-        (((qj_coeffs (Int.toNat (n + 1)) : ℤ) : ℂ)) =
-          (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by
+    have hcoeff : (((qj_coeffs (Int.toNat (n + 1)) : ℤ) : ℂ)) =
+        (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by
       simpa [qj_coeffs] using congrArg (PowerSeries.coeff (Int.toNat (n + 1)))
         (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
     calc
-      (laurentqExpansion 1 j).coeff n
-          = (to_qExpansion 1 j).coeff (Int.toNat (n + poleOrder 1 j)) := by
-              simpa using
-                (laurentqExpansion.coeff_of_geq (h := 1) (f := j) (n := n) (hn := hge))
-      _ = (qExpansion 1 qj).coeff (Int.toNat (n + poleOrder 1 j)) := by
-            rw [j_to_qExpansion]
-      _ = (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by
-            simp [j_poleOrder]
-      _ = qj_coeffs (Int.toNat (n + 1)) := by
-            simpa using hcoeff.symm
-
-theorem jLaurentqExpansion_minusone : (laurentqExpansion 1 j).coeff (-1) = 1 := by
-  calc
-    (laurentqExpansion 1 j).coeff (-1) = (to_qExpansion 1 j).coeff 0 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder (h := 1) (f := j))
-    _ = (qExpansion 1 qj).coeff 0 := by rw [j_to_qExpansion]
-    _ = 1 := qj_exp_zero
-
-theorem jLaurentqExpansion_zero : (laurentqExpansion 1 j).coeff 0 = 744 := by
-  calc
-    (laurentqExpansion 1 j).coeff 0 = (to_qExpansion 1 j).coeff 1 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 1)
-    _ = (qExpansion 1 qj).coeff 1 := by rw [j_to_qExpansion]
-    _ = 744 := qj_exp_one
-
-theorem jLaurentqExpansion_one : (laurentqExpansion 1 j).coeff 1 = 196884 := by
-  calc
-    (laurentqExpansion 1 j).coeff 1 = (to_qExpansion 1 j).coeff 2 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 2)
-    _ = (qExpansion 1 qj).coeff 2 := by rw [j_to_qExpansion]
-    _ = 196884 := qj_exp_two
-
-theorem jLaurentqExpansion_two : (laurentqExpansion 1 j).coeff 2 = 21493760 := by
-  calc
-    (laurentqExpansion 1 j).coeff 2 = (to_qExpansion 1 j).coeff 3 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 3)
-    _ = (qExpansion 1 qj).coeff 3 := by rw [j_to_qExpansion]
-    _ = 21493760 := qj_exp_three
-
-theorem jLaurentqExpansion_three : (laurentqExpansion 1 j).coeff 3 = 864299970 := by
-  calc
-    (laurentqExpansion 1 j).coeff 3 = (to_qExpansion 1 j).coeff 4 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 4)
-    _ = (qExpansion 1 qj).coeff 4 := by rw [j_to_qExpansion]
-    _ = 864299970 := qj_exp_four
-
-section modularEquation
-
-noncomputable def jN (N : ℕ+) : ℍ → ℂ := j ∘ (N • ·)
-
-lemma j_invariant (γ : SL(2, ℤ)) (z : ℍ) : j (γ • z) = j z := by
-  have := congrFun (j_slashInvariant γ) z
-  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at this
-  exact this
-
-private def gamma0Conjugate (N : ℕ+) (γ : SL(2, ℤ))
-    (hγ : γ ∈ CongruenceSubgroup.Gamma0 N) : SL(2, ℤ) :=
-  let a := γ 0 0; let b := γ 0 1; let c := γ 1 0; let d := γ 1 1
-  ⟨!![a, ↑N * b; c / ↑N, d], by
-    simp only [Matrix.det_fin_two, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
-      Matrix.cons_val_one]
-    have hdvd : (↑N : ℤ) ∣ c :=
-      (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp (CongruenceSubgroup.Gamma0_mem.mp hγ)
-    have hdet : a * d - b * c = 1 := by
-      have := γ.prop; rwa [Matrix.det_fin_two] at this
-    rw [show ↑N * b * (c / ↑N) = b * (↑N * (c / ↑N)) from by ring]
-    rw [Int.mul_ediv_cancel' hdvd]
-    linarith⟩
-
-private lemma natPosSMul_gamma0_comm (N : ℕ+) (γ : SL(2, ℤ))
-    (hγ : γ ∈ CongruenceSubgroup.Gamma0 N) (z : ℍ) :
-    N • (γ • z) = gamma0Conjugate N γ hγ • (N • z) := by
-  ext
-  simp only [natPosSMul_apply, coe_specialLinearGroup_apply, gamma0Conjugate,
-    Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one]
-  have hdvd : (↑N : ℤ) ∣ γ 1 0 :=
-    (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp (CongruenceSubgroup.Gamma0_mem.mp hγ)
-  have hcN : (↑N : ℤ) * (γ 1 0 / ↑N) = γ 1 0 := Int.mul_ediv_cancel' hdvd
-  have hR : (algebraMap ℤ ℝ) (γ 1 0 / ↑N) * (↑N : ℝ) = (algebraMap ℤ ℝ) (γ 1 0) := by
-    rw [show (↑N : ℝ) = (algebraMap ℤ ℝ) (↑N : ℤ) from by simp [algebraMap_int_eq]]
-    rw [← map_mul, mul_comm, hcN]
-  have hC : (↑((algebraMap ℤ ℝ) (γ 1 0 / ↑N)) : ℂ) * ((↑N : ℂ) * ↑z) =
-      (↑((algebraMap ℤ ℝ) (γ 1 0)) : ℂ) * ↑z := by
-    rw [← mul_assoc, show (↑((algebraMap ℤ ℝ) (γ 1 0 / ↑N)) : ℂ) * ↑N =
-      ↑((algebraMap ℤ ℝ) (γ 1 0)) from by exact_mod_cast hR]
-  rw [hC, map_mul, show (algebraMap ℤ ℝ) (↑↑N : ℤ) = (↑↑N : ℝ) from by simp [algebraMap_int_eq]]
-  push_cast
-  rw [← mul_div_assoc]
-  congr 1; ring
-
---rename jLevelN, notation
--- try integer/natural number with instance non-zero
---check
-lemma jN_slashInvariant (N : ℕ+) (γ : CongruenceSubgroup.Gamma0 N) :
-    jN N ∣[(0 : ℤ)] (γ : SL(2, ℤ)) = jN N := by
-  ext z
-  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one, jN, Function.comp]
-  rw [natPosSMul_gamma0_comm N γ γ.prop z]
-  exact j_invariant _ _
-
-noncomputable def qjN (N : ℕ+) : ℍ → ℂ := qj ∘ (N • ·)
-
-lemma natPosSMul_ofComplex_coe (N : ℕ+) {w : ℂ} (hw : 0 < w.im) :
-    N • UpperHalfPlane.ofComplex w = UpperHalfPlane.ofComplex ((↑↑N : ℂ) * w) := by
-  have hNw : 0 < ((↑↑N : ℂ) * w).im := by
-    rw [Complex.mul_im]
-    simp only [natCast_re, natCast_im, zero_mul, add_zero]
-    exact mul_pos (Nat.cast_pos.mpr N.pos) hw
-  apply UpperHalfPlane.ext
-  rw [natPosSMul_apply, UpperHalfPlane.ofComplex_apply_of_im_pos hw,
-    UpperHalfPlane.ofComplex_apply_of_im_pos hNw]
-
-lemma qjN_periodic (N : ℕ+) : Periodic (qjN N ∘ UpperHalfPlane.ofComplex) N := by
-  have hqNN : Periodic (qj ∘ UpperHalfPlane.ofComplex) ((↑↑N : ℂ) * ↑↑N) := by
-    have := qj_periodic.nat_mul ((N : ℕ) * N)
-    simpa [Nat.cast_mul] using this
-  intro w
-  simp only [Function.comp, qjN]
-  by_cases hw : 0 < Complex.im w
-  · have hwN : 0 < Complex.im (w + ↑↑N) := by simp [Complex.add_im]; linarith
-    have hkey := hqNN ((↑↑N : ℂ) * w)
-    rw [show (↑↑N : ℂ) * w + (↑↑N : ℂ) * ↑↑N = (↑↑N : ℂ) * (w + ↑↑N) from by ring] at hkey
-    simp only [Function.comp] at hkey
-    rw [natPosSMul_ofComplex_coe N hwN, natPosSMul_ofComplex_coe N hw]
-    exact hkey
-  · have hw0 := le_of_not_gt hw
-    have hwN : Complex.im (w + ↑↑N) ≤ 0 := by simp [Complex.add_im]; linarith
-    simp [UpperHalfPlane.ofComplex_apply_of_im_nonpos hw0,
-      UpperHalfPlane.ofComplex_apply_of_im_nonpos hwN]
-
-lemma qjN_holomorphic (N : ℕ+) :
-    ∀ z : ℂ, 0 < Complex.im z → DifferentiableAt ℂ (qjN N ∘ UpperHalfPlane.ofComplex) z := by
-  intro z hz
-  have hNz : 0 < Complex.im ((↑↑N : ℂ) * z) := by
-    rw [Complex.mul_im]
-    simp only [natCast_re, natCast_im, zero_mul, add_zero]
-    exact mul_pos (Nat.cast_pos.mpr N.pos) hz
-  have hqj := qj_holomorphic _ hNz
-  have hN : DifferentiableAt ℂ (fun w => (↑↑N : ℂ) * w) z :=
-    (differentiableAt_const _).mul differentiableAt_id
-  refine (hqj.comp z hN).congr_of_eventuallyEq ?_
-  filter_upwards [IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im) hz] with w hw
-  simp only [Function.comp, qjN]
-  rw [natPosSMul_ofComplex_coe N hw]
-
-lemma qjN_IsBoundedAtImInfty (N : ℕ+) :
-    IsBoundedAtImInfty (qjN N) := by
-  apply qj_IsBoundedAtImInfty.comp_tendsto
-  rw [show atImInfty = Filter.comap UpperHalfPlane.im
-    Filter.atTop from rfl, Filter.tendsto_comap_iff]
-  have hN_pos : (0 : ℝ) < ↑↑N := Nat.cast_pos.mpr N.pos
-  have him_eq :
-      UpperHalfPlane.im ∘ (fun x : ℍ => N • x) = (fun x => ↑↑N * x) ∘ UpperHalfPlane.im := by
-    ext τ
-    simp only [Function.comp, UpperHalfPlane.im, natPosSMul_apply, Complex.mul_im,
-      Complex.natCast_re, Complex.natCast_im, zero_mul, add_zero]
-  rw [him_eq]
-  exact (Filter.Tendsto.const_mul_atTop hN_pos Filter.tendsto_id).comp Filter.tendsto_comap
-
-lemma qjN_cuspFunction_analyticAt (N : ℕ+) : AnalyticAt ℂ (cuspFunction N (qjN N)) 0 :=
-  DifferentiableOn.analyticAt (fun q hq => (differentiableOn_cuspFunction_ball'
-    (Nat.cast_pos.mpr N.pos) (qjN_periodic N) (qjN_holomorphic N) (qjN_IsBoundedAtImInfty N)) q hq)
-      (by simpa [ball_zero_eq] using Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
-
-lemma jN_cuspFunction_eq (N : ℕ+) {q : ℂ} (hq0 : q ≠ 0) (hq : ‖q‖ < 1) :
-    cuspFunction N (jN N) q = q⁻¹ ^ ((N : ℕ) * N) * cuspFunction N (qjN N) q := by
-  have hN : (0 : ℝ) < N := Nat.cast_pos.mpr N.pos
-  have him := Periodic.im_invQParam_pos_of_norm_lt_one hN hq hq0
-  let τ : ℍ := ⟨Periodic.invQParam N q, him⟩
-  have hjN_eq : cuspFunction N (jN N) q = jN N τ := by
-    change Periodic.cuspFunction N _ q = _
-    rw [Periodic.cuspFunction_eq_of_nonzero N _ hq0]
-    simp [τ, UpperHalfPlane.ofComplex_apply_of_im_pos him]
-  have hqjN_eq : cuspFunction N (qjN N) q = qjN N τ := by
-    change Periodic.cuspFunction N _ q = _
-    rw [Periodic.cuspFunction_eq_of_nonzero N _ hq0]
-    simp [τ, UpperHalfPlane.ofComplex_apply_of_im_pos him]
-  have hcexp : cexp (2 * ↑π * Complex.I * (↑(N • τ) : ℂ)) = q ^ ((N : ℕ) * N) := by
-    rw [natPosSMul_apply, show 2 * ↑π * Complex.I * ((↑↑N : ℂ) * (τ : ℂ)) = ↑((N : ℕ) * N) *
-      (2 * ↑π * Complex.I * (τ : ℂ) / ↑↑N) from by field_simp; push_cast; ring, Complex.exp_nat_mul]
-    congr 1
-    simpa [τ, Periodic.qParam] using Periodic.qParam_right_inv (ne_of_gt hN) hq0
-  rw [hjN_eq, hqjN_eq]
-  simp only [jN, qjN, Function.comp, qj, Pi.mul_apply]
-  rw [hcexp, inv_pow, ← mul_assoc, inv_mul_cancel₀ (pow_ne_zero _ hq0), one_mul]
-
-lemma jN_cuspFunction_Meromorphic (N : ℕ+) : MeromorphicAt (cuspFunction N (jN N)) (0 : ℂ) := by
-  have hqjN_mer : MeromorphicAt (cuspFunction N (qjN N)) (0 : ℂ) := by
-    change MeromorphicAt (Function.Periodic.cuspFunction N (qjN N ∘ UpperHalfPlane.ofComplex)) 0
-    exact (qjN_cuspFunction_analyticAt N).meromorphicAt
-  have hpow : MeromorphicAt (fun q : ℂ => q⁻¹ ^ ((N : ℕ) * N)) (0 : ℂ) :=
-    ((MeromorphicAt.id (0 : ℂ)).inv).pow _
-  refine (hpow.mul hqjN_mer).congr ?_
-  have hnorm : {q : ℂ | ‖q‖ < 1} ∈ nhdsWithin (0 : ℂ) ({0}ᶜ) :=
-    nhdsWithin_le_nhds (by simpa [Metric.ball, dist_eq_norm]
-      using Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
-  filter_upwards [hnorm, self_mem_nhdsWithin] with q hq hq'
-  simp only [Pi.mul_apply]
-  exact (jN_cuspFunction_eq N (by simpa using hq') hq).symm
-
-lemma jN_Meromorphic (N : ℕ+) {z : ℍₒ} :
-    DifferentiableAt ℂ (jN N ∘ UpperHalfPlane.ofComplex) z := by
-  obtain ⟨z, hz⟩ := z
-  have hz' := Set.mem_setOf.mp hz
-  have hNz : 0 < Complex.im ((↑↑N : ℂ) * z) := by
-    rw [Complex.mul_im]
-    simp only [natCast_re, natCast_im, zero_mul, add_zero, Nat.cast_pos, PNat.pos,
-        mul_pos_iff_of_pos_left]
-    exact hz'
-  have hE4 := ModularFormClass.differentiableAt_comp_ofComplex (f := E4) hNz
-  have hΔ := ModularFormClass.differentiableAt_comp_ofComplex (f := Delta) hNz
-  have hΔ0 : (Delta ∘ UpperHalfPlane.ofComplex) (↑↑N * z) ≠ 0 := by
-    simp only [Function.comp, UpperHalfPlane.ofComplex_apply_of_im_pos hNz, Delta_apply]
-    exact Δ_ne_zero _
-  have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) (↑↑N * z) := by
-    simpa [j, Function.comp] using (hE4.pow 3).div hΔ hΔ0
-  have hN : DifferentiableAt ℂ (· * (↑↑N : ℂ)) z := differentiableAt_id.mul_const _
-  have hcomp := hj.comp z (by
-    change DifferentiableAt ℂ (fun w => (↑↑N : ℂ) * w) z
-    exact differentiableAt_const _ |>.mul differentiableAt_id)
-  have hEq : (jN N ∘ UpperHalfPlane.ofComplex)
-      =ᶠ[nhds z] ((j ∘ UpperHalfPlane.ofComplex) ∘ fun w => (↑↑N : ℂ) * w) := by
-    filter_upwards [IsOpen.mem_nhds (isOpen_lt continuous_const Complex.continuous_im) hz']
-      with w hw
-    simp only [Function.comp, jN, UpperHalfPlane.ofComplex_apply_of_im_pos hw,
-      UpperHalfPlane.ofComplex_apply_of_im_pos (show 0 < (↑↑N * w).im by
-        rw [Complex.mul_im]; simp only [natCast_re, natCast_im, zero_mul, add_zero, Nat.cast_pos,
-            PNat.pos, mul_pos_iff_of_pos_left]; exact hw)]
-    exact congr_arg j (UpperHalfPlane.ext rfl)
-  change DifferentiableAt ℂ (jN N ∘ UpperHalfPlane.ofComplex) z
-  have hcomp' : DifferentiableAt ℂ ((j ∘ UpperHalfPlane.ofComplex) ∘ fun w => (↑↑N : ℂ) * w) z := by
-    convert hcomp using 2
-  exact hcomp'.congr_of_eventuallyEq hEq
-
-end modularEquation
+    _ = (to_qExpansion 1 j).coeff (Int.toNat (n + poleOrder 1 j)) := by
+            simpa using (laurentqExpansion.coeff_of_geq hge)
+    _ = (qExpansion 1 qj).coeff (Int.toNat (n + poleOrder 1 j)) := by rw [j_to_qExpansion]
+    _ = (qExpansion 1 qj).coeff (Int.toNat (n + 1)) := by simp [j_poleOrder]
+    _ = _ := by simpa using hcoeff.symm
