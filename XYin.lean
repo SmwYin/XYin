@@ -101,9 +101,8 @@ import XYin.NumberField.FieldExamples.SqrtTwo.ClassGroup
 import XYin.NumberField.FieldExamples.SqrtTwo.Units
 import XYin.NumberField.FieldExamples.SqrtTwo.Euclidean
 import XYin.NumberField.FieldExamples.SqrtTwo.LocalGlobal
-import XYin.NumberField.NormEuclideanOrderEqRingOfIntegers
-import XYin.NumberField.FieldExamplesSorryWorkbench
 /-
+import XYin.NumberField.FieldExamplesSorryWorkbench
 import XYin.NumberField.Thue_Equation
 import XYin.NumberField.Thue_Equation_copy
 -/
