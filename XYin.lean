@@ -125,6 +125,7 @@ import XYin.jFunction.jInvariantLink
 import XYin.jFunction.jLevelN
 import XYin.jFunction.jfunction
 import XYin.jFunction.qexp_coeffs
+import XYin.jFunction.Surjectivity
 import XYin.qExpansion_tactic.Examples
 import XYin.qExpansion_tactic.Qj
 import XYin.qExpansion_tactic.link
