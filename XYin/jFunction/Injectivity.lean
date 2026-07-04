@@ -16,11 +16,6 @@ nonzero complex number. -/
 def Homothetic (L M : PeriodPair) : Prop :=
   ∃ a : ℂˣ, (a • L).lattice = M.lattice
 
-/-- Uniformisation/classification input: the `j`-invariant classifies complex period lattices up
-to homothety. -/
-theorem homothetic_of_j_eq {L M : PeriodPair} (h : L.j = M.j) : L.Homothetic M := by
-  sorry
-
 end PeriodPair
 
 namespace UpperHalfPlane
@@ -153,6 +148,157 @@ theorem j_eq_periodPair_j (τ : ℍ) : j τ = (UpperHalfPlane.periodPair τ).j :
     exact mul_ne_zero (div_ne_zero (mul_ne_zero (by norm_num) (pow_ne_zero _ hπ)) (by norm_num)) hΔ
   rw [div_eq_div_iff hd1 hd2]
   ring
+
+section DiscriminantNeZero
+
+/-- Every period pair is homothetic to a normalized one `ℤ + ℤτ` with `τ ∈ ℍ`. -/
+private lemma exists_smul_lattice_eq_periodPair (L : PeriodPair) :
+    ∃ (τ : ℍ) (a : ℂˣ), (a • L).lattice = (UpperHalfPlane.periodPair τ).lattice := by
+  have hω₁ : L.ω₁ ≠ 0 := by simpa using L.indep.ne_zero 0
+  have hω₂ : L.ω₂ ≠ 0 := by simpa using L.indep.ne_zero 1
+  have him : (L.ω₂ / L.ω₁).im ≠ 0 := by
+    intro h0
+    have hτ : (L.ω₂ / L.ω₁ : ℂ) = ((L.ω₂ / L.ω₁).re : ℝ) := by
+      exact Complex.ext (by simp) (by simpa using h0)
+    have hzero : ((L.ω₂ / L.ω₁).re : ℝ) • L.ω₁ + (-1 : ℝ) • L.ω₂ = 0 := by
+      rw [Complex.real_smul, Complex.real_smul, ← hτ]
+      push_cast
+      field_simp
+      ring
+    obtain ⟨-, ht⟩ := LinearIndependent.pair_iff.mp L.indep _ _ hzero
+    norm_num at ht
+  rcases lt_or_gt_of_ne him with hneg | hpos
+  · refine ⟨⟨L.ω₁ / L.ω₂, ?_⟩, Units.mk0 L.ω₂⁻¹ (inv_ne_zero hω₂), ?_⟩
+    · rw [show L.ω₁ / L.ω₂ = (L.ω₂ / L.ω₁)⁻¹ from (inv_div L.ω₂ L.ω₁).symm, Complex.inv_im]
+      have hns : 0 < Complex.normSq (L.ω₂ / L.ω₁) :=
+        Complex.normSq_pos.mpr (div_ne_zero hω₂ hω₁)
+      exact div_pos (by linarith) hns
+    · rw [PeriodPair.lattice, PeriodPair.lattice]
+      congr 1
+      rw [PeriodPair.smul_ω₁, PeriodPair.smul_ω₂]
+      rw [show ((Units.mk0 L.ω₂⁻¹ (inv_ne_zero hω₂) : ℂˣ) : ℂ) = L.ω₂⁻¹ from rfl]
+      rw [Set.pair_comm]
+      congr 1
+      · exact inv_mul_cancel₀ hω₂
+      · exact congrArg _ (inv_mul_eq_div _ _)
+  · refine ⟨⟨L.ω₂ / L.ω₁, hpos⟩, Units.mk0 L.ω₁⁻¹ (inv_ne_zero hω₁), ?_⟩
+    rw [PeriodPair.lattice, PeriodPair.lattice]
+    congr 1
+    rw [PeriodPair.smul_ω₁, PeriodPair.smul_ω₂]
+    rw [show ((Units.mk0 L.ω₁⁻¹ (inv_ne_zero hω₁) : ℂˣ) : ℂ) = L.ω₁⁻¹ from rfl]
+    congr 1
+    · exact inv_mul_cancel₀ hω₁
+    · exact congrArg _ (inv_mul_eq_div _ _)
+
+private lemma periodPair_discriminant_eq (τ : ℍ) :
+    (UpperHalfPlane.periodPair τ).discriminant =
+      64 * (π : ℂ) ^ 12 / 27 * (E4 τ ^ 3 - E6 τ ^ 2) := by
+  rw [PeriodPair.discriminant, periodPair_g₂_eq, periodPair_g₃_eq]
+  ring
+
+/-- **The discriminant of a period lattice never vanishes.** This is obtained by normalizing the
+lattice to `ℤ + ℤτ` and using the nonvanishing of the modular discriminant. -/
+theorem PeriodPair.discriminant_ne_zero (L : PeriodPair) : L.discriminant ≠ 0 := by
+  obtain ⟨τ, a, ha⟩ := exists_smul_lattice_eq_periodPair L
+  have hcongr : (a • L).discriminant = (UpperHalfPlane.periodPair τ).discriminant := by
+    rw [PeriodPair.discriminant, PeriodPair.discriminant,
+      PeriodPair.g₂_congr ha, PeriodPair.g₃_congr ha]
+  rw [L.discriminant_smul a] at hcongr
+  intro h0
+  rw [h0, mul_zero] at hcongr
+  have hπ : (π : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hne : (UpperHalfPlane.periodPair τ).discriminant ≠ 0 := by
+    rw [periodPair_discriminant_eq τ]
+    exact mul_ne_zero (div_ne_zero (mul_ne_zero (by norm_num) (pow_ne_zero _ hπ))
+      (by norm_num)) (E4_E6_sub_ne_zero τ)
+  exact hne hcongr.symm
+
+end DiscriminantNeZero
+
+namespace PeriodPair
+
+private lemma g₂_eq_zero_of_j_eq_zero {L : PeriodPair} (h : L.j = 0) : L.g₂ = 0 := by
+  have hΔ := L.discriminant_ne_zero
+  rw [j, div_eq_zero_iff] at h
+  rcases h with h | h
+  · have h3 : L.g₂ ^ 3 = 0 := by linear_combination h / 1728
+    exact pow_eq_zero_iff (by norm_num) |>.mp h3
+  · exact absurd h hΔ
+
+private lemma g₃_eq_zero_of_j_eq_1728 {L : PeriodPair} (h : L.j = 1728) : L.g₃ = 0 := by
+  have hΔ := L.discriminant_ne_zero
+  rw [j, div_eq_iff hΔ, discriminant] at h
+  have h2 : L.g₃ ^ 2 = 0 := by linear_combination h / 46656
+  exact pow_eq_zero_iff (by norm_num) |>.mp h2
+
+/-- Uniformisation/classification input: the `j`-invariant classifies complex period lattices up
+to homothety. -/
+theorem homothetic_of_j_eq {L M : PeriodPair} (h : L.j = M.j) : L.Homothetic M := by
+  have hΔL := L.discriminant_ne_zero
+  have hΔM := M.discriminant_ne_zero
+  by_cases hg₂L : L.g₂ = 0
+  · have hg₂M : M.g₂ = 0 :=
+      g₂_eq_zero_of_j_eq_zero (by rw [← h, L.j_eq_zero_of_g₂_eq_zero hg₂L])
+    have hg₃L := L.g₃_ne_zero_of_g₂_eq_zero hΔL hg₂L
+    have hg₃M := M.g₃_ne_zero_of_g₂_eq_zero hΔM hg₂M
+    obtain ⟨c, hc⟩ := IsAlgClosed.exists_pow_nat_eq (L.g₃ / M.g₃) (n := 6) (by norm_num)
+    have hc0 : c ≠ 0 := by
+      intro h0
+      apply hg₃L
+      have hd : L.g₃ / M.g₃ = 0 := by rw [← hc, h0]; norm_num
+      exact (div_eq_zero_iff.mp hd).resolve_right hg₃M
+    refine ⟨Units.mk0 c hc0, invariantsDetermineLattice _ _ ?_ ?_⟩
+    · rw [g₂_smul, hg₂L, hg₂M, mul_zero]
+    · rw [g₃_smul]
+      rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc]
+      field_simp
+  · by_cases hg₃L : L.g₃ = 0
+    · have hg₃M : M.g₃ = 0 :=
+        g₃_eq_zero_of_j_eq_1728 (by rw [← h, L.j_eq_1728_of_g₃_eq_zero hΔL hg₃L])
+      have hg₂M := M.g₂_ne_zero_of_g₃_eq_zero hΔM hg₃M
+      obtain ⟨c, hc⟩ := IsAlgClosed.exists_pow_nat_eq (L.g₂ / M.g₂) (n := 4) (by norm_num)
+      have hc0 : c ≠ 0 := by
+        intro h0
+        apply hg₂L
+        have hd : L.g₂ / M.g₂ = 0 := by rw [← hc, h0]; norm_num
+        exact (div_eq_zero_iff.mp hd).resolve_right hg₂M
+      refine ⟨Units.mk0 c hc0, invariantsDetermineLattice _ _ ?_ ?_⟩
+      · rw [g₂_smul]
+        rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc]
+        field_simp
+      · rw [g₃_smul, hg₃L, hg₃M, mul_zero]
+    · have hg₂M : M.g₂ ≠ 0 := fun h0 =>
+        hg₂L (g₂_eq_zero_of_j_eq_zero (by rw [h, M.j_eq_zero_of_g₂_eq_zero h0]))
+      have hg₃M : M.g₃ ≠ 0 := fun h0 =>
+        hg₃L (g₃_eq_zero_of_j_eq_1728 (by rw [h, M.j_eq_1728_of_g₃_eq_zero hΔM h0]))
+      have hcross : L.g₂ ^ 3 * M.g₃ ^ 2 = M.g₂ ^ 3 * L.g₃ ^ 2 := by
+        rw [j, j, div_eq_div_iff hΔL hΔM, discriminant, discriminant] at h
+        linear_combination -h / 46656
+      obtain ⟨c, hc⟩ :=
+        IsAlgClosed.exists_pow_nat_eq (L.g₃ * M.g₂ / (M.g₃ * L.g₂)) (n := 2) (by norm_num)
+      have hb0 : L.g₃ * M.g₂ / (M.g₃ * L.g₂) ≠ 0 :=
+        div_ne_zero (mul_ne_zero hg₃L hg₂M) (mul_ne_zero hg₃M hg₂L)
+      have hc0 : c ≠ 0 := by
+        intro h0
+        rw [h0] at hc
+        exact hb0 (by rw [← hc]; norm_num)
+      have hc4 : c ^ 4 = L.g₂ / M.g₂ := by
+        rw [show c ^ 4 = (c ^ 2) ^ 2 by ring, hc, div_pow, div_eq_div_iff
+          (pow_ne_zero _ (mul_ne_zero hg₃M hg₂L)) hg₂M]
+        linear_combination -hcross
+      have hc6 : c ^ 6 = L.g₃ / M.g₃ := by
+        rw [show c ^ 6 = (c ^ 2) ^ 3 by ring, hc, div_pow, div_eq_div_iff
+          (pow_ne_zero _ (mul_ne_zero hg₃M hg₂L)) hg₃M]
+        linear_combination -L.g₃ * M.g₃ * hcross
+      refine ⟨Units.mk0 c hc0, invariantsDetermineLattice _ _ ?_ ?_⟩
+      · rw [g₂_smul]
+        rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc4]
+        field_simp
+      · rw [g₃_smul]
+        rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc6]
+        field_simp
+
+end PeriodPair
 
 /-- Homothety of normalized upper-half-plane lattices is equivalent to equality modulo the usual
 `SL(2, ℤ)` action. -/
