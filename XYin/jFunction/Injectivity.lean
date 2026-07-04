@@ -300,12 +300,147 @@ theorem homothetic_of_j_eq {L M : PeriodPair} (h : L.j = M.j) : L.Homothetic M :
 
 end PeriodPair
 
+section Sl2Homothety
+
+/-- Membership in the normalized lattice `ℤ + ℤτ`, spelled with integer coefficients. -/
+private lemma mem_periodPair_lattice {τ : ℍ} {x : ℂ} :
+    x ∈ (UpperHalfPlane.periodPair τ).lattice ↔ ∃ m n : ℤ, (m : ℂ) + n * τ = x := by
+  rw [PeriodPair.mem_lattice]
+  simp [UpperHalfPlane.periodPair]
+
+/-- Two integer combinations of `1` and `τ` agree only if the coefficients agree. -/
+private lemma int_comb_injective {τ : ℍ} {m n m' n' : ℤ}
+    (h : (m : ℂ) + n * τ = (m' : ℂ) + n' * τ) : m = m' ∧ n = n' := by
+  have hzero : ((m - m' : ℤ) : ℝ) • (UpperHalfPlane.periodPair τ).ω₁ +
+      ((n - n' : ℤ) : ℝ) • (UpperHalfPlane.periodPair τ).ω₂ = 0 := by
+    change ((m - m' : ℤ) : ℝ) • (1 : ℂ) + ((n - n' : ℤ) : ℝ) • (τ : ℂ) = 0
+    rw [Complex.real_smul, Complex.real_smul]
+    push_cast
+    linear_combination h
+  obtain ⟨h1, h2⟩ :=
+    LinearIndependent.pair_iff.mp (UpperHalfPlane.periodPair τ).indep _ _ hzero
+  constructor
+  · have : ((m - m' : ℤ) : ℝ) = 0 := h1
+    have := sub_eq_zero.mp (by exact_mod_cast this)
+    exact this
+  · have : ((n - n' : ℤ) : ℝ) = 0 := h2
+    have := sub_eq_zero.mp (by exact_mod_cast this)
+    exact this
+
 /-- Homothety of normalized upper-half-plane lattices is equivalent to equality modulo the usual
 `SL(2, ℤ)` action. -/
 theorem periodPair_homothetic_iff_exists_sl2_smul_eq {z w : ℍ} :
     PeriodPair.Homothetic (UpperHalfPlane.periodPair z) (UpperHalfPlane.periodPair w) ↔
       ∃ γ : SL(2, ℤ), γ • z = w := by
-  sorry
+  constructor
+  · rintro ⟨α, hα⟩
+    -- Read off integer matrices in both directions from the lattice equality.
+    have hz1 : (α : ℂ) * z ∈ (UpperHalfPlane.periodPair w).lattice := by
+      rw [← hα]
+      exact (UpperHalfPlane.periodPair z).mem_smul_lattice.mpr
+        ⟨z, mem_periodPair_lattice.mpr ⟨0, 1, by simp⟩, rfl⟩
+    have hz2 : (α : ℂ) ∈ (UpperHalfPlane.periodPair w).lattice := by
+      rw [← hα]
+      exact (UpperHalfPlane.periodPair z).mem_smul_lattice.mpr
+        ⟨1, mem_periodPair_lattice.mpr ⟨1, 0, by simp⟩, by simp⟩
+    obtain ⟨b, a, hab⟩ := mem_periodPair_lattice.mp hz1
+    obtain ⟨d, c, hcd⟩ := mem_periodPair_lattice.mp hz2
+    have hw1 : ((1 : ℂ)) ∈ ((α : ℂˣ) • UpperHalfPlane.periodPair z).lattice := by
+      rw [hα]; exact mem_periodPair_lattice.mpr ⟨1, 0, by simp⟩
+    have hw2 : ((w : ℂ)) ∈ ((α : ℂˣ) • UpperHalfPlane.periodPair z).lattice := by
+      rw [hα]; exact mem_periodPair_lattice.mpr ⟨0, 1, by simp⟩
+    obtain ⟨y1, hy1, hy1e⟩ := (UpperHalfPlane.periodPair z).mem_smul_lattice.mp hw1
+    obtain ⟨y2, hy2, hy2e⟩ := (UpperHalfPlane.periodPair z).mem_smul_lattice.mp hw2
+    obtain ⟨p, q, hpq⟩ := mem_periodPair_lattice.mp hy1
+    obtain ⟨r, s, hrs⟩ := mem_periodPair_lattice.mp hy2
+    -- Coefficient equations from linear independence of (1, w).
+    have he1 : (1 : ℂ) = (q : ℂ) * b + p * d + ((q : ℂ) * a + p * c) * w := by
+      linear_combination hy1e - (α : ℂ) * hpq - (p : ℂ) * hcd - (q : ℂ) * hab
+    obtain ⟨h2, h1⟩ := int_comb_injective (show ((1 : ℤ) : ℂ) + ((0 : ℤ) : ℂ) * w =
+      ((q * b + p * d : ℤ) : ℂ) + ((q * a + p * c : ℤ) : ℂ) * w by
+        push_cast; linear_combination he1)
+    have he2 : (w : ℂ) = (s : ℂ) * b + r * d + ((s : ℂ) * a + r * c) * w := by
+      linear_combination hy2e - (α : ℂ) * hrs - (r : ℂ) * hcd - (s : ℂ) * hab
+    obtain ⟨h4, h3⟩ := int_comb_injective (show ((0 : ℤ) : ℂ) + ((1 : ℤ) : ℂ) * w =
+      ((s * b + r * d : ℤ) : ℂ) + ((s * a + r * c : ℤ) : ℂ) * w by
+        push_cast; linear_combination he2)
+    -- The change-of-basis matrix has determinant ±1.
+    have hdet : (a * d - b * c) * (p * s - q * r) = 1 := by
+      linear_combination (-(s * b) - r * d) * h1.symm + (s * a + r * c) * h2.symm + h3.symm
+    have hαd : (α : ℂ) = (d : ℂ) + c * w := hcd.symm
+    have hαne : ((d : ℂ) + c * w) ≠ 0 := by
+      rw [← hαd]; exact α.ne_zero
+    have hzval : (z : ℂ) = ((b : ℂ) + a * w) / ((d : ℂ) + c * w) := by
+      rw [← hαd, hab, mul_div_cancel_left₀ _ α.ne_zero]
+    rcases Int.eq_one_or_neg_one_of_mul_eq_one' hdet with ⟨hD, -⟩ | ⟨hD, -⟩
+    · -- determinant 1: the matrix acts on `w` and sends it to `z`.
+      have hdet1 : Matrix.det !![a, b; c, d] = 1 := by
+        rw [Matrix.det_fin_two_of]; omega
+      set γ' : SL(2, ℤ) := ⟨!![a, b; c, d], hdet1⟩ with hγ'
+      refine ⟨γ'⁻¹, ?_⟩
+      have hcoe : ((γ' • w : ℍ) : ℂ) = (z : ℂ) := by
+        rw [UpperHalfPlane.coe_specialLinearGroup_apply, hzval, hγ']
+        simp [algebraMap_int_eq]
+        ring
+      have hsmul : γ' • w = z := UpperHalfPlane.ext hcoe
+      rw [← hsmul, inv_smul_smul]
+    · -- determinant -1 is impossible: it would send `w` to `-z ∉ ℍ`.
+      exfalso
+      have hdet1 : Matrix.det !![-a, -b; c, d] = 1 := by
+        rw [Matrix.det_fin_two_of]
+        have : a * d - b * c = -1 := hD
+        ring_nf
+        omega
+      set γ'' : SL(2, ℤ) := ⟨!![-a, -b; c, d], hdet1⟩ with hγ''
+      have hcoe : ((γ'' • w : ℍ) : ℂ) = -(z : ℂ) := by
+        rw [UpperHalfPlane.coe_specialLinearGroup_apply, hzval, hγ'']
+        simp [algebraMap_int_eq]
+        ring
+      have him := (γ'' • w).im_pos
+      rw [UpperHalfPlane.im, hcoe, Complex.neg_im, UpperHalfPlane.coe_im] at him
+      linarith [z.im_pos]
+  · rintro ⟨γ, rfl⟩
+    -- Scaling by `denom γ z = c z + d` carries `ℤ + ℤz` onto `ℤ + ℤ(γ • z)`.
+    set a : ℤ := γ 0 0 with ha
+    set b : ℤ := γ 0 1 with hb
+    set c : ℤ := γ 1 0 with hc
+    set d : ℤ := γ 1 1 with hd
+    have hdet : a * d - b * c = 1 := by
+      have := γ.2
+      rwa [Matrix.det_fin_two] at this
+    have hdetc : (a : ℂ) * d - b * c = 1 := by exact_mod_cast hdet
+    have hden : ((c : ℂ) * z + d) ≠ 0 := by
+      have := UpperHalfPlane.denom_ne_zero γ z
+      rwa [ModularGroup.denom_apply] at this
+    have hden' : ((d : ℂ) + c * z) ≠ 0 := by
+      rw [add_comm]; exact hden
+    have hwval : ((γ • z : ℍ) : ℂ) = ((a : ℂ) * z + b) / ((c : ℂ) * z + d) := by
+      rw [UpperHalfPlane.coe_specialLinearGroup_apply]
+      simp [algebraMap_int_eq, ← ha, ← hb, ← hc, ← hd]
+    have hw' : ((c : ℂ) * z + d) * ((γ • z : ℍ) : ℂ) = (a : ℂ) * z + b := by
+      rw [hwval, mul_comm, div_mul_cancel₀ _ hden]
+    refine ⟨(Units.mk0 _ hden)⁻¹, ?_⟩
+    ext x
+    rw [PeriodPair.mem_smul_lattice]
+    constructor
+    · rintro ⟨y, hy, rfl⟩
+      obtain ⟨m, n, hmn⟩ := mem_periodPair_lattice.mp hy
+      refine mem_periodPair_lattice.mpr ⟨m * a - n * b, n * d - m * c, ?_⟩
+      rw [show ((Units.mk0 _ hden)⁻¹ : ℂˣ).val = ((c : ℂ) * z + d)⁻¹ from rfl, ← hmn,
+        eq_inv_mul_iff_mul_eq₀ hden]
+      push_cast
+      linear_combination ((n : ℂ) * d - m * c) * hw' + ((m : ℂ) + n * z) * hdetc
+    · intro hx
+      obtain ⟨m, n, hmn⟩ := mem_periodPair_lattice.mp hx
+      refine ⟨((c : ℂ) * z + d) * x, mem_periodPair_lattice.mpr
+        ⟨m * d + n * b, m * c + n * a, ?_⟩, by
+          rw [show ((Units.mk0 _ hden)⁻¹ : ℂˣ).val = ((c : ℂ) * z + d)⁻¹ from rfl]
+          rw [inv_mul_cancel_left₀ hden]⟩
+      rw [← hmn]
+      push_cast
+      linear_combination (-(n : ℂ)) * hw'
+
+end Sl2Homothety
 
 /-- The quotient of the upper half-plane by the usual `SL(2, ℤ)` action. -/
 abbrev ModularOrbit :=
