@@ -5,7 +5,7 @@ import XYin.jFunction.jfunction
 set_option linter.style.header false
 
 open Real Complex Filter ModularForm ModularFormClass UpperHalfPlane MatrixGroups PowerSeries
-  SlashInvariantFormClass Function IntegralPowerSeries CongruenceSubgroup Matrix.SpecialLinearGroup
+  SlashInvariantFormClass Function CongruenceSubgroup Matrix.SpecialLinearGroup
 open scoped Manifold
 
 local notation "𝕢" => Periodic.qParam

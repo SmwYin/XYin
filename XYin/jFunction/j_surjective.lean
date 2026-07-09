@@ -18,28 +18,17 @@ private abbrev Delta : CuspForm 𝒮ℒ 12 := CuspForm.discriminant
 /-- This defines the `j` function as E4^3/Δ -/
 def j : ℍ → ℂ := fun τ ↦ (E4 τ) ^ 3 / Delta τ
 
-lemma j_slashInvariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
+private lemma j_slashInvariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
   ext z
   rw [slash_action_eq'_iff, j, j]
-  have h1 := congrFun (E4.slash_action_eq' γ ⟨γ, rfl⟩) z
-  have h2 := congrFun (Delta.slash_action_eq' γ ⟨γ, rfl⟩) z
-  rw [← ModularForm.SL_slash] at h1 h2
-  rw [ModularForm.slash_action_eq'_iff] at h1 h2
-  simp only [SlashInvariantForm.toFun_eq_coe] at h1 h2
-  let d : ℂ := (γ 1 0 : ℂ) * (z : ℂ) + (γ 1 1 : ℂ)
-  change E4.toSlashInvariantForm (γ • z) = d ^ (4 : ℤ) * E4.toSlashInvariantForm z at h1
-  change Delta.toSlashInvariantForm (γ • z) = d ^ (12 : ℤ) *
-    Delta.toSlashInvariantForm z at h2
-  change (E4.toSlashInvariantForm (γ • z)) ^ 3 / Delta.toSlashInvariantForm (γ • z) =
-    d ^ (0 : ℤ) * (E4.toSlashInvariantForm z ^ 3 / Delta.toSlashInvariantForm z)
+  have h1 : E4 (γ • z) = ((γ 1 0 : ℂ) * z + (γ 1 1 : ℂ)) ^ (4 : ℤ) * E4 z :=
+    SlashInvariantForm.slash_action_eqn' E4 (MonoidHom.mem_range.mpr ⟨γ, rfl⟩) z
+  have h2 : Delta (γ • z) = ((γ 1 0 : ℂ) * z + (γ 1 1 : ℂ)) ^ (12 : ℤ) * Delta z :=
+    SlashInvariantForm.slash_action_eqn' Delta (MonoidHom.mem_range.mpr ⟨γ, rfl⟩) z
   rw [h1, h2]
-  simp only [zpow_zero, one_mul]
-  have hden : d ≠ 0 := by
-    dsimp [d]
+  have hden : ((γ 1 0 : ℂ) * z + (γ 1 1 : ℂ)) ≠ 0 := by
     simpa [ModularGroup.denom_apply] using denom_ne_zero γ z
-  have hDnz : Delta.toSlashInvariantForm z ≠ 0 := by
-    simpa [Delta] using ModularForm.discriminant_ne_zero z
-  field_simp [hden, hDnz]
+  field_simp [hden, ModularForm.discriminant_ne_zero z]
 
 def Deltaoverq : ℍ → ℂ := fun z ↦ ∏' (n : ℕ), (1 - ModularForm.eta_q n z) ^ 24
 
@@ -57,15 +46,10 @@ def qj : ℍ → ℂ := (fun z ↦ 𝕢 1 z : ℍ → ℂ) * j
 
 lemma qjIdentity : (fun z : ℍ => (E4 z) ^ 3) * qoverDelta = qj := by
   ext z
-  change (E4 z) ^ 3 * qoverDelta z = 𝕢 1 z * ((E4 z) ^ 3 / Delta z)
+  simp only [Pi.mul_apply, qj, j, qoverDelta]
   have hDnz : Delta z ≠ 0 := by simpa [Delta] using ModularForm.discriminant_ne_zero z
-  have hq : 𝕢 1 z ≠ 0 := by simp [Periodic.qParam]
-  have hDoq : Deltaoverq z ≠ 0 := Deltaoverq_ne_zero z
-  rw [qoverDelta]
-  have hD := Delta_eq_q_mul_Deltaoverq z
-  field_simp [hDnz, hq, hDoq, hD]
-  rw [hD]
-  ring
+  field_simp [hDnz, Deltaoverq_ne_zero z]
+  linear_combination E4 z ^ 3 * Delta_eq_q_mul_Deltaoverq z
 
 lemma Deltaoverq_tendsto_atImInfty : Tendsto Deltaoverq atImInfty (nhds (1 : ℂ)) := by
   simpa [Deltaoverq] using ModularForm.tendsto_atImInfty_tprod_one_sub_eta_q_pow
@@ -77,22 +61,15 @@ lemma qoverDelta_tendsto_atImInfty : Tendsto qoverDelta atImInfty (nhds (1 : ℂ
   simpa [one_div] using h
 
 lemma E4_tendsto_atImInfty : Tendsto (E4 : ℍ → ℂ) atImInfty (nhds (1 : ℂ)) := by
-  have han : AnalyticAt ℂ (cuspFunction 1 (E4 : ℍ → ℂ)) 0 :=
-    ModularFormClass.analyticAt_cuspFunction_zero (h := (1 : ℝ)) E4 (by norm_num)
-      one_mem_strictPeriods_SL
   have hper : Periodic ((E4 : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) 1 :=
     SlashInvariantFormClass.periodic_comp_ofComplex E4 one_mem_strictPeriods_SL
   have h0 : cuspFunction 1 (E4 : ℍ → ℂ) 0 = 1 := by
-    have hcoeff : (qExpansion 1 (E4 : ℍ → ℂ)).coeff 0 = 1 := by
-      simpa [E4] using (EisensteinSeries.E_qExpansion_coeff_zero (by norm_num : 3 ≤ 4) ⟨2, rfl⟩)
-    simpa [qExpansion_coeff] using hcoeff
-  have hlim : Tendsto (fun τ : ℍ => cuspFunction 1 (E4 : ℍ → ℂ) (𝕢 (1 : ℝ) τ)) atImInfty
-        (nhds (cuspFunction 1 (E4 : ℍ → ℂ) 0)) :=
-    han.continuousAt.tendsto.comp (UpperHalfPlane.qParam_tendsto_atImInfty (by norm_num))
-  have hfun : (fun τ : ℍ => cuspFunction 1 (E4 : ℍ → ℂ) (𝕢 (1 : ℝ) τ)) = (E4 : ℍ → ℂ) :=
-    funext fun τ => UpperHalfPlane.eq_cuspFunction (h := 1) (f := (E4 : ℍ → ℂ)) τ
-      (by norm_num) hper
-  simpa [hfun, h0] using hlim
+    simpa [qExpansion_coeff, E4] using
+      (EisensteinSeries.E_qExpansion_coeff_zero (by norm_num : 3 ≤ 4) ⟨2, rfl⟩)
+  simpa only [Function.comp_def, UpperHalfPlane.eq_cuspFunction _ one_ne_zero hper, h0] using
+    (ModularFormClass.analyticAt_cuspFunction_zero (h := (1 : ℝ)) E4 (by norm_num)
+      one_mem_strictPeriods_SL).continuousAt.tendsto.comp
+      (UpperHalfPlane.qParam_tendsto_atImInfty (h := 1) (by norm_num))
 
 lemma j_MDifferentiable : MDiff j := by
   rw [UpperHalfPlane.mdifferentiable_iff]

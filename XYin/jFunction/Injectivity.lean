@@ -99,38 +99,34 @@ private lemma periodPair_g₃_eq (τ : ℍ) :
 
 /-- The modular discriminant as a polynomial in the Eisenstein series, pointwise. -/
 private lemma Delta_eq_E4_E6 (z : ℍ) : Delta z = (E4 z ^ 3 - E6 z ^ 2) / 1728 := by
-  have h1 : Delta z = (ModForm_mk _ _ Delta_E4_E6_aux) z := by
-    rw [Delta_E4_eqn]; rfl
-  rw [h1, Delta_E4_E6_eq]
-  have hds : (((DirectSum.of (ModularForm Γ(1)) 4) _root_.E₄ ^ 3) 12) =
-      _root_.E₄.mul (_root_.E₄.mul _root_.E₄) := by
-    rw [pow_three, DirectSum.of_mul_of, DirectSum.of_mul_of]
-    change (((DirectSum.of (ModularForm Γ(1)) 12)
-        (GradedMonoid.GMul.mul _root_.E₄ (GradedMonoid.GMul.mul _root_.E₄ _root_.E₄))) 12) = _
-    rw [DirectSum.of_eq_same]; rfl
-  have hd6 : ((DirectSum.of (ModularForm Γ(1)) 6) _root_.E₆ ^ 2) 12 =
-      _root_.E₆.mul _root_.E₆ := by
-    rw [pow_two, DirectSum.of_mul_of]
-    change (((DirectSum.of (ModularForm Γ(1)) 12)
-        (GradedMonoid.GMul.mul _root_.E₆ _root_.E₆)) 12) = _
-    rw [DirectSum.of_eq_same]; rfl
-  have hds' : (((DirectSum.of (ModularForm Γ(1)) 4) _root_.E₄ ^ 3) 12) z =
-      E4 z * (E4 z * E4 z) := by
-    rw [hds]; rfl
-  have hd6' : (((DirectSum.of (ModularForm Γ(1)) 6) _root_.E₆ ^ 2) 12) z = E6 z * E6 z := by
-    rw [hd6]; rfl
-  simp only [DirectSum.sub_apply, ModularForm.IsGLPos.smul_apply, ModularForm.sub_apply,
-    smul_eq_mul, hds', hd6']
+  rw [show Delta z = (ModForm_mk _ _ Delta_E4_E6_aux) z by rw [Delta_E4_eqn]; rfl,
+    Delta_E4_E6_eq]
+  simp only [pow_two, pow_three, DirectSum.of_mul_of, DirectSum.sub_apply,
+    ModularForm.IsGLPos.smul_apply, ModularForm.sub_apply, smul_eq_mul]
+  rw [
+    show ((((DirectSum.of (ModularForm Γ(1)) (4 + (4 + 4)))
+            (GradedMonoid.GMul.mul _root_.E₄
+              (GradedMonoid.GMul.mul _root_.E₄ _root_.E₄))) 12) z) = E4 z ^ 3 by
+      change (((DirectSum.of (ModularForm Γ(1)) 12)
+          (GradedMonoid.GMul.mul _root_.E₄
+            (GradedMonoid.GMul.mul _root_.E₄ _root_.E₄))) 12) z = E4 z ^ 3
+      rw [DirectSum.of_eq_same]
+      change E4 z * (E4 z * E4 z) = E4 z ^ 3
+      ring,
+    show ((((DirectSum.of (ModularForm Γ(1)) (6 + 6))
+            (GradedMonoid.GMul.mul _root_.E₆ _root_.E₆)) 12) z) = E6 z ^ 2 by
+      change (((DirectSum.of (ModularForm Γ(1)) 12)
+          (GradedMonoid.GMul.mul _root_.E₆ _root_.E₆)) 12) z = E6 z ^ 2
+      rw [DirectSum.of_eq_same]
+      change E6 z * E6 z = E6 z ^ 2
+      ring]
+  rw [div_eq_mul_inv]
   ring
-
-private lemma Delta_ne_zero_apply (z : ℍ) : Delta z ≠ 0 := by
-  rw [Delta_apply]
-  exact Δ_ne_zero z
 
 private lemma E4_E6_sub_ne_zero (z : ℍ) : E4 z ^ 3 - E6 z ^ 2 ≠ 0 := by
   intro h
-  apply Delta_ne_zero_apply z
-  rw [Delta_eq_E4_E6, h, zero_div]
+  have hΔ : Delta z ≠ 0 := by simpa [Delta_apply] using Δ_ne_zero z
+  exact hΔ (by rw [Delta_eq_E4_E6, h, zero_div])
 
 end PeriodPairEisenstein
 
@@ -247,7 +243,7 @@ theorem homothetic_of_j_eq {L M : PeriodPair} (h : L.j = M.j) : L.Homothetic M :
       apply hg₃L
       have hd : L.g₃ / M.g₃ = 0 := by rw [← hc, h0]; norm_num
       exact (div_eq_zero_iff.mp hd).resolve_right hg₃M
-    refine ⟨Units.mk0 c hc0, invariantsDetermineLattice _ _ ?_ ?_⟩
+    refine ⟨Units.mk0 c hc0, lattice_eq_of_g₂_eq_of_g₃_eq ?_ ?_⟩
     · rw [g₂_smul, hg₂L, hg₂M, mul_zero]
     · rw [g₃_smul]
       rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc]
@@ -262,7 +258,7 @@ theorem homothetic_of_j_eq {L M : PeriodPair} (h : L.j = M.j) : L.Homothetic M :
         apply hg₂L
         have hd : L.g₂ / M.g₂ = 0 := by rw [← hc, h0]; norm_num
         exact (div_eq_zero_iff.mp hd).resolve_right hg₂M
-      refine ⟨Units.mk0 c hc0, invariantsDetermineLattice _ _ ?_ ?_⟩
+      refine ⟨Units.mk0 c hc0, lattice_eq_of_g₂_eq_of_g₃_eq ?_ ?_⟩
       · rw [g₂_smul]
         rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc]
         field_simp
@@ -290,7 +286,7 @@ theorem homothetic_of_j_eq {L M : PeriodPair} (h : L.j = M.j) : L.Homothetic M :
         rw [show c ^ 6 = (c ^ 2) ^ 3 by ring, hc, div_pow, div_eq_div_iff
           (pow_ne_zero _ (mul_ne_zero hg₃M hg₂L)) hg₃M]
         linear_combination -L.g₃ * M.g₃ * hcross
-      refine ⟨Units.mk0 c hc0, invariantsDetermineLattice _ _ ?_ ?_⟩
+      refine ⟨Units.mk0 c hc0, lattice_eq_of_g₂_eq_of_g₃_eq ?_ ?_⟩
       · rw [g₂_smul]
         rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc4]
         field_simp
@@ -368,8 +364,6 @@ theorem periodPair_homothetic_iff_exists_sl2_smul_eq {z w : ℍ} :
     have hdet : (a * d - b * c) * (p * s - q * r) = 1 := by
       linear_combination (-(s * b) - r * d) * h1.symm + (s * a + r * c) * h2.symm + h3.symm
     have hαd : (α : ℂ) = (d : ℂ) + c * w := hcd.symm
-    have hαne : ((d : ℂ) + c * w) ≠ 0 := by
-      rw [← hαd]; exact α.ne_zero
     have hzval : (z : ℂ) = ((b : ℂ) + a * w) / ((d : ℂ) + c * w) := by
       rw [← hαd, hab, mul_div_cancel_left₀ _ α.ne_zero]
     rcases Int.eq_one_or_neg_one_of_mul_eq_one' hdet with ⟨hD, -⟩ | ⟨hD, -⟩
@@ -412,8 +406,6 @@ theorem periodPair_homothetic_iff_exists_sl2_smul_eq {z w : ℍ} :
     have hden : ((c : ℂ) * z + d) ≠ 0 := by
       have := UpperHalfPlane.denom_ne_zero γ z
       rwa [ModularGroup.denom_apply] at this
-    have hden' : ((d : ℂ) + c * z) ≠ 0 := by
-      rw [add_comm]; exact hden
     have hwval : ((γ • z : ℍ) : ℂ) = ((a : ℂ) * z + b) / ((c : ℂ) * z + d) := by
       rw [UpperHalfPlane.coe_specialLinearGroup_apply]
       simp [algebraMap_int_eq, ← ha, ← hb, ← hc, ← hd]

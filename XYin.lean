@@ -121,6 +121,7 @@ import XYin.Test.jfunction
 import XYin.Test.jfunctionLaurent
 -/
 import XYin.jFunction.Deltaqexpansions
+import XYin.jFunction.Injectivity
 import XYin.jFunction.jInvariantLink
 import XYin.jFunction.jLevelN
 import XYin.jFunction.jfunction
