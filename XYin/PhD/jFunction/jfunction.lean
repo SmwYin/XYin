@@ -428,6 +428,20 @@ lemma qj_periodic : Periodic (qj ∘ UpperHalfPlane.ofComplex) 1 := by
     simp [comp, UpperHalfPlane.ofComplex_apply_of_im_nonpos hw1,
         UpperHalfPlane.ofComplex_apply_of_im_nonpos hw0]
 
+lemma j_MDifferentiable : MDiff j := by
+  rw [UpperHalfPlane.mdifferentiable_iff]
+  intro z hz
+  have hE4 : DifferentiableAt ℂ (E4 ∘ UpperHalfPlane.ofComplex) z :=
+    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo E4 ⟨z, hz⟩)
+  have hDelta : DifferentiableAt ℂ (Delta ∘ UpperHalfPlane.ofComplex) z :=
+    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo Delta ⟨z, hz⟩)
+  have hDelta0 : (Delta ∘ UpperHalfPlane.ofComplex) z ≠ 0 := by
+    simpa [comp, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Delta_apply] using
+      (Δ_ne_zero (UpperHalfPlane.ofComplex z))
+  have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) z := by
+    simpa [j, comp] using (hE4.pow 3).div hDelta hDelta0
+  exact hj.differentiableWithinAt
+
 lemma qj_holomorphic : ∀ z : ℂ, 0 < Complex.im z →
     DifferentiableAt ℂ (qj ∘ UpperHalfPlane.ofComplex) z := by
   intro z hz
@@ -440,15 +454,8 @@ lemma qj_holomorphic : ∀ z : ℂ, 0 < Complex.im z →
   have hexpH : DifferentiableAt ℂ
       (((fun τ : ℍ ↦ cexp (2 * π * Complex.I * (τ : ℂ))) ∘ UpperHalfPlane.ofComplex)) z := by
     exact hexp.congr_of_eventuallyEq hEqExp
-  have hE4 : DifferentiableAt ℂ (E4 ∘ UpperHalfPlane.ofComplex) z :=
-    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo E4 ⟨z, hz⟩)
-  have hDelta : DifferentiableAt ℂ (Delta ∘ UpperHalfPlane.ofComplex) z :=
-    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo Delta ⟨z, hz⟩)
-  have hDelta0 : (Delta ∘ UpperHalfPlane.ofComplex) z ≠ 0 := by
-    simpa [comp, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Delta_apply] using
-      (Δ_ne_zero (UpperHalfPlane.ofComplex z))
-  have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) z := by
-    simpa [j, comp] using (hE4.pow 3).div hDelta hDelta0
+  have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) z :=
+    UpperHalfPlane.mdifferentiableAt_iff.mp (j_MDifferentiable ⟨z, hz⟩)
   simpa [qj, comp, Pi.mul_apply] using hexpH.mul hj
 
 lemma qj_MDifferentiable : MDiff qj := by
@@ -633,6 +640,18 @@ lemma qj_cuspFunction_AnalyticAt : AnalyticAt ℂ (cuspFunction 1 qj) 0 :=
   DifferentiableOn.analyticAt
     (fun q hq => qj_cuspFunction_DifferentiableOn q hq)
     (by simpa [ball_zero_eq] using Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
+
+theorem qj_tendsto_atImInfty : Tendsto qj atImInfty (nhds (1 : ℂ)) := by
+  have hqj0 : cuspFunction 1 qj 0 = 1 := by
+    simpa [qExpansion_coeff] using qj_exp_zero_for_jfunction
+  have hlim :
+      Tendsto (fun τ : ℍ => cuspFunction 1 qj (𝕢 (1 : ℝ) τ)) atImInfty
+        (nhds (cuspFunction 1 qj 0)) :=
+    qj_cuspFunction_AnalyticAt.continuousAt.tendsto.comp
+      (UpperHalfPlane.qParam_tendsto_atImInfty (h := 1) (by norm_num))
+  have hfun : (fun τ : ℍ => cuspFunction 1 qj (𝕢 (1 : ℝ) τ)) = qj :=
+    funext fun τ => UpperHalfPlane.eq_cuspFunction (h := 1) (f := qj) τ (by norm_num) qj_periodic
+  simpa [hfun, hqj0] using hlim
 
 lemma j_cuspFunction_Meromorphic : MeromorphicAt (cuspFunction 1 j) (0 : ℂ) := by
   have hqj_mer : MeromorphicAt (cuspFunction 1 qj) (0 : ℂ) :=

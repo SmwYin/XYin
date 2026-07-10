@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "chatgpt-math": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/Users/dfa25dxu/.claude/mcp-servers/chatgpt-math/server.js"],
+      "env": {}
+    }
+  }
+}
