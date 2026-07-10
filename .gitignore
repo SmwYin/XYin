@@ -1,4 +1,6 @@
-/.lake
+/.lake/
 .DS_Store
 AGENTS.md
-.mathlib-quality
+.mathlib-quality/
+.ai/
+.claude/
