@@ -75,9 +75,6 @@ import XYin.NFIL.NumberField.FieldExamples.SqrtTwo.LocalGlobal
 import XYin.NFIL.NumberField.FieldExamples.SqrtTwo.PrimeSplitting
 import XYin.NFIL.NumberField.FieldExamples.SqrtTwo.RingOfIntegers
 import XYin.NFIL.NumberField.FieldExamples.SqrtTwo.Units
-import XYin.NFIL.NumberField.FieldExamplesSorryWorkbench
-import XYin.NFIL.NumberField.Thue_Equation
-import XYin.NFIL.NumberField.Thue_Equation_copy
 import XYin.PhD.IntegralPowerSeries.HasIntegralQExpansion
 import XYin.PhD.IntegralPowerSeries.IntegralPowerSeries
 import XYin.PhD.LaurentQExpansion.LaurentQExpansion
@@ -132,7 +129,6 @@ import XYin.PhD.jFunction.Inverse
 import XYin.PhD.jFunction.Surjectivity
 import XYin.PhD.jFunction.jInvariantLink
 import XYin.PhD.jFunction.jLevelN
-import XYin.PhD.jFunction.j_surjective
 import XYin.PhD.jFunction.jfunction
 import XYin.PhD.jFunction.qexp_coeffs
 import XYin.PhD.qExpansion_tactic.Examples
