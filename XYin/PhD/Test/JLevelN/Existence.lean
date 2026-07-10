@@ -19,6 +19,8 @@ hence polynomials in `j` once their meromorphicity at the cusp is established.
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
 
+namespace Test
+
 noncomputable section
 
 section modularEquation
@@ -917,3 +919,6 @@ theorem cox_modularEquation_exists_mvPolynomial (N : ℕ+) :
 end ModularEquationExistence
 
 end modularEquation
+
+
+end Test

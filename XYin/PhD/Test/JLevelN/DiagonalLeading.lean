@@ -18,6 +18,8 @@ The root-of-unity → `±1` step is discharged here; the geometric "bottom coeff
 root of unity" claim is the remaining `sorry`.
 -/
 
+namespace Test
+
 noncomputable section
 
 section IntRootOfUnity
@@ -48,3 +50,6 @@ theorem modularPolynomialDiagonal_leadingCoeff_eq_pm_one (m : ℕ+) (hm : ¬ IsS
   exact Int.eq_one_or_neg_one_of_pow_eq_one hk h
 
 end Diagonal
+
+
+end Test

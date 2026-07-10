@@ -19,6 +19,8 @@ all sorry-free in `jfunctionLaurent.lean`): the leading coefficient of `A` is th
 most-negative q-coefficient of `A(j)`, an integer; induct down on `deg A`.
 -/
 
+namespace Test
+
 noncomputable section
 
 section HasseQPrinciple
@@ -49,3 +51,6 @@ theorem levelOne_integer_polynomialInJ {f : ℍ → ℂ}
   sorry -- T007: depends on T006 (Hasse principle); blocked
 
 end HasseQPrinciple
+
+
+end Test

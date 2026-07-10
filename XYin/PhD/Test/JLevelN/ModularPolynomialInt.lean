@@ -18,6 +18,8 @@ argument of Cox pp. 231–232) is decomposed in `QExpansion1113.lean` / `HasseQP
 and is left as `sorry` here.
 -/
 
+namespace Test
+
 noncomputable section
 
 section ModularPolynomialInteger
@@ -79,3 +81,6 @@ theorem modularPolynomial_map_complex (m : ℕ+) :
   (modularEquation_integer_descent m).choose_spec
 
 end ModularPolynomialInteger
+
+
+end Test

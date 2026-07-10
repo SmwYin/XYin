@@ -11,6 +11,8 @@ open scoped Manifold
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
 
+namespace Test
+
 noncomputable section
 
 /-- This defines the `j` function as E4^3/Δ -/
@@ -1717,3 +1719,6 @@ theorem j_HasIntegralQExpansion : HasIntegralQExpansion 1 j := by
   simpa [HasIntegralQExpansion, qj, pow_one] using qjIsIntegralPowerSeries
 
 end
+
+
+end Test

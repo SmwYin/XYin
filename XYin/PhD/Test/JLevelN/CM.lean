@@ -12,6 +12,8 @@ the existing `coxPhiFunction`.  The bijection itself (and the matrix constructio
 is the load-bearing leaf, left as `sorry`.
 -/
 
+namespace Test
+
 noncomputable section
 
 /-- **Cox `C(m)`** (Cox p. 228): integer matrices `(a b; 0 d)` with `ad = m`, `a > 0`,
@@ -96,3 +98,6 @@ theorem coe_cmAction (σ : CM m) (z : ℍ) :
     ((cmAction σ z : ℍ) : ℂ) = ((σ.a : ℂ) * (z : ℂ) + (σ.b : ℂ)) / (σ.d : ℂ) := rfl
 
 end CM
+
+
+end Test

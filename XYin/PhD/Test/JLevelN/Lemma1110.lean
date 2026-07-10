@@ -17,6 +17,8 @@ computations used to identify and cancel the principal part of `j` at the cusp.
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
 
+namespace Test
+
 noncomputable section
 
 section modularEquation
@@ -1588,3 +1590,6 @@ theorem levelOne_meromorphic_polynomialInJ {f : ℍ → ℂ}
 end PolynomialInJ
 
 end modularEquation
+
+
+end Test
