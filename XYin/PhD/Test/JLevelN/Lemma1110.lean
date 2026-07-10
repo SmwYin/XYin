@@ -19,6 +19,8 @@ local notation "ℍₒ" => upperHalfPlaneSet
 
 namespace Test
 
+open UpperHalfPlane
+
 noncomputable section
 
 section modularEquation
@@ -1591,5 +1593,6 @@ end PolynomialInJ
 
 end modularEquation
 
+end
 
 end Test

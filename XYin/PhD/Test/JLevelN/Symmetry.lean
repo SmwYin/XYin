@@ -88,5 +88,6 @@ theorem modularPolynomial_swap_of_dvd_of_irreducible (m : ℕ+)
 
 end ModularSymmetry
 
+end
 
 end Test

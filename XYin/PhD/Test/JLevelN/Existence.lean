@@ -21,6 +21,8 @@ local notation "ℍₒ" => upperHalfPlaneSet
 
 namespace Test
 
+open UpperHalfPlane
+
 noncomputable section
 
 section modularEquation
@@ -920,5 +922,6 @@ end ModularEquationExistence
 
 end modularEquation
 
+end
 
 end Test
