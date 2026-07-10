@@ -16,6 +16,8 @@ Gauss `swap Φ = g·Φ`, `g·gˢʷᵃᵖ = 1`, `g = ±1`, and the `g = −1` con
 is discharged here with no new infrastructure.
 -/
 
+namespace Test
+
 noncomputable section
 
 namespace ModularSymmetry
@@ -85,3 +87,6 @@ theorem modularPolynomial_swap_of_dvd_of_irreducible (m : ℕ+)
       omega
 
 end ModularSymmetry
+
+
+end Test

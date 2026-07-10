@@ -21,6 +21,8 @@ All five are skeleton statements with `sorry`; the decomposition lives in
 left as bare statements (no internal decomposition) per the source-availability decision.
 -/
 
+namespace Test
+
 noncomputable section
 
 section Theorem1118
@@ -85,3 +87,6 @@ theorem modularPolynomial_kronecker (p : ℕ+) [hp : Fact (Nat.Prime (p : ℕ))]
   sorry -- T020: discharged by KroneckerGeneral.modularPolynomial_kronecker_general (gated on T018/T019); needs relocation
 
 end Theorem1118
+
+
+end Test

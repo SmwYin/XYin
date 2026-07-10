@@ -22,6 +22,8 @@ cyclotomic setup as hypotheses.  The mod-`(1−ζ_p)` series congruences (11.20)
 final assembly remain the next decomposition target.
 -/
 
+namespace Test
+
 noncomputable section
 
 section Frobenius
@@ -66,3 +68,6 @@ theorem modularPolynomial_kronecker_general (p : ℕ+) [Fact (Nat.Prime (p : ℕ
   sorry -- T019: mod-(1-ζ_p) congruences (11.20)/(11.21) need ℤ[ζ_p] series + Hasse (T007) + T018. Substantial.
 
 end Assembly
+
+
+end Test

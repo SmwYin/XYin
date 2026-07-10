@@ -18,6 +18,8 @@ the later Cox modular-equation files.
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
 
+namespace Test
+
 noncomputable section
 
 section modularEquation
@@ -309,3 +311,6 @@ theorem jN_MDifferentiable (N : ℕ+) : MDiff (jN N) := by
 end JNAtCusps
 
 end modularEquation
+
+
+end Test

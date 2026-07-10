@@ -20,6 +20,8 @@ sorry-free `jfunctionLaurent.jLaurentqExpansion_isIntegral`.
 side condition — the support is `{a²n : n ≥ -1}`, bounded below by `-a²` — is left `sorry`.
 -/
 
+namespace Test
+
 noncomputable section
 
 section IntegerJCoefficients
@@ -114,3 +116,6 @@ theorem cmAction_root_qExpansion_isIntegral (m : ℕ+) (σ : CM m) (k : ℤ) :
   sorry -- T011: analytic↔formal bridge; needs laurentqExpansion width/algebra API (absent in LaurentQExpansion). Substantial.
 
 end AnalyticBridge
+
+
+end Test

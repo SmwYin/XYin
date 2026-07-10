@@ -10,6 +10,8 @@ open UpperHalfPlane hiding I
 local notation "I∞" => comap Complex.im atTop
 local notation "𝕢" => Periodic.qParam
 
+namespace Test
+
 noncomputable section
 
 variable {h : ℝ}
@@ -883,3 +885,6 @@ lemma laurentqExpansion_coeff_eq_circleIntegral {h : ℝ} {f : ℍ → ℂ}
         hCoeffInt
       _ = ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h f z / z ^ (n + 1)) := by
             simp [hIntEq]
+
+
+end Test

@@ -20,6 +20,8 @@ This file isolates:
   principle to give Theorem 11.18(i).
 -/
 
+namespace Test
+
 noncomputable section
 
 section CMReindex
@@ -103,3 +105,6 @@ theorem coxPhiFunction_coeff_integer_qExpansion (m : ℕ+) (n : ℕ) :
   sorry -- T012: Galois-fixed-field descent; needs laurentqExpansion algebra-hom API (absent) + ring-hom coeff map. Substantial.
 
 end IntegerQExpansion
+
+
+end Test

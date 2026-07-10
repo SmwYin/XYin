@@ -8,6 +8,8 @@ open scoped Manifold
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
 
+namespace Test
+
 noncomputable section
 
 lemma qj_cuspFunction_DifferentiableOn :
@@ -113,3 +115,6 @@ theorem jLaurentqExpansion_two : (laurentqExpansion 1 j).coeff 2 = 21493760 := b
 
 theorem jLaurentqExpansion_three : (laurentqExpansion 1 j).coeff 3 = 864299970 := by
   simpa [jLaurentqExpansion_coeff_eq] using qj_exp_four
+
+
+end Test

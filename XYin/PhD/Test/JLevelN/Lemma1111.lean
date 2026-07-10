@@ -16,6 +16,8 @@ pointwise as `coxPhiAtJ` and as the function-valued polynomial `coxPhiFunction`.
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
 
+namespace Test
+
 noncomputable section
 
 section modularEquation
@@ -242,3 +244,6 @@ theorem coxPhiFunction_monic (N : ℕ+) : (coxPhiFunction N).Monic := by
 end FunctionValuedProduct
 
 end modularEquation
+
+
+end Test

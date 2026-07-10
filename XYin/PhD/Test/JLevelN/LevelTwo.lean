@@ -18,6 +18,8 @@ congruence modulo `2`.
 local notation "𝕢" => Periodic.qParam
 local notation "ℍₒ" => upperHalfPlaneSet
 
+namespace Test
+
 noncomputable section
 
 section modularEquation
@@ -2167,3 +2169,6 @@ end LevelTwoFinalVanishing
 end LevelTwoEquation
 
 end modularEquation
+
+
+end Test
