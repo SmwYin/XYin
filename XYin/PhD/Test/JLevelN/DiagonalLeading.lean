@@ -51,5 +51,6 @@ theorem modularPolynomialDiagonal_leadingCoeff_eq_pm_one (m : ℕ+) (hm : ¬ IsS
 
 end Diagonal
 
+end
 
 end Test

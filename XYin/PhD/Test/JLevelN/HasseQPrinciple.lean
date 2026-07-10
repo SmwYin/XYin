@@ -21,6 +21,8 @@ most-negative q-coefficient of `A(j)`, an integer; induct down on `deg A`.
 
 namespace Test
 
+open UpperHalfPlane
+
 noncomputable section
 
 section HasseQPrinciple
@@ -52,5 +54,6 @@ theorem levelOne_integer_polynomialInJ {f : ℍ → ℂ}
 
 end HasseQPrinciple
 
+end
 
 end Test

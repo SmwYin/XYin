@@ -22,6 +22,8 @@ side condition — the support is `{a²n : n ≥ -1}`, bounded below by `-a²` �
 
 namespace Test
 
+open UpperHalfPlane
+
 noncomputable section
 
 section IntegerJCoefficients
@@ -117,5 +119,6 @@ theorem cmAction_root_qExpansion_isIntegral (m : ℕ+) (σ : CM m) (k : ℤ) :
 
 end AnalyticBridge
 
+end
 
 end Test

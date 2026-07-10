@@ -22,6 +22,8 @@ This file isolates:
 
 namespace Test
 
+open UpperHalfPlane
+
 noncomputable section
 
 section CMReindex
@@ -106,5 +108,6 @@ theorem coxPhiFunction_coeff_integer_qExpansion (m : ℕ+) (n : ℕ) :
 
 end IntegerQExpansion
 
+end
 
 end Test

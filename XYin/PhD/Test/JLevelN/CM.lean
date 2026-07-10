@@ -99,5 +99,6 @@ theorem coe_cmAction (σ : CM m) (z : ℍ) :
 
 end CM
 
+end
 
 end Test

@@ -88,5 +88,6 @@ theorem modularPolynomial_kronecker (p : ℕ+) [hp : Fact (Nat.Prime (p : ℕ))]
 
 end Theorem1118
 
+end
 
 end Test

@@ -43,6 +43,8 @@ def UpperHalfPlane.poleOrder (h : ℝ) (f : ℍ → ℂ) : ℕ :=
     Int.natAbs ((meromorphicOrderAt (cuspFunction h f) 0).untopD 0)
   else 0
 
+open UpperHalfPlane
+
 lemma meromorphicOrderAt_cuspFunction_nat_mul {h : ℝ} {m : ℕ} (hm : m ≠ 0) {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ))
     (hfper : Periodic (f ∘ UpperHalfPlane.ofComplex) h) :
@@ -885,6 +887,6 @@ lemma laurentqExpansion_coeff_eq_circleIntegral {h : ℝ} {f : ℍ → ℂ}
         hCoeffInt
       _ = ((2 * π * I)⁻¹ * ∮ z in C(0, R), cuspFunction h f z / z ^ (n + 1)) := by
             simp [hIntEq]
-
+end
 
 end Test
