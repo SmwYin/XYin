@@ -1,5 +1,7 @@
 import XYin.PhD.Modularforms.Eisenstein
 import XYin.PhD.IntegralPowerSeries.HasIntegralQExpansion
+import Mathlib.Analysis.Complex.OpenMapping
+import Mathlib.Analysis.Complex.RemovableSingularity
 import Mathlib.RingTheory.LaurentSeries
 
 set_option linter.style.header false
@@ -37,6 +39,172 @@ lemma cuspFunction_nat_mul_eq_cuspFunction_pow {h : ℝ} {m : ℕ} {f : ℍ → 
     ring
   simpa [Function.comp_def, hinv] using
     (hfper.int_mul n (Periodic.invQParam ((m : ℝ) * h) q)).symm
+
+private lemma cuspFunction_add_eventuallyEq (h : ℝ) (f g : ℍ → ℂ) :
+    cuspFunction h (fun τ ↦ f τ + g τ) =ᶠ[nhdsWithin 0 ({0}ᶜ)]
+      fun q ↦ cuspFunction h f q + cuspFunction h g q := by
+  filter_upwards [self_mem_nhdsWithin] with q hq
+  have hq0 := Set.mem_compl_singleton_iff.mp hq
+  simp only [UpperHalfPlane.cuspFunction]
+  rw [Periodic.cuspFunction_eq_of_nonzero _ _ hq0,
+    Periodic.cuspFunction_eq_of_nonzero _ _ hq0,
+    Periodic.cuspFunction_eq_of_nonzero _ _ hq0]
+  rfl
+
+private lemma cuspFunction_mul_eventuallyEq (h : ℝ) (f g : ℍ → ℂ) :
+    cuspFunction h (fun τ ↦ f τ * g τ) =ᶠ[nhdsWithin 0 ({0}ᶜ)]
+      fun q ↦ cuspFunction h f q * cuspFunction h g q := by
+  filter_upwards [self_mem_nhdsWithin] with q hq
+  have hq0 := Set.mem_compl_singleton_iff.mp hq
+  simp only [UpperHalfPlane.cuspFunction]
+  rw [Periodic.cuspFunction_eq_of_nonzero _ _ hq0,
+    Periodic.cuspFunction_eq_of_nonzero _ _ hq0,
+    Periodic.cuspFunction_eq_of_nonzero _ _ hq0]
+  rfl
+
+private lemma cuspFunction_const_eventuallyEq (h : ℝ) (a : ℂ) :
+    cuspFunction h (fun _ : ℍ ↦ a) =ᶠ[nhdsWithin 0 ({0}ᶜ)] fun _ ↦ a := by
+  filter_upwards [self_mem_nhdsWithin] with q hq
+  have hq0 := Set.mem_compl_singleton_iff.mp hq
+  simp only [UpperHalfPlane.cuspFunction]
+  rw [Periodic.cuspFunction_eq_of_nonzero _ _ hq0]
+  rfl
+
+/-- Cusp meromorphicity is preserved by pointwise addition. -/
+lemma meromorphicAt_cuspFunction_add {h : ℝ} {f g : ℍ → ℂ}
+    (hf : MeromorphicAt (cuspFunction h f) 0)
+    (hg : MeromorphicAt (cuspFunction h g) 0) :
+    MeromorphicAt (cuspFunction h (fun τ ↦ f τ + g τ)) 0 :=
+  (hf.add hg).congr (cuspFunction_add_eventuallyEq h f g).symm
+
+/-- Cusp meromorphicity is preserved by pointwise multiplication. -/
+lemma meromorphicAt_cuspFunction_mul {h : ℝ} {f g : ℍ → ℂ}
+    (hf : MeromorphicAt (cuspFunction h f) 0)
+    (hg : MeromorphicAt (cuspFunction h g) 0) :
+    MeromorphicAt (cuspFunction h (fun τ ↦ f τ * g τ)) 0 :=
+  (hf.mul hg).congr (cuspFunction_mul_eventuallyEq h f g).symm
+
+/-- A constant function is meromorphic in every cusp parameter. -/
+lemma meromorphicAt_cuspFunction_const (h : ℝ) (a : ℂ) :
+    MeromorphicAt (cuspFunction h (fun _ : ℍ ↦ a)) 0 :=
+  (MeromorphicAt.const a 0).congr (cuspFunction_const_eventuallyEq h a).symm
+
+/-- A finite pointwise sum of cusp-meromorphic functions is cusp-meromorphic. -/
+lemma meromorphicAt_cuspFunction_finset_sum
+    {ι : Type*} {h : ℝ} {s : Finset ι} {f : ι → ℍ → ℂ}
+    (hf : ∀ i ∈ s, MeromorphicAt (cuspFunction h (f i)) 0) :
+    MeromorphicAt (cuspFunction h (∑ i ∈ s, f i)) 0 := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using meromorphicAt_cuspFunction_const h 0
+  | insert a s ha ih =>
+      rw [Finset.sum_insert ha]
+      change MeromorphicAt (cuspFunction h (fun τ ↦ f a τ + (∑ i ∈ s, f i) τ)) 0
+      exact meromorphicAt_cuspFunction_add (hf a (Finset.mem_insert_self a s))
+        (ih fun i hi ↦ hf i (Finset.mem_insert_of_mem hi))
+
+/-- A finite pointwise product of cusp-meromorphic functions is cusp-meromorphic. -/
+lemma meromorphicAt_cuspFunction_finset_prod
+    {ι : Type*} {h : ℝ} {s : Finset ι} {f : ι → ℍ → ℂ}
+    (hf : ∀ i ∈ s, MeromorphicAt (cuspFunction h (f i)) 0) :
+    MeromorphicAt (cuspFunction h (∏ i ∈ s, f i)) 0 := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using meromorphicAt_cuspFunction_const h 1
+  | insert a s ha ih =>
+      rw [Finset.prod_insert ha]
+      change MeromorphicAt (cuspFunction h (fun τ ↦ f a τ * (∏ i ∈ s, f i) τ)) 0
+      exact meromorphicAt_cuspFunction_mul (hf a (Finset.mem_insert_self a s))
+        (ih fun i hi ↦ hf i (Finset.mem_insert_of_mem hi))
+
+/-- Multiplying a cusp width by a nonzero natural number preserves meromorphicity at the
+cusp. -/
+lemma meromorphicAt_cuspFunction_nat_mul {h : ℝ} {m : ℕ} (hm : m ≠ 0) {f : ℍ → ℂ}
+    (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ))
+    (hfper : Periodic (f ∘ UpperHalfPlane.ofComplex) h) :
+    MeromorphicAt (cuspFunction ((m : ℝ) * h) f) (0 : ℂ) := by
+  have hg : AnalyticAt ℂ (fun q : ℂ ↦ q ^ m) 0 := by fun_prop
+  have hmero0 : MeromorphicAt (cuspFunction h f) ((fun q : ℂ ↦ q ^ m) 0) := by
+    simpa [hm] using hmero
+  have hcomp : MeromorphicAt (cuspFunction h f ∘ fun q : ℂ ↦ q ^ m) (0 : ℂ) :=
+    MeromorphicAt.comp_analyticAt (𝕜 := ℂ) (𝕜' := ℂ) hmero0 hg
+  refine hcomp.congr ?_
+  filter_upwards [self_mem_nhdsWithin] with q hq
+  exact (cuspFunction_nat_mul_eq_cuspFunction_pow hfper
+    (Set.mem_compl_singleton_iff.mp hq)).symm
+
+private lemma eventually_differentiableAt_pow_mul_of_meromorphicAt_comp_pow_aux
+    {g : ℂ → ℂ} {m : ℕ} (hm : m ≠ 0)
+    (h : MeromorphicAt (g ∘ fun q : ℂ ↦ q ^ m) 0) (n : ℕ) :
+    ∀ᶠ z in nhdsWithin (0 : ℂ) ({0}ᶜ),
+      DifferentiableAt ℂ (fun z ↦ z ^ n * g z) z := by
+  letI : NeZero m := ⟨hm⟩
+  have hcompAna :
+      ∀ᶠ q : ℂ in nhds (0 : ℂ),
+        q = 0 ∨ AnalyticAt ℂ (g ∘ fun z : ℂ ↦ z ^ m) q := by
+    have hpunctured := h.eventually_analyticAt
+    rw [eventually_nhdsWithin_iff] at hpunctured
+    filter_upwards [hpunctured] with q hq
+    by_cases hq0 : q = 0
+    · exact Or.inl hq0
+    · exact Or.inr (hq (Set.mem_compl_singleton_iff.mpr hq0))
+  let U : Set ℂ := {q | q = 0 ∨ AnalyticAt ℂ (g ∘ fun z : ℂ ↦ z ^ m) q}
+  have hUimage : (fun q : ℂ ↦ q ^ m) '' U ∈ nhds (0 : ℂ) := by
+    simpa [hm] using
+      (Complex.isOpenQuotientMap_pow m).isOpenMap.image_mem_nhds
+        (show U ∈ nhds 0 from hcompAna)
+  rw [eventually_nhdsWithin_iff]
+  filter_upwards [hUimage] with z hz hz0
+  obtain ⟨q, hqU, rfl⟩ := hz
+  have hq0 : q ≠ 0 := fun hq0 ↦ hz0 (by simp [hq0, hm])
+  have hcompAt : AnalyticAt ℂ (g ∘ fun z : ℂ ↦ z ^ m) q := hqU.resolve_left hq0
+  have hderiv : deriv (fun z : ℂ ↦ z ^ m) q ≠ 0 := by
+    rw [deriv_pow_field]
+    exact mul_ne_zero (Nat.cast_ne_zero.mpr hm) (pow_ne_zero _ hq0)
+  have hgAt : AnalyticAt ℂ g (q ^ m) :=
+    (analyticAt_comp_iff_of_deriv_ne_zero (analyticAt_id.pow m) hderiv).mp hcompAt
+  exact ((analyticAt_id.pow n).mul hgAt).differentiableAt
+
+/-- Meromorphicity descends along a nonconstant complex power map. -/
+lemma meromorphicAt_of_comp_pow {g : ℂ → ℂ} {m : ℕ} (hm : m ≠ 0)
+    (h : MeromorphicAt (g ∘ fun q : ℂ ↦ q ^ m) 0) :
+    MeromorphicAt g 0 := by
+  letI : NeZero m := ⟨hm⟩
+  obtain ⟨n, hn⟩ := h
+  refine ⟨n, ?_⟩
+  let G : ℂ → ℂ := fun z ↦ z ^ n * g z
+  have hGcomp : AnalyticAt ℂ (G ∘ fun q : ℂ ↦ q ^ m) 0 := by
+    have hmpos : 1 ≤ m := Nat.one_le_iff_ne_zero.mpr hm
+    have hmn : m * n = (m - 1) * n + n := by
+      calc
+        m * n = ((m - 1) + 1) * n := by rw [Nat.sub_add_cancel hmpos]
+        _ = (m - 1) * n + n := by simp [Nat.add_mul]
+    have hpow : AnalyticAt ℂ (fun q : ℂ ↦ q ^ ((m - 1) * n)) 0 :=
+      analyticAt_id.pow _
+    convert hpow.mul hn using 1
+    funext q
+    simp only [G, Function.comp_apply, Pi.mul_apply, sub_zero, smul_eq_mul]
+    rw [← pow_mul, hmn, pow_add]
+    ring
+  have hGcontinuous : ContinuousAt G 0 := by
+    simpa [hm] using
+      (Complex.isOpenQuotientMap_pow m).continuousAt_comp_iff.mp hGcomp.continuousAt
+  have hGdiff := eventually_differentiableAt_pow_mul_of_meromorphicAt_comp_pow_aux hm
+    ⟨n, hn⟩ n
+  simpa [G] using Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt
+    hGdiff hGcontinuous
+
+/-- If a periodic function is meromorphic in a natural multiple of its cusp parameter, then it
+is already meromorphic in the original cusp parameter. -/
+lemma meromorphicAt_cuspFunction_of_nat_mul {h : ℝ} {m : ℕ} (hm : m ≠ 0) {f : ℍ → ℂ}
+    (hmero : MeromorphicAt (cuspFunction ((m : ℝ) * h) f) (0 : ℂ))
+    (hfper : Periodic (f ∘ UpperHalfPlane.ofComplex) h) :
+    MeromorphicAt (cuspFunction h f) (0 : ℂ) := by
+  apply meromorphicAt_of_comp_pow hm
+  refine hmero.congr ?_
+  filter_upwards [self_mem_nhdsWithin] with q hq
+  exact cuspFunction_nat_mul_eq_cuspFunction_pow hfper
+    (Set.mem_compl_singleton_iff.mp hq)
 
 def UpperHalfPlane.poleOrder (h : ℝ) (f : ℍ → ℂ) : ℕ :=
   if meromorphicOrderAt (cuspFunction h f) 0 < 0 then

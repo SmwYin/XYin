@@ -23,24 +23,35 @@ The formalized scope is the complete mathematical content needed for printed pp.
 Historical/bibliographical prose is out of scope.  The displayed polynomial (11.22) is in scope
 as a verification theorem.
 
-## Statement skeleton and build gate
+## Implemented statement surface and build gate
 
-The declarations are physically present under `XYin/PhD/Cox/` and contain `:= by sorry` (or a
-definition with a `by sorry` body) exactly because this is the `/develop` planning phase.
+The declarations under `XYin/PhD/Cox/` are fully implemented.  The Cox subtree contains no
+`sorry`, `admit`, `native_decide`, unsafe declaration, or local resource-limit override.
 
-| Layer | Skeleton file | Main source targets |
+| Layer | Implementation file | Main source targets |
 |---|---|---|
 | HNF | `HermiteNormalForm.lean` | Exercises 7.15, 11.16, 11.17 |
 | lattice `j` | `LatticeJ.lean` | Proposition 10.7; Theorems 10.9, 11.2 |
 | modular functions | `ModularFunction.lean` | Lemma 11.10; Theorem 11.9 |
-| representatives | `CoxMatrices.lean` | Lemma 11.11; (11.12), (11.13) |
-| modular equation | `ModularPolynomial.lean` | (11.14)–(11.17); 11.18(i),(ii) inputs |
-| cyclic sublattices | `CyclicSublattice.lean` | Lemma 11.24; Theorem 11.23 |
-| arithmetic | `Arithmetic.lean` | Theorem 11.18(i)–(v); (11.19)–(11.22) |
+| representatives | `CoxMatrices/Basic.lean` | Lemma 11.11; equation (11.12) |
+| counting | `CoxMatrices/Cardinality.lean` | cardinality of `C(m)` |
+| root expansions | `CoxMatrices/LaurentExpansion.lean` | equation (11.13) |
+| formal products | `FormalCoxProduct.lean` | exact formal version of (11.13)–(11.15) |
+| function field | `UpperHalfPlaneFunctionField.lean` | irreducibility input for 11.18(ii) |
+| modular equation | `ModularPolynomial/Construction.lean` | equations (11.14)–(11.15) |
+| interpolation | `ModularPolynomial/Interpolation.lean` | equations (11.16)–(11.17); 11.9(ii) |
+| irreducibility | `ModularPolynomial/Irreducibility.lean` | Theorem 11.18(ii) input |
+| integer descent | `ModularPolynomial/IntegralDescent.lean` | Theorem 11.18(i) input |
+| cyclic core | `CyclicSublattice.lean` | finite-index cyclic inclusions and duality |
+| classification | `CyclicSublattice/Classification.lean` | Lemma 11.24; Theorem 11.23 |
+| diagonal | `DiagonalLaurent.lean` | equation (11.19); Theorem 11.18(iv) input |
+| congruence | `Kronecker.lean`, `KroneckerFrobenius.lean` | Theorem 11.18(v) |
+| explicit level three | `SymmetricCubicLaurent.lean`, `LevelThree.lean` | equation (11.22) |
+| arithmetic | `Arithmetic.lean` | Theorem 11.18(i)–(iv); final (11.22) identity |
 | umbrella | `Section11BC.lean` | complete scope |
 
-`lake build` succeeds for the full repository at this skeleton revision.  Existing project
-warnings and old project sorries remain, but there are no elaboration or build errors.
+Focused builds and milestone full builds succeeded throughout T001–T028.  T029's final
+repository-wide build and public-axiom audit also pass.
 
 The declarations follow the one-conclusion rule:
 
@@ -69,10 +80,9 @@ The declarations follow the one-conclusion rule:
 
 ### Reuse after repair
 
-The `main` branch contains a nearly complete implementation of the requested three-step
-injectivity route.  The scaling and change-of-basis portions are axiom-clean.  Its analytic
-bridge currently imports `sorryAx` through the old `Delta_E4_eqn`; the plan replaces that
-dependency with mathlib's discriminant theorems before porting it.
+The historical `main` branch contained a nearly complete version of the requested three-step
+injectivity route, but its analytic bridge inherited `sorryAx` through `Delta_E4_eqn`.  The
+implemented proof instead uses mathlib's discriminant theorem and is standard-axiom clean.
 
 ### Historical code that is evidence, not an implementation dependency
 
@@ -87,7 +97,7 @@ must not be restored wholesale.  Its known defects are:
    and symmetry has a non-circular proof after Theorem 11.23;
 5. several apparently implemented results still had transitive `sorryAx` dependencies.
 
-The new skeleton explicitly fixes all five.
+The implementation fixes all five and does not import the historical test tree.
 
 ## Source-to-Lean decomposition
 
@@ -107,7 +117,7 @@ j(L) = 1728 g₂(L)^3 / Δ(L).
 
 Lean mapping:
 
-- `PeriodPair.discriminant`, `PeriodPair.j` (`LatticeJ.lean:45–48`);
+- `PeriodPair.discriminant`, `PeriodPair.j` (`LatticeJ.lean`);
 - `G_smul`, `g₂_smul`, `g₃_smul`, `discriminant_smul`, `j_smul` (`:56–74`).
 
 The source scaling convention is `g₂(aL)=a⁻⁴g₂(L)` and `g₃(aL)=a⁻⁶g₃(L)`.  Lean uses
@@ -117,7 +127,7 @@ The source scaling convention is `g₂(aL)=a⁻⁴g₂(L)` and `g₃(aL)=a⁻⁶
 Attacks:
 
 1. **Normalization attack:** omitting `1728` changes every integral modular polynomial.  The
-   skeleton uses Cox's normalization exactly.
+   implementation uses Cox's normalization exactly.
 2. **Zero-scale attack:** allowing `a : ℂ` would make homothety false at `a=0`.  Units are
    necessary.
 3. **Basis-vs-lattice attack:** `g₂_congr` and `g₃_congr` state invariance under equality of
@@ -134,7 +144,7 @@ j(L)=j(L') ↔ L and L' are homothetic.
 
 Lean mapping:
 
-- `PeriodPair.discriminant_ne_zero` (`LatticeJ.lean:88`);
+- `PeriodPair.discriminant_ne_zero` (`LatticeJ.lean`);
 - `j_eq_of_homothetic`, `homothetic_of_j_eq`, `j_eq_iff_homothetic` (`:92–103`).
 
 For the hard direction, equal `j` values are split into the special cases `g₂=0` (`j=0`),
@@ -160,7 +170,7 @@ j(τ)=j([1,τ]).
 
 Lean mapping:
 
-- `UpperHalfPlane.periodPair` (`LatticeJ.lean:110`);
+- `UpperHalfPlane.periodPair` (`LatticeJ.lean`);
 - `periodPair_g₂_eq_E4`, `periodPair_g₃_eq_E6`, `Delta_eq_E4_E6`,
   `j_eq_periodPair_j` (`:125–143`).
 
@@ -191,7 +201,7 @@ j : ℍ → ℂ is surjective.
 ```
 
 Lean mapping: `periodPair_homothetic_iff_exists_sl2_smul_eq`,
-`j_eq_iff_exists_sl2_smul_eq`, and `j_surjective` (`LatticeJ.lean:153–165`).
+`j_eq_iff_exists_sl2_smul_eq`, and `j_surjective` (`LatticeJ.lean`).
 
 Attacks:
 
@@ -212,14 +222,14 @@ f(γτ)=∑ a_n q^(n/m), with only finitely many negative terms.
 ```
 
 Lean mapping: `IsGamma0ModularFunction`, `periodic_comp_sl2`, and
-`cusp_laurent_finitePrincipalPart` (`ModularFunction.lean:27,57,64`).
+`cusp_laurent_finitePrincipalPart` (`ModularFunction.lean`).
 
 Attacks:
 
 1. **Holomorphicity attack:** Theorem 11.9 permits poles inside `ℍ`; the predicate uses
    `MeromorphicAt`, not `MDiff`.
-2. **Cusp attack:** checking only `∞` is insufficient for `Γ₀(m)`; the definition quantifies over
-   every `γ : SL₂(ℤ)`.
+2. **Cusp attack:** checking only `∞` is insufficient for `Γ₀(m)`; the definition quantifies
+   over every `γ : SL₂(ℤ)`.
 3. **Width attack:** period/expansion width `m` is valid for every transformed cusp even when the
    minimal cusp width is a divisor of `m`.
 
@@ -228,7 +238,7 @@ Attacks:
 Short source anchors, printed p. 226 / PDF p. 238: “is constant”; “a polynomial in j(τ)”.
 
 Lean mapping: `levelOne_constant_of_holomorphic` and
-`levelOne_polynomialInJ_of_holomorphic` (`ModularFunction.lean:85,93`).
+`levelOne_polynomialInJ_of_holomorphic` (`ModularFunction.lean`).
 
 The constant theorem uses reduction to a truncated fundamental region and maximum modulus.
 The polynomial theorem removes the finite principal part at `∞` using `j=q⁻¹+O(1)` and then
@@ -253,7 +263,7 @@ j(τ)^(r/3) f(τ).
 ```
 
 Lean mapping: `levelOne_exists_polynomial_clearing_poles` and `theorem_11_9_i`
-(`ModularFunction.lean:101,107`).
+(`ModularFunction.lean`).
 
 Attacks:
 
@@ -265,8 +275,8 @@ Attacks:
    denominator is nonzero (`RationalIn`), avoiding false pointwise claims at poles.
 
 Internal-node attack on Theorem 11.9(i): even if every pole is cleared, the clearing polynomial
-could be zero.  The skeleton explicitly requires `P ≠ 0`, and division is guarded by its zero
-set.  This node survives.
+could be zero.  The implementation explicitly requires `P ≠ 0`, and division is guarded by its
+zero set.  This node survives.
 
 ### C. Hermite normal form and `C(m)`
 
@@ -279,7 +289,7 @@ L'=[d,aτ+b],  d>0, a>0, 0≤b<d.
 ```
 
 Lean mapping: `Matrix.IsColumnHermiteNormalForm` and
-`Module.Basis.HermiteNormalForm` (`HermiteNormalForm.lean:26,46`).
+`Module.Basis.HermiteNormalForm` (`HermiteNormalForm.lean`).
 
 The structure parallels `Module.Basis.SmithNormalForm` but fixes the ambient basis `bM` as a
 parameter.  Its relation is the full matrix of `N.subtype` from `bN` to `bM`.
@@ -304,7 +314,7 @@ L/L' cyclic ↔ gcd(a,b,c,d)=1.
 ```
 
 Lean mapping: `exists_hermiteNormalForm`, `matrix_eq`, `index_eq_natAbs_det`, and
-`quotient_isAddCyclic_iff_rankTwoContent_eq_one` (`HermiteNormalForm.lean:67,76,82,97`).
+`quotient_isAddCyclic_iff_rankTwoContent_eq_one` (`HermiteNormalForm.lean`).
 
 Attacks:
 
@@ -313,7 +323,7 @@ Attacks:
 2. **SNF attack:** mathlib's existing `SmithNormalForm` does not record divisibility-normalized
    invariant factors, so cyclicity cannot be inferred from it without an additional proof.
 3. **Primitive attack:** gcd-one is equivalent to a cyclic quotient, not part of the definition
-   of HNF.  The skeleton keeps these layers separate.
+   of HNF.  The implementation keeps these layers separate.
 
 #### C3. Cox representatives
 
@@ -324,7 +334,7 @@ C(m)={[[a,b],[0,d]] : ad=m, a>0, 0≤b<d, gcd(a,b,d)=1}.
 ```
 
 Lean mapping: `CoxMatrix`, `mobiusMatrix`, `inclusionMatrix`, `act`
-(`CoxMatrices.lean:24,47,51,67`).
+(`CoxMatrices/Basic.lean`).
 
 Attacks:
 
@@ -345,8 +355,8 @@ Source, printed pp. 228–229 / PDF pp. 240–241.  Short anchor: “one-to-one 
 |C(m)|=m∏_{p|m}(1+1/p).
 ```
 
-Lean mapping: `coxMatrixEquivRightCosets`, `card_coxMatrix`
-(`CoxMatrices.lean:118,154`).
+Lean mapping: `coxMatrixEquivRightCosets` (`CoxMatrices/Basic.lean`) and `card_coxMatrix`
+(`CoxMatrices/Cardinality.lean`).
 
 Attacks:
 
@@ -366,15 +376,15 @@ j(mγτ)=j(στ),
 j(στ)=ζ_m^(-ab)t^(-a²)+∑_{n≥0} c_n ζ_m^(abn)t^(a²n), t=q^(1/m).
 ```
 
-Lean mapping: `rightCosetEval_equiv`, `transformedJSeries`,
-`laurentqExpansion_coxAction`, `reindex_bijective` (`CoxMatrices.lean:137,177,203,213`).
+Lean mapping: `rightCosetEval_equiv` (`CoxMatrices/Basic.lean`) and `transformedJSeries`,
+`laurentqExpansion_coxAction`, `reindex_bijective` (`CoxMatrices/LaurentExpansion.lean`).
 
 Attacks:
 
 1. **Width regression:** the analytic Laurent expansion is at width `m`; width `1` is false for
    an individual root and was a defect in the historical experiment.
-2. **Exponent attack:** since `ad=m`, `q(στ)=ζ_m^(ab)t^(a²)`; the exponent is `a²`, not `a/d` in
-   the `t` variable.
+2. **Exponent attack:** since `ad=m`, `q(στ)=ζ_m^(ab)t^(a²)`; the exponent is `a²`, not
+   `a/d` in the `t` variable.
 3. **Support attack:** the formal Laurent support is bounded below by `-a²`, so the Hahn/Laurent
    series constructor is legitimate.
 4. **Galois attack:** `b↦bk mod d` preserves `gcd(a,b,d)=1` only because `k` is coprime to `m`
@@ -392,7 +402,7 @@ Source, printed p. 230 / PDF p. 242:
 
 Lean mapping: `BivariatePolynomial`, `existsUnique_modularPolynomialC`,
 `modularPolynomialC_specializeY`, and `modularPolynomialC_rightCosetProduct`
-(`ModularPolynomial.lean:22,76,89,94`).
+(`ModularPolynomial/Construction.lean`).
 
 Variable convention: outer `Polynomial.X` is Cox's root variable `X`; the inner coefficient
 variable is Cox's `Y`.  Semantic evaluation is `Φ.eval x y := Φ.evalEval y x`.
@@ -416,7 +426,7 @@ f(τ)=G(j(mτ),j(τ))/∂_XΦ_m(j(mτ),j(τ)).
 ```
 
 Lean mapping: `interpolationAt`, `interpolation_coeff_isLevelOne`, `recoveryFormula`, and
-`theorem_11_9_ii` (`ModularPolynomial.lean:111,121,130`; `ModularFunction.lean:115`).
+`theorem_11_9_ii` (`ModularPolynomial/Interpolation.lean`).
 
 Attacks:
 
@@ -429,7 +439,7 @@ Attacks:
 
 Internal-node attack on Theorem 11.9(ii): modularity of `G`'s coefficients alone gives only
 `ℂ(j)` coefficients; it does not recover `f` until the Lagrange evaluation and separability leaf
-are established.  The plan keeps these as distinct tickets.  This node survives.
+are established.  The implementation keeps these as distinct proof layers.  This node survives.
 
 ### F. Theorem 11.18
 
@@ -439,7 +449,7 @@ Source, printed pp. 231–232 / PDF pp. 243–244.  Short anchor: “coefficient
 
 Lean mapping: `hasse_qExpansion_principle`, `coxPhiFunction_coeff_integerLaurent`,
 `exists_modularPolynomialZ`, `modularPolynomial`, `theorem_11_18_i`
-(`ModularPolynomial.lean:146–172`; `Arithmetic.lean:15`).
+(`ModularPolynomial/IntegralDescent.lean`; `Arithmetic.lean`).
 
 Proof leaves:
 
@@ -464,7 +474,7 @@ Attacks:
 Source: Exercise 11.10, printed p. 246 / PDF p. 258.  Short anchor: “irreducible … in X”.
 
 Lean mapping: `modularPolynomialC_irreducibleInX`, `theorem_11_18_ii`
-(`ModularPolynomial.lean:140`; `Arithmetic.lean:22`).
+(`ModularPolynomial/Irreducibility.lean`; `Arithmetic.lean`).
 
 The target is
 
@@ -474,8 +484,9 @@ Irreducible (map (ℂ[Y] → ℂ(Y)) Φ_m) in ℂ(Y)[X].
 
 Attacks:
 
-1. **Ring attack:** irreducibility in `ℤ[Y][X]`, `ℂ[Y][X]`, and `ℂ(Y)[X]` are not definitionally
-   identical; the source proof counts embeddings over `ℂ(j)` and first yields the field target.
+1. **Ring attack:** irreducibility in `ℤ[Y][X]`, `ℂ[Y][X]`, and `ℂ(Y)[X]` are not
+   definitionally identical; the source proof counts embeddings over `ℂ(j)` and first yields the
+   field target.
 2. **Distinctness attack:** different right cosets must give different conjugates; (11.13) is the
    discriminator.
 3. **Degree attack:** the number of embeddings gives a lower bound only after proving each map is
@@ -489,12 +500,12 @@ Source statement, printed pp. 231–232 / PDF pp. 243–244:
 m>1 → Φ_m(X,Y)=Φ_m(Y,X).
 ```
 
-Cox points to Lang for the proof.  The plan instead uses only later material in the supplied Cox
-section: Theorem 11.23 and the dual inclusion `mL⊂L'⊂L`.  This is non-circular because Theorem
-11.23 depends on (11.15), HNF, and surjectivity, not on symmetry.
+Cox points to Lang for the proof.  The implementation instead uses later material in the
+supplied Cox section: Theorem 11.23 and the dual inclusion `mL⊂L'⊂L`.  This is non-circular
+because Theorem 11.23 depends on (11.15), HNF, and surjectivity, not on symmetry.
 
 Lean mapping: `CyclicSublattice.dual`, `modularPolynomial_dvd_swap`,
-`theorem_11_18_iii` (`CyclicSublattice.lean:55`; `Arithmetic.lean:29,35`).
+`theorem_11_18_iii` (`CyclicSublattice.lean`; `Arithmetic.lean`).
 
 Attacks:
 
@@ -516,7 +527,7 @@ Short source anchor for the conclusion: “it must be ±1”.
 
 Lean mapping: `modularPolynomialDiagonal_leadingCoeff_isRootOfUnity`,
 `theorem_11_18_iv_degree`, `theorem_11_18_iv_leadingCoeff`
-(`Arithmetic.lean:45,51,56`).
+(`DiagonalLaurent.lean`; `Arithmetic.lean`).
 
 Attacks:
 
@@ -539,7 +550,7 @@ j(σ_pτ)≡j(τ)^p mod (1-ζ_p),
 
 Lean mapping: `primeCoxMatrixEquiv`, `jLaurentSeriesMod`, `specializeJMod`,
 `specializeJMod_injective`, `kronecker_after_specializeJ`, `theorem_11_18_v`
-(`Arithmetic.lean:63–103`).
+(`Kronecker.lean`; `KroneckerFrobenius.lean`).
 
 Attacks:
 
@@ -563,7 +574,7 @@ integer descent.  The ticket graph enforces this.  This node survives.
 Source definition, printed p. 235 / PDF p. 247.  Short anchor: “cyclic of index m”.
 
 Lean mapping: `PeriodPair.CyclicSublattice`, `toPeriodPair`, `j`, `scale`, `dual`
-(`CyclicSublattice.lean:18–57`).
+(`CyclicSublattice.lean`).
 
 Attacks:
 
@@ -584,7 +595,7 @@ L'=d[1,στ], with a unique σ∈C(m).
 
 Lean mapping: `CoxMatrix.sublattice`, `toCyclicSublattice`,
 `cyclicSublatticeEquivCoxMatrix`, `cyclicSublattice_hnf_matrix`,
-`coxMatrix_toPeriodPair_lattice` (`CyclicSublattice.lean:72–101`).
+`coxMatrix_toPeriodPair_lattice` (`CyclicSublattice/Classification.lean`).
 
 Attacks:
 
@@ -604,7 +615,7 @@ Source, printed pp. 235–236 / PDF pp. 247–248:
 ```
 
 Lean mapping: `modularPolynomialC_zero_iff_normalizedCyclicSublattice`, `theorem_11_23`
-(`CyclicSublattice.lean:104,112`).
+(`CyclicSublattice/Classification.lean`).
 
 Attacks:
 
@@ -616,13 +627,14 @@ Attacks:
    Theorem 11.18(iii); this keeps the symmetry route non-circular.
 
 Internal-node attack: `Φ_m(u,v)=0` over `ℤ` is evaluated after coefficient mapping to `ℂ` using
-the custom semantic variable order.  The skeleton's theorem statement makes both operations
+the custom semantic variable order.  The implementation's theorem statement makes both operations
 explicit.  This node survives.
 
 ### H. Explicit example (11.22)
 
 Source: printed p. 234 / PDF p. 246.  Lean mapping:
-`modularPolynomialThreeExplicit` and `modularPolynomial_three` (`Arithmetic.lean:106,118`).
+`modularPolynomialThreeExplicit` (`LevelThree.lean`) and `modularPolynomial_three`
+(`Arithmetic.lean`).
 
 Attacks:
 
@@ -640,7 +652,7 @@ there are no recorded prior B2 failures to replay.
 The older scoped decomposition/tickets for Theorem 11.18 were also reviewed as prior art.  Their
 open issues are resolved at the statement level as follows:
 
-| Prior issue | Resolution in this skeleton |
+| Prior issue | Implemented resolution |
 |---|---|
 | analytic/formal bridge unspecified | exact width-`m` equality `laurentqExpansion_coxAction` |
 | “irreducible in X” ambiguous | outer variable is Cox `X`; target is `ℂ(Y)[X]` |
@@ -651,14 +663,14 @@ open issues are resolved at the statement level as follows:
 ## Confidence gate
 
 - [x] Complete source pages and referenced exercises visually checked.
-- [x] Every planned public declaration is physically stated in Lean.
+- [x] Every planned public declaration is implemented in Lean.
 - [x] `lake build` succeeds for the entire repository.
 - [x] Every source result has an exact locator and a Lean/source mapping above.
 - [x] Every leaf group has at least three distinct attacks; every major internal node is attacked.
 - [x] Historical B2 log checked (empty) and prior experimental failures incorporated.
-- [x] No unavailable external source blocks the plan: symmetry uses a supplied-Cox alternative.
+- [x] No unavailable external source blocks the proof: symmetry uses a supplied-Cox alternative.
 - [x] Hard leaves are identified rather than hidden: HNF existence/uniqueness, meromorphic pole
   orbits, the analytic/formal q-expansion bridge, Galois descent, and Hasse injectivity.
 
-The decomposition gate passes for planning.  Proof execution remains intentionally unstarted
-until the user approves `plan-cox11bc.md` and `tickets-cox11bc.md`.
+The source decomposition was rechecked at the final cleanup gate.  Proof execution is complete;
+the final build and axiom results are recorded in T029 and `cleanup-t029.md`.

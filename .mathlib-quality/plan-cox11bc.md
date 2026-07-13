@@ -1,10 +1,10 @@
-# Development plan: Cox §11.B–C
+# Executed development plan: Cox §11.B–C
 
 ## Mode and boundary
 
-- Workflow: `mathlib-quality:develop`.
-- Current phase: statement design, decomposition, and tickets only.
-- Proof execution begins only after user approval.
+- Workflow: `mathlib-quality:develop`, followed by `mathlib-quality:beastmode` proof execution.
+- Current phase: complete.
+- Phases 0–9 and proof tickets T001–T029 are complete.
 - Existing user work is preserved.  The deleted experimental `XYin/PhD/Test/` tree will not be
   restored wholesale.
 
@@ -46,14 +46,19 @@ HermiteNormalForm.lean                                  │
         ▼                                                │
 CoxMatrices.lean                                        │
         │                                                │
+        ├────────► FormalCoxProduct.lean                 │
+        ├────────► UpperHalfPlaneFunctionField.lean      │
         ▼                                                │
 ModularPolynomial.lean                                  │
         │                                                │
         ▼                                                │
-CyclicSublattice.lean ◄──────────────────────────────────┘
-        │
-        ▼
-Arithmetic.lean
+CyclicSublattice/Classification.lean ◄───────────────────┘
+        ├────────► DiagonalLaurent.lean
+        ├────────► Kronecker.lean ─► KroneckerFrobenius.lean
+        └────────► LevelThree.lean
+                         │
+                         ▼
+                    Arithmetic.lean
         │
         ▼
 Section11BC.lean
@@ -61,8 +66,8 @@ Section11BC.lean
 
 The layering is intentional:
 
-- Theorem 11.23 is proved in `CyclicSublattice.lean` from the complex root product and does not
-  import arithmetic symmetry.
+- Theorem 11.23 is proved in `CyclicSublattice/Classification.lean` from the complex root product
+  and does not import arithmetic symmetry.
 - `Arithmetic.lean` may then derive symmetry from Theorem 11.23 without a dependency cycle.
 - HNF is independent of complex analysis and can later be proposed for mathlib on its own.
 
@@ -267,7 +272,7 @@ P3 11.9i ───────────────────┘           
                                          P9 audit
 ```
 
-Parallel work after approval:
+Parallelization used during execution:
 
 - Phase 1 and Phase 2 are independent.
 - In Phase 3, fundamental-domain rigidity and local elliptic stabilizer lemmas can proceed in
@@ -294,8 +299,8 @@ Milestones additionally require full `lake build`:
 - M3: Theorem 11.18(i),(ii) + Theorem 11.23;
 - M4: all §11.B–C targets and final cleanup.
 
-## Approval gate
+## Execution status
 
-This plan is ready for review.  No proof ticket should be started until the user approves the
-scope, API conventions, and ordering—especially the fixed-basis column HNF and the outer-`X`
-bivariate convention.
+The approved architecture was implemented without changing the two central conventions:
+fixed-ambient-basis column HNF and outer-`X` bivariate polynomials.  T029 records the final
+cleanup, public-axiom audit, and full-build result.

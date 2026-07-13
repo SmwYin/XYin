@@ -1,5 +1,6 @@
-import XYin.PhD.Modularforms.DimensionFormulas
+import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
 import XYin.PhD.IntegralPowerSeries.IntegralPowerSeries
+import XYin.PhD.Modularforms.Eisenstein
 
 set_option linter.style.header false
 
@@ -12,23 +13,43 @@ noncomputable section
 abbrev E4 := _root_.E₄
 abbrev E6 := _root_.E₆
 
+private lemma E4_qExpansion_coeff_aux (n : ℕ) :
+    (qExpansion 1 E4).coeff n =
+      if n = 0 then 1 else (240 : ℂ) * sigma 3 n := by
+  have hE4 : (E4 : ℍ → ℂ) = (ModularForm.E₄ : ℍ → ℂ) := by rfl
+  rw [hE4, EisensteinSeries.E_qExpansion_coeff (k := 4) (by norm_num) ⟨2, rfl⟩ n]
+  by_cases hn : n = 0
+  · simp [hn]
+  · simp only [hn, if_false]
+    norm_num [bernoulli_eq_bernoulli'_of_ne_one, bernoulli'_four]
+
+private lemma E6_qExpansion_coeff_aux (n : ℕ) :
+    (qExpansion 1 E6).coeff n =
+      if n = 0 then 1 else -(504 : ℂ) * sigma 5 n := by
+  have hE6 : (E6 : ℍ → ℂ) = (ModularForm.E₆ : ℍ → ℂ) := by rfl
+  rw [hE6, EisensteinSeries.E_qExpansion_coeff (k := 6) (by norm_num) ⟨3, rfl⟩ n]
+  by_cases hn : n = 0
+  · simp [hn]
+  · simp only [hn, if_false]
+    norm_num [bernoulli_eq_bernoulli'_of_ne_one, bernoulli'_six]
+
 lemma E4IsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 E4) := by
   rw [int_iff]
   intro n
+  rw [E4_qExpansion_coeff_aux]
   by_cases hn : n = 0
-  · refine ⟨1, ?_⟩
-    simpa [E4, hn] using congr_fun E4_q_exp n
+  · exact ⟨1, by simp [hn]⟩
   · refine ⟨(240 : ℤ) * sigma 3 n, ?_⟩
-    simpa [E4, hn] using congr_fun E4_q_exp n
+    simp [hn]
 
 lemma E6IsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 E6) := by
   rw [int_iff]
   intro n
+  rw [E6_qExpansion_coeff_aux]
   by_cases hn : n = 0
-  · refine ⟨1, ?_⟩
-    simpa [E6, hn] using congr_fun E6_q_exp n
+  · exact ⟨1, by simp [hn]⟩
   · refine ⟨(-504 : ℤ) * sigma 5 n, ?_⟩
-    simpa [E6, hn] using congr_fun E6_q_exp n
+    simp [hn]
 
 def integralE4 : PowerSeries ℤ := toIntegralPowerSeries E4IsIntegralPowerSeries
 
@@ -71,51 +92,39 @@ lemma sigmamod12 (n : ℕ) : 12 ∣ 5 * sigma 3 n + 7 * sigma 5 n := by
     add_left_comm] using hsum
 
 lemma E4coeffmod240 (n : ℕ) (hn : n ≥ 1) : 240 ∣ integralE4.coeff n := by
-  have hn0 : n ≠ 0 := by omega
-  have hE4 := coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
-  have hcoeff : ((integralE4.coeff n : ℤ) : ℂ) = (240 : ℂ) * sigma 3 n := by
-    have h := congrArg (PowerSeries.coeff n) hE4
-    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E4, hn0] using
-      h.trans (congr_fun E4_q_exp n)
-  have hcoeff' : integralE4.coeff n = (240 : ℤ) * sigma 3 n := by exact_mod_cast hcoeff
+  have h := congrArg (PowerSeries.coeff n)
+    (coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries)
+  change ((integralE4.coeff n : ℤ) : ℂ) = (qExpansion 1 E4).coeff n at h
+  rw [E4_qExpansion_coeff_aux, if_neg (by omega)] at h
+  have hcoeff' : integralE4.coeff n = (240 : ℤ) * sigma 3 n := by
+    exact_mod_cast h
   exact ⟨sigma 3 n, hcoeff'⟩
 
 lemma E6coeffmod504 (n : ℕ) (hn : n ≥ 1) : 504 ∣ integralE6.coeff n := by
-  have hn0 : n ≠ 0 := by omega
-  have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
-  have hcoeff : ((integralE6.coeff n : ℤ) : ℂ) = -(504 : ℂ) * sigma 5 n := by
-    have h := congrArg (PowerSeries.coeff n) hE6
-    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E6, hn0] using
-      h.trans (congr_fun E6_q_exp n)
-  have hcoeff' : integralE6.coeff n = -((504 : ℤ) * sigma 5 n) := by exact_mod_cast hcoeff
+  have h := congrArg (PowerSeries.coeff n)
+    (coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries)
+  change ((integralE6.coeff n : ℤ) : ℂ) = (qExpansion 1 E6).coeff n at h
+  rw [E6_qExpansion_coeff_aux, if_neg (by omega)] at h
+  have hcoeff' : integralE6.coeff n = -((504 : ℤ) * sigma 5 n) := by
+    exact_mod_cast h
   refine ⟨-(sigma 5 n : ℤ), ?_⟩
   calc
   _ = -((504 : ℤ) * sigma 5 n) := hcoeff'
   _ = _ := by ring
 
 lemma integralE4_coeff_zero : integralE4.coeff 0 = 1 := by
-  have hE4 := coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
-  have hcoeff : ((integralE4.coeff 0 : ℤ) : ℂ) = 1 := by
-    have h := congrArg (PowerSeries.coeff 0) hE4
-    have h' : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE4) = 1 := by
-      simpa [integralE4, E4] using h.trans (congr_fun E4_q_exp 0)
-    have hmap : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE4) =
-        (integralE4.coeff 0 : ℂ) := by
-      simp [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom]
-    exact hmap.symm.trans h'
-  exact_mod_cast hcoeff
+  have h := congrArg (PowerSeries.coeff 0)
+    (coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries)
+  change ((integralE4.coeff 0 : ℤ) : ℂ) = (qExpansion 1 E4).coeff 0 at h
+  rw [E4_qExpansion_coeff_aux] at h
+  exact_mod_cast h
 
 lemma integralE6_coeff_zero : integralE6.coeff 0 = 1 := by
-  have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
-  have hcoeff : ((integralE6.coeff 0 : ℤ) : ℂ) = 1 := by
-    have h := congrArg (PowerSeries.coeff 0) hE6
-    have h' : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE6) = 1 := by
-      simpa [integralE6, E6] using h.trans (congr_fun E6_q_exp 0)
-    have hmap : PowerSeries.coeff 0 ((coeToComplexPowerSeries.ringHom ℤ) integralE6) =
-        (integralE6.coeff 0 : ℂ) := by
-      simp [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom]
-    exact hmap.symm.trans h'
-  exact_mod_cast hcoeff
+  have h := congrArg (PowerSeries.coeff 0)
+    (coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries)
+  change ((integralE6.coeff 0 : ℤ) : ℂ) = (qExpansion 1 E6).coeff 0 at h
+  rw [E6_qExpansion_coeff_aux] at h
+  exact_mod_cast h
 
 lemma integralE4_constantCoeff : PowerSeries.constantCoeff integralE4 = 1 := by
   simpa [PowerSeries.coeff_zero_eq_constantCoeff] using integralE4_coeff_zero
@@ -124,23 +133,19 @@ lemma integralE6_constantCoeff : PowerSeries.constantCoeff integralE6 = 1 := by
   simpa [PowerSeries.coeff_zero_eq_constantCoeff] using integralE6_coeff_zero
 
 lemma integralE4_coeff_pos (n : ℕ) (hn : n ≥ 1) : integralE4.coeff n = (240 : ℤ) * sigma 3 n := by
-  have hn0 : n ≠ 0 := by omega
-  have hE4 := coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
-  have hcoeff : ((integralE4.coeff n : ℤ) : ℂ) = (240 : ℂ) * sigma 3 n := by
-    have h := congrArg (PowerSeries.coeff n) hE4
-    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E4, hn0] using
-      h.trans (congr_fun E4_q_exp n)
-  exact_mod_cast hcoeff
+  have h := congrArg (PowerSeries.coeff n)
+    (coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries)
+  change ((integralE4.coeff n : ℤ) : ℂ) = (qExpansion 1 E4).coeff n at h
+  rw [E4_qExpansion_coeff_aux, if_neg (by omega)] at h
+  exact_mod_cast h
 
 lemma integralE6_coeff_pos (n : ℕ) (hn : n ≥ 1) :
     integralE6.coeff n = -((504 : ℤ) * sigma 5 n) := by
-  have hn0 : n ≠ 0 := by omega
-  have hE6 := coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
-  have hcoeff : ((integralE6.coeff n : ℤ) : ℂ) = -(504 : ℂ) * sigma 5 n := by
-    have h := congrArg (PowerSeries.coeff n) hE6
-    simpa [coeToComplexPowerSeries.ringHom, PowerSeries.coeff_map, E6, hn0] using
-      h.trans (congr_fun E6_q_exp n)
-  exact_mod_cast hcoeff
+  have h := congrArg (PowerSeries.coeff n)
+    (coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries)
+  change ((integralE6.coeff n : ℤ) : ℂ) = (qExpansion 1 E6).coeff n at h
+  rw [E6_qExpansion_coeff_aux, if_neg (by omega)] at h
+  exact_mod_cast h
 
 def E4bar : PowerSeries ℤ := integralE4 - 1
 
@@ -318,54 +323,31 @@ lemma mod1728' (n : ℕ) :
   exact (Int.modEq_zero_iff_dvd).2 (mod1728 n)
 
 lemma Deltaaux : qExpansion 1 Delta = (1/1728 : ℂ) • qExpansion 1 (E4 ^ 3 - E6 ^ 2) := by
-  have haux : qExpansion 1 Delta_E4_E6_aux =
-      qExpansion 1 (ModForm_mk (CongruenceSubgroup.Gamma 1) 12 Delta_E4_E6_aux) := by
-    apply qExpansion_ext2 Delta_E4_E6_aux
-      (ModForm_mk (CongruenceSubgroup.Gamma 1) 12 Delta_E4_E6_aux)
-    ext z
-    rw [Delta_E4_E6_aux, ModForm_mk]
-    simp
-    rfl
-  rw [Delta_E4_eqn, haux, Delta_E4_E6_eq]
-  set H : ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
-      (CongruenceSubgroup.Gamma 1)) 12 :=
-    (((DirectSum.of (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
-      (CongruenceSubgroup.Gamma 1))) 4) E4 ^ 3 -
-      (DirectSum.of (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
-      (CongruenceSubgroup.Gamma 1))) 6) E6 ^ 2) 12) with hH
-  have hsmul : qExpansion 1 ⇑((1 / 1728 : ℂ) • H) = (1 / 1728 : ℂ) • qExpansion 1 ⇑H := by
-    simpa using (qExpansion_smul2 (a := (1 / 1728 : ℂ)) (f := H)).symm
-  have hfun : (⇑H : ℍ → ℂ) = (⇑E4 ^ 3 - ⇑E6 ^ 2) := by
-    rw [hH]
-    ext z
-    rw [pow_three, pow_two, DirectSum.of_mul_of, DirectSum.of_mul_of, DirectSum.of_mul_of]
-    have h448 : (4 + (4 + 4) : ℤ) = 12 := by norm_num
-    have h66 : (6 + 6 : ℤ) = 12 := by norm_num
-    have hmain :
-        (((DirectSum.of (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
-                (CongruenceSubgroup.Gamma 1))) 12)
-              (GradedMonoid.GMul.mul E4 (GradedMonoid.GMul.mul E4 E4)) -
-            (DirectSum.of (ModularForm (Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ)
-                (CongruenceSubgroup.Gamma 1))) 12)
-              (GradedMonoid.GMul.mul E6 E6))
-          12)
-        z =
-      (⇑E4 ^ 3 - ⇑E6 ^ 2) z := by
-      simp only [DirectSum.sub_apply, DirectSum.of_eq_same, E4, E6]
-      change (GradedMonoid.GMul.mul E4 (GradedMonoid.GMul.mul E4 E4)) z -
-          (GradedMonoid.GMul.mul E6 E6) z =
-        (⇑E4 ^ 3 - ⇑E6 ^ 2) z
-      have h6 : (GradedMonoid.GMul.mul E6 E6) z = E6 z * E6 z := by rfl
-      have h4a : (GradedMonoid.GMul.mul E4 (GradedMonoid.GMul.mul E4 E4)) z =
-          E4 z * (GradedMonoid.GMul.mul E4 E4) z := by rfl
-      have h4b : (GradedMonoid.GMul.mul E4 E4) z = E4 z * E4 z := by rfl
-      rw [h6, h4a, h4b]
-      simp only [Pi.sub_apply, Pi.pow_apply]
-      ring
-    simpa [h448, h66] using hmain
+  let H : ModularForm (CongruenceSubgroup.Gamma 1) 12 :=
+    ModularForm.mcast (by decide) (E4.pow 3) -
+      ModularForm.mcast (by decide) (E6.pow 2)
+  have hHfun : (⇑H : ℍ → ℂ) = (⇑E4 ^ 3 - ⇑E6 ^ 2) := by
+    funext z
+    simp only [H, ModularForm.coe_mcast, ModularForm.coe_pow, ModularForm.sub_apply,
+      Pi.pow_apply, Pi.sub_apply]
+  have hDeltaPointwise (z : ℍ) : Delta z = (E4 z ^ 3 - E6 z ^ 2) / 1728 := by
+    rw [Delta_apply, Delta_eq_eta_pow]
+    simpa [ModularForm.discriminant] using
+      ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq z
+  have hDeltaFun : (⇑Delta : ℍ → ℂ) = (1 / 1728 : ℂ) • (⇑H : ℍ → ℂ) := by
+    funext z
+    change Delta z = (1 / 1728 : ℂ) * H z
+    rw [hDeltaPointwise]
+    have hHz : H z = E4 z ^ 3 - E6 z ^ 2 := congrFun hHfun z
+    rw [hHz]
+    ring
+  have hHan : AnalyticAt ℂ (cuspFunction 1 (⇑H : ℍ → ℂ)) 0 :=
+    ModularFormClass.analyticAt_cuspFunction_zero H (by norm_num) (by simp)
   calc
-  _ = (1 / 1728 : ℂ) • qExpansion 1 ⇑H := hsmul
-  _ = _ := by simp [hfun]
+    _ = qExpansion 1 ((1 / 1728 : ℂ) • (⇑H : ℍ → ℂ)) := by rw [hDeltaFun]
+    _ = (1 / 1728 : ℂ) • qExpansion 1 (⇑H : ℍ → ℂ) :=
+      UpperHalfPlane.qExpansion_smul hHan _
+    _ = _ := by rw [hHfun]
 
 lemma DeltaIsIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 Delta) := by
   rw [Deltaaux]

@@ -586,7 +586,8 @@ lemma cancelout2 (z : ℍ) :
     field_simp [hq, mul_assoc]
   _ = _ := by simp [q]
 
-private lemma qj_exp_zero_for_jfunction : (qExpansion 1 qj).coeff 0 = 1 := by
+/-- The regularized modular invariant `qj` has constant coefficient one. -/
+lemma qj_qExpansion_coeff_zero : (qExpansion 1 qj).coeff 0 = 1 := by
   have hqj : qExpansion 1 qj = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
     simpa [qj] using congrArg (qExpansion 1) qjIdentity.symm
   have hmul :
@@ -596,7 +597,8 @@ private lemma qj_exp_zero_for_jfunction : (qExpansion 1 qj).coeff 0 = 1 := by
     simpa [DirectSum.ofPow] using qExpansion_of_pow (Γ := CongruenceSubgroup.Gamma 1) (h := (1 : ℝ))
       (k := (4 : ℤ)) (hh := by norm_num) (hΓ := by simp) E4 3
   have hE4coeff0 : (qExpansion 1 E4).coeff 0 = 1 := by
-    simpa [E4] using congr_fun E4_q_exp 0
+    simpa [UpperHalfPlane.qExpansion_coeff, E4] using
+      EisensteinSeries.E_qExpansion_coeff_zero (by norm_num : 3 ≤ 4) ⟨2, rfl⟩
   have hE4pow0 : (qExpansion 1 (E4 ^ 3)).coeff 0 = 1 := by
     rw [hE4pow]
     have hE4const : PowerSeries.constantCoeff (qExpansion 1 E4) = 1 := by
@@ -669,7 +671,7 @@ lemma j_cuspFunction_Meromorphic : MeromorphicAt (cuspFunction 1 j) (0 : ℂ) :=
 
 lemma j_cuspFunction_notAnalytic : ¬ AnalyticAt ℂ (cuspFunction 1 j) 0 := by
   have hqj0 : cuspFunction 1 qj 0 = 1 := by
-    simpa [qExpansion_coeff] using qj_exp_zero_for_jfunction
+    simpa [qExpansion_coeff] using qj_qExpansion_coeff_zero
   intro hjan
   have hmul_tendsto :
       Tendsto (fun q : ℂ ↦ q * cuspFunction 1 j q)
@@ -700,7 +702,7 @@ lemma j_cuspFunction_notAnalytic : ¬ AnalyticAt ℂ (cuspFunction 1 j) 0 := by
 lemma j_poleOrder : poleOrder 1 j = 1 := by
   let F : ℂ → ℂ := cuspFunction 1 qj
   have hqj0 : F 0 = 1 := by
-    simpa [F, qExpansion_coeff] using qj_exp_zero_for_jfunction
+    simpa [F, qExpansion_coeff] using qj_qExpansion_coeff_zero
   have hnorm0 : {q : ℂ | ‖q‖ < 1} ∈ nhds (0 : ℂ) := by
     simpa [Metric.ball, dist_eq_norm] using (Metric.ball_mem_nhds (0 : ℂ) zero_lt_one)
   have hnorm : {q : ℂ | ‖q‖ < 1} ∈ nhdsWithin (0 : ℂ) ({0}ᶜ) :=
