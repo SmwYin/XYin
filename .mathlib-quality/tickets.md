@@ -1,12 +1,11 @@
-# Ticket board: Cox §11.B–C
+# Ticket board: Cox §11.B–C and report extensions
 
 ## Summary
 
-- Planning baseline: complete.
-- Proof tickets: 3 open.
-- Execution status: **beastmode active**.
-- Hardest open leaves: T027 (Kronecker congruence), T028 (the explicit level-three equation),
-  and the final T029 cross-file audit.
+- Original Cox §11.B–C board: complete (`T001`–`T029`).
+- Takeover extension: complete (`T030`–`T037`).
+- Execution status: **beastmode complete**.
+- Open tickets with met dependencies: none.
 - Source mappings and adversarial attacks: `.mathlib-quality/decomposition.md`.
 
 Status vocabulary:
@@ -774,3 +773,140 @@ Status vocabulary:
 
 All tickets T001–T029 are done.  The implementation, source review, public-axiom audit, and final
 repository build are complete.
+
+## Takeover extension — elliptic `j`, singular moduli, and bundled Theorem 11.9(ii)
+
+### [T030] Take over, audit sources, and freeze the API
+
+- **Status:** done
+- **Files:** `.mathlib-quality/plan.md`, `.mathlib-quality/decomposition.md`, this board
+- **Depends on:** T029
+- **Work completed:** full report/Cox source review, visual PDF verification, Mathlib API audit,
+  clean 3906-job baseline build, exact declaration design, and dependency-cycle review.
+- **Source:** Report §§5.3, 6.3; Cox Theorem 11.9 and §11.C.
+- **Validation:** the elliptic-curve candidate and bundled-field architecture were separately
+  compiled in scratch files; the remaining declarations are first installed as a buildable
+  skeleton.
+
+### [T031] Link Mathlib elliptic-curve `j` to lattice and analytic `j`
+
+- **Status:** done (started 2026-07-17; finished 2026-07-17T00:00:20Z)
+- **File:** `XYin/PhD/jFunction/jInvariantLink.lean`
+- **Depends on:** T030, T002–T003
+- **Declarations:** `PeriodPair.weierstrassCurve`, its short-normal-form and elliptic instances,
+  `weierstrassCurve_c₄`, `weierstrassCurve_c₆`, `weierstrassCurve_Δ`,
+  `weierstrassCurve_j`, `UpperHalfPlane.ellipticCurve`, `ellipticCurve_j`.
+- **Source:** Report Proposition 6.12 and Definition 6.13, PDF pp. 39–40 / printed pp. 36–37.
+- **Validation:** exact normalization checks (`12`, `216`, no missing `1728`), focused build,
+  and public axiom audit.
+- **Progress:** the short model `Y² = X³ - (g₂/4)X - g₃/4` now computes to
+  `c₄ = 12g₂`, `c₆ = 216g₃`, and the period discriminant.  Its Mathlib invariant is
+  `PeriodPair.j`; composition with `j_eq_periodPair_j` gives analytic `j`.  Focused compilation
+  succeeds and the endpoint axiom audit reports only `propext`, `Classical.choice`, and
+  `Quot.sound`.
+
+### [T032] Factor primitive determinant matrices through Cox representatives
+
+- **Status:** done (finished 2026-07-17T00:00:20Z)
+- **File:** `XYin/PhD/Cox/CoxMatrices/Basic.lean`
+- **Depends on:** T006–T008, T013–T014
+- **Declaration:** a public HNF factorization for any integer `2×2` matrix of positive
+  determinant and rank-two content one, producing `γ : SL(2,ℤ)` and `σ : CoxMatrix N`.
+- **Source:** Report Lemma 5.8, PDF pp. 33–34 / printed pp. 30–31.
+- **Validation:** determinant/content hypotheses are both necessary; test a non-upper-triangular
+  primitive matrix and confirm action orientation.
+- **Progress:** applied column HNF to `matrixStar M`, transported primitivity under the right
+  `SL₂(ℤ)` action, constructed the Cox matrix from the positive HNF entries, and applied
+  `matrixStar` again to obtain the required left action.  Focused compilation and the direct
+  `sorry` scan pass.
+
+### [T033] Construct a nonsquare fixed matrix for a primitive quadratic point
+
+- **Status:** done (finished 2026-07-17T00:16:32Z)
+- **File:** `XYin/PhD/Cox/SingularModuli.lean`
+- **Depends on:** T032
+- **Declarations:** primitive quadratic-equation data, imaginary-quadratic/singular-modulus
+  predicates, `fixingMatrix`, determinant/fixed-point/primitivity lemmas, and existence of a
+  positive nonsquare level with a Cox transform having equal `j`.
+- **Source:** Report equations (5.5)–(5.10), PDF pp. 34–36 / printed pp. 31–33.
+- **Proof route:** explicit parity choice for `2n+B`, documented in `plan.md`.
+- **Validation:** examples `τ=i` and a nontrivial odd-`B` equation; `N` is positive and genuinely
+  nonsquare, not merely `N≠0`.
+- **Progress:** the even/odd discriminant split now gives determinants `k²+k` and `k²+2k`,
+  each strictly between consecutive squares, and matrix content one follows from the primitive
+  gcd hypothesis.
+- **Progress:** entrywise expansion of the HNF factorization identifies the Cox action with an
+  `SL₂(ℤ)` translate of the quadratic fixed point; modular invariance then gives equal `j`.
+  The complete file compiles with no direct `sorry`.
+
+### [T034] Prove singular moduli are algebraic integers
+
+- **Status:** done (finished 2026-07-17T00:16:32Z)
+- **File:** `XYin/PhD/Cox/SingularModuli.lean`
+- **Depends on:** T033, T019–T020, T025–T026
+- **Declarations:** diagonal-root lemma, `isIntegral_j_of_isImaginaryQuadratic`, and
+  `singularModulus_isIntegral`.
+- **Source:** Report Theorem 5.9, PDF p. 36 / printed p. 33.
+- **Proof sketch:** product factor zero → integral diagonal root → leading coefficient `±1` →
+  choose the polynomial or its negation as the monic witness.
+- **Validation:** inspect the explicit monic witness in both leading-coefficient branches and
+  audit `IsIntegral ℤ` uses the intended `ℤ → ℂ` algebra map.
+- **Progress:** the Cox product formula supplies a zero factor in `Φ_N(j(τ),j(τ))`.  If the
+  integral diagonal polynomial has leading coefficient `1` it is used directly; if it has
+  leading coefficient `-1`, its negation is the explicit monic witness.  Focused compilation
+  and the direct `sorry` scan pass.
+
+### [T035] Bundle meromorphic-function representatives in the ambient function field
+
+- **Status:** done (finished 2026-07-17T00:00:20Z)
+- **File:** `XYin/PhD/Cox/ModularFunctionField.lean`
+- **Depends on:** T018, `UpperHalfPlaneFunctionField.lean`
+- **Declarations:** representation predicate and uniqueness, bundled `levelJ`, bivariate
+  evaluation, modular representative set, `gamma0ModularFunctionField`, and
+  `jLevelFunctionField`.
+- **Source:** Cox printed pp. 230–231 / full-PDF pp. 242–243.
+- **Guard:** raw `ℍ → ℂ` is not a domain; a fixed field under `Γ₀(N)` is too large because it
+  admits functions with essential cusp singularities.
+- **Validation:** zero-denominator and CM collision attacks; representations are nonvacuous and
+  unique as ambient fraction-field elements.
+- **Progress:** bundled `levelJ`, bivariate evaluation, guarded fraction representatives, and
+  both intermediate fields.  Representation uniqueness is proved by cross multiplication in
+  the domain of holomorphic functions; focused compilation passes with no direct `sorry`.
+
+### [T036] Upgrade Theorem 11.9(ii) to an intermediate-field equality
+
+- **Status:** done (finished 2026-07-17T00:00:20Z)
+- **Files:** `XYin/PhD/Cox/ModularPolynomial/Interpolation.lean`,
+  `XYin/PhD/Cox/ModularFunctionField.lean`
+- **Depends on:** T035
+- **Declarations:** rename old endpoint to `theorem_11_9_ii_pointwise`; new
+  `theorem_11_9_ii (N) : gamma0ModularFunctionField N = jLevelFunctionField N`.
+- **Source:** Cox Theorem 11.9(ii), printed p. 226 and proof printed pp. 230–231 / full-PDF
+  pp. 238, 242–243.
+- **Validation:** both field inclusions checked independently; RHS contains exactly the existing
+  base `ℂ(j)` plus `j_N`; level `1` regression.
+- **Progress:** preserved the prior theorem as `theorem_11_9_ii_pointwise` and proved both
+  inclusions between `gamma0ModularFunctionField N` and `jLevelFunctionField N` using the
+  pointwise rational expression and modularity of `levelJ`.  Focused compilation passes.
+
+### [T037] Cleanup and final quality/axiom audit
+
+- **Status:** done (started 2026-07-17T00:16:32Z; finished 2026-07-17T00:31:23Z)
+- **Files:** all files touched by T031–T036, `Section11BC.lean`, `XYin.lean`
+- **Depends on:** T031–T036
+- **Work:** mandatory cleanup, source/docstring review, focused and full builds, direct-sorry
+  scan, and public endpoint axiom audit.
+- **Validation:** no new `sorryAx`, no direct sorry in Cox, no import cycle, and final ticket-board
+  rescan has no open ticket with met dependencies.
+- **Progress:** whole-file cleanup preserved every public theorem statement, target linting found
+  no new-file issues, and an independent review found no mathematical or API semantic gap in the
+  three `j` normalizations, fraction-field representation layer, or either field inclusion.
+- **Progress:** strict focused compilation, two concrete CM regressions, nine-endpoint axiom
+  audit, source scans, and `git diff --check` pass.  Final `lake build` succeeds for all 3909 jobs;
+  the detailed record is `cleanup-t037.md`.
+
+## Takeover completion
+
+All tickets T030–T037 are done.  The three requested endpoints are implemented, independently
+reviewed, axiom-clean modulo the standard axioms, regression-tested, and included in the project
+umbrella.  There is no open ticket with met dependencies.

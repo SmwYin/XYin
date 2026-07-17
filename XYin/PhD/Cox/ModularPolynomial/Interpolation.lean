@@ -636,7 +636,7 @@ private theorem rationalInTwo_of_interpolation_coeff_rational
 /-- Theorem 11.9(ii): every level-`N` modular function is rational in `j(τ)` and
 `j(Nτ)`. The chosen denominator is nonzero as a function along the modular curve, though it
 may vanish at individual branch points as expected for a rational representation. -/
-theorem theorem_11_9_ii (N : ℕ+) {f : ℍ → ℂ}
+theorem theorem_11_9_ii_pointwise (N : ℕ+) {f : ℍ → ℂ}
     (hf : IsGamma0ModularFunction N f) :
     RationalInTwo f j (levelJ N) := by
   apply rationalInTwo_of_interpolation_coeff_rational N hf

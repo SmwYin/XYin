@@ -886,5 +886,86 @@ theorem j_act_sigmaZero (m : ℕ+) :
   apply UpperHalfPlane.ext
   simp [sigmaZero, CoxMatrix.act]
 
-end Cox
+private theorem exists_sl_right_mul_isColumnHermiteNormalForm_aux
+    (A : Matrix (Fin 2) (Fin 2) ℤ) (hdet : 0 < A.det) :
+    ∃ U : SL(2, ℤ), (A * U.1).IsColumnHermiteNormalForm := by
+  obtain ⟨B, hBunit, hH⟩ :=
+    Matrix.exists_right_mul_isColumnHermiteNormalForm A hdet.ne'
+  have hABdet : 0 < (A * B).det := by
+    rw [Matrix.det_fin_two, hH.belowDiagonal_eq_zero 1 0 (by omega), mul_zero, sub_zero]
+    exact mul_pos (hH.diagonal_pos 0) (hH.diagonal_pos 1)
+  have hBdet : B.det = 1 := by
+    rcases Int.isUnit_iff.mp hBunit with hB | hB
+    · exact hB
+    · rw [Matrix.det_mul, hB, mul_neg_one] at hABdet
+      omega
+  exact ⟨⟨B, hBdet⟩, hH⟩
 
+private theorem exists_coxMatrix_of_isColumnHermiteNormalForm_aux {m : ℕ+}
+    (H : Matrix (Fin 2) (Fin 2) ℤ) (hH : H.IsColumnHermiteNormalForm)
+    (hdet : H.det = (m : ℤ)) (hcontent : H.rankTwoContent = 1) :
+    ∃ σ : CoxMatrix m, H = σ.inclusionMatrix := by
+  have hz : H 1 0 = 0 := hH.belowDiagonal_eq_zero 1 0 (by omega)
+  have hd : 0 < H 0 0 := hH.diagonal_pos 0
+  have ha : 0 < H 1 1 := hH.diagonal_pos 1
+  have hb := hH.reduced 0 1 (by omega)
+  have hdiag : H 0 0 * H 1 1 = (m : ℤ) := by
+    simpa [Matrix.det_fin_two, hz] using hdet
+  let σ : CoxMatrix m :=
+    { a := (H 1 1).natAbs
+      b := (H 0 1).natAbs
+      d := (H 0 0).natAbs
+      a_pos := Int.natAbs_pos.mpr (ne_of_gt ha)
+      determinant := by
+        have hdiag' : ((H 1 1).natAbs : ℤ) * (H 0 0).natAbs = (m : ℤ) := by
+          rw [Int.ofNat_natAbs_of_nonneg ha.le, Int.ofNat_natAbs_of_nonneg hd.le]
+          exact (mul_comm _ _).trans hdiag
+        exact_mod_cast hdiag'
+      b_lt := by
+        have hbc : ((H 0 1).natAbs : ℤ) < (H 0 0).natAbs := by
+          rw [Int.ofNat_natAbs_of_nonneg hb.1, Int.ofNat_natAbs_of_nonneg hd.le]
+          exact hb.2
+        exact_mod_cast hbc
+      primitive := by
+        simpa [Matrix.rankTwoContent, hz, Nat.gcd_comm, Nat.gcd_left_comm, Nat.gcd_assoc]
+          using hcontent }
+  refine ⟨σ, ?_⟩
+  ext i j
+  fin_cases i <;> fin_cases j
+  · simp [σ, CoxMatrix.inclusionMatrix, Int.ofNat_natAbs_of_nonneg hd.le]
+  · simp [σ, CoxMatrix.inclusionMatrix, Int.ofNat_natAbs_of_nonneg hb.1]
+  · simp [σ, CoxMatrix.inclusionMatrix, hz]
+  · simp [σ, CoxMatrix.inclusionMatrix, Int.ofNat_natAbs_of_nonneg ha.le]
+
+/-- A primitive integer matrix of positive determinant has a Cox upper-triangular representative
+after left multiplication by an element of `SL₂(ℤ)` (Report Lemma 5.8). -/
+theorem exists_sl2_mul_eq_coxMatrix {m : ℕ+}
+    (M : Matrix (Fin 2) (Fin 2) ℤ) (hdet : M.det = (m : ℤ))
+    (hprimitive : Matrix.rankTwoContent M = 1) :
+    ∃ γ : SL(2, ℤ), ∃ σ : CoxMatrix m, γ.1 * M = σ.mobiusMatrix := by
+  obtain ⟨U, hH⟩ := exists_sl_right_mul_isColumnHermiteNormalForm_aux (matrixStar M) (by
+    rw [matrixStar_det, hdet]
+    exact_mod_cast PNat.pos m)
+  let H : Matrix (Fin 2) (Fin 2) ℤ := matrixStar M * U.1
+  have hHhnf : H.IsColumnHermiteNormalForm := hH
+  have hHdet : H.det = (m : ℤ) := by
+    change (matrixStar M * U.1).det = (m : ℤ)
+    rw [Matrix.det_mul, matrixStar_det, hdet, Matrix.SpecialLinearGroup.det_coe, mul_one]
+  have hstarcontent : (matrixStar M).rankTwoContent = M.rankTwoContent := by
+    simp only [Matrix.rankTwoContent, matrixStar, Matrix.of_apply,
+      Matrix.cons_val_zero, Matrix.cons_val_one]
+    ac_rfl
+  have hcontent : H.rankTwoContent = 1 := by
+    change (matrixStar M * U.1).rankTwoContent = 1
+    rw [rankTwoContent_mul_sl, hstarcontent, hprimitive]
+  obtain ⟨σ, hHσ⟩ :=
+    exists_coxMatrix_of_isColumnHermiteNormalForm_aux H hHhnf hHdet hcontent
+  refine ⟨slStar U, σ, ?_⟩
+  change matrixStar U.1 * M = σ.mobiusMatrix
+  have hstar := congrArg matrixStar hHσ
+  rw [matrixStar_inclusionMatrix] at hstar
+  change matrixStar (matrixStar M * U.1) = σ.mobiusMatrix at hstar
+  rw [matrixStar_mul, matrixStar_involutive] at hstar
+  exact hstar
+
+end Cox
