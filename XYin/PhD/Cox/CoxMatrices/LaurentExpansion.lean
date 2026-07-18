@@ -29,11 +29,11 @@ theorem zeta_isPrimitiveRoot (m : ℕ+) : IsPrimitiveRoot (zeta m) (m : ℕ) := 
 
 /-- The integral Laurent coefficient of the analytic `j`-function. -/
 noncomputable def jIntCoeff (n : ℤ) : ℤ :=
-  (jLaurentqExpansion_isIntegral (n := n)).choose
+  (j_laurentQExpansion_isIntegral (n := n)).choose
 
 theorem jIntCoeff_spec (n : ℤ) :
     (laurentqExpansion 1 j).coeff n = (jIntCoeff n : ℂ) := by
-  exact (jLaurentqExpansion_isIntegral (n := n)).choose_spec
+  exact (j_laurentQExpansion_isIntegral (n := n)).choose_spec
 
 theorem jIntCoeff_neg_one : jIntCoeff (-1) = 1 := by
   have hcoeff : (jIntCoeff (-1) : ℂ) = 1 := by
@@ -109,7 +109,7 @@ private theorem periodic_comp_ofComplex_of_vadd_aux {g : ℍ → ℂ} {h : ℝ}
 private theorem j_periodic_aux : Periodic (j ∘ UpperHalfPlane.ofComplex) 1 := by
   have hperiod (z : ℍ) : j ((1 : ℝ) +ᵥ z) = j z := by
     rw [← UpperHalfPlane.modular_T_smul]
-    exact j_invariant _ _
+    exact j_modularGroup_smul _ _
   simpa only [Complex.ofReal_one] using periodic_comp_ofComplex_of_vadd_aux hperiod
 
 private theorem cuspFunction_coxCompose_aux (m : ℕ+) (σ : CoxMatrix m) (f : ℍ → ℂ)
@@ -159,7 +159,7 @@ private theorem cuspFunction_coxAction_meromorphicAt_aux (m : ℕ+) (σ : CoxMat
   have hφ0 : φ 0 = 0 := by simp [φ, σ.a_pos.ne']
   have hφan : AnalyticAt ℂ φ 0 := by fun_prop
   have hbase : MeromorphicAt (cuspFunction 1 j) (φ 0) := by
-    simpa [hφ0] using j_cuspFunction_Meromorphic
+    simpa [hφ0] using j_cuspFunction_meromorphicAt
   have hcomp : MeromorphicAt ((cuspFunction 1 j) ∘ φ) 0 :=
     hbase.comp_analyticAt hφan
   exact hcomp.congr
@@ -195,10 +195,10 @@ private theorem poleOrder_coxAction_aux (m : ℕ+) (σ : CoxMatrix m) :
   have hbaseOrder :
       meromorphicOrderAt (cuspFunction 1 j) 0 = (-1 : WithTop ℤ) := by
     simpa [j_poleOrder] using
-      (meromorphicOrderAt_cuspFunction_eq_neg_poleOrder_of_ne_zero
+      (meromorphicOrderAt_cuspFunction_eq_neg_poleOrder
         (h := 1) (f := j) (by simp [j_poleOrder]))
   have hbaseMer : MeromorphicAt (cuspFunction 1 j) (φ 0) := by
-    simpa [hφ0] using j_cuspFunction_Meromorphic
+    simpa [hφ0] using j_cuspFunction_meromorphicAt
   have hcompOrder :
       meromorphicOrderAt ((cuspFunction 1 j) ∘ φ) 0 = (-(r : ℤ) : ℤ) := by
     rw [hbaseMer.meromorphicOrderAt_comp hφan hφnc,

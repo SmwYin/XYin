@@ -205,7 +205,7 @@ theorem exists_nonsquare_coxMatrix_j_eq :
   obtain ⟨γ, σ, hmat⟩ := exists_sl2_mul_eq_coxMatrix
     (q.fixingMatrix n) hdet (fixingMatrix_content_eq_one q n)
   refine ⟨N, hN, σ, ?_⟩
-  rw [coxMatrix_act_eq_smul_aux q hmat, j_invariant]
+  rw [coxMatrix_act_eq_smul_aux q hmat, j_modularGroup_smul]
 
 end PrimitiveQuadraticEquation
 

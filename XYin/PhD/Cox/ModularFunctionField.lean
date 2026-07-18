@@ -26,7 +26,7 @@ namespace UpperHalfPlaneFunctionField
 /-- The function `τ ↦ j(Nτ)` is holomorphic on the upper half-plane. -/
 theorem levelJ_mdifferentiable (N : ℕ+) : MDiff (levelJ N) :=
   UpperHalfPlane.mdifferentiable_iff.mpr fun z hz ↦
-    (jN_Meromorphic (N : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
+    (jN_differentiableAt (N : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
 
 /-- The function `j(Nτ)`, bundled as a holomorphic function. -/
 def levelJElement (N : ℕ+) : HolomorphicFunction :=

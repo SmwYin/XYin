@@ -160,7 +160,7 @@ private theorem precomp_evalJPoly (delta : SL(2, ℤ)) (P : Polynomial ℂ) :
   apply Subtype.ext
   funext tau
   simp only [precompHolomorphic, RingEquiv.coe_mk, Equiv.coe_fn_mk]
-  rw [evalJ_apply, evalJ_apply, j_invariant]
+  rw [evalJ_apply, evalJ_apply, j_modularGroup_smul]
 
 /-- Precomposition fixes the embedded copy of `ℂ(Y)`. -/
 private theorem precomp_ratFunc (delta : SL(2, ℤ)) (r : RatFunc ℂ) :
@@ -289,7 +289,7 @@ private lemma rightCosetEval_mdifferentiable (m : ℕ+) (c : Gamma0RightCosets m
     MDiff (rightCosetEval m c) := by
   letI : NeZero (m : ℕ) := ⟨PNat.ne_zero m⟩
   have hlevel : MDiff (levelJ m) := UpperHalfPlane.mdifferentiable_iff.mpr fun z hz ↦
-    (jN_Meromorphic (m : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
+    (jN_differentiableAt (m : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
   refine Quotient.inductionOn c ?_
   intro gamma
   simpa only [rightCosetEval_mk] using hlevel.comp (sl2_mdifferentiable gamma)

@@ -3,16 +3,29 @@ import XYin.PhD.qExpansion_tactic.Qj
 
 set_option linter.style.header false
 
+/-!
+# Soundness of the `q`-expansion tactic's integer coefficients
+
+The computational definitions in `Qj` build integer coefficient arrays via
+`Array.foldl`/`push` for speed.  This file proves that those arrays compute the true
+analytic `q`-expansion coefficients: bridging lemmas relate the array operations to
+`PowerSeries` coefficients, and the main theorems identify the resulting formal
+`ℤ`-series with the analytic `q`-expansions after the base change `ℤ → ℂ`.
+
+## Main results
+
+* `Delta_qexpansion_link`: `Delta_qexpansion` maps to the `q`-expansion of `Δ` under
+  `ℤ → ℂ`, so the array-computed coefficients are the Ramanujan `τ` values.
+* `qj_qexpansion_link`: `qj_qexpansion` maps to the `q`-expansion of `q·j`, so the
+  array-computed coefficients are the `j`-invariant Fourier coefficients.
+* `Delta_qxp_coeff_link`, `ramanujanTau_link`, `qj_qxp_coeff_link`: coefficientwise
+  transfer statements consumed by `jFunction.qexp_coeffs` and `Cox.LevelThree`.
+-/
+
 open UpperHalfPlane PowerSeries ModularForm ModularFormClass
 open XYin.PhD.qExpansion_tactic
 open IntegralPowerSeries
 open ArithmeticFunction
-
-/-! ## Array bridging toolkit
-
-The computational definitions in `Qj` build coefficient arrays via `Array.foldl`/`push`
-for speed.  The lemmas below relate those array operations back to the `PowerSeries`
-coefficients we need for the modular-form identities. -/
 
 lemma foldl_range_add_eq_sum (f : Nat → Int) (n : Nat) :
     List.foldl (fun acc i => acc + f i) 0 (List.range n) = ∑ i ∈ Finset.range n, f i := by
@@ -92,8 +105,6 @@ lemma convArrayUpTo_cube_coeff (f : Nat → Int) (N i : Nat) (hi : i ≤ N) :
         (fun j hj => coeffArray_getD f N j hj) hi,
       mk_coeff_self, ← pow_succ]
 
-/-! ## Connecting the integer coefficients to the integral q-expansions -/
-
 lemma foldl_sigma_search_eq_sum (k m n : Nat) :
     List.foldl
       (fun acc i =>
@@ -110,47 +121,15 @@ lemma foldl_sigma_search_eq_sum (k m n : Nat) :
 lemma sigmaPow_eq_sigma (k n : Nat) : sigmaPow k n = (ArithmeticFunction.sigma k n : Int) := by
   unfold sigmaPow
   rw [foldl_sigma_search_eq_sum, ArithmeticFunction.sigma_apply]
-  by_cases hn : n = 0
-  · subst hn
-    simp
-  · calc
-      (∑ i ∈ Finset.range n,
-          if n % (i + 1) = 0 then ((i + 1 : Nat) : Int) ^ k else 0)
-          = ∑ i ∈ (Finset.range n).filter (fun i => n % (i + 1) = 0),
-              ((i + 1 : Nat) : Int) ^ k := by
-            exact (Finset.sum_filter (s := Finset.range n)
-              (p := fun i => n % (i + 1) = 0)
-              (f := fun i => ((i + 1 : Nat) : Int) ^ k)).symm
-      _ = ∑ d ∈ n.divisors, ((d : Nat) : Int) ^ k := by
-            exact Finset.sum_bij
-              (fun i _ => i + 1)
-              (by
-                intro i hi
-                rw [Nat.mem_divisors]
-                exact ⟨Nat.dvd_of_mod_eq_zero (Finset.mem_filter.mp hi).2, hn⟩)
-              (by
-                intro i _ j _ hij
-                exact Nat.succ.inj hij)
-              (by
-                intro d hd
-                rw [Nat.mem_divisors] at hd
-                have hdvd : d ∣ n := hd.1
-                have hposn : 0 < n := Nat.pos_of_ne_zero hn
-                have hposd : 0 < d := Nat.pos_of_dvd_of_pos hdvd hposn
-                refine ⟨d - 1, ?_, ?_⟩
-                · rw [Finset.mem_filter]
-                  constructor
-                  · rw [Finset.mem_range]
-                    have hle : d ≤ n := Nat.le_of_dvd hposn hdvd
-                    omega
-                  · have hsucc : d - 1 + 1 = d := by omega
-                    simpa [hsucc] using Nat.mod_eq_zero_of_dvd hdvd
-                · have hsucc : d - 1 + 1 = d := by omega
-                  simp [hsucc])
-              (by
-                intro i _
-                simp)
-      _ = (↑(∑ d ∈ n.divisors, d ^ k) : Int) := by norm_cast
+  rcases eq_or_ne n 0 with rfl | hn
+  · simp
+  · have h : (∑ i ∈ Finset.range n, if n % (i + 1) = 0 then ((i + 1 : Nat) : Int) ^ k else 0)
+        = ∑ i ∈ Finset.range (n + 1), if i ∣ n then ((i : Nat) : Int) ^ k else 0 := by
+      rw [Finset.sum_range_succ', if_neg fun h => hn (Nat.eq_zero_of_zero_dvd h), add_zero]
+      exact Finset.sum_congr rfl fun i _ =>
+        if_congr ⟨Nat.dvd_of_mod_eq_zero, Nat.mod_eq_zero_of_dvd⟩ rfl rfl
+    rw [h, ← Finset.sum_filter, Nat.filter_dvd_eq_divisors hn]
+    norm_cast
 
 lemma e4CoeffInt_eq_integralE4_coeff (n : Nat) : e4CoeffInt n = integralE4.coeff n := by
   unfold e4CoeffInt
@@ -158,7 +137,7 @@ lemma e4CoeffInt_eq_integralE4_coeff (n : Nat) : e4CoeffInt n = integralE4.coeff
   · subst hn
     simp [integralE4_coeff_zero]
   · have hn1 : n ≥ 1 := by omega
-    rw [if_neg hn, integralE4_coeff_pos n hn1, sigmaPow_eq_sigma]
+    rw [if_neg hn, integralE4_coeff_of_pos n hn1, sigmaPow_eq_sigma]
 
 lemma e6CoeffInt_eq_integralE6_coeff (n : Nat) : e6CoeffInt n = integralE6.coeff n := by
   unfold e6CoeffInt
@@ -166,7 +145,7 @@ lemma e6CoeffInt_eq_integralE6_coeff (n : Nat) : e6CoeffInt n = integralE6.coeff
   · subst hn
     simp [integralE6_coeff_zero]
   · have hn1 : n ≥ 1 := by omega
-    rw [if_neg hn, integralE6_coeff_pos n hn1, sigmaPow_eq_sigma]
+    rw [if_neg hn, integralE6_coeff_of_pos n hn1, sigmaPow_eq_sigma]
     ring
 
 lemma E4_int_series_eq : PowerSeries.mk e4CoeffInt = integralE4 := by
@@ -181,134 +160,116 @@ lemma E4_int_link :
     mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk e4CoeffInt) = qExpansion 1 E4 := by
   rw [E4_int_series_eq]
   simpa [integralE4, coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom] using
-    coeTo_of_toIntegralPowerSeries E4IsIntegralPowerSeries
+    coeTo_of_toIntegralPowerSeries E4_isIntegralPowerSeries
 
 lemma E6_int_link :
     mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk e6CoeffInt) = qExpansion 1 E6 := by
   rw [E6_int_series_eq]
   simpa [integralE6, coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom] using
-    coeTo_of_toIntegralPowerSeries E6IsIntegralPowerSeries
+    coeTo_of_toIntegralPowerSeries E6_isIntegralPowerSeries
 
+/-- For `z ≡ 0 [ZMOD 1728]`, the complex cast of the exact integer quotient `z / 1728`
+is `(1 / 1728) · z`. -/
 lemma int_cast_div_eq_inv_mul_complex {z : Int} (hz : Int.ModEq 1728 z 0) :
     ((z / 1728 : Int) : ℂ) = (1 / 1728 : ℂ) * (z : ℂ) := by
-  have hdvd : (1728 : Int) ∣ z := (Int.modEq_zero_iff_dvd).1 hz
-  rcases hdvd with ⟨t, ht⟩
-  have hdiv : z / 1728 = t := by
-    exact Int.ediv_eq_of_eq_mul_right (by decide : (1728 : Int) ≠ 0) ht
-  rw [hdiv, ht]
-  change (t : ℂ) = (1 / 1728 : ℂ) * ((1728 * t : Int) : ℂ)
-  norm_num
+  rw [Int.cast_div_charZero (Int.modEq_zero_iff_dvd.1 hz)]
+  push_cast
   ring
 
+/-- Entry `k` of the `Δ`-coefficient table `deltaCoeffsArrayUpTo top` is the `k`-th
+coefficient of the formal series `(E₄³ - E₆²) / 1728`, independently of the table size. -/
+lemma deltaCoeffsArrayUpTo_getD (top k : Nat) (hk : k ≤ top) :
+    (deltaCoeffsArrayUpTo top).getD k 0 =
+      (((PowerSeries.mk e4CoeffInt) ^ 3 - (PowerSeries.mk e6CoeffInt) ^ 2).coeff k) / 1728 := by
+  simp only [deltaCoeffsArrayUpTo]
+  rw [foldl_push_getD _ (top + 1) k (by omega), convArrayUpTo_cube_coeff e4CoeffInt top k hk,
+      convArrayUpTo_self_coeff e6CoeffInt top k hk, map_sub]
+
 /-- The array-based `deltaCoeffInt` agrees with the convolution definition of the
-δ-coefficients. -/
+`Δ`-coefficients. -/
 lemma deltaCoeffInt_eq (n : Nat) :
     deltaCoeffInt n =
-      (((PowerSeries.mk e4CoeffInt) ^ 3 - (PowerSeries.mk e6CoeffInt) ^ 2).coeff n) / 1728 := by
-  simp only [deltaCoeffInt, deltaCoeffsArrayUpTo]
-  rw [foldl_push_getD _ (n + 1) n (by omega),
-      convArrayUpTo_cube_coeff e4CoeffInt n n le_rfl,
-      convArrayUpTo_self_coeff e6CoeffInt n n le_rfl, map_sub]
+      (((PowerSeries.mk e4CoeffInt) ^ 3 - (PowerSeries.mk e6CoeffInt) ^ 2).coeff n) / 1728 :=
+  deltaCoeffsArrayUpTo_getD n n le_rfl
+
+/-- Entries of the `Δ`-coefficient table are stable in the table size: any table large
+enough to contain index `k` reads off `deltaCoeffInt k` there. -/
+lemma delta_array_getD (top k : Nat) (hk : k ≤ top) :
+    (deltaCoeffsArrayUpTo top).getD k 0 = deltaCoeffInt k := by
+  rw [deltaCoeffsArrayUpTo_getD top k hk, ← deltaCoeffInt_eq]
+
+/-- The complex cast of the `n`-th coefficient of `integralE4 ^ 3 - integralE6 ^ 2` is the
+`n`-th `q`-expansion coefficient of the modular form `E₄³ - E₆²`. -/
+lemma eisenstein_difference_coeff_cast (n : ℕ) :
+    (((integralE4 ^ 3 - integralE6 ^ 2).coeff n : ℤ) : ℂ) =
+      (qExpansion 1 (⇑E4 ^ 3 - ⇑E6 ^ 2)).coeff n := by
+  have h := congrArg (PowerSeries.coeff n) map_integralE4_pow_three_sub_integralE6_pow_two
+  change (PowerSeries.map (Int.castRingHom ℂ) (integralE4 ^ 3 - integralE6 ^ 2)).coeff n = _ at h
+  rw [PowerSeries.coeff_map] at h
+  exact h
 
 theorem Delta_qexpansion_link :
     mapAlgHom (Algebra.ofId ℤ ℂ) Delta_qexpansion = qExpansion 1 Delta := by
   ext n
   change ((Delta_qexpansion.coeff n : ℤ) : ℂ) = (qExpansion 1 Delta).coeff n
-  rw [Delta_qexpansion_coeff_eq, deltaCoeffInt_eq, Deltaaux]
-  have hseries :
-      ((PowerSeries.mk e4CoeffInt) ^ 3 - (PowerSeries.mk e6CoeffInt) ^ 2).coeff n =
-        (integralE4 ^ 3 - integralE6 ^ 2).coeff n := by
-    rw [E4_int_series_eq, E6_int_series_eq]
-  rw [hseries]
-  let z : Int := (integralE4 ^ 3 - integralE6 ^ 2).coeff n
-  have hz : Int.ModEq 1728 z 0 := by
-    dsimp [z]
-    rw [← aux1']
-    exact mod1728' n
-  have hcoeff :
-      ((z : Int) : ℂ) = (qExpansion 1 (⇑E4 ^ 3 - ⇑E6 ^ 2)).coeff n := by
-    have h := congrArg (PowerSeries.coeff n) aux1
-    have hleft :
-        ((coeToComplexPowerSeries.ringHom ℤ) (integralE4 ^ 3 - integralE6 ^ 2)).coeff n =
-          (z : ℂ) := by
-      change (PowerSeries.map (Int.castRingHom ℂ) (integralE4 ^ 3 - integralE6 ^ 2)).coeff n =
-        (z : ℂ)
-      rw [PowerSeries.coeff_map]
-      rfl
-    exact hleft.symm.trans h
-  calc
-    (((z : Int) / 1728 : Int) : ℂ) = (1 / 1728 : ℂ) * (z : ℂ) :=
-      int_cast_div_eq_inv_mul_complex hz
+  rw [Delta_qexpansion_coeff_eq, deltaCoeffInt_eq, E4_int_series_eq, E6_int_series_eq,
+      Delta_qExpansion_eq_smul_eisenstein_difference]
+  calc (((integralE4 ^ 3 - integralE6 ^ 2).coeff n / 1728 : Int) : ℂ)
+      = (1 / 1728 : ℂ) * (((integralE4 ^ 3 - integralE6 ^ 2).coeff n : ℤ) : ℂ) :=
+        int_cast_div_eq_inv_mul_complex (eisenstein_difference_coeff_modEq_zero n)
     _ = (1 / 1728 : ℂ) * (qExpansion 1 (⇑E4 ^ 3 - ⇑E6 ^ 2)).coeff n := by
-      rw [hcoeff]
+        rw [eisenstein_difference_coeff_cast]
 
 theorem Delta_qxp_coeff_link (n : ℕ) :
-    (qExpansion 1 Delta).coeff n = Delta_qexpansion.coeff n := by
-  exact (congrArg (PowerSeries.coeff n) Delta_qexpansion_link).symm
+    (qExpansion 1 Delta).coeff n = Delta_qexpansion.coeff n :=
+  (congrArg (PowerSeries.coeff n) Delta_qexpansion_link).symm
 
-theorem Ramanujan_tau_link (n : ℕ) : Ramanujan_tau n = Delta_qexpansion.coeff n := by
-  unfold Ramanujan_tau
-  have h1 : ((IntegralDelta.coeff n : ℤ) : ℂ) = (qExpansion 1 Delta).coeff n := by
+/-- Cast form of `Delta_qexpansion_link`: the array-computed integer `τ(n)`, viewed in `ℂ`,
+is the `n`-th analytic `q`-expansion coefficient of `Δ`. -/
+lemma deltaCoeffInt_cast (n : ℕ) :
+    ((deltaCoeffInt n : ℤ) : ℂ) = (qExpansion 1 Delta).coeff n := by
+  have h := congrArg (PowerSeries.coeff n) Delta_qexpansion_link
+  change ((Delta_qexpansion.coeff n : ℤ) : ℂ) = _ at h
+  rwa [Delta_qexpansion_coeff_eq] at h
+
+theorem ramanujanTau_link (n : ℕ) : ramanujanTau n = Delta_qexpansion.coeff n := by
+  unfold ramanujanTau
+  have h1 : ((integralDelta.coeff n : ℤ) : ℂ) = (qExpansion 1 Delta).coeff n := by
     have h := congrArg (PowerSeries.coeff n)
-      (coeTo_of_toIntegralPowerSeries DeltaIsIntegralPowerSeries)
-    change (PowerSeries.map (Int.castRingHom ℂ) IntegralDelta).coeff n = _ at h
+      (coeTo_of_toIntegralPowerSeries Delta_isIntegralPowerSeries)
+    change (PowerSeries.map (Int.castRingHom ℂ) integralDelta).coeff n = _ at h
     rw [PowerSeries.coeff_map] at h
     exact h
-  have h2 : ((Delta_qexpansion.coeff n : ℤ) : ℂ) = (qExpansion 1 Delta).coeff n := by
-    have h := congrArg (PowerSeries.coeff n) Delta_qexpansion_link
-    change ((Delta_qexpansion.coeff n : ℤ) : ℂ) = _ at h
-    exact h
-  exact_mod_cast h1.trans h2.symm
+  rw [Delta_qexpansion_coeff_eq]
+  exact_mod_cast h1.trans (deltaCoeffInt_cast n).symm
 
-/-! ## The `q/Δ` inverse series -/
-
-lemma Deltaoverq_qexpansion_link :
+lemma deltaOverQ_qexpansion_link :
     mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk deltaOverQCoeffInt) =
-      qExpansion 1 Deltaoverq := by
+      qExpansion 1 deltaOverQ := by
   ext n
-  change ((PowerSeries.mk deltaOverQCoeffInt).coeff n : ℂ) =
-    (qExpansion 1 Deltaoverq).coeff n
+  change ((PowerSeries.mk deltaOverQCoeffInt).coeff n : ℂ) = (qExpansion 1 deltaOverQ).coeff n
   rw [PowerSeries.coeff_mk, deltaOverQCoeffInt]
-  have hDelta := congrArg (PowerSeries.coeff (n + 1)) Delta_qexpansion_link
-  have hDeltaCoeff : ((deltaCoeffInt (n + 1) : ℤ) : ℂ) =
-      (qExpansion 1 Delta).coeff (n + 1) := by
-    have hleft :
-        ((mapAlgHom (Algebra.ofId ℤ ℂ)) Delta_qexpansion).coeff (n + 1) =
-          ((deltaCoeffInt (n + 1) : ℤ) : ℂ) := by
-      change ((Delta_qexpansion.coeff (n + 1) : ℤ) : ℂ) =
-        ((deltaCoeffInt (n + 1) : ℤ) : ℂ)
-      rw [Delta_qexpansion_coeff_eq]
-    exact hleft.symm.trans hDelta
-  have hq : qExpansion 1 Deltaoverq = qExpansion 1 InfSumDeltashift := by
-    simpa using qExpansion_ext Deltaoverq InfSumDeltashift
-      (InfSumDeltashift_eq_Deltaoverq.symm)
+  have hq : qExpansion 1 deltaOverQ = qExpansion 1 deltaShiftedQSeries := by
+    simpa using qExpansion_ext deltaOverQ deltaShiftedQSeries
+      (deltaShiftedQSeries_eq_deltaOverQ.symm)
   rw [hq]
-  exact hDeltaCoeff.trans (InfSumDeltashift_coeff_eq n).symm
+  exact (deltaCoeffInt_cast (n + 1)).trans (deltaShiftedQSeries_qExpansion_coeff n).symm
 
 lemma deltaOverQCoeffInt_zero : deltaOverQCoeffInt 0 = 1 := by
-  have hDelta := congrArg (PowerSeries.coeff 1) Delta_qexpansion_link
-  have hcoeff : ((deltaCoeffInt 1 : ℤ) : ℂ) = (qExpansion 1 Delta).coeff 1 := by
-    have hleft :
-        ((mapAlgHom (Algebra.ofId ℤ ℂ)) Delta_qexpansion).coeff 1 =
-          ((deltaCoeffInt 1 : ℤ) : ℂ) := by
-      change ((Delta_qexpansion.coeff 1 : ℤ) : ℂ) = ((deltaCoeffInt 1 : ℤ) : ℂ)
-      rw [Delta_qexpansion_coeff_eq]
-    exact hleft.symm.trans hDelta
   have hcast : ((deltaOverQCoeffInt 0 : ℤ) : ℂ) = 1 := by
-    simpa [deltaOverQCoeffInt, Delta_q_one_term] using hcoeff
-  norm_num at hcast ⊢
+    simpa [deltaOverQCoeffInt, Delta_q_one_term] using deltaCoeffInt_cast 1
   exact_mod_cast hcast
 
-/-- Abstract coefficients of the inverse of `1 + ∑ α(k+1) q^{k+1}`. -/
-def invFn (α : Nat → Int) : Nat → Int
-  | 0 => 1
-  | m + 1 => -∑ i ∈ Finset.range (m + 1), α (i + 1) * invFn α (m - i)
-  termination_by n => n
-  decreasing_by omega
-
-lemma invFn_succ (α : Nat → Int) (m : Nat) :
-    invFn α (m + 1) = -∑ i ∈ Finset.range (m + 1), α (i + 1) * invFn α (m - i) := by
-  rw [invFn]
+/-- The coefficient recursion of `PowerSeries.invOfUnit φ 1` at a successor index, in the
+`range`-sum form matching the loop of `inverseOnePlusCoeffsUpTo`. -/
+lemma coeff_invOfUnit_one_succ {R : Type*} [Ring R] (φ : PowerSeries R) (m : Nat) :
+    (φ.invOfUnit 1).coeff (m + 1) =
+      -∑ i ∈ Finset.range (m + 1), φ.coeff (i + 1) * (φ.invOfUnit 1).coeff (m - i) := by
+  rw [PowerSeries.coeff_invOfUnit, if_neg (Nat.succ_ne_zero m),
+      Finset.Nat.sum_antidiagonal_eq_sum_range_succ
+        (fun x y => if y < m + 1 then φ.coeff x * (φ.invOfUnit 1).coeff y else 0) (m + 1),
+      Finset.sum_range_succ']
+  simp [Nat.succ_sub_succ_eq_sub]
 
 lemma array_getD_eq_toList_getD (arr : Array Int) (i : Nat) :
     arr.getD i 0 = arr.toList.getD i 0 := by
@@ -320,8 +281,9 @@ lemma getD_map_range (g : Nat → Int) (L j : Nat) (hj : j < L) :
   rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hj]
   rfl
 
-/-- The inverse-coefficient array (built by `inverseOnePlusCoeffsUpTo`) reads off the
-abstract inverse coefficients `invFn α`, provided the input array agrees with `α`. -/
+/-- Loop invariant for `inverseOnePlusCoeffsUpTo`: after `K` steps the accumulator array
+tabulates the coefficients of `(PowerSeries.mk α).invOfUnit 1` on `0..K-1`, provided the
+input array agrees with `α` up to index `N`. -/
 lemma inverseOnePlusCoeffsUpTo_toList (a : Array Int) (α : Nat → Int) (N : Nat)
     (hα : ∀ j ≤ N, a.getD j 0 = α j) :
     ∀ K, K ≤ N + 1 →
@@ -332,7 +294,8 @@ lemma inverseOnePlusCoeffsUpTo_toList (a : Array Int) (α : Nat → Int) (N : Na
           | m + 1 =>
               acc.push (-((List.range (m + 1)).foldl
                 (fun s i => s + a.getD (i + 1) 0 * acc.getD (m - i) 0) 0)))
-        (#[] : Array Int)).toList = (List.range K).map (invFn α) := by
+        (#[] : Array Int)).toList
+        = (List.range K).map fun i => ((PowerSeries.mk α).invOfUnit 1).coeff i := by
   intro K
   induction K with
   | zero => intro _; simp
@@ -341,92 +304,65 @@ lemma inverseOnePlusCoeffsUpTo_toList (a : Array Int) (α : Nat → Int) (N : Na
       rw [List.range_succ, List.foldl_concat]
       have hacc := ih (by omega)
       rcases K with _ | m
-      · simp [invFn]
-      · -- pushed index is m+1; identify the pushed value with `invFn α (m+1)`
-        rw [Array.toList_push, hacc, List.map_append]
+      · simp [PowerSeries.coeff_zero_eq_constantCoeff]
+      · rw [Array.toList_push, hacc, List.map_append]
         congr 1
         simp only [List.map_cons, List.map_nil]
         congr 1
-        rw [foldl_range_add_eq_sum, invFn_succ]
+        rw [foldl_range_add_eq_sum, coeff_invOfUnit_one_succ]
         congr 1
         apply Finset.sum_congr rfl
         intro i hi
         rw [Finset.mem_range] at hi
-        rw [hα (i + 1) (by omega), array_getD_eq_toList_getD, hacc, getD_map_range _ _ _ (by omega)]
+        rw [hα (i + 1) (by omega), array_getD_eq_toList_getD, hacc,
+            getD_map_range _ _ _ (by omega), PowerSeries.coeff_mk]
 
 lemma inverseOnePlusCoeffsUpTo_getD (a : Array Int) (α : Nat → Int) (N : Nat)
     (hα : ∀ j ≤ N, a.getD j 0 = α j) (i : Nat) (hi : i ≤ N) :
-    (inverseOnePlusCoeffsUpTo a N).getD i 0 = invFn α i := by
+    (inverseOnePlusCoeffsUpTo a N).getD i 0 = ((PowerSeries.mk α).invOfUnit 1).coeff i := by
   have h := inverseOnePlusCoeffsUpTo_toList a α N hα (N + 1) le_rfl
-  rw [array_getD_eq_toList_getD,
-      show (inverseOnePlusCoeffsUpTo a N).toList = (List.range (N + 1)).map (invFn α) from h]
-  exact getD_map_range (invFn α) (N + 1) i (by omega)
+  rw [array_getD_eq_toList_getD, show (inverseOnePlusCoeffsUpTo a N).toList
+      = (List.range (N + 1)).map fun i => ((PowerSeries.mk α).invOfUnit 1).coeff i from h]
+  exact getD_map_range _ (N + 1) i (by omega)
 
-/-- An entry of the `delta` array (as built inside the `q/Δ` and `qj` array routines,
-with size parameter `top`) equals `deltaCoeffInt`. -/
-lemma delta_array_getD (top k : Nat) (hk : k ≤ top) :
-    ((List.range (top + 1)).foldl
-      (fun acc i => acc.push
-        (((convArrayUpTo
-              (convArrayUpTo (coeffArray e4CoeffInt top) (coeffArray e4CoeffInt top) top)
-              (coeffArray e4CoeffInt top) top).getD i 0
-          - (convArrayUpTo (coeffArray e6CoeffInt top) (coeffArray e6CoeffInt top) top).getD i 0)
-          / 1728))
-      (#[] : Array Int)).getD k 0 = deltaCoeffInt k := by
-  rw [foldl_push_getD _ (top + 1) k (by omega),
-      convArrayUpTo_cube_coeff e4CoeffInt top k hk,
-      convArrayUpTo_self_coeff e6CoeffInt top k hk, ← map_sub, ← deltaCoeffInt_eq]
+/-- Entry `j` of the shifted table `deltaOverQArrayUpTo n` is `deltaOverQCoeffInt j`. -/
+lemma deltaOverQArrayUpTo_getD (n j : Nat) (hj : j ≤ n) :
+    (deltaOverQArrayUpTo n).getD j 0 = deltaOverQCoeffInt j := by
+  simp only [deltaOverQArrayUpTo]
+  rw [foldl_push_getD _ (n + 1) j (by omega), delta_array_getD (n + 1) (j + 1) (by omega)]
+  rfl
 
-/-- The array-based `qoverDeltaCoeffInt` agrees with the abstract inverse recursion. -/
+/-- Entry `i` of `qoverDeltaCoeffsArrayUpTo n` is the `i`-th coefficient of the formal
+inverse of `Δ/q`. -/
+lemma qoverDelta_array_getD (n i : Nat) (hi : i ≤ n) :
+    (qoverDeltaCoeffsArrayUpTo n).getD i 0 =
+      ((PowerSeries.mk deltaOverQCoeffInt).invOfUnit 1).coeff i := by
+  simp only [qoverDeltaCoeffsArrayUpTo]
+  exact inverseOnePlusCoeffsUpTo_getD _ deltaOverQCoeffInt n
+    (fun j hj => deltaOverQArrayUpTo_getD n j hj) i hi
+
+/-- The array-based `qoverDeltaCoeffInt` computes the coefficients of the formal inverse
+of the series `Δ/q`. -/
 lemma qoverDeltaCoeffInt_eq (n : Nat) :
-    qoverDeltaCoeffInt n = invFn deltaOverQCoeffInt n := by
-  simp only [qoverDeltaCoeffInt, qoverDeltaCoeffsArrayUpTo]
-  rw [inverseOnePlusCoeffsUpTo_getD _ deltaOverQCoeffInt n ?hα n le_rfl]
-  case hα =>
-    intro j hj
-    rw [foldl_push_getD _ (n + 1) j (by omega), delta_array_getD (n + 1) (j + 1) (by omega)]
-    rfl
+    qoverDeltaCoeffInt n = ((PowerSeries.mk deltaOverQCoeffInt).invOfUnit 1).coeff n :=
+  qoverDelta_array_getD n n le_rfl
 
 lemma qoverDeltaCoeffInt_zero : qoverDeltaCoeffInt 0 = 1 := by
-  rw [qoverDeltaCoeffInt_eq, invFn]
-
-lemma qoverDelta_coeff_succ (n : Nat) :
-    qoverDeltaCoeffInt (n + 1) =
-      -∑ i ∈ Finset.range (n + 1),
-        deltaOverQCoeffInt (i + 1) * qoverDeltaCoeffInt (n - i) := by
-  rw [qoverDeltaCoeffInt_eq, invFn_succ]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro i _
   rw [qoverDeltaCoeffInt_eq]
+  simp [PowerSeries.coeff_zero_eq_constantCoeff]
 
 lemma qoverDelta_mul_eq_one :
     (PowerSeries.mk deltaOverQCoeffInt) * (PowerSeries.mk qoverDeltaCoeffInt) = 1 := by
-  ext n
-  cases n with
-  | zero =>
-      rw [PowerSeries.coeff_mul]
-      simp [deltaOverQCoeffInt_zero, qoverDeltaCoeffInt_zero]
-  | succ n =>
-      rw [PowerSeries.coeff_mul]
-      simp only [PowerSeries.coeff_mk, PowerSeries.coeff_one, Nat.succ_ne_zero, ↓reduceIte]
-      calc
-        (∑ p ∈ Finset.antidiagonal (n + 1),
-            deltaOverQCoeffInt p.1 * qoverDeltaCoeffInt p.2)
-            = ∑ i ∈ Finset.range (n + 2),
-                deltaOverQCoeffInt i * qoverDeltaCoeffInt (n + 1 - i) := by
-              exact Finset.Nat.sum_antidiagonal_eq_sum_range_succ
-                (fun i j => deltaOverQCoeffInt i * qoverDeltaCoeffInt j) (n + 1)
-        _ = 0 := by
-              rw [Finset.sum_range_succ']
-              simp only [Nat.succ_sub_succ_eq_sub, tsub_zero]
-              rw [deltaOverQCoeffInt_zero, one_mul]
-              rw [qoverDelta_coeff_succ]
-              ring
+  have h : PowerSeries.mk qoverDeltaCoeffInt =
+      (PowerSeries.mk deltaOverQCoeffInt).invOfUnit 1 := by
+    ext n
+    rw [PowerSeries.coeff_mk, qoverDeltaCoeffInt_eq]
+  rw [h]
+  exact PowerSeries.mul_invOfUnit _ 1 (by simp [deltaOverQCoeffInt_zero])
 
-lemma qoverDelta_qexpansion_link :
+lemma qOverDelta_qexpansion_link :
     mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk qoverDeltaCoeffInt) =
-      qExpansion 1 qoverDelta := by
+      qExpansion 1 qOverDelta := by
   let A : PowerSeries ℂ :=
     mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk deltaOverQCoeffInt)
   have hAunit : IsUnit A := by
@@ -445,12 +381,12 @@ lemma qoverDelta_qexpansion_link :
           rw [map_mul]
     _ = 1 := by rw [qoverDelta_mul_eq_one, map_one]
     _ = mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk deltaOverQCoeffInt) *
-        qExpansion 1 qoverDelta := by
-          rw [Deltaoverq_qexpansion_link]
-          have hprod : qExpansion 1 Deltaoverq * qExpansion 1 qoverDelta = 1 := by
-            rw [← coeTo_of_integralDeltaoverq]
+        qExpansion 1 qOverDelta := by
+          rw [deltaOverQ_qexpansion_link]
+          have hprod : qExpansion 1 deltaOverQ * qExpansion 1 qOverDelta = 1 := by
+            rw [← coeTo_integralDeltaOverQ]
             simpa [coeToComplexPowerSeries.ringHom, powerSeriesMapAlgHom] using
-              integralDeltaoverq_mul_qoverDelta_qExpansion
+              integralDeltaOverQ_mul_qExpansion_qOverDelta
           exact hprod.symm
 
 /-- The array-based `qjCoeffInt` agrees with the convolution `(mk e4CoeffInt)^3 * (q/Δ)`. -/
@@ -466,11 +402,7 @@ lemma qjCoeffInt_eq (n : Nat) :
     exact convArrayUpTo_cube_coeff e4CoeffInt (n + 1) j (by omega)
   case hB =>
     intro j hj
-    rw [inverseOnePlusCoeffsUpTo_getD _ deltaOverQCoeffInt n ?hα j (by omega),
-        ← qoverDeltaCoeffInt_eq]
-    intro j' hj'
-    rw [foldl_push_getD _ (n + 1) j' (by omega), delta_array_getD (n + 1) (j' + 1) (by omega)]
-    rfl
+    rw [qoverDelta_array_getD n j hj, ← qoverDeltaCoeffInt_eq]
 
 lemma qj_series_eq :
     PowerSeries.mk qjCoeffInt =
@@ -491,15 +423,16 @@ theorem qj_qexpansion_link :
         = (mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk e4CoeffInt)) ^ 3 *
             mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk qoverDeltaCoeffInt) := by
           simp [map_mul, map_pow]
-    _ = (qExpansion 1 E4) ^ 3 * qExpansion 1 qoverDelta := by
-          rw [E4_int_link, qoverDelta_qexpansion_link]
-    _ = qExpansion 1 (E4 ^ 3) * qExpansion 1 qoverDelta := by
+    _ = (qExpansion 1 E4) ^ 3 * qExpansion 1 qOverDelta := by
+          rw [E4_int_link, qOverDelta_qexpansion_link]
+    _ = qExpansion 1 (E4 ^ 3) * qExpansion 1 qOverDelta := by
           rw [hpow]
-    _ = qExpansion 1 (E4 ^ 3 * qoverDelta) := by
-          rw [qExpansion_mul E4cubed_AnalyticAt qoverDelta_AnalyticAt]
+    _ = qExpansion 1 (E4 ^ 3 * qOverDelta) := by
+          rw [qExpansion_mul E4_pow_three_cuspFunction_analyticAt
+            qOverDelta_cuspFunction_analyticAt]
     _ = qExpansion 1 qj := by
-          rw [qjIdentity]
+          rw [E4_pow_three_mul_qOverDelta_eq_qj]
 
 theorem qj_qxp_coeff_link (n : ℕ) :
-    (qExpansion 1 qj).coeff n = qj_qexpansion.coeff n := by
-  exact (congrArg (PowerSeries.coeff n) qj_qexpansion_link).symm
+    (qExpansion 1 qj).coeff n = qj_qexpansion.coeff n :=
+  (congrArg (PowerSeries.coeff n) qj_qexpansion_link).symm

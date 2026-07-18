@@ -24,7 +24,7 @@ namespace Cox
 private lemma laurentqExpansion_j_pow_aux (n : ℕ) :
     laurentqExpansion 1 (fun τ ↦ j τ ^ n) = (laurentqExpansion 1 j) ^ n := by
   have h := laurentqExpansion_finset_prod (h := (1 : ℝ)) (by positivity)
-    (Finset.range n) (f := fun _ ↦ j) (fun _ _ ↦ j_cuspFunction_Meromorphic)
+    (Finset.range n) (f := fun _ ↦ j) (fun _ _ ↦ j_cuspFunction_meromorphicAt)
   simpa using h
 
 private lemma polynomialIn_cuspMeromorphicAt_aux (P : Polynomial ℂ) :
@@ -68,7 +68,7 @@ private lemma laurentqExpansion_polynomialIn_j_aux (P : Polynomial ℂ) :
 
 private lemma laurentqExpansion_j_order_aux : (laurentqExpansion 1 j).order = -1 := by
   have h := laurentqExpansion.poleOrder_to_order
-    j_cuspFunction_Meromorphic (by simp [j_poleOrder])
+    j_cuspFunction_meromorphicAt (by simp [j_poleOrder])
   rw [j_poleOrder] at h
   change (1 : ℤ) = -(laurentqExpansion 1 j).order at h
   omega
@@ -147,7 +147,7 @@ private def integerCoeffLaurentSeries : Subring (LaurentSeries ℂ) where
 private lemma laurentqExpansion_j_mem_integerCoeffLaurentSeries :
     laurentqExpansion 1 j ∈ integerCoeffLaurentSeries := by
   intro n
-  obtain ⟨z, hz⟩ := jLaurentqExpansion_isIntegral (n := n)
+  obtain ⟨z, hz⟩ := j_laurentQExpansion_isIntegral (n := n)
   exact ⟨z, hz.symm⟩
 
 private lemma intCast_C_mem_integerCoeffLaurentSeries (z : ℤ) :

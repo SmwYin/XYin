@@ -1,0 +1,337 @@
+# /mathlibable report — `Matrix.rankTwoContent`
+
+Date: 2026-07-18. Full 10-phase run (exhaustive literature protocol).
+
+---
+
+### Baseline (Phase 0)
+- lake build:               ✓ clean (`lake build XYin.PhD.Cox.HermiteNormalForm` — 1806 jobs, success)
+- decl `Matrix.rankTwoContent`: ✓ resolved at `XYin/PhD/Cox/HermiteNormalForm.lean:43`
+- kind:                      def
+- has sorry:                 no
+- module docstring summary:  Hermite-normal-form API for full-rank integer submodules (Cox, Ch. 11)
+
+---
+
+### Statement (Phase 1)
+
+`Matrix.rankTwoContent` is a definition of the following:
+
+For a 2×2 integer matrix A, its *content* is the natural number
+gcd(|A₀₀|, |A₀₁|, |A₁₀|, |A₁₁|) — the greatest common divisor of the four
+entries, taken positively. In the project it drives the notion of a
+*primitive* matrix (content = 1), which characterises the matrices indexing
+cyclic sublattices of index m (Cox, "Primes of the form x²+ny²", Ch. 11:
+the set C(m) of primitive HNF matrices of determinant m).
+
+Variables / typeclasses (Lean side):
+- `A : Matrix (Fin 2) (Fin 2) ℤ` — the matrix
+
+Hypotheses: none.
+
+Conclusion (math): content(A) = gcd of the entries of A, as a nonnegative integer.
+
+Conclusion (Lean): n/a — definition. Body:
+`Nat.gcd (Nat.gcd (Nat.gcd (A 0 0).natAbs (A 0 1).natAbs) (A 1 0).natAbs) (A 1 1).natAbs`
+
+---
+
+### Size classification (Phase 2a)
+
+Verdict: SMALL
+Reason: helper definition (an aggregate gcd over entries); not a new structure,
+not a main result, not a named theorem. (Literature width still EXHAUSTIVE.)
+
+### One-line check (Phase 2b)
+
+Body line count: 1 substantive expression (nested `Nat.gcd`, wrapped over 2 source lines)
+One-liner verdict: ONE-LINER
+
+| Exemption                        | Applies? | Evidence |
+|----------------------------------|----------|----------|
+| Avoid defeq abuse                | no       | proofs freely `dsimp`/`simp [Matrix.rankTwoContent]` through it at ≥8 sites; the def is not a barrier |
+| Avoid typeclass diamonds         | no       | ℕ-valued plain def; no instances involved |
+| Mark semantic intent / API name  | **yes**  | ≥15 consumers across 5 other files (`SingularModuli`, `CyclicSublattice`, `Classification`, `CoxMatrices/Basic`); the name carries Cox's "primitive matrix" semantics; two public theorems are named after it (`quotient_isAddCyclic_iff_rankTwoContent_eq_one`, `..._toMatrix_eq_one`) |
+
+Conclusion: ONE-LINER WITH-EXEMPTION (semantic intent). The exemption justifies
+keeping the *project-local* name; it does not by itself justify mathlib inclusion
+of the Fin-2/ℤ specialisation.
+
+---
+
+### Literature search table — EXHAUSTIVE protocol (Phase 3)
+
+| #  | Channel                          | Query | Hit? | Standard form found | Notes |
+|----|----------------------------------|-------|------|---------------------|-------|
+| 1  | WebSearch (specific form)        | "content of a matrix" gcd of entries GCD domain | yes | k-th determinantal invariant of an m×n matrix over a GCD domain = gcd class of all k×k minors; content = k=1 case | ResearchGate "GCD Domains, Gauss' Lemma, and Contents of Polynomials"; arXiv 1802.07635 (elementary divisor domains) |
+| 2  | WebSearch (general form)         | "determinantal divisor" d1 gcd of entries Smith normal form | yes | d_k(A) = gcd of k×k minors; d₁ = gcd of entries; invariant factors = d_k/d_{k−1} | Stanley SNF survey (math.mit.edu), numbertheory.org MP274; standard SNF umbrella |
+| 3  | WebSearch (aliases / application)| "primitive matrix" gcd entries modular polynomial | yes | application-level "primitive" = entries coprime; gcd(C) of all entries defined for ℤ^{d×d} | arXiv 0808.3489 (torus endomorphisms); the CM/modular-polynomial literature says "primitive", not "content" |
+| 4  | ChatGPT MCP (gpt-5.4)            | standard name + generality + history of gcd-of-entries of a matrix | yes | best viewed as first determinantal divisor d₁(A); over arbitrary CommRing the canonical object is the first determinantal ideal ⟨A_ij⟩ (Fitting-ideal family); element-valued content needs NormalizedGCDMonoid; ℕ-via-natAbs over ℤ = choosing the positive associate, standard | cites EncyclopediaOfMath "Normal form (for matrices)", Macaulay2 `content`, mathlib `Polynomial.contentIdeal`; warns gcd ≠ ideal over mere GCD domains (k[x,y]: gcd(x,y)=1 but (x,y)≠(1)) |
+| 5  | Local references                 | ls `.mathlib-quality/references/` | n/a | (directory absent) | recorded n/a |
+| 6  | nLab                             | GCD domain / content (via channel-1 hit ncatlab.org/nlab/show/GCD+domain) | yes | content defined for polynomials over GCD domains; no separate matrix-content page | matrix case subsumed under determinantal ideals |
+| 7  | nCatLab (categorical)            | same page as #6 | n/a | not a categorical concept beyond #6 | no higher-categorical formulation exists |
+| 8  | Stacks Project                   | Fitting ideals / determinantal ideals | yes | Stacks 07Z6, 0C3C, 0CZ3: Fitting ideal Fit_r generated by minors; ideal of j×j minors independent of presentation (Fitting's lemma) | the arbitrary-CommRing umbrella for d₁ is the first determinantal ideal |
+| 9  | MathOverflow / Math.SE           | gcd of all entries + first determinantal divisor + unimodular invariance | partial | determinantal divisors invariant under unimodular multiplication (the project's `rankTwoContent_mul_sl` is the d₁ case) | search surfaced LAA papers ("Determinantal divisors of products of matrices", S002437950900682X) rather than MO threads |
+| 10 | recent arXiv (last 5 years)      | Smith/Hermite normal form determinantal | yes | arXiv 2511.03822 (Hermite simplices, 2025), 2511.22814 (Smith forms of matrix powers, 2025) use the d_k language unchanged | formulation stable; no modern rival |
+
+### Literature summary (Phase 3)
+
+Concept identified as: **first determinantal divisor d₁(A)** (= "content of a matrix" by analogy with polynomial content; = "primitivity gcd" in the CM/modular-polynomial application literature).
+Sources agree on the standard form: yes — d_k(A) = gcd of all k×k minors, any m×n matrix; d₁ = gcd of entries.
+Most general standard form: the family of **determinantal ideals** I_k(A) = ⟨k×k minors⟩ over an arbitrary commutative ring (Fitting-ideal machinery, Stacks 07Z6); element-valued **determinantal divisors** d_k over a (normalized) GCD domain; ℕ-valued over ℤ by taking the positive associate.
+Generality dimensions where the literature varies:
+  - matrix shape: 2×2 → any m×n (literature is always m×n)
+  - base ring: ℤ → GCD domain (element-valued) → arbitrary CommRing (ideal-valued)
+  - k: only k=1 here; literature treats the whole family d₁ ∣ d₂ ∣ … with invariant factors d_k/d_{k−1}
+Disagreement with the literature: none on content; the user's form is the maximally specialised corner (2×2, ℤ, k=1, ℕ-valued) of a three-parameter family.
+
+---
+
+### Generality analysis — `Matrix.rankTwoContent` (Phase 4a)
+
+Literature-standard form: d₁(A) = normalized gcd of the entries of an m×n matrix over a NormalizedGCDMonoid (ideal-valued over CommRing).
+
+| # | Parameter / hypothesis | Current Lean form | Literature-standard form | Weaker form exists? | Reason it can/can't be weakened |
+|---|------------------------|-------------------|--------------------------|---------------------|--------------------------------|
+| 1 | `Matrix (Fin 2) (Fin 2)` | fixed 2×2 | any `Matrix m n` (`[Fintype m] [Fintype n]`) | yes (in the literature) | the nested-`Nat.gcd` *body* is 2×2-bound; the `Finset.gcd` respelling generalises for free — but this is a **redefinition**, not a hypothesis-drop |
+| 2 | entries in `ℤ`, value in `ℕ` via `natAbs` | ℤ → ℕ | `R` → `R` for `[CancelCommMonoidWithZero R] [NormalizedGCDMonoid R]` | yes (in the literature) | ℕ-valuation = positive-associate normalization; the general form changes the value *type*, so downstream `= 1`-in-ℕ statements would need adjustment |
+
+### Generality verdict (Phase 4b)
+
+The current form is: **MAXIMALLY GENERAL in the mechanical-weakening sense; STRICTLY NARROWER than the literature scope**.
+Number of *mechanical* weakening opportunities found: 0 — the def has no
+hypotheses/typeclasses to drop; every widening (Fin 2 → m×n, ℤ/ℕ → R) is a
+redefinition changing the body and the value type, not a compilable weakening
+of the existing declaration. This is false-positive class 2 ("concrete, no
+type variable") + class 5 ("not a single mechanical edit") from
+`mathlibable-verdicts.md` — so `YES-but-generalise-first` is **not** available
+for this declaration as it stands.
+Cost of the literature-scope restatement (if pursued as a *new* decl): CHEAP for the def, MODERATE for migrating the ℕ-valued call sites.
+
+### Modern-idiom check (Phase 4c)
+
+| # | Question | Applies? | Proposed reformulation | Mathlib downstream this enables |
+|---|----------|----------|------------------------|--------------------------------|
+| 1 | typeclass preambles | no | — | plain def, no bundled hypotheses |
+| 2 | filters vs sequences | no | — | finite combinatorial gcd; no topology |
+| 3 | universal property | no | — | gcd already characterised by mathlib's `Finset.gcd_dvd`/`dvd_gcd` (that IS the universal property; see Q8) |
+| 4 | bundled substructure | no | — | not a substructure |
+| 5 | typeclass-hierarchy weakening | yes | `Matrix.content (A : Matrix m n R) : R := Finset.univ.gcd fun p ↦ A p.1 p.2` for `[NormalizedGCDMonoid R]` — exactly the idiom of mathlib's **`Matrix.den`** (`Mathlib/LinearAlgebra/Matrix/Integer.lean:61`: `Finset.univ.lcm fun P : m × n ↦ (A P.1 P.2).den`) | `Finset.gcd_dvd`, `Finset.dvd_gcd`, `Finset.gcd_congr`, the whole `Algebra/GCDMonoid/Finset.lean` API; parallels `Matrix.den`/`Matrix.num` |
+| 6 | higher-categorical | no | — | no categorification of gcd of entries |
+| 7 | concrete index ℕ/ℤ/ℝ | yes | subsumed by row 5 (Fin 2 → m n, ℤ → R) | — |
+| 8 | concrete-via-abstract (proof-body diagnostic) | yes | the four private helper lemmas (`rankTwoContent_dvd_entry`, `dvd_rankTwoContent`, `_dvd_mul_right/left`) never use anything 2×2-specific except `Fin.sum_univ_two`; their content is literally `Finset.gcd_dvd` / `Finset.dvd_gcd` + `Matrix.mul_apply` | verified by compilation (Phase 6): each helper becomes a single mathlib call |
+| 9 | false-generalisation guard | no false generalisation | `Finset.univ.gcd` over `m × n` entries with normalization *is the same mathematical object* (gcd is unique in ℕ; over R it is the normalized associate, exactly the EncyclopediaOfMath convention) | safe |
+
+### Modern-idiom verdict (Phase 4c)
+
+Modern idiom available: **yes** — `Finset.univ.gcd fun p : m × n ↦ A p.1 p.2`
+(the `Matrix.den` idiom, mirrored from lcm to gcd).
+Cost: CHEAP (def) / MODERATE (call-site migration if the value type changes).
+Real mathematical improvement: replaces four hand-chained private lemmas (and
+their *duplicates* `rankTwoContent_dvd_entry_aux` etc. in
+`XYin/PhD/Cox/CoxMatrices/Basic.lean:234-258`) with the `Finset.gcd` API, and
+kills the order-sensitive `Nat.gcd_comm/left_comm/assoc` `simpa` juggling at
+≥4 sites (SingularModuli:145-156, Classification:52, CoxMatrices/Basic:76,452,930).
+**However**, the modern idiom here is precisely a 1-call composition of a
+mathlib primitive — which routes the verdict to NO-composable, not YES-generalise
+(the "generalised def" would itself be the composition).
+
+---
+
+### Proof strategy — `Matrix.rankTwoContent` (Phase 4.6)
+
+| # | Question | Applies? | Idiomatic alternative | Cost of switch |
+|---|----------|----------|-----------------------|----------------|
+| 1 | topology / ε-δ | no | — | — |
+| 2 | element-wise algebra where point-free abstracts | **yes** | the four private divisibility lemmas hand-chain `Nat.gcd_dvd_left/right` where `Finset.gcd_dvd` / `Finset.dvd_gcd` are the point-free API | CHEAP (verified compiling, Phase 6) |
+| 3 | sequences vs filters | no | — | — |
+| 4 | universal property | yes | `Finset.dvd_gcd` *is* the universal property of the fold | CHEAP |
+| 5 | missing mathlib helpers | **yes** | mathlib lacks `Matrix.content` / determinantal divisors / Fitting ideals entirely — the genuine gap is the *general* API, not this specialisation | (file follow-up mathlib contribution, separate from this decl) |
+
+### Proof strategy verdict (Phase 4.6)
+
+Current strategy: REFACTOR-RECOMMENDED
+- Proposed strategy: redefine via `Finset.univ.gcd`; helpers collapse to single `Finset.gcd_dvd`/`Finset.dvd_gcd` calls (matches `.mathlib-quality/overview/analysis/step4-lattice.md:49-53` exactly).
+- Cost: CHEAP–MODERATE. Missing mathlib API: general `Matrix.content` (follow-up candidate).
+- Strictly shorter/cleaner: yes (verified by compilation).
+
+---
+
+### Diamond / defeq risk — `Matrix.rankTwoContent` (Phase 4.5)
+
+| # | Risk | Verdict | Evidence / rationale |
+|---|------|---------|----------------------|
+| 1 | Typeclass diamond | none | plain ℕ-valued function; introduces no instances and participates in no typeclass search |
+| 2 | Reducibility leak | none | not `@[reducible]`; body is a closed `Nat.gcd` chain, no heavy computation |
+| 3 | Non-canonical unfolding | low | not `@[simp]`; call sites unfold *explicitly* via `dsimp/simp [Matrix.rankTwoContent]` — deliberate, not surprising. The Finset.gcd respelling would change what those `simp` calls see (the only migration hazard) |
+| 4 | Instance priority collision | none | not an instance |
+| 5 | Universe-polymorphism issues | none | fully concrete types (`Fin 2`, ℤ, ℕ); no universe variables |
+| 6 | Coercion ambiguity | none | no `CoeFun`/`CoeSort` involved |
+
+### Risk verdict (Phase 4.5)
+
+Overall risk: NONE. Top risks: none. (Risk is not the obstacle to mathlib here; scope is.)
+
+---
+
+### Mathlib search-status: `Matrix.rankTwoContent` (Phase 5)
+
+[A] Lean-Finder   "content of a matrix: gcd of all entries over a GCD domain; primitive matrix" → **no content/d₁ hit**; nearest: `Matrix.den` (lcm-of-denominators dual, `Mathlib/LinearAlgebra/Matrix/Integer.lean`), `Matrix.SpecialLinearGroup.isCoprime_row/col` (SL₂ rows are coprime — the det=1 special case of primitivity)
+[B] Loogle        `Matrix, Nat.gcd` → **zero results**
+[C] LeanSearch    "gcd of the entries of an integer matrix; content of a matrix; determinantal divisor" → no matrix-content hit; surfaced `Polynomial.content` (`Mathlib/RingTheory/Polynomial/Content.lean`, the naming precedent) and `EisensteinSeries.finGcdMap : (Fin 2 → ℤ) → ℕ` (gcd of a *vector*, `(v 0).gcd (v 1)` — mathlib's closest object, one dimension short)
+[D] Grep mathlib  `Matrix.content`, `def content` in Data/Matrix + LinearAlgebra/Matrix → nothing; `fittingIdeal|Fitting ideal|determinantal` across all of Mathlib → **zero files**. Confirms step4-lattice.md:52 ("Mathlib has NO matrix-content definition").
+[E] Name pattern  `rankTwoContent` → project-only; `content` → only `Polynomial.content`/`contentIdeal`
+
+Searched for both: the user's 2×2/ℤ form AND the literature-standard forms
+(matrix content over GCD monoid; determinantal divisors; Fitting/determinantal
+ideals). Mathlib has **none of the family, at any k, in any form** — but it has
+the aggregation primitive (`Finset.gcd`, `Mathlib/Algebra/GCDMonoid/Finset.lean:124`,
+with `gcd_dvd`:141 and `dvd_gcd`:144) and the exact structural precedent
+(`Matrix.den` via `Finset.univ.lcm` over `m × n`).
+
+Concluded: "found building blocks (`Finset.gcd`, `Finset.gcd_dvd`, `Finset.dvd_gcd`,
+`Matrix.mul_apply`); composition would yield our form" — and the general concept
+(determinantal divisors / Fitting ideals) is absent from mathlib wholesale.
+
+---
+
+### Normal-form check — `Matrix.rankTwoContent` (Phase 5.5a)
+
+Equivalent formalisms: (a) nested `Nat.gcd` of the four `natAbs` entries (current);
+(b) `Finset.univ.gcd (fun p : Fin 2 × Fin 2 ↦ (A p.1 p.2).natAbs)`;
+(c) `Int.gcd`-valued variants; (d) `Ideal.span` of the entries.
+Does mathlib already have a canonical form for this idea? Not for matrices; for
+"aggregate over entries" the canonical mathlib idiom is (b) (per `Matrix.den`);
+for "gcd of things" the canonical fold is `Finset.gcd`.
+Is our statement stated against the canonical form? NO — (a) is the
+order-sensitive spelling; (b) is canonical. RHS convention: n/a (def).
+
+### Syntactic generality (Phase 5.5b)
+
+Alternative restatements attempted: (a)–(d) above. Chosen: (b) — it is the one
+where `Finset.gcd_dvd`/`Finset.dvd_gcd` apply directly at call sites, eliminating
+the `Nat.gcd_comm/assoc` shuffles. Justification: verified by compilation (Phase 6).
+
+### Superfluous-argument audit (Phase 5.5c)
+
+| # | Argument | Essentially used? | Notes |
+|---|----------|-------------------|-------|
+| 1 | `A : Matrix (Fin 2) (Fin 2) ℤ` | yes | the only argument |
+
+### Statement-shape verdict (Phase 5.5d)
+
+Normal form: REFACTOR (target: `Finset.univ.gcd`) · Syntactic generality: RESTATE (same target) · Superfluous arguments: NONE
+Overall: RESTATE-BEFORE-SHIP — subsumed by the NO-composable refactor plan below.
+
+---
+
+### Call sites — `Matrix.rankTwoContent` (Phase 6.0)
+
+Internal use count: **≥ 25 occurrences** outside the declaring file, across **5 files** (grep `rankTwoContent` excluding HermiteNormalForm.lean).
+
+| Caller file:line | Usage pattern |
+|------------------|---------------|
+| XYin/PhD/Cox/SingularModuli.lean:142-156 | `fixingMatrix_content_eq_one`: content of the fixing matrix = 1; unfolds via `dsimp [Matrix.rankTwoContent, fixingMatrix]` and hand-chains `Nat.gcd_dvd_*` (the step4 "easy after refactor" site) |
+| XYin/PhD/Cox/CyclicSublattice.lean:588-598 | dual-matrix content = 1 via `simpa [Matrix.rankTwoContent, ..., Nat.gcd_comm]` |
+| XYin/PhD/Cox/CyclicSublattice/Classification.lean:47-52,165-166 | `toCoxMatrix`: content-1 transported through `Nat.gcd_comm/left_comm/assoc` juggling |
+| XYin/PhD/Cox/CoxMatrices/Basic.lean:75-76,219-269,431-433,452,906-960 | `coxInput_content_eq_one`, `rankTwoContent_mul_sl` (SL₂-invariance of content = d₁ unimodular invariance), `matrixStar` content preservation — **plus full private duplicates** `rankTwoContent_dvd_entry_aux` / `dvd_rankTwoContent_aux` / `rankTwoContent_dvd_mul_right_aux` (Basic.lean:234-258) of the declaring file's private helpers |
+| XYin/PhD/Cox/HermiteNormalForm.lean:363-392 | `quotient_isAddCyclic_iff_rankTwoContent_toMatrix_eq_one` (public theorem named after the def) |
+
+Inline-derivation grep (`Nat.gcd (Nat.gcd`): the same nested-gcd shape is
+re-derived without the def at Classification.lean:50, CoxMatrices/Basic.lean:227-229,
+LaurentExpansion.lean:413-424, Cardinality.lean:94, and as the `primitive` fields of
+`PrimitiveQuadraticEquation` (SingularModuli.lean:34) and the Cox-matrix structure
+(CoxMatrices/Basic.lean:31) — heavy inline traffic *around* the def confirms the
+underlying operation is `Finset.gcd`-shaped and the current spelling forces
+associativity juggling on every consumer.
+
+Signal (per 6.0.1): K ≥ 3 with real consumers → the *name* is genuine project
+API (keep it locally); but the duplicated private helpers + inline re-derivations
+show consumers keep bypassing/re-proving it — the classic under-powered-wrapper
+pattern that the `Finset.gcd` respelling fixes.
+
+### Composition check (Phase 6)
+
+Can `Matrix.rankTwoContent` be derived from mathlib in ≤3 chained calls? **Yes — in 1.**
+
+Attempt 1 (verified by `lean_run_code` against the project's mathlib pin, all three examples compile clean):
+```lean
+-- the def (1 call):
+Finset.univ.gcd (fun p : Fin 2 × Fin 2 => (A p.1 p.2).natAbs)
+-- proved equal to the nested-Nat.gcd body by:
+--   rw [show (univ : Finset (Fin 2 × Fin 2)) = {(0,0),(0,1),(1,0),(1,1)} by decide]
+--   simp [Finset.gcd_insert, Finset.gcd_singleton, Nat.gcd_assoc]; rfl
+
+-- rankTwoContent_dvd_entry (1 call):
+Finset.gcd_dvd (Finset.mem_univ (i, j))
+
+-- dvd_rankTwoContent (1 call):
+Finset.dvd_gcd fun p _ => h p.1 p.2
+```
+Mathlib decls used: `Finset.gcd` (`Mathlib/Algebra/GCDMonoid/Finset.lean:124`),
+`Finset.gcd_dvd` (:141), `Finset.dvd_gcd` (:144). Result: **succeeds**.
+
+Conclusion: **COMPOSABLE** (single-call; the mul-invariance helpers keep their
+one `Matrix.mul_apply` step on top, still ≤3 calls each).
+
+---
+
+## Verdict: `Matrix.rankTwoContent`
+
+**Category:** NO-composable-from-mathlib
+
+**Evidence:**
+- Literature search (Phase 3): concept = first determinantal divisor d₁ / matrix content; standard scope is m×n over a GCD domain (element-valued) or the first determinantal (Fitting) ideal over any CommRing — the user's decl is the 2×2/ℤ/k=1 corner.
+- Generality analysis (Phase 4): 0 mechanical weakenings (concrete def, no hypotheses); literature-scope widening is a redefinition, not a weakening → generalise-first bucket unavailable (false-positive classes 2 & 5).
+- Mathlib search (Phase 5): no matrix content / determinantal divisors / Fitting ideals in mathlib in any form; building blocks `Finset.gcd`/`gcd_dvd`/`dvd_gcd` present; structural precedent `Matrix.den`.
+- Composition check (Phase 6): **COMPOSABLE — 1 mathlib call**, verified compiling.
+
+**Rationale:**
+
+The declaration is a one-line specialisation whose entire API (the def plus all
+four private divisibility helpers, duplicated verbatim in CoxMatrices/Basic.lean)
+collapses to single applications of `Finset.gcd` / `Finset.gcd_dvd` /
+`Finset.dvd_gcd` — verified by compilation against the project's mathlib pin.
+Mathlib would not accept the `Fin 2`/ℤ/ℕ form: the literature-standard object is
+the first determinantal divisor of an arbitrary m×n matrix over a (normalized)
+GCD domain, with the determinantal-ideal/Fitting-ideal family as the fully
+general umbrella (Stacks 07Z6), and mathlib currently has *none* of that family
+— so there is no mathlib home for this corner case to slot into, and the corner
+case itself is a 1-call composition. The Phase 2b semantic-intent exemption
+(≥25 uses, theorems named after it) justifies keeping the *name* project-local;
+it does not create a mathlib case for the specialisation.
+
+WHY not (refactor-actionable):
+- Mathlib building blocks: `Finset.gcd` (`Mathlib/Algebra/GCDMonoid/Finset.lean:124`), `Finset.gcd_dvd` (:141), `Finset.dvd_gcd` (:144), `Matrix.mul_apply`.
+- Composition sketch (verified):
+  ```lean
+  def rankTwoContent (A : Matrix (Fin 2) (Fin 2) ℤ) : ℕ :=
+    Finset.univ.gcd fun p : Fin 2 × Fin 2 => (A p.1 p.2).natAbs
+  ```
+- Call sites: ≥25 across 5 files (table above). Refactor plan (= step4-lattice.md:49-53):
+  keep the public name and the two `quotient_isAddCyclic_iff_*` theorem statements
+  unchanged; swap the body to the `Finset.gcd` form; replace
+  `rankTwoContent_dvd_entry` → `Finset.gcd_dvd (mem_univ _)`,
+  `dvd_rankTwoContent` → `Finset.dvd_gcd`; delete the `_aux` duplicates in
+  CoxMatrices/Basic.lean:234-258; the `Nat.gcd_comm/left_comm/assoc` `simpa`s in
+  SingularModuli/Classification/Basic become `Finset.gcd` congruence over the
+  explicit 4-element set. Note: sites that `dsimp/simp [Matrix.rankTwoContent]`
+  will now see the `Finset.gcd` spelling — the equality proof above bridges.
+
+Belongs-elsewhere check: keep in the project (HermiteNormalForm.lean) under the
+respelled body — the name is real local API. **Separately**, mathlib genuinely
+lacks matrix content / determinantal divisors / Fitting ideals; a *general*
+`Matrix.content (A : Matrix m n R) : R := Finset.univ.gcd fun p ↦ A p.1 p.2`
+(`[NormalizedGCDMonoid R]`), mirroring `Matrix.den`'s exact idiom, plus the SL-invariance
+lemma (the project's `rankTwoContent_mul_sl` is d₁-unimodular-invariance), is a
+credible **new** mathlib contribution — but that is a different declaration at a
+different generality, to be designed as the d₁ member of the determinantal-divisor
+family, not an upstreaming of this one. This resolves the sibling files' shared
+"rank-n scope" question for this decl without needing the human call: unlike the
+HNF structure/existence decls (genuine content, convention-bound → BORDERLINE),
+this one is mechanically composable today.
+
+Next action: refactor per step4-lattice.md (respell body via `Finset.gcd`,
+collapse the helper lemmas, delete the CoxMatrices/Basic duplicates); keep
+project-local. Optionally file a follow-up dev-ticket for a general
+`Matrix.content` / determinantal-divisor mathlib contribution.

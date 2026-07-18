@@ -296,7 +296,7 @@ private theorem levelJ_diagonalFixedPoint (m : ℕ+) :
     levelJ m (diagonalFixedPoint m) = j (diagonalFixedPoint m) := by
   unfold levelJ jN
   rw [diagonalFixedPoint_scale_eq]
-  exact j_invariant ModularGroup.S (diagonalFixedPoint m)
+  exact j_modularGroup_smul ModularGroup.S (diagonalFixedPoint m)
 
 private theorem modularPolynomialDiagonal_map_eval_fixedPoint (m : ℕ+) :
     ((modularPolynomialDiagonal m).map (Int.castRingHom ℂ)).eval

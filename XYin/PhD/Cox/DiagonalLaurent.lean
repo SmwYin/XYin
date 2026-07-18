@@ -33,7 +33,7 @@ theorem laurentqExpansion_j_order_widthM (m : ℕ+) :
     (laurentqExpansion ((m : ℕ) : ℝ) j).order = -(m : ℤ) := by
   have hpole : poleOrder ((m : ℕ) : ℝ) j = (m : ℕ) := by
     simpa [j_poleOrder] using poleOrder_nat_mul (m := (m : ℕ)) (h := 1) (f := j)
-      (PNat.ne_zero m) j_cuspFunction_Meromorphic j_periodic
+      (PNat.ne_zero m) j_cuspFunction_meromorphicAt j_periodic
   have h := laurentqExpansion.poleOrder_to_order
     (j_widthM_cuspMeromorphicAt m) (by simp [hpole, PNat.ne_zero m])
   rw [hpole] at h
@@ -44,7 +44,7 @@ theorem laurentqExpansion_j_leadingCoeff_widthM (m : ℕ+) :
     (laurentqExpansion ((m : ℕ) : ℝ) j).leadingCoeff = 1 := by
   rw [HahnSeries.leadingCoeff_eq, laurentqExpansion_j_order_widthM]
   have h := laurentqExpansion_nat_mul_coeff (h := 1) (m := (m : ℕ))
-    (PNat.ne_zero m) j_cuspFunction_Meromorphic j_periodic (-1)
+    (PNat.ne_zero m) j_cuspFunction_meromorphicAt j_periodic (-1)
   rw [show (m : ℤ) * (-1) = -(m : ℤ) by ring] at h
   have h' : (laurentqExpansion ((m : ℕ) : ℝ) j).coeff (-(m : ℤ)) =
       (laurentqExpansion 1 j).coeff (-1) := by

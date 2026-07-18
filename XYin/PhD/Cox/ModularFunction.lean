@@ -151,7 +151,7 @@ theorem j_mdifferentiable : MDiff j := by
 theorem j_periodic : Periodic (j ∘ UpperHalfPlane.ofComplex) 1 := by
   have hperiod (τ : ℍ) : j ((1 : ℝ) +ᵥ τ) = j τ := by
     rw [← UpperHalfPlane.modular_T_smul]
-    exact j_invariant _ _
+    exact j_modularGroup_smul _ _
   simpa only [ofReal_one] using periodic_comp_ofComplex_of_vadd hperiod
 
 private lemma j_meromorphicAt (z : ℂ) (hz : 0 < z.im) :
@@ -164,14 +164,14 @@ private lemma j_meromorphicAt (z : ℂ) (hz : 0 < z.im) :
 theorem j_isGamma0ModularFunction (N : ℕ+) : IsGamma0ModularFunction N j := by
   refine ⟨j_meromorphicAt, ?_, ?_⟩
   · intro γ
-    exact j_slashInvariant γ
+    exact j_slash_invariant γ
   · intro γ
     have hfun : (fun τ : ℍ ↦ j (γ • τ)) = j := by
       funext τ
-      exact j_invariant γ τ
+      exact j_modularGroup_smul γ τ
     rw [hfun]
     simpa using meromorphicAt_cuspFunction_nat_mul (m := (N : ℕ)) (h := 1)
-      (PNat.ne_zero N) j_cuspFunction_Meromorphic j_periodic
+      (PNat.ne_zero N) j_cuspFunction_meromorphicAt j_periodic
 
 /-- The analytic modular `j` is a level-one modular function. -/
 theorem j_isLevelOneModularFunction : IsLevelOneModularFunction j :=
@@ -421,7 +421,7 @@ private lemma levelJ_comp_eq_affine_of_normalization
   funext τ
   change j (natScaleUpperHalfPlane N (γ • τ)) =
     j (affineUpperHalfPlane g s hg hs r τ)
-  rw [← j_invariant (δ⁻¹) (natScaleUpperHalfPlane N (γ • τ))]
+  rw [← j_modularGroup_smul (δ⁻¹) (natScaleUpperHalfPlane N (γ • τ))]
   congr 1
   exact inv_smul_natScale_smul_eq_affine N γ δ g s hg hs r hmat τ
 
@@ -437,7 +437,7 @@ private lemma affine_j_cuspFunction_meromorphicAt
   have hφan : AnalyticAt ℂ φ 0 := by
     exact analyticAt_const.mul (analyticAt_id.pow (g * g))
   have hbase : MeromorphicAt (cuspFunction 1 j) (φ 0) := by
-    simpa [hφ0] using j_cuspFunction_Meromorphic
+    simpa [hφ0] using j_cuspFunction_meromorphicAt
   have hcomp : MeromorphicAt ((cuspFunction 1 j) ∘ φ) 0 :=
     hbase.comp_analyticAt hφan
   refine hcomp.congr ?_
@@ -463,7 +463,7 @@ private lemma levelJ_meromorphicAt (N : ℕ+) (z : ℂ) (hz : 0 < z.im) :
       (levelJ N ∘ UpperHalfPlane.ofComplex) {w | 0 < w.im} := by
     intro w hw
     have hw' : DifferentiableAt ℂ (levelJ N ∘ UpperHalfPlane.ofComplex) w := by
-      simpa only [levelJ] using (jN_Meromorphic (N : ℕ) (z := ⟨w, hw⟩))
+      simpa only [levelJ] using (jN_differentiableAt (N : ℕ) (z := ⟨w, hw⟩))
     exact hw'.differentiableWithinAt
   exact (hdiff.analyticAt (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds hz)).meromorphicAt
 
@@ -472,7 +472,7 @@ theorem levelJ_isGamma0ModularFunction (N : ℕ+) :
     IsGamma0ModularFunction N (levelJ N) := by
   refine ⟨levelJ_meromorphicAt N, ?_, levelJ_meromorphicAt_cusp N⟩
   intro γ
-  simpa only [levelJ] using jN_slashInvariant (N : ℕ) γ
+  simpa only [levelJ] using jN_slash_invariant (N : ℕ) γ
 
 /-- Cox Lemma 11.10(i): a level-one modular function holomorphic on `ℍ` and at `∞` is
 constant. -/
@@ -583,7 +583,7 @@ private lemma poleOrder_lt_of_neg_lt_meromorphicOrderAt
     (hord : ((-(m : ℤ) : ℤ) : WithTop ℤ) <
       meromorphicOrderAt (cuspFunction 1 F) 0) :
     poleOrder 1 F < m := by
-  rw [order]
+  rw [poleOrder_eq_toNat_neg_meromorphicOrderAt]
   cases ho : meromorphicOrderAt (cuspFunction 1 F) 0 with
   | top => simp [hm]
   | coe k =>
@@ -662,7 +662,7 @@ theorem levelOne_polynomialInJ_of_holomorphic {f : ℍ → ℂ}
           simpa using hf.2.2 (1 : SL(2, ℤ))
         by_cases hm0 : m = 0
         · have hfcusp : AnalyticAt ℂ (cuspFunction 1 f) 0 :=
-            (analyticAt_iff hfmer).2 (hfm.trans hm0)
+            (analyticAt_cuspFunction_iff_poleOrder_eq_zero hfmer).2 (hfm.trans hm0)
           obtain ⟨c, hc⟩ := levelOne_constant_of_holomorphic hf hfH hfcusp
           refine ⟨Polynomial.C c, ?_⟩
           rw [hc]
@@ -672,7 +672,7 @@ theorem levelOne_polynomialInJ_of_holomorphic {f : ℍ → ℂ}
             rw [hfm]
             exact Nat.pos_of_ne_zero hm0
           obtain ⟨a, ha⟩ := exists_const_poleOrder_sub_mul_pow_lt hfmer
-            j_cuspFunction_Meromorphic j_poleOrder hmpos
+            j_cuspFunction_meromorphicAt j_poleOrder hmpos
           let f' : ℍ → ℂ := fun τ ↦ f τ - a * j τ ^ poleOrder 1 f
           have hf' : IsLevelOneModularFunction f' :=
             isGamma0ModularFunction_sub_const_mul_pow 1 hf
@@ -860,7 +860,7 @@ theorem levelOne_exists_polynomial_clearing_poles {f : ℍ → ℂ}
   obtain ⟨P, hP0, hPfd⟩ := exists_polynomial_clearing_poles_on_fd_aux hf
   let H : ℍ → ℂ := fun τ ↦ P.eval (j τ) * f τ
   have hHinv (γ : SL(2, ℤ)) (τ : ℍ) : H (γ • τ) = H τ := by
-    simp only [H, j_invariant γ τ, levelOne_invariant_apply hf γ τ]
+    simp only [H, j_modularGroup_smul γ τ, levelOne_invariant_apply hf γ τ]
   refine ⟨P, hP0, ?_⟩
   intro τ
   obtain ⟨γ, hγ⟩ := ModularGroup.exists_smul_mem_fd τ

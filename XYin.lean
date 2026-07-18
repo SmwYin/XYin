@@ -1,5 +1,4 @@
 import XYin.Basic
-import XYin.PhD.IntegralPowerSeries.HasIntegralQExpansion
 import XYin.PhD.IntegralPowerSeries.IntegralPowerSeries
 import XYin.PhD.LaurentQExpansion.LaurentQExpansion
 import XYin.PhD.ModularFunctions.Basic

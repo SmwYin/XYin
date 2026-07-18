@@ -261,7 +261,7 @@ theorem coxPhiFunction_coeff_mdifferentiable (m : ℕ+) (n : ℕ) :
   classical
   letI : NeZero (m : ℕ) := ⟨PNat.ne_zero m⟩
   have hlevel : MDiff (levelJ m) := UpperHalfPlane.mdifferentiable_iff.mpr fun z hz ↦
-    (jN_Meromorphic (m : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
+    (jN_differentiableAt (m : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
   have hcoset (c : Gamma0RightCosets m) : MDiff (rightCosetEval m c) :=
     Quotient.inductionOn c fun γ ↦ hlevel.comp <| UpperHalfPlane.mdifferentiable_smul
       (g := (γ : GL (Fin 2) ℝ)) (by simp)

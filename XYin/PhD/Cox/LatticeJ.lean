@@ -634,7 +634,7 @@ private theorem inv_j_sub_slashInvariant_aux (c : ℂ) :
     ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f := by
   intro γ
   ext τ
-  have hj := congrFun (j_slashInvariant γ) τ
+  have hj := congrFun (j_slash_invariant γ) τ
   simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hj ⊢
   simpa [hj]
 
@@ -671,11 +671,11 @@ private lemma E4_tendsto_atImInfty_aux : Tendsto (E4 : ℍ → ℂ) atImInfty (n
 private lemma qj_tendsto_atImInfty_aux : Tendsto qj atImInfty (nhds 1) := by
   have hE4 : Tendsto (fun τ : ℍ => E4 τ ^ 3) atImInfty (nhds (1 ^ 3)) :=
     E4_tendsto_atImInfty_aux.pow 3
-  have hqj : Tendsto ((fun τ : ℍ => E4 τ ^ 3) * qoverDelta) atImInfty
-      (nhds (1 ^ 3 * 1)) := hE4.mul qoverDelta_tendsto_atImInfty
-  have hEq : ((fun τ : ℍ => E4 τ ^ 3) * qoverDelta) = qj := by
+  have hqj : Tendsto ((fun τ : ℍ => E4 τ ^ 3) * qOverDelta) atImInfty
+      (nhds (1 ^ 3 * 1)) := hE4.mul qOverDelta_tendsto_atImInfty
+  have hEq : ((fun τ : ℍ => E4 τ ^ 3) * qOverDelta) = qj := by
     ext τ
-    exact congrFun qjIdentity τ
+    exact congrFun E4_pow_three_mul_qOverDelta_eq_qj τ
   simpa [hEq] using hqj
 
 private theorem inv_j_sub_isZeroAtImInfty_aux (c : ℂ) :

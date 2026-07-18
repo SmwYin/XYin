@@ -1,160 +1,163 @@
+/-
+Copyright (c) 2026 The XYin contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The XYin contributors
+-/
 import XYin.PhD.qExpansion_tactic.link
 
-set_option linter.style.header false
+/-!
+# Initial q-expansion coefficients of the discriminant and the j-function
 
-open Complex Filter ModularForm ModularFormClass UpperHalfPlane MatrixGroups PowerSeries
-  SlashInvariantFormClass Real Function IntegralPowerSeries
+This file computes initial coefficients of the discriminant and the normalized `j`-function,
+then records the corresponding Laurent q-expansion coefficients of `j`.
+
+## Main results
+
+* `ramanujanTau_one`, `ramanujanTau_two`, `ramanujanTau_three`: the first Ramanujan tau values.
+* `Delta_qExpansion_coeff_two`: the start of the discriminant q-expansion coefficient API.
+* `qjCoeffs_one`: the start of the integral regularized-`j` coefficient API.
+* `exists_int_coeff_j_eq_principal_part_add_tsum_with_initial`: an explicit convergent expansion.
+* `j_laurentQExpansion_coeff_neg_one`: the start of the Laurent q-expansion coefficient API.
+-/
+
+open Complex ModularForm ModularFormClass UpperHalfPlane Real IntegralPowerSeries
 open XYin.PhD.qExpansion_tactic
 open scoped Manifold
 
 noncomputable section
 
-lemma Ramanujan_tau_one : Ramanujan_tau 1 = 1 := by
-  rw [Ramanujan_tau_link]
-  exact qexp_coeff Delta 1 1
+/-- The first Ramanujan tau value: `τ(1) = 1`. -/
+lemma ramanujanTau_one : ramanujanTau 1 = 1 := by
+  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rfl
 
-lemma Ramanujan_tau_two : Ramanujan_tau 2 = -24 := by
-  rw [Ramanujan_tau_link]
-  exact qexp_coeff Delta 2 -24
+/-- The second Ramanujan tau value: `τ(2) = -24`. -/
+lemma ramanujanTau_two : ramanujanTau 2 = -24 := by
+  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rfl
 
-lemma Ramanujan_tau_three : Ramanujan_tau 3 = 252 := by
-  rw [Ramanujan_tau_link]
-  exact qexp_coeff Delta 3 252
+/-- The third Ramanujan tau value: `τ(3) = 252`. -/
+lemma ramanujanTau_three : ramanujanTau 3 = 252 := by
+  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rfl
 
-private lemma qj_coeffs_eq_qj_qexpansion_coeff (n : ℕ) :
-    qj_coeffs n = qj_qexpansion.coeff n := by
-  have h1 : ((qj_coeffs n : ℤ) : ℂ) = (qExpansion 1 qj).coeff n := by
-    simpa [qj_coeffs] using
-      congrArg (PowerSeries.coeff n) (coeTo_of_toIntegralPowerSeries qjIsIntegralPowerSeries)
-  have h2 : (qExpansion 1 qj).coeff n = (qj_qexpansion.coeff n : ℂ) :=
-    qj_qxp_coeff_link n
-  exact_mod_cast h1.trans h2
+/-- The integer coefficients `qjCoeffs` of the regularized `j`-function agree with the
+tactic-computed integer power series `qj_qexpansion`, coefficientwise. -/
+private lemma qjCoeffs_eq_qjQExpansion_coeff_aux (n : ℕ) :
+    qjCoeffs n = qj_qexpansion.coeff n := by
+  have h : ((qjCoeffs n : ℤ) : ℂ) = (qExpansion 1 qj).coeff n := by
+    simpa [qjCoeffs] using
+      congrArg (PowerSeries.coeff n) (coeTo_of_toIntegralPowerSeries qj_isIntegralPowerSeries)
+  exact_mod_cast h.trans (qj_qxp_coeff_link n)
 
-lemma qj_exp_zero : (qExpansion 1 qj).coeff 0 = 1 := by
-  rw [qj_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff qj 0 1)
+/-- The regularized `j`-function `qj` has constant coefficient `1`: at the cusp, `j` has a
+simple pole with leading coefficient `1`. -/
+lemma qjCoeffs_zero : qjCoeffs 0 = 1 := by
+  rw [qjCoeffs_eq_qjQExpansion_coeff_aux, qj_qexpansion_coeff_eq]
+  rfl
 
-lemma qj_exp_zero' : qj_coeffs 0 = 1 := by
-  rw [qj_coeffs_eq_qj_qexpansion_coeff]
-  exact qexp_coeff qj 0 1
+/-- The `q²`-coefficient of the q-expansion of `Δ` is `τ(2) = -24`. -/
+lemma Delta_qExpansion_coeff_two : (qExpansion 1 Delta).coeff 2 = -24 := by
+  rw [Delta_qxp_coeff_link, Delta_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : deltaCoeffInt 2 = -24)
 
-lemma Delta_exp_two : (qExpansion 1 Delta).coeff 2 = -24 := by
-  rw [Delta_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff Delta 2 (-24))
+/-- The `q³`-coefficient of the q-expansion of `Δ` is `τ(3) = 252`. -/
+lemma Delta_qExpansion_coeff_three : (qExpansion 1 Delta).coeff 3 = 252 := by
+  rw [Delta_qxp_coeff_link, Delta_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : deltaCoeffInt 3 = 252)
 
-lemma Delta_exp_three : (qExpansion 1 Delta).coeff 3 = 252 := by
-  rw [Delta_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff Delta 3 252)
+/-- The `q⁴`-coefficient of the q-expansion of `Δ` is `τ(4) = -1472`. -/
+lemma Delta_qExpansion_coeff_four : (qExpansion 1 Delta).coeff 4 = -1472 := by
+  rw [Delta_qxp_coeff_link, Delta_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : deltaCoeffInt 4 = -1472)
 
-lemma Delta_exp_four : (qExpansion 1 Delta).coeff 4 = -1472 := by
-  rw [Delta_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff Delta 4 (-1472))
+/-- The `q⁵`-coefficient of the q-expansion of `Δ` is `τ(5) = 4830`. -/
+lemma Delta_qExpansion_coeff_five : (qExpansion 1 Delta).coeff 5 = 4830 := by
+  rw [Delta_qxp_coeff_link, Delta_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : deltaCoeffInt 5 = 4830)
 
-lemma Delta_exp_five : (qExpansion 1 Delta).coeff 5 = 4830 := by
-  rw [Delta_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff Delta 5 4830)
+private lemma qj_qExpansion_coeff_one_aux : (qExpansion 1 qj).coeff 1 = 744 := by
+  rw [qj_qxp_coeff_link, qj_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : qjCoeffInt 1 = 744)
 
-lemma qj_exp_one : (qExpansion 1 qj).coeff 1 = 744 := by
-  rw [qj_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff qj 1 744)
+/-- The first regular coefficient of `j` is its celebrated constant term `744`. -/
+lemma qjCoeffs_one : qjCoeffs 1 = 744 := by
+  rw [qjCoeffs_eq_qjQExpansion_coeff_aux, qj_qexpansion_coeff_eq]
+  rfl
 
-lemma qj_exp_one' : qj_coeffs 1 = 744 := by
-  rw [qj_coeffs_eq_qj_qexpansion_coeff]
-  exact qexp_coeff qj 1 744
+private lemma qj_qExpansion_coeff_two_aux : (qExpansion 1 qj).coeff 2 = 196884 := by
+  rw [qj_qxp_coeff_link, qj_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : qjCoeffInt 2 = 196884)
 
-lemma qj_exp_two : (qExpansion 1 qj).coeff 2 = 196884 := by
-  rw [qj_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff qj 2 196884)
+/-- The second regular coefficient of `j` is `196884`, the first Monstrous-Moonshine
+coefficient `c(1)`. -/
+lemma qjCoeffs_two : qjCoeffs 2 = 196884 := by
+  rw [qjCoeffs_eq_qjQExpansion_coeff_aux, qj_qexpansion_coeff_eq]
+  rfl
 
-lemma qj_exp_two' : qj_coeffs 2 = 196884 := by
-  rw [qj_coeffs_eq_qj_qexpansion_coeff]
-  exact qexp_coeff qj 2 196884
+private lemma qj_qExpansion_coeff_three_aux : (qExpansion 1 qj).coeff 3 = 21493760 := by
+  rw [qj_qxp_coeff_link, qj_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : qjCoeffInt 3 = 21493760)
 
-lemma qj_exp_three : (qExpansion 1 qj).coeff 3 = 21493760 := by
-  rw [qj_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff qj 3 21493760)
+/-- The third regular coefficient of `j` is `c(2) = 21493760`. -/
+lemma qjCoeffs_three : qjCoeffs 3 = 21493760 := by
+  rw [qjCoeffs_eq_qjQExpansion_coeff_aux, qj_qexpansion_coeff_eq]
+  rfl
 
-lemma qj_exp_three' : qj_coeffs 3 = 21493760 := by
-  rw [qj_coeffs_eq_qj_qexpansion_coeff]
-  exact qexp_coeff qj 3 21493760
+private lemma qj_qExpansion_coeff_four_aux : (qExpansion 1 qj).coeff 4 = 864299970 := by
+  rw [qj_qxp_coeff_link, qj_qexpansion_coeff_eq]
+  exact_mod_cast (rfl : qjCoeffInt 4 = 864299970)
 
-lemma qj_exp_four : (qExpansion 1 qj).coeff 4 = 864299970 := by
-  rw [qj_qxp_coeff_link]
-  exact_mod_cast (qexp_coeff qj 4 864299970)
+/-- The fourth regular coefficient of `j` is `c(3) = 864299970`. -/
+lemma qjCoeffs_four : qjCoeffs 4 = 864299970 := by
+  rw [qjCoeffs_eq_qjQExpansion_coeff_aux, qj_qexpansion_coeff_eq]
+  rfl
 
-lemma qj_exp_four' : qj_coeffs 4 = 864299970 := by
-  rw [qj_coeffs_eq_qj_qexpansion_coeff]
-  exact qexp_coeff qj 4 864299970
-
-lemma j_exp : ∀ z : ℍ, j z = (qj_coeffs 0 / cexp (2 * π * Complex.I * z))
-    + ∑' n, (qj_coeffs (n + 1)) * cexp (2 * π * Complex.I * z) ^ n := by
-  intro z
-  rw [← cancelout1, ← cancelout2]
-  exact qj_exp_dvd z
-
-lemma j_exp' : ∃ (c : ℕ → ℤ), ∀ z : ℍ, j z = (c 0 / cexp (2 * π * Complex.I * z))
-    + ∑' n, (c (n + 1)) * cexp (2 * π * Complex.I * z) ^ n := by
-  refine ⟨qj_coeffs, ?_⟩
-  exact j_exp
-
-lemma j_exp_to_minusone : ∃ (c : ℕ → ℤ), ∀ z : ℍ, j z =
-    (1 / cexp (2 * π * Complex.I * z)) + ∑' n, (c n) * cexp (2 * π * Complex.I * z) ^ n := by
-  let c : ℕ → ℤ := fun n ↦ qj_coeffs (n + 1)
-  use c
-  intro z
-  have h := j_exp z
-  rw [qj_exp_zero'] at h
-  exact_mod_cast h
-
-lemma j_exp_to_three : ∃ (c : ℕ → ℤ),
-    c 0 = 744 ∧ c 1 = 196884 ∧ c 2 = 21493760 ∧ c 3 = 864299970
-      ∧ ∀ z : ℍ, j z =
-        (1 / cexp (2 * π * Complex.I * z))
-          + ∑' n, (c n) * cexp (2 * π * Complex.I * z) ^ n := by
-  let c : ℕ → ℤ := fun n ↦ qj_coeffs (n + 1)
+/--
+The first four regular coefficients in the convergent q-series reconstruction of `j` are
+`744`, `196884`, `21493760`, and `864299970`.
+-/
+theorem exists_int_coeff_j_eq_principal_part_add_tsum_with_initial :
+    ∃ c : ℕ → ℤ,
+      c 0 = 744 ∧ c 1 = 196884 ∧ c 2 = 21493760 ∧ c 3 = 864299970 ∧
+        ∀ z : ℍ, j z = 1 / cexp (2 * π * Complex.I * z) +
+          ∑' n, c n * cexp (2 * π * Complex.I * z) ^ n := by
+  let c : ℕ → ℤ := fun n ↦ qjCoeffs (n + 1)
   refine ⟨c, ?_, ?_, ?_, ?_, ?_⟩
-  · simpa [c] using qj_exp_one'
-  · simpa [c] using qj_exp_two'
-  · simpa [c] using qj_exp_three'
-  · simpa [c] using qj_exp_four'
+  · simpa [c] using qjCoeffs_one
+  · simpa [c] using qjCoeffs_two
+  · simpa [c] using qjCoeffs_three
+  · simpa [c] using qjCoeffs_four
   · intro z
-    have h := j_exp z
-    rw [qj_exp_zero'] at h
+    have h := j_eq_qjCoeffs_tsum z
+    rw [qjCoeffs_zero] at h
     simpa [c] using h
 
-theorem jLaurentqExpansion_minusone : (laurentqExpansion 1 j).coeff (-1) = 1 := by
-  calc
-    (laurentqExpansion 1 j).coeff (-1) = (to_qExpansion 1 j).coeff 0 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder (h := 1) (f := j))
-    _ = (qExpansion 1 qj).coeff 0 := by rw [j_to_qExpansion]
-    _ = 1 := qj_exp_zero
+/-- The Laurent q-expansion coefficients of `j` at index `n - 1` are the power-series
+coefficients of `qj` at index `n`: the index shift by the pole order `1` of `j` at infinity. -/
+private lemma j_laurentQExpansion_coeff_eq_qj_coeff_aux (n : ℕ) :
+    (laurentqExpansion 1 j).coeff ((n : ℤ) - 1) = (qExpansion 1 qj).coeff n := by
+  rw [← j_to_qExpansion]
+  simpa [j_poleOrder] using laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) n
 
-theorem jLaurentqExpansion_zero : (laurentqExpansion 1 j).coeff 0 = 744 := by
-  calc
-    (laurentqExpansion 1 j).coeff 0 = (to_qExpansion 1 j).coeff 1 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 1)
-    _ = (qExpansion 1 qj).coeff 1 := by rw [j_to_qExpansion]
-    _ = 744 := qj_exp_one
+/-- The principal part of `j` at the cusp is exactly `q⁻¹`. -/
+theorem j_laurentQExpansion_coeff_neg_one : (laurentqExpansion 1 j).coeff (-1) = 1 := by
+  simpa using (j_laurentQExpansion_coeff_eq_qj_coeff_aux 0).trans qj_qExpansion_coeff_zero
 
-theorem jLaurentqExpansion_one : (laurentqExpansion 1 j).coeff 1 = 196884 := by
-  calc
-    (laurentqExpansion 1 j).coeff 1 = (to_qExpansion 1 j).coeff 2 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 2)
-    _ = (qExpansion 1 qj).coeff 2 := by rw [j_to_qExpansion]
-    _ = 196884 := qj_exp_two
+/-- The constant Laurent coefficient of `j` is `744`. -/
+theorem j_laurentQExpansion_coeff_zero : (laurentqExpansion 1 j).coeff 0 = 744 := by
+  simpa using (j_laurentQExpansion_coeff_eq_qj_coeff_aux 1).trans qj_qExpansion_coeff_one_aux
 
-theorem jLaurentqExpansion_two : (laurentqExpansion 1 j).coeff 2 = 21493760 := by
-  calc
-    (laurentqExpansion 1 j).coeff 2 = (to_qExpansion 1 j).coeff 3 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 3)
-    _ = (qExpansion 1 qj).coeff 3 := by rw [j_to_qExpansion]
-    _ = 21493760 := qj_exp_three
+/-- The `q`-coefficient of `j` is `196884`, the first Monstrous-Moonshine coefficient. -/
+theorem j_laurentQExpansion_coeff_one : (laurentqExpansion 1 j).coeff 1 = 196884 := by
+  simpa using (j_laurentQExpansion_coeff_eq_qj_coeff_aux 2).trans qj_qExpansion_coeff_two_aux
 
-theorem jLaurentqExpansion_three : (laurentqExpansion 1 j).coeff 3 = 864299970 := by
-  calc
-    (laurentqExpansion 1 j).coeff 3 = (to_qExpansion 1 j).coeff 4 := by
-      simpa [j_poleOrder] using (laurentqExpansion.coeff_neg_poleOrder_add (h := 1) (f := j) 4)
-    _ = (qExpansion 1 qj).coeff 4 := by rw [j_to_qExpansion]
-    _ = 864299970 := qj_exp_four
+/-- The `q²`-coefficient of `j` is `21493760`. -/
+theorem j_laurentQExpansion_coeff_two : (laurentqExpansion 1 j).coeff 2 = 21493760 := by
+  simpa using (j_laurentQExpansion_coeff_eq_qj_coeff_aux 3).trans qj_qExpansion_coeff_three_aux
+
+/-- The `q³`-coefficient of `j` is `864299970`. -/
+theorem j_laurentQExpansion_coeff_three : (laurentqExpansion 1 j).coeff 3 = 864299970 := by
+  simpa using (j_laurentQExpansion_coeff_eq_qj_coeff_aux 4).trans qj_qExpansion_coeff_four_aux
 
 end

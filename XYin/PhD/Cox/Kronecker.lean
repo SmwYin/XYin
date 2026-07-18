@@ -212,7 +212,7 @@ private theorem jIntegralLaurentSeriesWidth_coeff_mul_map_complex
         (laurentqExpansion 1 j).coeff q := by
     simpa using laurentqExpansion_nat_mul_coeff
       (h := 1) (m := (m : ℕ)) (PNat.ne_zero m)
-      j_cuspFunction_Meromorphic j_periodic q
+      j_cuspFunction_meromorphicAt j_periodic q
   rw [jIntegralLaurentSeriesWidth_coeff]
   by_cases hq : -(1 : ℤ) ≤ q
   · have hlower : -(m : ℤ) ≤ (m : ℤ) * q := by
@@ -238,7 +238,7 @@ theorem jIntegralLaurentSeriesWidth_map_complex (m : ℕ+) :
   · rw [jIntegralLaurentSeriesWidth_coeff, if_neg (fun h ↦ hdiv h.1)]
     simpa using (laurentqExpansion_nat_mul_coeff_of_not_dvd
       (h := 1) (m := (m : ℕ)) (PNat.ne_zero m)
-      j_cuspFunction_Meromorphic j_periodic hdiv).symm
+      j_cuspFunction_meromorphicAt j_periodic hdiv).symm
 
 /-- The reduction of the unit-step integral `j`-series modulo `p`. -/
 def jUnitLaurentSeriesMod (p : ℕ+) : LaurentSeries (ZMod (p : ℕ)) :=

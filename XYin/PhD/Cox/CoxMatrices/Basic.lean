@@ -825,7 +825,7 @@ private theorem levelJ_smul_eq_j_act_of_normalization
     simp only [Complex.natCast_re, Complex.natCast_im, zero_mul, add_zero]
     exact mul_pos (Nat.cast_pos.mpr (PNat.pos m)) (γ • τ).im_pos⟩
   change j zN = j (σ.act τ)
-  rw [← j_invariant (δ⁻¹) zN]
+  rw [← j_modularGroup_smul (δ⁻¹) zN]
   congr 1
   apply UpperHalfPlane.ext
   rw [UpperHalfPlane.coe_specialLinearGroup_apply]
