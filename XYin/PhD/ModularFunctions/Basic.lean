@@ -259,4 +259,122 @@ hypothesis is needed to state it. -/
 def HasAtMostExpGrowthAtCusp (k : ℤ) (γ : SL(2, ℤ)) (f : ℍ → ℂ) : Prop :=
   HasAtMostExpGrowthAtImInfty (f ∣[k] γ)
 
+/-- **Meromorphy at a cusp via growth.**  Let `γ` represent a cusp and let `h` be a period of
+`f ∣[k] γ` (for `f` weakly modular for `Γ` and a cusp of width `h`, weak modularity supplies
+this periodicity).  Then `f` is meromorphic at the cusp in the usual local `q`-coordinate sense
+iff `f` has at most exponential growth at the cusp.  The growth condition does not involve the
+width `h`, so it characterises meromorphy at the cusp without reference to the width. -/
+theorem meromorphicAt_cuspFunction_slash_iff_hasAtMostExpGrowthAtCusp {k : ℤ} {f : ℍ → ℂ}
+    {γ : SL(2, ℤ)} (hh : 0 < h) (hper : Periodic ((f ∣[k] γ) ∘ ofComplex) h) :
+    MeromorphicAt (cuspFunction h (f ∣[k] γ)) 0 ↔ HasAtMostExpGrowthAtCusp k γ f :=
+  meromorphicAt_cuspFunction_iff_hasAtMostExpGrowthAtImInfty hh hper
+
+/-- The three conditions of the corollary, packaged as a `TFAE`:  (1) `f` is meromorphic at the
+cusp represented by `γ` in the local `q`-coordinate sense;  (2) `f ∣[k] γ` is holomorphic high
+up and `τ ↦ 𝕢 h τ ^ N * (f ∣[k] γ) τ` is bounded at `∞` for some natural `N`;  (3) `f` has at
+most exponential growth at the cusp. -/
+theorem meromorphicAt_cusp_tfae {k : ℤ} {f : ℍ → ℂ} {γ : SL(2, ℤ)} (hh : 0 < h)
+    (hper : Periodic ((f ∣[k] γ) ∘ ofComplex) h) :
+    [MeromorphicAt (cuspFunction h (f ∣[k] γ)) 0,
+      (∀ᶠ τ in atImInfty, MDiffAt (f ∣[k] γ) τ) ∧
+        ∃ N : ℕ, IsBoundedAtImInfty fun τ : ℍ ↦ 𝕢 h τ ^ N * (f ∣[k] γ) τ,
+      HasAtMostExpGrowthAtCusp k γ f].TFAE :=
+  meromorphicAt_cuspFunction_tfae hh hper
+
+section RepresentativeIndependence
+
+/-- Slashing by `T ^ n` is horizontal translation by `n`: the automorphy factor is trivial. -/
+lemma slash_T_zpow (g : ℍ → ℂ) (k n : ℤ) :
+    g ∣[k] (ModularGroup.T ^ n : SL(2, ℤ)) = fun τ ↦ g (ModularGroup.T ^ n • τ) := by
+  funext τ
+  rw [SL_slash_apply]
+  have hden : denom ((ModularGroup.T ^ n : SL(2, ℤ))) τ = 1 := by
+    rw [ModularGroup.denom_apply]
+    simp [ModularGroup.coe_T_zpow]
+  rw [hden]
+  simp
+
+/-- Slashing by `-T ^ n` is horizontal translation by `n` up to the nonzero constant
+`(-1) ^ k`. -/
+lemma slash_neg_T_zpow (g : ℍ → ℂ) (k n : ℤ) :
+    g ∣[k] (-ModularGroup.T ^ n : SL(2, ℤ)) = fun τ ↦ (-1) ^ k * g (ModularGroup.T ^ n • τ) := by
+  funext τ
+  rw [SL_slash_apply, ModularGroup.SL_neg_smul]
+  have hden : denom ((-ModularGroup.T ^ n : SL(2, ℤ))) τ = -1 := by
+    rw [ModularGroup.denom_apply]
+    simp [Matrix.SpecialLinearGroup.coe_neg, Matrix.neg_apply, ModularGroup.coe_T_zpow]
+  rw [hden, mul_comm]
+  congr 1
+  rw [zpow_neg, ← inv_zpow, inv_neg_one]
+
+/-- At most exponential growth at `∞` is preserved by multiplication by a constant. -/
+lemma HasAtMostExpGrowthAtImInfty.const_mul {g : ℍ → ℂ}
+    (hg : HasAtMostExpGrowthAtImInfty g) (c : ℂ) :
+    HasAtMostExpGrowthAtImInfty fun τ ↦ c * g τ := by
+  obtain ⟨ρ, C, Y, hρ, hC, hY, hd, hb⟩ := hg
+  refine ⟨ρ, (‖c‖ + 1) * C, Y, hρ, mul_pos (by positivity) hC, hY, fun τ hτ ↦ ?_,
+    fun τ hτ ↦ ?_⟩
+  · rw [mdifferentiableAt_iff]
+    exact (mdifferentiableAt_iff.mp (hd τ hτ)).const_mul c
+  · rw [norm_mul]
+    calc ‖c‖ * ‖g τ‖ ≤ (‖c‖ + 1) * (C * Real.exp (ρ * τ.im)) :=
+        mul_le_mul (by linarith) (hb τ hτ) (norm_nonneg _) (by positivity)
+      _ = (‖c‖ + 1) * C * Real.exp (ρ * τ.im) := by ring
+
+/-- At most exponential growth at `∞` is invariant under multiplication by a nonzero
+constant. -/
+lemma hasAtMostExpGrowthAtImInfty_const_mul_iff {g : ℍ → ℂ} {c : ℂ} (hc : c ≠ 0) :
+    HasAtMostExpGrowthAtImInfty (fun τ ↦ c * g τ) ↔ HasAtMostExpGrowthAtImInfty g := by
+  refine ⟨fun hg ↦ ?_, fun hg ↦ hg.const_mul c⟩
+  have h1 := hg.const_mul c⁻¹
+  simpa only [← mul_assoc, inv_mul_cancel₀ hc, one_mul] using h1
+
+/-- At most exponential growth at `∞` is preserved by horizontal translation, in the form of
+precomposition with the action of `T ^ n`. -/
+lemma HasAtMostExpGrowthAtImInfty.comp_T_zpow {g : ℍ → ℂ}
+    (hg : HasAtMostExpGrowthAtImInfty g) (n : ℤ) :
+    HasAtMostExpGrowthAtImInfty fun τ ↦ g (ModularGroup.T ^ n • τ) := by
+  obtain ⟨ρ, C, Y, hρ, hC, hY, hd, hb⟩ := hg
+  have him : ∀ τ : ℍ, (ModularGroup.T ^ n • τ).im = τ.im := fun τ ↦ by
+    rw [modular_T_zpow_smul, vadd_im]
+  refine ⟨ρ, C, Y, hρ, hC, hY, fun τ hτ ↦ ?_, fun τ hτ ↦ ?_⟩
+  · have h1 : MDiffAt g (ModularGroup.T ^ n • τ) := hd _ (by rw [him]; exact hτ)
+    have h2 : MDiffAt (fun z : ℍ ↦ ModularGroup.T ^ n • z) τ := by
+      have h3 := mdifferentiable_smul
+        (g := ((ModularGroup.T ^ n : SL(2, ℤ)) : GL (Fin 2) ℝ)) (by simp)
+      simpa only [← ModularGroup.sl_moeb] using h3 τ
+    exact h1.comp τ h2
+  · have h1 := hb (ModularGroup.T ^ n • τ) (by rw [him]; exact hτ)
+    rwa [him] at h1
+
+/-- At most exponential growth at `∞` is invariant under horizontal translation. -/
+lemma hasAtMostExpGrowthAtImInfty_comp_T_zpow_iff (g : ℍ → ℂ) (n : ℤ) :
+    HasAtMostExpGrowthAtImInfty (fun τ ↦ g (ModularGroup.T ^ n • τ)) ↔
+      HasAtMostExpGrowthAtImInfty g := by
+  refine ⟨fun hg ↦ ?_, fun hg ↦ hg.comp_T_zpow n⟩
+  have h1 := hg.comp_T_zpow (-n)
+  simpa only [← mul_smul, ← zpow_add, add_neg_cancel, zpow_zero, one_smul] using h1
+
+/-- **Well-definedness at the cusp.**  Let `f` be weakly modular of weight `k` for a subgroup
+`Γ ≤ SL(2, ℤ)`.  If `γ' = δ * γ * η` with `δ ∈ Γ` and `η = ± T ^ n` (so that `γ'` and `γ`
+represent the same cusp `[γ ∞]` of `Γ`), then `f` has at most exponential growth at the cusp
+represented by `γ'` iff it has at most exponential growth at the cusp represented by `γ`.
+Hence at most exponential growth at a cusp is independent of the chosen representative. -/
+theorem hasAtMostExpGrowthAtCusp_congr {k : ℤ} {f : ℍ → ℂ} {Γ : Subgroup SL(2, ℤ)}
+    (hf : ∀ δ ∈ Γ, f ∣[k] δ = f) {γ γ' δ η : SL(2, ℤ)} (hδ : δ ∈ Γ) {n : ℤ}
+    (hη : η = ModularGroup.T ^ n ∨ η = -ModularGroup.T ^ n) (hγ' : γ' = δ * γ * η) :
+    HasAtMostExpGrowthAtCusp k γ' f ↔ HasAtMostExpGrowthAtCusp k γ f := by
+  have hslash : f ∣[k] γ' = (f ∣[k] γ) ∣[k] η := by
+    rw [hγ', SlashAction.slash_mul, SlashAction.slash_mul, hf δ hδ]
+  unfold HasAtMostExpGrowthAtCusp
+  rw [hslash]
+  rcases hη with rfl | rfl
+  · rw [slash_T_zpow]
+    exact hasAtMostExpGrowthAtImInfty_comp_T_zpow_iff _ n
+  · rw [slash_neg_T_zpow,
+      hasAtMostExpGrowthAtImInfty_const_mul_iff (zpow_ne_zero _ (by norm_num))]
+    exact hasAtMostExpGrowthAtImInfty_comp_T_zpow_iff _ n
+
+end RepresentativeIndependence
+
 end UpperHalfPlane
