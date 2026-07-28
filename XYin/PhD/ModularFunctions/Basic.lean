@@ -248,4 +248,15 @@ theorem meromorphicAt_cuspFunction_tfae (hh : 0 < h) (hper : Periodic (g ∘ ofC
   tfae_have 3 ↔ 2 := hasAtMostExpGrowthAtImInfty_iff_exists_isBoundedAtImInfty hh
   tfae_finish
 
+/-- A function `f : ℍ → ℂ` has **at most exponential growth at the cusp** represented by
+`γ ∈ SL(2, ℤ)`, with respect to the weight-`k` slash action, if `f ∣[k] γ` has at most
+exponential growth at `∞`.
+
+The informal definition is for `f` meromorphic and weakly modular with respect to a congruence
+subgroup `Γ` and a cusp `c = [γ ∞]` of `Γ`; by `hasAtMostExpGrowthAtCusp_congr` the property
+depends only on the cusp `c` and not on the chosen representative `γ`, and no meromorphy
+hypothesis is needed to state it. -/
+def HasAtMostExpGrowthAtCusp (k : ℤ) (γ : SL(2, ℤ)) (f : ℍ → ℂ) : Prop :=
+  HasAtMostExpGrowthAtImInfty (f ∣[k] γ)
+
 end UpperHalfPlane
