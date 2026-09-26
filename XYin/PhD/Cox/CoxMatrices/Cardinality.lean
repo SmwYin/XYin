@@ -4,14 +4,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
 import Mathlib.Data.Finset.NatDivisors
-import Mathlib.Data.Nat.Totient
 import Mathlib.NumberTheory.ArithmeticFunction.Misc
 import XYin.PhD.Cox.CoxMatrices.Basic
 
 /-!
 # Cardinality of the Cox representatives
 
-This file proves Cox's Euler-product formula for the cardinality of `C(m)`.
+This file proves Cox's formula `|C(m)| = m ∏_{p ∣ m} (1 + 1/p)` for the number of Cox
+representatives, i.e. the Dedekind `ψ`-function of `m` (`card_coxMatrix`, with the `ℕ`-valued
+form `card_coxMatrix_eq_factorization_prod`), and identifies it with the index of `Γ₀(m)` in
+`SL₂(ℤ)` (`gamma0_index_eq_card_coxMatrix`).
 -/
 
 open Complex Function MatrixGroups UpperHalfPlane
@@ -22,22 +24,13 @@ namespace Cox
 
 private theorem card_filter_range_coprime_mul_aux (g k : ℕ) :
     ((Finset.range (k * g)).filter (g.Coprime ·)).card = k * g.totient := by
+  rw [← Nat.count_eq_card_filter_range]
   induction k with
   | zero => simp
   | succ k ih =>
-      have hsplit :
-          Finset.Ico 0 (k * g) ∪ Finset.Ico (k * g) (k * g + g) =
-            Finset.Ico 0 (k * g + g) :=
-        Finset.Ico_union_Ico_eq_Ico (Nat.zero_le _) (Nat.le_add_right _ _)
-      have hdisj : Disjoint
-          ((Finset.Ico 0 (k * g)).filter (g.Coprime ·))
-          ((Finset.Ico (k * g) (k * g + g)).filter (g.Coprime ·)) :=
-        (Finset.Ico_disjoint_Ico_consecutive 0 (k * g) (k * g + g)).mono
-          (Finset.filter_subset _ _) (Finset.filter_subset _ _)
-      rw [Nat.succ_mul, Finset.range_eq_Ico, ← hsplit, Finset.filter_union,
-        Finset.card_union_of_disjoint hdisj, ← Finset.range_eq_Ico, ih,
-        Nat.filter_coprime_Ico_eq_totient]
-      ring
+      rw [Nat.succ_mul, Nat.count_add']
+      simp only [Nat.coprime_add_self_right]
+      rw [ih, Nat.count_eq_card_filter_range, ← Nat.totient_eq_card_coprime, Nat.succ_mul]
 
 private def coxFiberAux (m : ℕ+) (d : ℕ) :=
   {b : Fin d // (Nat.gcd ((m : ℕ) / d) d).Coprime b}
@@ -54,74 +47,42 @@ private theorem card_coxFiber_aux (m : ℕ+) (d : ℕ) :
   have hgd : g ∣ d := Nat.gcd_dvd_right _ _
   have hmul : d / g * g = d := Nat.div_mul_cancel hgd
   change Fintype.card {b : Fin d // g.Coprime b} = _
-  rw [Fintype.card_subtype]
-  rw [Finset.card_eq_sum_ones, Finset.sum_filter]
-  rw [Fin.sum_univ_eq_sum_range (fun b ↦ if g.Coprime b then 1 else 0) d]
-  rw [← Finset.sum_filter, ← Finset.card_eq_sum_ones]
-  change ((Finset.range d).filter (g.Coprime ·)).card = _
-  change ((Finset.range d).filter (g.Coprime ·)).card = d / g * g.totient
-  have hcard := card_filter_range_coprime_mul_aux g (d / g)
-  rw [hmul] at hcard
-  exact hcard
+  rw [Fintype.card_subtype, Finset.card_eq_sum_ones, Finset.sum_filter,
+    Fin.sum_univ_eq_sum_range (fun b ↦ if g.Coprime b then 1 else 0) d, ← Finset.sum_filter,
+    ← Finset.card_eq_sum_ones]
+  simpa only [hmul] using card_filter_range_coprime_mul_aux g (d / g)
 
 private def coxMatrixToFiberSigmaAux (m : ℕ+) (σ : CoxMatrix m) :
-    Σ d : {d : ℕ // d ∈ (m : ℕ).divisors}, coxFiberAux m d := by
-  have hdvd : σ.d ∣ (m : ℕ) :=
-    ⟨σ.a, by rw [Nat.mul_comm, σ.determinant]⟩
-  have hquot : (m : ℕ) / σ.d = σ.a := by
-    rw [← σ.determinant, Nat.mul_div_left _ σ.d_pos]
-  refine ⟨⟨σ.d, Nat.mem_divisors.mpr ⟨hdvd, PNat.ne_zero m⟩⟩,
-    ⟨⟨σ.b, σ.b_lt⟩, ?_⟩⟩
-  rw [hquot]
-  simpa only [Nat.Coprime, Nat.gcd_comm, Nat.gcd_left_comm, Nat.gcd_assoc]
-    using σ.primitive
+    Σ d : {d : ℕ // d ∈ (m : ℕ).divisors}, coxFiberAux m d :=
+  ⟨⟨σ.d, Nat.mem_divisors.mpr ⟨σ.d_dvd, PNat.ne_zero m⟩⟩,
+    ⟨⟨σ.b, σ.b_lt⟩, by simpa only [σ.div_d] using σ.coprime_gcd_b⟩⟩
 
 private def fiberSigmaToCoxMatrixAux (m : ℕ+)
-    (x : Σ d : {d : ℕ // d ∈ (m : ℕ).divisors}, coxFiberAux m d) :
-    CoxMatrix m := by
-  let d := x.1.val
-  have hdvd : d ∣ (m : ℕ) := Nat.dvd_of_mem_divisors x.1.property
-  have hdpos : 0 < d := Nat.pos_of_dvd_of_pos hdvd (PNat.pos m)
-  refine
-    { a := (m : ℕ) / d
-      b := x.2.val
-      d := d
-      a_pos := Nat.div_pos (Nat.le_of_dvd (PNat.pos m) hdvd) hdpos
-      determinant := Nat.div_mul_cancel hdvd
-      b_lt := x.2.val.isLt
-      primitive := ?_ }
-  have hprim := x.2.property
-  change Nat.gcd (Nat.gcd ((m : ℕ) / d) x.2.val) d = 1
-  simpa only [Nat.Coprime, Nat.gcd_comm, Nat.gcd_left_comm, Nat.gcd_assoc]
-    using hprim
+    (x : Σ d : {d : ℕ // d ∈ (m : ℕ).divisors}, coxFiberAux m d) : CoxMatrix m where
+  a := (m : ℕ) / x.1
+  b := x.2.val
+  d := x.1
+  a_pos := Nat.div_pos (Nat.divisor_le x.1.2) (Nat.pos_of_mem_divisors x.1.2)
+  determinant := Nat.div_mul_cancel (Nat.dvd_of_mem_divisors x.1.2)
+  b_lt := x.2.val.isLt
+  primitive := by
+    simpa only [Nat.Coprime, Nat.gcd_comm, Nat.gcd_left_comm, Nat.gcd_assoc] using x.2.property
 
 private def coxMatrixEquivFiberSigmaAux (m : ℕ+) :
     CoxMatrix m ≃ Σ d : {d : ℕ // d ∈ (m : ℕ).divisors}, coxFiberAux m d where
   toFun := coxMatrixToFiberSigmaAux m
   invFun := fiberSigmaToCoxMatrixAux m
-  left_inv := by
-    intro σ
-    apply CoxMatrix.toFin_injective
-    simp only [CoxMatrix.toFin, fiberSigmaToCoxMatrixAux, coxMatrixToFiberSigmaAux]
-    have hquot : (m : ℕ) / σ.d = σ.a := by
-      rw [← σ.determinant, Nat.mul_div_left _ σ.d_pos]
-    simp [hquot]
-  right_inv := by
-    rintro ⟨d, b⟩
-    rcases d with ⟨d, hd⟩
-    rcases b with ⟨b, hb⟩
-    rfl
+  left_inv σ := CoxMatrix.ext σ.div_d rfl rfl
+  right_inv _ := rfl
 
 private theorem card_coxMatrix_eq_divisorSum_aux (m : ℕ+) :
     Fintype.card (CoxMatrix m) =
       ∑ d ∈ (m : ℕ).divisors,
         (d / Nat.gcd ((m : ℕ) / d) d) *
           (Nat.gcd ((m : ℕ) / d) d).totient := by
-  rw [Fintype.card_congr (coxMatrixEquivFiberSigmaAux m), Fintype.card_sigma]
-  rw [Finset.sum_subtype (m : ℕ).divisors (fun _ ↦ Iff.rfl)]
-  apply Fintype.sum_congr
-  intro d
-  exact card_coxFiber_aux m d
+  rw [Fintype.card_congr (coxMatrixEquivFiberSigmaAux m), Fintype.card_sigma,
+    Finset.sum_subtype (m : ℕ).divisors (fun _ ↦ Iff.rfl)]
+  exact Fintype.sum_congr _ _ fun d ↦ card_coxFiber_aux m d
 
 private def coxDivisorTermAux (n d : ℕ) : ℕ :=
   (d / Nat.gcd (n / d) d) * (Nat.gcd (n / d) d).totient
@@ -161,12 +122,8 @@ private theorem coxDivisorSum_mul_of_coprime_aux {m n : ℕ} (hmn : m.Coprime n)
   rw [Finset.sum_map]
   change (∑ x ∈ (m.divisors ×ˢ n.divisors).attach,
     coxDivisorTermAux (m * n) (x.val.1 * x.val.2)) = _
-  trans ∑ x ∈ m.divisors ×ˢ n.divisors,
-    coxDivisorTermAux (m * n) (x.1 * x.2)
-  · exact Finset.sum_attach (m.divisors ×ˢ n.divisors)
-      (fun x : ℕ × ℕ ↦ coxDivisorTermAux (m * n) (x.1 * x.2))
-  rw [Finset.sum_product]
-  rw [Finset.sum_mul_sum]
+  rw [Finset.sum_attach _ (fun x : ℕ × ℕ ↦ coxDivisorTermAux (m * n) (x.1 * x.2)),
+    Finset.sum_product, Finset.sum_mul_sum]
   apply Finset.sum_congr rfl
   intro d hd
   apply Finset.sum_congr rfl
@@ -222,7 +179,7 @@ private theorem coxDivisorSum_prime_pow_aux {p e : ℕ}
 private def coxDivisorSumArithmeticFunctionAux : ArithmeticFunction ℕ :=
   ⟨coxDivisorSumAux, by simp [coxDivisorSumAux]⟩
 
-@[simp] private theorem coxDivisorSumAF_apply_aux (n : ℕ) :
+private theorem coxDivisorSumAF_apply_aux (n : ℕ) :
     coxDivisorSumArithmeticFunctionAux n = coxDivisorSumAux n := rfl
 
 private theorem coxDivisorSumArithmeticFunction_mult_aux :
@@ -252,14 +209,10 @@ private theorem cast_prime_pow_add_aux (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
       (p : ℚ) ^ e * (1 + 1 / (p : ℚ)) := by
   push_cast
   have hpq : (p : ℚ) ≠ 0 := by exact_mod_cast hp.ne_zero
-  rw [mul_add, mul_one]
+  rw [mul_add, mul_one, mul_one_div]
   congr 1
-  calc
-    (p : ℚ) ^ (e - 1) = (p : ℚ) ^ e / (p : ℚ) := by
-      symm
-      rw [div_eq_iff hpq]
-      exact (pow_sub_one_mul he.ne' (p : ℚ)).symm
-    _ = (p : ℚ) ^ e * (1 / (p : ℚ)) := by rw [div_eq_mul_inv, one_div]
+  apply (eq_div_iff hpq).mpr
+  exact pow_sub_one_mul he.ne' (p : ℚ)
 
 private theorem cast_coxDivisorSum_eq_eulerProduct_aux (n : ℕ) (hn : n ≠ 0) :
     (coxDivisorSumAux n : ℚ) =
@@ -295,5 +248,33 @@ theorem card_coxMatrix (m : ℕ+) :
     (Fintype.card (CoxMatrix m) : ℚ) = (coxDivisorSumAux m : ℚ) := by
       exact_mod_cast card_coxMatrix_eq_divisorSum_aux m
     _ = _ := cast_coxDivisorSum_eq_eulerProduct_aux m (PNat.ne_zero m)
+
+/-- Cox's count in `ℕ`: `|C(m)| = ∏_{p^e ∥ m} (p^e + p^(e-1))`, the Dedekind `ψ`-function
+of `m`. -/
+theorem card_coxMatrix_eq_factorization_prod (m : ℕ+) :
+    Fintype.card (CoxMatrix m) =
+      (m : ℕ).factorization.prod fun p e ↦ p ^ e + p ^ (e - 1) := by
+  rw [card_coxMatrix_eq_divisorSum_aux, ← coxDivisorSum_eq_factorizationProd_aux m m.ne_zero]
+  rfl
+
+/-- For a prime level `p`, there are `p + 1` Cox matrices. -/
+theorem card_coxMatrix_of_prime {p : ℕ+} (hp : (p : ℕ).Prime) :
+    Fintype.card (CoxMatrix p) = p + 1 := by
+  rw [card_coxMatrix_eq_factorization_prod, Nat.prod_factorization_eq_prod_primeFactors,
+    hp.primeFactors, Finset.prod_singleton, hp.factorization_self]
+  simp
+
+/-- The index of `Γ₀(m)` in `SL₂(ℤ)` is the number of Cox matrices of determinant `m`. -/
+theorem gamma0_index_eq_card_coxMatrix (m : ℕ+) :
+    (CongruenceSubgroup.Gamma0 (m : ℕ)).index = Fintype.card (CoxMatrix m) := by
+  rw [Subgroup.index_eq_card, Nat.card_congr (QuotientGroup.quotientRightRelEquivQuotientLeftRel
+      (s := CongruenceSubgroup.Gamma0 (m : ℕ))).symm,
+    Nat.card_congr (coxMatrixEquivRightCosets m).symm, Nat.card_eq_fintype_card]
+
+/-- The index of `Γ₀(m)` in `SL₂(ℤ)` is the Dedekind `ψ`-function `∏_{p^e ∥ m} (p^e + p^(e-1))`. -/
+theorem gamma0_index_eq_factorization_prod (m : ℕ+) :
+    (CongruenceSubgroup.Gamma0 (m : ℕ)).index =
+      (m : ℕ).factorization.prod fun p e ↦ p ^ e + p ^ (e - 1) := by
+  rw [gamma0_index_eq_card_coxMatrix, card_coxMatrix_eq_factorization_prod]
 
 end Cox

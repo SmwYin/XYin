@@ -6,6 +6,7 @@ Authors: The XYin contributors
 import Lean
 import Lean.Meta.Native
 import Mathlib.Data.Complex.Basic
+import Mathlib.NumberTheory.ArithmeticFunction.Misc
 import Mathlib.RingTheory.PowerSeries.Basic
 import Mathlib.Util.Qq
 
@@ -14,8 +15,9 @@ import Mathlib.Util.Qq
 
 This file is the computational engine of the `q`-expansion tactic layer: fast integer
 arithmetic for the `q`-expansion coefficients of the discriminant `Δ` and of `q·j`
-(`j` the modular `j`-invariant), via divisor power sums, array convolutions, and
-power-series inversion, entirely in `Array Int`.
+(`j` the modular `j`-invariant), via divisor power sums (`ArithmeticFunction.sigma`),
+array convolutions, and power-series inversion, entirely in `Array Int`.  All definitions are
+structurally recursive, so they reduce in the kernel (`decide +kernel`, `rfl`).
 
 On top of the computational layer we define the formal power series `Delta_qexpansion`
 and `qj_qexpansion` in `ℤ⟦X⟧`, the informational `#qexp` commands, and the
@@ -32,64 +34,53 @@ base).  The identification of these formal series with the analytic `q`-expansio
 * `Delta_qexpansion`, `qj_qexpansion`: the corresponding formal series in `ℤ⟦X⟧`.
 * `mkQexpCoeffProof`: the `MetaM` routine producing `native_decide`-backed proofs of
   coefficient identities for a `QexpTarget`.
-* `qexp_coeff` (term syntax) and `#qexp` (command syntax): the user-facing entry points.
+* `qexp_coeff` (term syntax) and `#qexp` (command syntax): the user-facing entry points;
+  the option `qexp.reportTiming` makes them log the elapsed wall-clock time.
 -/
 
 open scoped Qq
 
 namespace XYin.PhD.qExpansion_tactic
 
-/-- Whether the `#qexp` commands and the `qexp_coeff` elaborator log elapsed wall-clock
-time (configured by editing this definition). -/
-def reportTiming : Bool := true
-
-/-- Sum of `d^k` over positive divisors `d` of `n`, computed by finite search. -/
-def sigmaPow (k n : Nat) : Int :=
-  (List.range n).foldl
-    (fun acc i =>
-      let d := i + 1
-      if n % d = 0 then acc + (d : Int) ^ k else acc)
-    0
+/-- Whether the `#qexp` commands and the `qexp_coeff` elaborator log the elapsed wall-clock
+time. -/
+register_option qexp.reportTiming : Bool := {
+  defValue := false
+  descr := "log the elapsed wall-clock time of `#qexp` and `qexp_coeff`"
+}
 
 /-- The `n`-th `q`-expansion coefficient of the normalized Eisenstein series
 `E₄ = 1 + 240·∑ σ₃(n) qⁿ`. -/
 def e4CoeffInt (n : Nat) : Int :=
-  if n = 0 then 1 else 240 * sigmaPow 3 n
+  if n = 0 then 1 else 240 * (ArithmeticFunction.sigma 3 n : Int)
 
 /-- The `n`-th `q`-expansion coefficient of the normalized Eisenstein series
 `E₆ = 1 - 504·∑ σ₅(n) qⁿ`. -/
 def e6CoeffInt (n : Nat) : Int :=
-  if n = 0 then 1 else -504 * sigmaPow 5 n
+  if n = 0 then 1 else -504 * (ArithmeticFunction.sigma 5 n : Int)
 
 /-- Evaluate a coefficient function on indices `0..n` into an array. -/
 def coeffArray (f : Nat → Int) (n : Nat) : Array Int :=
-  (List.range (n + 1)).foldl (fun acc i => acc.push (f i)) #[]
+  Array.ofFn fun i : Fin (n + 1) => f i
 
 /-- Convolution coefficient `(a * b)_n = Σ_{i=0..n} a_i b_{n-i}`. -/
 def convArrayCoeff (a b : Array Int) (n : Nat) : Int :=
-  (List.range (n + 1)).foldl
-    (fun acc i => acc + a.getD i 0 * b.getD (n - i) 0)
-    0
+  ∑ i ∈ Finset.range (n + 1), a.getD i 0 * b.getD (n - i) 0
 
 /-- Convolution table up to index `n`. -/
 def convArrayUpTo (a b : Array Int) (n : Nat) : Array Int :=
-  (List.range (n + 1)).foldl
-    (fun acc i => acc.push (convArrayCoeff a b i))
-    #[]
+  coeffArray (convArrayCoeff a b) n
+
+/-- One step of the inversion loop of `inverseOnePlusCoeffsUpTo`: from the coefficients
+`acc = [b₀, …, b_m]` of `(1 + a₁q + a₂q² + ⋯)⁻¹`, append `b_{m+1} = -Σ_{i=0..m} a_{i+1} b_{m-i}`
+(and start with `b₀ = 1`). -/
+def invStep (a acc : Array Int) : Nat → Array Int
+  | 0 => acc.push 1
+  | m + 1 => acc.push (-∑ i ∈ Finset.range (m + 1), a.getD (i + 1) 0 * acc.getD (m - i) 0)
 
 /-- Coefficients of `(1 + a₁q + a₂q² + ...)⁻¹` up to index `n` (inclusive). -/
 def inverseOnePlusCoeffsUpTo (a : Array Int) (n : Nat) : Array Int :=
-  (List.range (n + 1)).foldl
-    (fun acc k =>
-      match k with
-      | 0 => acc.push 1
-      | m + 1 =>
-          let next :=
-            -((List.range (m + 1)).foldl
-              (fun s i => s + a.getD (i + 1) 0 * acc.getD (m - i) 0)
-              0)
-          acc.push next)
-    #[]
+  (List.range (n + 1)).foldl (invStep a) #[]
 
 /-- The `q`-expansion coefficients of `Δ = (E₄³ - E₆²)/1728` up to index `n`
 (the Ramanujan `τ` values `τ(0) = 0, τ(1) = 1, τ(2) = -24, …`).  The integer division
@@ -100,9 +91,7 @@ def deltaCoeffsArrayUpTo (n : Nat) : Array Int :=
   let e4Sq := convArrayUpTo e4 e4 n
   let e4Cube := convArrayUpTo e4Sq e4 n
   let e6Sq := convArrayUpTo e6 e6 n
-  (List.range (n + 1)).foldl
-    (fun acc i => acc.push ((e4Cube.getD i 0 - e6Sq.getD i 0) / 1728))
-    #[]
+  coeffArray (fun i => (e4Cube.getD i 0 - e6Sq.getD i 0) / 1728) n
 
 /-- The `n`-th `q`-expansion coefficient of `Δ`, i.e. the Ramanujan `τ(n)`. -/
 def deltaCoeffInt (n : Nat) : Int := (deltaCoeffsArrayUpTo n).getD n 0
@@ -116,9 +105,7 @@ def deltaOverQCoeffInt (n : Nat) : Int := deltaCoeffInt (n + 1)
 /-- The coefficients of `Δ/q` up to index `n`, as an array. -/
 def deltaOverQArrayUpTo (n : Nat) : Array Int :=
   let delta := deltaCoeffsArrayUpTo (n + 1)
-  (List.range (n + 1)).foldl
-    (fun acc i => acc.push (delta.getD (i + 1) 0))
-    #[]
+  coeffArray (fun i => delta.getD (i + 1) 0) n
 
 /-- The coefficients of `q/Δ = (Δ/q)⁻¹` up to index `n`. -/
 def qoverDeltaCoeffsArrayUpTo (n : Nat) : Array Int :=
@@ -150,8 +137,8 @@ def qj_qexpansion : PowerSeries ℤ :=
 
 /-- The `n`-th coefficient of `qj_qexpansion` is the computed integer `qjCoeffInt n`. -/
 theorem qj_qexpansion_coeff_eq (n : Nat) :
-    qj_qexpansion.coeff n = qjCoeffInt n := by
-  simp [qj_qexpansion]
+    qj_qexpansion.coeff n = qjCoeffInt n :=
+  PowerSeries.coeff_mk n qjCoeffInt
 
 /-- The formal power series `∑ τ(n)·qⁿ ∈ ℤ⟦q⟧`, the candidate `q`-expansion of `Δ`;
 identified with the analytic expansion in `link.lean`. -/
@@ -160,8 +147,8 @@ def Delta_qexpansion : PowerSeries ℤ :=
 
 /-- The `n`-th coefficient of `Delta_qexpansion` is the computed `deltaCoeffInt n`. -/
 theorem Delta_qexpansion_coeff_eq (n : Nat) :
-    Delta_qexpansion.coeff n = deltaCoeffInt n := by
-  simp [Delta_qexpansion]
+    Delta_qexpansion.coeff n = deltaCoeffInt n :=
+  PowerSeries.coeff_mk n deltaCoeffInt
 
 open Lean Meta in
 /-- Produce a proof of the decidable proposition `p` by compiled native evaluation of its
@@ -242,26 +229,18 @@ elab_rules : command
   | `(command| #qexp $which:ident coeff $n:num) => do
       let some t := qexpTarget? which.getId
         | throwErrorAt which "unknown q-expansion target; expected `qj` or `Delta`"
-      let nVal := n.getNat
       let t0 ← liftIO IO.monoMsNow
-      let valueStr := toString (t.coeffFn nVal)
-      if valueStr.length == 0 then
-        throwError "internal error: empty q-expansion coefficient output"
+      logInfoAt n (toString (t.coeffFn n.getNat))
       let t1 ← liftIO IO.monoMsNow
-      logInfoAt n valueStr
-      if reportTiming then
+      if qexp.reportTiming.get (← getOptions) then
         logInfoAt n m!"[qexp time: {t1 - t0}ms]"
   | `(command| #qexp $which:ident precision $n:num) => do
       let some t := qexpTarget? which.getId
         | throwErrorAt which "unknown q-expansion target; expected `qj` or `Delta`"
-      let nVal := n.getNat
       let t0 ← liftIO IO.monoMsNow
-      let valueStr := toString (t.coeffsUpTo nVal)
-      if valueStr.length == 0 then
-        throwError "internal error: empty q-expansion precision output"
+      logInfoAt n (toString (t.coeffsUpTo n.getNat))
       let t1 ← liftIO IO.monoMsNow
-      logInfoAt n valueStr
-      if reportTiming then
+      if qexp.reportTiming.get (← getOptions) then
         logInfoAt n m!"[qexp time: {t1 - t0}ms]"
 
 end XYin.PhD.qExpansion_tactic
@@ -286,7 +265,7 @@ elab_rules : term
       let xQ : Q(ℤ) := Qq.mkIntLitQ (t.coeffFn nVal)
       let proof ← Lean.Meta.liftMetaM <| mkQexpCoeffProof t nVal xQ
       let t1 ← IO.monoMsNow
-      if reportTiming then
+      if qexp.reportTiming.get (← getOptions) then
         logInfoAt n m!"[qexp_coeff time: {t1 - t0}ms]"
       pure proof
   | `(qexp_coeff $which:ident $n:num $x:term) => do
@@ -299,6 +278,6 @@ elab_rules : term
       let t0 ← IO.monoMsNow
       let proof ← Lean.Meta.liftMetaM <| mkQexpCoeffProof t nVal xQ
       let t1 ← IO.monoMsNow
-      if reportTiming then
+      if qexp.reportTiming.get (← getOptions) then
         logInfoAt n m!"[qexp_coeff time: {t1 - t0}ms]"
       pure proof

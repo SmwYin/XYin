@@ -1,4 +1,40 @@
+## 2026-09-21 Cox migration to bundled modular functions
+
+User-authorized scope: migrate Cox's modular-function and function-field proofs to the new
+`ModularFunction` and codiscrete meromorphic field; remove redundant Cox implementations.
+
+- Public Theorem 11.9 inputs use the new bundle. Auxiliary raw `CuspData` remains only for
+  intermediate pole-clearing/interpolation expressions whose removable values are not normalized.
+- Replace the holomorphic fraction field and `Represents` by actual `MeromorphicField` elements.
+- Bundle `j(Nτ)` and the holomorphic Cox-product coefficients, reuse shared j and cusp APIs.
+- Move general congruence and field-action infrastructure to `ModularFunctions`.
+- Verify the Cox import graph, full project, key axioms, independent review, and profiling.
+
 # Development plan: elliptic `j`, singular moduli, and the bundled function field
+
+## 2026-09-20 extension: bundled modular functions
+
+The user authorizes implementing `ModularFunction Γ` extending `SlashInvariantForm Γ 0`,
+with membership in the codiscrete meromorphic field through its canonical representative,
+and at most exponential growth at every cusp. The previous Cox implementation is preserved.
+New files live in `XYin/PhD/ModularFunctions`. Source: the user-linked conversation
+`6a673539-8210-83ee-8462-6c7adf3b4774` (growth uniform on high half-planes, equivalent
+to meromorphy in a positive-period q-coordinate), and Stefan Kebekus's ProjectVD `VD/Field`
+at commit `9c218722ad71e9bd2ba357892bc835c8c648aaa8` (Apache 2.0 attribution retained).
+
+The proof follows the supplied argument: a meromorphic cusp function becomes bounded after
+multiplication by a power of q; conversely choose an integer exceeding ρh/(2π), show the
+regularized cusp function tends to zero, and apply removable singularities. Normal forms
+are essential: bounded raw representatives may have isolated exceptional values accumulating
+at the cusp. First prove local boundedness excludes poles for normal forms, then obtain
+eventual holomorphy. The final modular definition has a period-free growth predicate;
+periods are hypotheses of the comparison theorem and come from slash invariance.
+
+Parallel ownership: MeromorphicField files (field worker), CuspGrowth (q-coordinate worker),
+NormalFormGrowth (local regularity worker), Basic/GrowthAtCusp/JInvariant (root).
+Acceptance: no new sorry or axioms, field instance and canonical representative verified,
+growth/cusp equivalence and bundled j compiled, full build and focused axiom audit,
+independent review plus cleanup of new files.
 
 ## Takeover boundary
 

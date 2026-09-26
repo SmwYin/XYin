@@ -4,10 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
 import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
-import Mathlib.NumberTheory.ModularForms.NormTrace
 
 import XYin.PhD.Modularforms.ForMathlib_Cusps
-import XYin.PhD.jFunction.jfunction
+import XYin.PhD.ModularFunctions.JInvariant
 import XYin.uniqueness
 
 /-!
@@ -34,7 +33,7 @@ protected def smul (a : ℂˣ) (L : PeriodPair) : PeriodPair where
   ω₁ := a * L.ω₁
   ω₂ := a * L.ω₂
   indep := by
-    refine LinearIndependent.pair_iff.mpr fun s t hst =>
+    refine LinearIndependent.pair_iff.mpr fun s t hst ↦
       LinearIndependent.pair_iff.mp L.indep s t ?_
     have h : (a : ℂ) * (s • L.ω₁ + t • L.ω₂) = 0 := by
       rw [mul_add, mul_smul_comm, mul_smul_comm]
@@ -74,11 +73,8 @@ theorem map_lattice_mulLeftLinearEquiv (a : ℂˣ) (L : PeriodPair) :
       (a • L).lattice := by
   ext x
   rw [Submodule.mem_map, L.mem_smul_lattice]
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y, hy, rfl⟩
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y, hy, rfl⟩
+  change (∃ y ∈ L.lattice, (a : ℂ) * y = x) ↔ ∃ y ∈ L.lattice, x = (a : ℂ) * y
+  simp only [eq_comm]
 
 /-- Scaling by a unit, restricted to the corresponding period lattices. -/
 def smulLatticeEquiv (a : ℂˣ) (L : PeriodPair) :
@@ -102,14 +98,7 @@ theorem coe_smulLatticeEquiv_symm_apply
 /-- Eisenstein sums have weight `n` under scaling. -/
 theorem G_smul (L : PeriodPair) (a : ℂˣ) (n : ℕ) :
     (a • L).G n = ((a : ℂ) ^ n)⁻¹ * L.G n := by
-  let e : L.lattice ≃ (a • L).lattice :=
-    { toFun := fun l ↦ ⟨a * l, L.mem_smul_lattice.mpr ⟨l, l.2, rfl⟩⟩
-      invFun := fun l' ↦ ⟨(a : ℂ)⁻¹ * l', by
-        obtain ⟨y, hy, hxy⟩ := L.mem_smul_lattice.mp l'.2
-        rw [hxy, inv_mul_cancel_left₀ a.ne_zero]
-        exact hy⟩
-      left_inv := fun l ↦ Subtype.ext (inv_mul_cancel_left₀ a.ne_zero (l : ℂ))
-      right_inv := fun l' ↦ Subtype.ext (mul_inv_cancel_left₀ a.ne_zero (l' : ℂ)) }
+  let e := (smulLatticeEquiv a L).toEquiv
   simp only [G]
   rw [← e.tsum_eq, ← tsum_mul_left]
   exact tsum_congr fun l ↦ by
@@ -165,7 +154,7 @@ noncomputable def periodPair (τ : ℍ) : PeriodPair where
   ω₁ := 1
   ω₂ := τ
   indep := by
-    refine LinearIndependent.pair_iff.mpr fun a b hab => ?_
+    refine LinearIndependent.pair_iff.mpr fun a b hab ↦ ?_
     have hb_im : b * τ.im = 0 := by
       simpa [Complex.real_smul] using congrArg Complex.im hab
     have hb : b = 0 := (mul_eq_zero.mp hb_im).resolve_right τ.im_ne_zero
@@ -221,12 +210,6 @@ theorem periodPair_g₃_eq_E6 (τ : ℍ) :
     simp]
   ring
 
-/-- The project discriminant equals `(E₄³ - E₆²) / 1728` pointwise. -/
-theorem Delta_eq_E4_E6 (τ : ℍ) : Delta τ = (E4 τ ^ 3 - E6 τ ^ 2) / 1728 := by
-  rw [Delta_apply, Delta_eq_eta_pow]
-  change ModularForm.discriminant τ = _
-  exact ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq τ
-
 /-- The analytic modular `j` agrees with the lattice invariant of `[1,τ]`. -/
 theorem j_eq_periodPair_j (τ : ℍ) : j τ = (UpperHalfPlane.periodPair τ).j := by
   rw [j, PeriodPair.j, PeriodPair.discriminant, periodPair_g₂_eq_E4,
@@ -264,30 +247,14 @@ theorem exists_homothetic_periodPair (L : PeriodPair) :
       have hns : 0 < Complex.normSq (L.ω₂ / L.ω₁) :=
         Complex.normSq_pos.mpr (div_ne_zero hω₂ hω₁)
       exact div_pos (by linarith) hns
-    · rw [PeriodPair.lattice, PeriodPair.lattice]
-      congr 1
-      rw [PeriodPair.smul_ω₁, PeriodPair.smul_ω₂]
-      rw [show ((Units.mk0 L.ω₂⁻¹ (inv_ne_zero hω₂) : ℂˣ) : ℂ) =
-        L.ω₂⁻¹ from rfl]
-      rw [Set.pair_comm]
-      congr 1
-      · exact inv_mul_cancel₀ hω₂
-      · exact congrArg _ (inv_mul_eq_div _ _)
+    · simp [PeriodPair.lattice, UpperHalfPlane.periodPair, inv_mul_cancel₀ hω₂,
+        div_eq_mul_inv, mul_comm, Set.pair_comm]
   · refine ⟨⟨L.ω₂ / L.ω₁, hpos⟩, Units.mk0 L.ω₁⁻¹ (inv_ne_zero hω₁), ?_⟩
-    rw [PeriodPair.lattice, PeriodPair.lattice]
-    congr 1
-    rw [PeriodPair.smul_ω₁, PeriodPair.smul_ω₂]
-    rw [show ((Units.mk0 L.ω₁⁻¹ (inv_ne_zero hω₁) : ℂˣ) : ℂ) = L.ω₁⁻¹ from rfl]
-    congr 1
-    · exact inv_mul_cancel₀ hω₁
-    · exact congrArg _ (inv_mul_eq_div _ _)
+    simp [PeriodPair.lattice, UpperHalfPlane.periodPair, inv_mul_cancel₀ hω₁,
+      div_eq_mul_inv, mul_comm]
 
-private lemma E4_cube_sub_E6_sq_ne_zero_aux (τ : ℍ) : E4 τ ^ 3 - E6 τ ^ 2 ≠ 0 := by
-  intro h
-  have hΔ : Delta τ ≠ 0 := by
-    rw [Delta_apply, Delta_eq_eta_pow]
-    exact ModularForm.discriminant_ne_zero τ
-  exact hΔ (by rw [Delta_eq_E4_E6, h, zero_div])
+private lemma E4_cube_sub_E6_sq_ne_zero_aux (τ : ℍ) : E4 τ ^ 3 - E6 τ ^ 2 ≠ 0 := fun h ↦
+  Δ_ne_zero τ (by rw [← Delta_apply, Delta_eq_E4_E6, h, zero_div])
 
 private lemma periodPair_discriminant_eq_aux (τ : ℍ) :
     (UpperHalfPlane.periodPair τ).discriminant =
@@ -320,30 +287,25 @@ theorem j_eq_of_homothetic {L M : PeriodPair} (h : L.Homothetic M) : L.j = M.j :
 
 private lemma j_eq_zero_iff_g₂_eq_zero_aux {L : PeriodPair} (hΔ : L.discriminant ≠ 0) :
     L.j = 0 ↔ L.g₂ = 0 := by
-  constructor
-  · intro h
-    rw [j, div_eq_zero_iff] at h
-    rcases h with h | h
-    · have h3 : L.g₂ ^ 3 = 0 := by linear_combination h / 1728
-      exact pow_eq_zero_iff (by norm_num) |>.mp h3
-    · exact absurd h hΔ
-  · intro h
-    simp [j, h]
+  simp [j, hΔ]
 
 private lemma j_eq_1728_iff_g₃_eq_zero_aux {L : PeriodPair} (hΔ : L.discriminant ≠ 0) :
     L.j = 1728 ↔ L.g₃ = 0 := by
+  rw [j, div_eq_iff hΔ, discriminant]
   constructor
   · intro h
-    rw [j, div_eq_iff hΔ, discriminant] at h
     have h2 : L.g₃ ^ 2 = 0 := by linear_combination h / 46656
-    exact pow_eq_zero_iff (by norm_num) |>.mp h2
+    exact (pow_eq_zero_iff (by norm_num)).mp h2
   · intro h
-    have hg₂ : L.g₂ ≠ 0 := fun h₂ ↦ hΔ <| by
-      rw [discriminant, h, h₂]
-      ring
-    rw [j, discriminant, h]
-    rw [show (27 : ℂ) * 0 ^ 2 = 0 by ring, sub_zero, mul_div_assoc,
-      div_self (pow_ne_zero 3 hg₂), mul_one]
+    simp [h]
+
+/-- Period pairs whose invariants satisfy `g₂(L) = c⁴ g₂(M)` and `g₃(L) = c⁶ g₃(M)` for some
+`c ≠ 0` are homothetic, via the scaling by `c`. -/
+theorem homothetic_of_pow_eq {L M : PeriodPair} {c : ℂ} (hc : c ≠ 0)
+    (h₂ : L.g₂ = c ^ 4 * M.g₂) (h₃ : L.g₃ = c ^ 6 * M.g₃) : L.Homothetic M :=
+  ⟨Units.mk0 c hc, lattice_eq_of_g₂_eq_of_g₃_eq
+    (by rw [g₂_smul, Units.val_mk0, h₂]; field_simp)
+    (by rw [g₃_smul, Units.val_mk0, h₃]; field_simp)⟩
 
 private theorem homothetic_of_j_eq_of_g₂_eq_zero_aux {L M : PeriodPair} (h : L.j = M.j)
     (hg₂L : L.g₂ = 0) : L.Homothetic M := by
@@ -359,18 +321,9 @@ private theorem homothetic_of_j_eq_of_g₂_eq_zero_aux {L M : PeriodPair} (h : L
     rw [discriminant, hg₂M, h₃]
     ring
   obtain ⟨c, hc⟩ := IsAlgClosed.exists_pow_nat_eq (L.g₃ / M.g₃) (n := 6) (by norm_num)
-  have hc0 : c ≠ 0 := by
-    intro h0
-    apply hg₃L
-    have hd : L.g₃ / M.g₃ = 0 := by
-      rw [← hc, h0]
-      norm_num
-    exact (div_eq_zero_iff.mp hd).resolve_right hg₃M
-  refine ⟨Units.mk0 c hc0, lattice_eq_of_g₂_eq_of_g₃_eq ?_ ?_⟩
-  · rw [g₂_smul, hg₂L, hg₂M, mul_zero]
-  · rw [g₃_smul]
-    rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc]
-    field_simp
+  have hc0 : c ≠ 0 := fun hc0 ↦ div_ne_zero hg₃L hg₃M (by simpa [hc0] using hc.symm)
+  exact homothetic_of_pow_eq hc0 (by rw [hg₂L, hg₂M, mul_zero])
+    (by rw [hc, div_mul_cancel₀ _ hg₃M])
 
 private theorem homothetic_of_j_eq_of_g₃_eq_zero_aux {L M : PeriodPair} (h : L.j = M.j)
     (hg₂L : L.g₂ ≠ 0) (hg₃L : L.g₃ = 0) : L.Homothetic M := by
@@ -383,18 +336,9 @@ private theorem homothetic_of_j_eq_of_g₃_eq_zero_aux {L M : PeriodPair} (h : L
     rw [discriminant, hg₃M, h₂]
     ring
   obtain ⟨c, hc⟩ := IsAlgClosed.exists_pow_nat_eq (L.g₂ / M.g₂) (n := 4) (by norm_num)
-  have hc0 : c ≠ 0 := by
-    intro h0
-    apply hg₂L
-    have hd : L.g₂ / M.g₂ = 0 := by
-      rw [← hc, h0]
-      norm_num
-    exact (div_eq_zero_iff.mp hd).resolve_right hg₂M
-  refine ⟨Units.mk0 c hc0, lattice_eq_of_g₂_eq_of_g₃_eq ?_ ?_⟩
-  · rw [g₂_smul]
-    rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc]
-    field_simp
-  · rw [g₃_smul, hg₃L, hg₃M, mul_zero]
+  have hc0 : c ≠ 0 := fun hc0 ↦ div_ne_zero hg₂L hg₂M (by simpa [hc0] using hc.symm)
+  exact homothetic_of_pow_eq hc0 (by rw [hc, div_mul_cancel₀ _ hg₂M])
+    (by rw [hg₃L, hg₃M, mul_zero])
 
 private theorem homothetic_of_j_eq_of_g₂_ne_zero_of_g₃_ne_zero_aux {L M : PeriodPair}
     (h : L.j = M.j) (hg₂L : L.g₂ ≠ 0) (hg₃L : L.g₃ ≠ 0) : L.Homothetic M := by
@@ -415,12 +359,7 @@ private theorem homothetic_of_j_eq_of_g₂_ne_zero_of_g₃_ne_zero_aux {L M : Pe
     IsAlgClosed.exists_pow_nat_eq (L.g₃ * M.g₂ / (M.g₃ * L.g₂)) (n := 2) (by norm_num)
   have hb0 : L.g₃ * M.g₂ / (M.g₃ * L.g₂) ≠ 0 :=
     div_ne_zero (mul_ne_zero hg₃L hg₂M) (mul_ne_zero hg₃M hg₂L)
-  have hc0 : c ≠ 0 := by
-    intro h0
-    rw [h0] at hc
-    apply hb0
-    rw [← hc]
-    norm_num
+  have hc0 : c ≠ 0 := fun hc0 ↦ hb0 (by simpa [hc0] using hc.symm)
   have hc4 : c ^ 4 = L.g₂ / M.g₂ := by
     rw [show c ^ 4 = (c ^ 2) ^ 2 by ring, hc, div_pow, div_eq_div_iff
       (pow_ne_zero _ (mul_ne_zero hg₃M hg₂L)) hg₂M]
@@ -429,13 +368,8 @@ private theorem homothetic_of_j_eq_of_g₂_ne_zero_of_g₃_ne_zero_aux {L M : Pe
     rw [show c ^ 6 = (c ^ 2) ^ 3 by ring, hc, div_pow, div_eq_div_iff
       (pow_ne_zero _ (mul_ne_zero hg₃M hg₂L)) hg₃M]
     linear_combination -L.g₃ * M.g₃ * hcross
-  refine ⟨Units.mk0 c hc0, lattice_eq_of_g₂_eq_of_g₃_eq ?_ ?_⟩
-  · rw [g₂_smul]
-    rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc4]
-    field_simp
-  · rw [g₃_smul]
-    rw [show ((Units.mk0 c hc0 : ℂˣ) : ℂ) = c from rfl, hc6]
-    field_simp
+  exact homothetic_of_pow_eq hc0 (by rw [hc4, div_mul_cancel₀ _ hg₂M])
+    (by rw [hc6, div_mul_cancel₀ _ hg₃M])
 
 /-- Cox Theorem 10.9: period pairs with equal `j`-invariants are homothetic. -/
 theorem homothetic_of_j_eq {L M : PeriodPair} (h : L.j = M.j) : L.Homothetic M := by
@@ -607,91 +541,55 @@ theorem j_eq_iff_exists_sl2_smul_eq (τ τ' : ℍ) :
 
 private def levelOneWeightZeroCuspForm_aux {f : ℍ → ℂ}
     (hslash : ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f)
-    (hmdiff : MDiff f) (hzero : IsZeroAtImInfty f) : CuspForm (Gamma 1) 0 where
+    (hmdiff : MDiff f) (hzero : IsZeroAtImInfty f) : CuspForm 𝒮ℒ 0 where
   toFun := f
-  slash_action_eq' := fun γ hγ => by
-    obtain ⟨γ', _, rfl⟩ := hγ
-    exact hslash γ'
+  slash_action_eq' := by
+    rintro _ ⟨γ, rfl⟩
+    exact hslash γ
   holo' := hmdiff
-  zero_at_cusps' := fun hc =>
-    zero_at_cusps_of_zero_at_infty hc fun A hA => by
-      obtain ⟨γ, rfl⟩ := hA
-      have hγ : f ∣[(0 : ℤ)] (mapGL ℝ γ) = f := hslash γ
-      simpa [hγ] using hzero
+  zero_at_cusps' hc := (OnePoint.isZeroAt_iff_forall_SL2Z hc).mpr fun γ _ ↦ by rwa [hslash γ]
 
 private theorem weight_zero_cuspForm_eq_zero_aux {f : ℍ → ℂ}
     (hslash : ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f)
     (hmdiff : MDiff f) (hzero : IsZeroAtImInfty f) : f = 0 := by
-  let F : ModularForm (Gamma 1) 0 := levelOneWeightZeroCuspForm_aux hslash hmdiff hzero
-  obtain ⟨c, hc⟩ := ModularForm.eq_const_of_weight_zero F
+  let F := levelOneWeightZeroCuspForm_aux hslash hmdiff hzero
+  obtain ⟨c, hc⟩ := levelOne_weight_zero_const F
   have hc0 : c = 0 :=
     tendsto_nhds_unique tendsto_const_nhds (hc ▸ show IsZeroAtImInfty ⇑F from hzero)
   ext z
   simpa [hc0] using congrFun hc z
 
 private theorem inv_j_sub_slashInvariant_aux (c : ℂ) :
-    letI f : ℍ → ℂ := fun τ => (j τ - c)⁻¹
-    ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f := by
-  intro γ
-  ext τ
-  have hj := congrFun (j_slash_invariant γ) τ
-  simp only [SL_slash_apply, neg_zero, zpow_zero, mul_one] at hj ⊢
-  simpa [hj]
-
-private lemma j_mdifferentiable_aux : MDiff j := by
-  rw [UpperHalfPlane.mdifferentiable_iff]
-  intro z hz
-  have hE4 : DifferentiableAt ℂ (E4 ∘ UpperHalfPlane.ofComplex) z :=
-    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo E4 ⟨z, hz⟩)
-  have hDelta : DifferentiableAt ℂ (Delta ∘ UpperHalfPlane.ofComplex) z :=
-    UpperHalfPlane.mdifferentiableAt_iff.mp (ModularFormClass.holo Delta ⟨z, hz⟩)
-  have hDelta0 : (Delta ∘ UpperHalfPlane.ofComplex) z ≠ 0 := by
-    simpa [Function.comp_def, UpperHalfPlane.ofComplex_apply_of_im_pos hz, Delta_apply] using
-      Δ_ne_zero (UpperHalfPlane.ofComplex z)
-  have hj : DifferentiableAt ℂ (j ∘ UpperHalfPlane.ofComplex) z := by
-    simpa [j, Function.comp_def] using (hE4.pow 3).div hDelta hDelta0
-  exact hj.differentiableWithinAt
+    letI f : ℍ → ℂ := fun τ ↦ (j τ - c)⁻¹
+    ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f := fun γ ↦
+  SL_slash_zero_eq_iff.2 fun τ ↦ congrArg (fun x ↦ (x - c)⁻¹) (j_modularGroup_smul γ τ)
 
 private theorem inv_j_sub_mdiff_aux (c : ℂ) (hc : ∀ τ : ℍ, j τ ≠ c) :
-    MDiff (fun τ : ℍ => (j τ - c)⁻¹) := fun τ =>
-  ((j_mdifferentiable_aux τ).sub mdifferentiableAt_const).inv
-    (sub_ne_zero.mpr (hc τ))
+    MDiff (fun τ : ℍ ↦ (j τ - c)⁻¹) := fun τ ↦
+  ((j_mdifferentiable τ).sub mdifferentiableAt_const).inv (sub_ne_zero.mpr (hc τ))
 
 private lemma E4_tendsto_atImInfty_aux : Tendsto (E4 : ℍ → ℂ) atImInfty (nhds 1) := by
-  have hper : Periodic ((E4 : ℍ → ℂ) ∘ UpperHalfPlane.ofComplex) 1 :=
-    SlashInvariantFormClass.periodic_comp_ofComplex E4 (by simp)
-  have h0 : cuspFunction 1 (E4 : ℍ → ℂ) 0 = 1 := by
-    simpa [qExpansion_coeff, E4] using
-      EisensteinSeries.E_qExpansion_coeff_zero (by norm_num : 3 ≤ 4) ⟨2, rfl⟩
-  simpa only [Function.comp_def, UpperHalfPlane.eq_cuspFunction _ one_ne_zero hper, h0] using
-    (ModularFormClass.analyticAt_cuspFunction_zero (h := (1 : ℝ)) E4 (by norm_num)
-      (by simp)).continuousAt.tendsto.comp
-      (UpperHalfPlane.qParam_tendsto_atImInfty (h := 1) (by norm_num))
+  have h0 : (qExpansion 1 E4).coeff 0 = 1 := by simpa using congr_fun E4_q_exp 0
+  simpa [h0] using tendsto_atImInfty_qExpansion_coeff_zero E4 one_pos (by simp)
 
 private lemma qj_tendsto_atImInfty_aux : Tendsto qj atImInfty (nhds 1) := by
-  have hE4 : Tendsto (fun τ : ℍ => E4 τ ^ 3) atImInfty (nhds (1 ^ 3)) :=
-    E4_tendsto_atImInfty_aux.pow 3
-  have hqj : Tendsto ((fun τ : ℍ => E4 τ ^ 3) * qOverDelta) atImInfty
-      (nhds (1 ^ 3 * 1)) := hE4.mul qOverDelta_tendsto_atImInfty
-  have hEq : ((fun τ : ℍ => E4 τ ^ 3) * qOverDelta) = qj := by
-    ext τ
-    exact congrFun E4_pow_three_mul_qOverDelta_eq_qj τ
-  simpa [hEq] using hqj
+  rw [← E4_pow_three_mul_qOverDelta_eq_qj]
+  simpa using (E4_tendsto_atImInfty_aux.pow 3).mul qOverDelta_tendsto_atImInfty
 
 private theorem inv_j_sub_isZeroAtImInfty_aux (c : ℂ) :
-    IsZeroAtImInfty (fun τ : ℍ => (j τ - c)⁻¹) := by
-  let q : ℍ → ℂ := fun τ => 𝕢 1 τ
+    IsZeroAtImInfty (fun τ : ℍ ↦ (j τ - c)⁻¹) := by
+  let q : ℍ → ℂ := fun τ ↦ 𝕢 1 τ
   have hq : Tendsto q atImInfty (nhds 0) :=
     UpperHalfPlane.qParam_tendsto_atImInfty (by norm_num)
-  have hden : Tendsto (fun τ : ℍ => qj τ - c * q τ) atImInfty (nhds 1) := by
+  have hden : Tendsto (fun τ : ℍ ↦ qj τ - c * q τ) atImInfty (nhds 1) := by
     simpa using qj_tendsto_atImInfty_aux.sub (tendsto_const_nhds.mul hq)
-  have hratio : Tendsto (fun τ : ℍ => q τ / (qj τ - c * q τ))
+  have hratio : Tendsto (fun τ : ℍ ↦ q τ / (qj τ - c * q τ))
       atImInfty (nhds 0) := by
     simpa using hq.mul (hden.inv₀ (by norm_num : (1 : ℂ) ≠ 0))
-  have hEq : (fun τ : ℍ => (j τ - c)⁻¹) =ᶠ[atImInfty]
-      fun τ : ℍ => q τ / (qj τ - c * q τ) := by
-    refine Eventually.of_forall fun τ => ?_
-    simp only [show qj τ = q τ * j τ by simp [q, qj, Periodic.qParam]]
+  have hEq : (fun τ : ℍ ↦ (j τ - c)⁻¹) =ᶠ[atImInfty]
+      fun τ : ℍ ↦ q τ / (qj τ - c * q τ) := by
+    refine Eventually.of_forall fun τ ↦ ?_
+    simp only [show qj τ = q τ * j τ from qj_apply τ]
     field_simp [show q τ ≠ 0 by simp [q, Periodic.qParam]]
   exact hratio.congr' hEq.symm
 

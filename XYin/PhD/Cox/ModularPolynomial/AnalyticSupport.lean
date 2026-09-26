@@ -3,13 +3,21 @@ Copyright (c) 2026 The XYin contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
+import Mathlib.Algebra.Polynomial.Lifts
 import XYin.PhD.Cox.CoxMatrices.Basic
+import XYin.PhD.ModularFunctions.FieldAction
 
 /-!
 # Analytic support for Cox modular polynomials
 
-This file provides the meromorphic and periodicity lemmas shared by the construction,
+This file provides the holomorphy and cusp-meromorphy lemmas shared by the construction,
 interpolation, and integral-descent arguments for Cox's modular polynomial.
+
+The coefficients of a product `∏ (X - C rᵢ)` lie in every subring containing the roots `rᵢ`
+(`Polynomial.coeff_prod_X_sub_C_mem`). Applied to the subring `holomorphicFunctions` and to the
+subring `cuspMeromorphicSubring h` of functions with a meromorphic width-`h` cusp expansion,
+this gives holomorphy and cusp meromorphy of the coefficients of the Cox products
+(`coxNodal_coeff_mdifferentiable`, `coxNodal_coeff_cuspMeromorphicAt`).
 -/
 
 open Complex Function MatrixGroups ModularForm UpperHalfPlane
@@ -17,17 +25,74 @@ open scoped Manifold Polynomial.Bivariate
 
 noncomputable section
 
+namespace Polynomial
+
+variable {R ι : Type*}
+
+/-- The coefficients of a finite product of polynomials lie in a subsemiring containing the
+coefficients of the factors. -/
+theorem coeff_finset_prod_mem [CommSemiring R] (S : Subsemiring R) {s : Finset ι}
+    {P : ι → R[X]} (hP : ∀ i ∈ s, ∀ n, (P i).coeff n ∈ S) (n : ℕ) :
+    (∏ i ∈ s, P i).coeff n ∈ S := by
+  have h : ∏ i ∈ s, P i ∈ lifts S.subtype :=
+    Subsemiring.prod_mem _ fun i hi ↦
+      (lifts_iff_coeff_lifts _).2 fun k ↦ by simpa using hP i hi k
+  simpa using (lifts_iff_coeff_lifts _).1 h n
+
+/-- The coefficients of `X - C a` lie in every subring containing `a`. -/
+theorem coeff_X_sub_C_mem [Ring R] (S : Subring R) {a : R} (ha : a ∈ S) (n : ℕ) :
+    (X - C a).coeff n ∈ S := by
+  rcases n with _ | _ | n <;> simp [coeff_X, coeff_C, S.neg_mem ha, S.one_mem, S.zero_mem]
+
+/-- The coefficients of `∏ (X - C rᵢ)` lie in every subring containing the roots `rᵢ`. -/
+theorem coeff_prod_X_sub_C_mem [CommRing R] (S : Subring R) {s : Finset ι} {r : ι → R}
+    (hr : ∀ i ∈ s, r i ∈ S) (n : ℕ) : (∏ i ∈ s, (X - C (r i))).coeff n ∈ S :=
+  coeff_finset_prod_mem S.toSubsemiring (fun i hi ↦ coeff_X_sub_C_mem S (hr i hi)) n
+
+end Polynomial
+
 namespace Cox
 
+/-- The subring of functions on the upper half-plane whose width-`h` cusp function is
+meromorphic at `0`. -/
+def cuspMeromorphicSubring (h : ℝ) : Subring (ℍ → ℂ) where
+  carrier := {f | MeromorphicAt (cuspFunction h f) 0}
+  mul_mem' := meromorphicAt_cuspFunction_mul
+  one_mem' := meromorphicAt_cuspFunction_const h 1
+  add_mem' := meromorphicAt_cuspFunction_add
+  zero_mem' := meromorphicAt_cuspFunction_const h 0
+  neg_mem' := meromorphicAt_cuspFunction_neg
+
+@[simp]
+theorem mem_cuspMeromorphicSubring {h : ℝ} {f : ℍ → ℂ} :
+    f ∈ cuspMeromorphicSubring h ↔ MeromorphicAt (cuspFunction h f) 0 :=
+  Iff.rfl
+
+/-- A holomorphic function on `ℍ` is meromorphic at every point of the upper half-plane. -/
+theorem meromorphicAt_comp_ofComplex_of_mdifferentiable {f : ℍ → ℂ} (hf : MDiff f) {z : ℂ}
+    (hz : 0 < z.im) : MeromorphicAt (f ∘ UpperHalfPlane.ofComplex) z :=
+  ((UpperHalfPlane.mdifferentiable_iff.1 hf).analyticAt
+    (isOpen_upperHalfPlaneSet.mem_nhds hz)).meromorphicAt
+
+/-- A right-coset translate of raw cusp data has a meromorphic width-`m` cusp expansion. -/
+theorem rightCosetTranslate_cuspMeromorphicAt (m : ℕ+) {f : ℍ → ℂ} (hf : CuspData m f)
+    (c : Gamma0RightCosets m) :
+    MeromorphicAt (cuspFunction ((m : ℕ) : ℝ) (rightCosetTranslate m hf c)) 0 :=
+  Quotient.inductionOn c hf.meromorphicAt_cuspFunction
+
 /-- A right-coset root has a meromorphic width-`m` cusp expansion. -/
-theorem rightCosetEval_cuspMeromorphicAt
-    (m : ℕ+) (c : Gamma0RightCosets m) :
-    MeromorphicAt (cuspFunction ((m : ℕ) : ℝ) (rightCosetEval m c)) 0 := by
-  refine Quotient.inductionOn c ?_
-  intro γ
-  change MeromorphicAt
-    (cuspFunction ((m : ℕ) : ℝ) (fun τ : ℍ ↦ levelJ m (γ • τ))) 0
-  exact (levelJ_isGamma0ModularFunction m).2.2 γ
+theorem rightCosetEval_cuspMeromorphicAt (m : ℕ+) (c : Gamma0RightCosets m) :
+    MeromorphicAt (cuspFunction ((m : ℕ) : ℝ) (rightCosetEval m c)) 0 :=
+  rightCosetTranslate_cuspMeromorphicAt m (levelJ_cuspData m) c
+
+/-- The conjugate attached to the identity coset is the level transform `j(mτ)`. -/
+theorem rightCosetEval_baseRightCoset (m : ℕ+) : rightCosetEval m (baseRightCoset m) = levelJ m :=
+  funext fun τ ↦ congrArg (levelJ m) (one_smul _ τ)
+
+/-- A right-coset root is holomorphic on the upper half-plane. -/
+theorem rightCosetEval_mdifferentiable (m : ℕ+) (c : Gamma0RightCosets m) :
+    MDiff (rightCosetEval m c) :=
+  Quotient.inductionOn c fun γ ↦ (levelJ_mdifferentiable m).comp (sl2_mdifferentiable γ)
 
 /-- A Cox root has a meromorphic width-`m` cusp expansion. -/
 theorem coxRoot_cuspMeromorphicAt (m : ℕ+) (σ : CoxMatrix m) :
@@ -36,71 +101,25 @@ theorem coxRoot_cuspMeromorphicAt (m : ℕ+) (σ : CoxMatrix m) :
   rw [← funext (rightCosetEval_equiv m σ)]
   exact rightCosetEval_cuspMeromorphicAt m (coxMatrixEquivRightCosets m σ)
 
-/-- Every coefficient of a Cox linear factor has a meromorphic cusp expansion. -/
-theorem coxLinearFactor_coeff_cuspMeromorphicAt
-    (m : ℕ+) (σ : CoxMatrix m) (n : ℕ) :
-    MeromorphicAt
-      (cuspFunction ((m : ℕ) : ℝ)
-        ((Polynomial.X - Polynomial.C (fun τ : ℍ ↦ j (σ.act τ)) :
-          Polynomial (ℍ → ℂ)).coeff n)) 0 := by
-  cases n with
-  | zero =>
-      have hroot := coxRoot_cuspMeromorphicAt m σ
-      have hneg := (MeromorphicAt.const (-1 : ℂ) 0).mul hroot
-      apply hneg.congr
-      filter_upwards [self_mem_nhdsWithin] with q hq
-      have hq0 := Set.mem_compl_singleton_iff.mp hq
-      simp only [Polynomial.coeff_sub, Polynomial.coeff_X_zero,
-        Polynomial.coeff_C_zero, zero_sub, Pi.mul_apply]
-      simp only [UpperHalfPlane.cuspFunction]
-      rw [Periodic.cuspFunction_eq_of_nonzero _ _ hq0,
-        Periodic.cuspFunction_eq_of_nonzero _ _ hq0]
-      simp
-  | succ n =>
-      cases n with
-      | zero => simpa using meromorphicAt_cuspFunction_const ((m : ℕ) : ℝ) 1
-      | succ n =>
-          simp only [Polynomial.coeff_sub, Polynomial.coeff_X, Nat.right_eq_add,
-            Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte,
-            Polynomial.coeff_C_succ, sub_zero]
-          exact meromorphicAt_cuspFunction_const ((m : ℕ) : ℝ) 0
+/-- A Cox root is holomorphic on the upper half-plane. -/
+theorem coxRoot_mdifferentiable (m : ℕ+) (σ : CoxMatrix m) :
+    MDiff (fun τ : ℍ ↦ j (σ.act τ)) := by
+  rw [← funext (rightCosetEval_equiv m σ)]
+  exact rightCosetEval_mdifferentiable m (coxMatrixEquivRightCosets m σ)
 
-/-- Coefficients of a finite product inherit meromorphic cusp expansions. -/
-theorem polynomial_prod_coeff_cuspMeromorphicAt {ι : Type*}
-    (h : ℝ) (P : ι → Polynomial (ℍ → ℂ)) :
-    ∀ s : Finset ι,
-      (∀ i ∈ s, ∀ n, MeromorphicAt (cuspFunction h ((P i).coeff n)) 0) →
-      ∀ n, MeromorphicAt (cuspFunction h ((s.prod P).coeff n)) 0 := by
-  classical
-  intro s
-  induction s using Finset.induction_on with
-  | empty =>
-      intro _ n
-      by_cases hn : n = 0
-      · subst n
-        simpa [Polynomial.coeff_one] using meromorphicAt_cuspFunction_const h 1
-      · simpa [Polynomial.coeff_one, hn] using meromorphicAt_cuspFunction_const h 0
-  | insert a s ha ih =>
-      intro hP n
-      rw [Finset.prod_insert ha, Polynomial.coeff_mul]
-      apply meromorphicAt_cuspFunction_finset_sum
-      intro x hx
-      exact meromorphicAt_cuspFunction_mul
-        (hP a (Finset.mem_insert_self a s) x.1)
-        (ih (fun i hi k ↦ hP i (Finset.mem_insert_of_mem hi) k) x.2)
+/-- The coefficients of a product of Cox linear factors have meromorphic width-`m` cusp
+expansions. -/
+theorem coxNodal_coeff_cuspMeromorphicAt (m : ℕ+) (s : Finset (CoxMatrix m)) (n : ℕ) :
+    MeromorphicAt (cuspFunction ((m : ℕ) : ℝ)
+      ((∏ σ ∈ s, (Polynomial.X - Polynomial.C (fun τ : ℍ ↦ j (σ.act τ)))).coeff n)) 0 :=
+  Polynomial.coeff_prod_X_sub_C_mem (cuspMeromorphicSubring _)
+    (fun σ _ ↦ coxRoot_cuspMeromorphicAt m σ) n
 
-/-- Weight-zero slash invariance gives period one after extending from the upper half-plane. -/
-theorem periodic_comp_of_slashInvariant_one {f : ℍ → ℂ}
-    (hslash : ∀ γ : SL(2, ℤ), f ∣[(0 : ℤ)] γ = f) :
-    Periodic (f ∘ UpperHalfPlane.ofComplex) (1 : ℝ) := by
-  let F : SlashInvariantForm (CongruenceSubgroup.Gamma 1) 0 :=
-    { toFun := f
-      slash_action_eq' := fun γ hγ ↦ by
-        rw [Subgroup.mem_map] at hγ
-        obtain ⟨γ', _, rfl⟩ := hγ
-        exact hslash γ' }
-  have hper : Periodic (F ∘ UpperHalfPlane.ofComplex) (1 : ℝ) :=
-    SlashInvariantFormClass.periodic_comp_ofComplex F (by simp)
-  simpa [F] using hper
+/-- The coefficients of a product of Cox linear factors are holomorphic. -/
+theorem coxNodal_coeff_mdifferentiable (m : ℕ+) (s : Finset (CoxMatrix m)) (n : ℕ) :
+    MDiff ((∏ σ ∈ s, (Polynomial.X - Polynomial.C (fun τ : ℍ ↦ j (σ.act τ))) :
+      Polynomial (ℍ → ℂ)).coeff n) :=
+  Polynomial.coeff_prod_X_sub_C_mem holomorphicFunctions
+    (fun σ _ ↦ coxRoot_mdifferentiable m σ) n
 
 end Cox

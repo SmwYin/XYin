@@ -1,0 +1,14 @@
+EXTRA	XYin.PhD.Modularforms.DimensionFormulas	dim_gen_cong_levels	[propext, sorryAx, Classical.choice, Quot.sound]
+AUDIT: 2461 project theorems; 1 with additional axioms
+'E4E6_coeff_zero_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Delta_E4_eqn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'dim_modforms_lvl_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'j_mdifferentiable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'jModularFunction' depends on axioms: [propext, Classical.choice, Quot.sound]
+'UpperHalfPlane.isOfExponentialGrowth_iff_meromorphicAt_cuspFunction' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Cox.UpperHalfPlaneFunctionField.toMeromorphicField_eq_ratFunc' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Cox.theorem_11_9_ii' depends on axioms: [propext, Classical.choice, Quot.sound]

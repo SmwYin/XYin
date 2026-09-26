@@ -3,7 +3,7 @@ Copyright (c) 2026 The XYin contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
-import Mathlib.RingTheory.LaurentSeries
+import XYin.PhD.Cox.LaurentSeriesAux
 
 /-!
 # Polynomial evaluation in Laurent series
@@ -11,166 +11,184 @@ import Mathlib.RingTheory.LaurentSeries
 This file records the lowest-term argument behind Hasse's q-expansion principle. If a Laurent
 series `J` has order `-w`, for `w > 0`, and leading coefficient one, then the lowest coefficient
 of `P(J)` is the leading coefficient of `P`. In particular, substitution at `J` is injective.
+It also packages the substitution of Laurent series into iterated polynomials and its
+compatibility with coefficientwise base change.
 -/
 
 noncomputable section
 
 namespace Cox
 
+section BaseChange
+
+variable {R S : Type*}
+
 /-- Coefficientwise application of a ring homomorphism to Laurent series, bundled as a ring
-homomorphism. -/
-def laurentSeriesMapRingHom {R S : Type*} [CommRing R] [CommRing S]
-    (f : R →+* S) : LaurentSeries R →+* LaurentSeries S where
-  toFun F := F.map f
-  map_zero' := HahnSeries.map_zero f.toZeroHom
-  map_one' := HahnSeries.map_one f.toMonoidWithZeroHom
-  map_add' _ _ := HahnSeries.map_add f.toAddMonoidHom
-  map_mul' _ _ := HahnSeries.map_mul f.toNonUnitalRingHom
+homomorphism: `HahnSeries.mapRingHom` for `ℤ`-indexed series. -/
+abbrev laurentSeriesMapRingHom [Semiring R] [Semiring S] (f : R →+* S) :
+    LaurentSeries R →+* LaurentSeries S :=
+  HahnSeries.mapRingHom f
 
 @[simp]
-theorem laurentSeriesMapRingHom_coeff
-    {R S : Type*} [CommRing R] [CommRing S]
+theorem laurentSeriesMapRingHom_coeff [Semiring R] [Semiring S]
     (f : R →+* S) (F : LaurentSeries R) (k : ℤ) :
     (laurentSeriesMapRingHom f F).coeff k = f (F.coeff k) :=
   rfl
 
-/-- Substitute a Laurent series for the coefficient variable of an iterated polynomial. -/
-def bivariateSpecializeLaurent {R : Type*} [CommRing R]
-    (J : LaurentSeries R) :
-    Polynomial (Polynomial R) →+* Polynomial (LaurentSeries R) :=
-  Polynomial.mapRingHom
-    (Polynomial.eval₂RingHom HahnSeries.C J)
+variable [CommSemiring R] [CommSemiring S]
 
-private theorem polynomialEvalLaurent_map
-    {R S : Type*} [CommRing R] [CommRing S]
-    (f : R →+* S) (J : LaurentSeries R) (J' : LaurentSeries S)
-    (hJ : laurentSeriesMapRingHom f J = J') (P : Polynomial R) :
-    laurentSeriesMapRingHom f (P.eval₂ HahnSeries.C J) =
-      (P.map f).eval₂ HahnSeries.C J' := by
-  have hC :
-      (laurentSeriesMapRingHom f).comp
-          (HahnSeries.C : R →+* LaurentSeries R) =
-        (HahnSeries.C : S →+* LaurentSeries S).comp f := by
-    apply DFunLike.ext _ _
-    intro r
-    exact HahnSeries.map_C r f
-  calc
-    laurentSeriesMapRingHom f (P.eval₂ HahnSeries.C J) =
-        P.eval₂ ((laurentSeriesMapRingHom f).comp HahnSeries.C)
-          (laurentSeriesMapRingHom f J) :=
-      Polynomial.hom_eval₂ P HahnSeries.C (laurentSeriesMapRingHom f) J
-    _ = P.eval₂ ((HahnSeries.C : S →+* LaurentSeries S).comp f) J' := by
-      rw [hC, hJ]
-    _ = (P.map f).eval₂ HahnSeries.C J' :=
-      (Polynomial.eval₂_map f HahnSeries.C J').symm
+/-- Evaluating a polynomial at a Laurent series commutes with coefficientwise base change. -/
+theorem laurentSeriesMapRingHom_comp_eval₂RingHom (f : R →+* S) {J : LaurentSeries R}
+    {J' : LaurentSeries S} (hJ : laurentSeriesMapRingHom f J = J') :
+    (laurentSeriesMapRingHom f).comp (Polynomial.eval₂RingHom HahnSeries.C J) =
+      (Polynomial.eval₂RingHom HahnSeries.C J').comp (Polynomial.mapRingHom f) := by
+  apply Polynomial.ringHom_ext
+  · intro r
+    simpa using HahnSeries.map_C r f
+  · simp [hJ]
+
+/-- Substitute a Laurent series for the coefficient variable of an iterated polynomial. -/
+def bivariateSpecializeLaurent (J : LaurentSeries R) :
+    Polynomial (Polynomial R) →+* Polynomial (LaurentSeries R) :=
+  Polynomial.mapRingHom (Polynomial.eval₂RingHom HahnSeries.C J)
 
 /-- Laurent specialization of an iterated polynomial commutes with coefficientwise base
 change. -/
-theorem bivariateSpecializeLaurent_map
-    {R S : Type*} [CommRing R] [CommRing S]
-    (f : R →+* S) (J : LaurentSeries R) (J' : LaurentSeries S)
+theorem bivariateSpecializeLaurent_map (f : R →+* S) (J : LaurentSeries R) (J' : LaurentSeries S)
     (hJ : laurentSeriesMapRingHom f J = J') :
     (Polynomial.mapRingHom (laurentSeriesMapRingHom f)).comp
         (bivariateSpecializeLaurent J) =
       (bivariateSpecializeLaurent J').comp
         (Polynomial.mapRingHom (Polynomial.mapRingHom f)) := by
-  apply Polynomial.ringHom_ext
-  · intro P
-    simp only [RingHom.comp_apply, bivariateSpecializeLaurent,
-      Polynomial.coe_mapRingHom, Polynomial.map_C,
-      Polynomial.coe_eval₂RingHom]
-    change Polynomial.C
-        (laurentSeriesMapRingHom f (P.eval₂ HahnSeries.C J)) =
-      Polynomial.C ((P.map f).eval₂ HahnSeries.C J')
-    rw [polynomialEvalLaurent_map f J J' hJ P]
-  · simp [bivariateSpecializeLaurent, Polynomial.coe_mapRingHom]
+  simp only [bivariateSpecializeLaurent, Polynomial.mapRingHom_comp,
+    laurentSeriesMapRingHom_comp_eval₂RingHom f hJ]
 
 /-- Pointwise form of `bivariateSpecializeLaurent_map`. -/
-theorem bivariateSpecializeLaurent_map_apply
-    {R S : Type*} [CommRing R] [CommRing S]
-    (f : R →+* S) (J : LaurentSeries R) (J' : LaurentSeries S)
-    (hJ : laurentSeriesMapRingHom f J = J')
+theorem bivariateSpecializeLaurent_map_apply (f : R →+* S) (J : LaurentSeries R)
+    (J' : LaurentSeries S) (hJ : laurentSeriesMapRingHom f J = J')
     (P : Polynomial (Polynomial R)) :
-    (bivariateSpecializeLaurent J P).map
-        (laurentSeriesMapRingHom f) =
-      bivariateSpecializeLaurent J'
-        (P.map (Polynomial.mapRingHom f)) := by
-  exact DFunLike.congr_fun (bivariateSpecializeLaurent_map f J J' hJ) P
+    (bivariateSpecializeLaurent J P).map (laurentSeriesMapRingHom f) =
+      bivariateSpecializeLaurent J' (P.map (Polynomial.mapRingHom f)) :=
+  DFunLike.congr_fun (bivariateSpecializeLaurent_map f J J' hJ) P
+
+/-- Evaluation of an iterated polynomial at a pair of Laurent series: the outer variable is
+sent to `T` and the inner (coefficient) variable to `J`. -/
+def bivariateLaurentEvalHom (T J : LaurentSeries R) :
+    Polynomial (Polynomial R) →+* LaurentSeries R :=
+  Polynomial.eval₂RingHom (Polynomial.eval₂RingHom HahnSeries.C J) T
+
+theorem bivariateLaurentEvalHom_apply (T J : LaurentSeries R) (P : Polynomial (Polynomial R)) :
+    bivariateLaurentEvalHom T J P = P.eval₂ (Polynomial.eval₂RingHom HahnSeries.C J) T :=
+  rfl
+
+@[simp]
+theorem bivariateLaurentEvalHom_monomial (T J : LaurentSeries R) (i j : ℕ) (a : R) :
+    bivariateLaurentEvalHom T J (Polynomial.monomial i (Polynomial.monomial j a)) =
+      HahnSeries.C a * T ^ i * J ^ j := by
+  simp only [bivariateLaurentEvalHom, Polynomial.coe_eval₂RingHom, Polynomial.eval₂_monomial]
+  ring
+
+@[simp]
+theorem bivariateLaurentEvalHom_X (T J : LaurentSeries R) :
+    bivariateLaurentEvalHom T J Polynomial.X = T :=
+  Polynomial.eval₂_X _ _
+
+@[simp]
+theorem bivariateLaurentEvalHom_C_X (T J : LaurentSeries R) :
+    bivariateLaurentEvalHom T J (Polynomial.C Polynomial.X) = J := by
+  simp [bivariateLaurentEvalHom]
+
+/-- Bivariate Laurent evaluation commutes with coefficientwise base change. -/
+theorem bivariateLaurentEvalHom_map (f : R →+* S) {T J : LaurentSeries R}
+    {T' J' : LaurentSeries S} (hT : laurentSeriesMapRingHom f T = T')
+    (hJ : laurentSeriesMapRingHom f J = J') (P : Polynomial (Polynomial R)) :
+    laurentSeriesMapRingHom f (bivariateLaurentEvalHom T J P) =
+      bivariateLaurentEvalHom T' J' (P.map (Polynomial.mapRingHom f)) := by
+  simp only [bivariateLaurentEvalHom, Polynomial.coe_eval₂RingHom, Polynomial.hom_eval₂, hT,
+    Polynomial.eval₂_map, laurentSeriesMapRingHom_comp_eval₂RingHom f hJ]
+
+end BaseChange
+
+section LowestTerm
+
+variable {K : Type*} [CommSemiring K] [NoZeroDivisors K]
 
 /-- The order of a power of a Laurent series whose principal exponent is negative. -/
-theorem laurentSeries_pow_order_of_order_neg
-    {K : Type*} [Field K] (J : LaurentSeries K) (w n : ℕ)
+theorem laurentSeries_pow_order_of_order_neg (J : LaurentSeries K) (w n : ℕ)
     (horder : J.order = -(w : ℤ)) :
     (J ^ n).order = -((w : ℤ) * (n : ℤ)) := by
   rw [HahnSeries.order_pow, horder]
   simp
   ring
 
-/-- The leading coefficient of every power of a Laurent series with leading coefficient one
-remains one. -/
-theorem laurentSeries_pow_leadingCoeff_of_eq_one
-    {K : Type*} [Field K] (J : LaurentSeries K)
-    (hleading : J.leadingCoeff = 1) (n : ℕ) :
-    (J ^ n).leadingCoeff = 1 := by
-  induction n with
-  | zero => simp [HahnSeries.leadingCoeff_one]
-  | succ n ih =>
-      simp [pow_succ, HahnSeries.leadingCoeff_mul, ih, hleading]
+/-- Below `-(w · deg P)`, all Laurent coefficients of `P(J)` vanish. -/
+theorem polynomial_eval₂_laurentSeries_coeff_eq_zero_of_lt (J : LaurentSeries K) (w : ℕ)
+    (horder : J.order = -(w : ℤ)) (P : Polynomial K) {k : ℤ}
+    (hk : k < -((w : ℤ) * (P.natDegree : ℤ))) :
+    (P.eval₂ (HahnSeries.C : K →+* LaurentSeries K) J).coeff k = 0 := by
+  rw [Polynomial.eval₂_eq_sum_range, HahnSeries.coeff_sum]
+  refine Finset.sum_eq_zero fun n hn ↦ ?_
+  have hnle : n ≤ P.natDegree := Nat.le_of_lt_succ (Finset.mem_range.mp hn)
+  have horder : k < (J ^ n).order := by
+    rw [laurentSeries_pow_order_of_order_neg J w n horder]
+    exact hk.trans_le <| neg_le_neg <| Int.mul_le_mul_of_nonneg_left
+      (by exact_mod_cast hnle) (Int.natCast_nonneg w)
+  rw [HahnSeries.C_mul_eq_smul, HahnSeries.coeff_smul,
+    HahnSeries.coeff_eq_zero_of_lt_order horder, smul_zero]
 
 /-- The lowest Laurent coefficient of `P(J)` is the leading coefficient of `P`. -/
-theorem polynomial_eval₂_laurentSeries_coeff
-    {K : Type*} [Field K] (J : LaurentSeries K) (w : ℕ) (hw : 0 < w)
+theorem polynomial_eval₂_laurentSeries_coeff (J : LaurentSeries K) (w : ℕ) (hw : 0 < w)
     (horder : J.order = -(w : ℤ)) (hleading : J.leadingCoeff = 1)
     (P : Polynomial K) :
     (P.eval₂ (HahnSeries.C : K →+* LaurentSeries K) J).coeff
         (-((w : ℤ) * (P.natDegree : ℤ))) = P.leadingCoeff := by
-  rw [Polynomial.eval₂_eq_sum_range, HahnSeries.coeff_sum]
-  calc
-    ∑ i ∈ Finset.range (P.natDegree + 1),
-        (HahnSeries.C (P.coeff i) * J ^ i).coeff
-            (-((w : ℤ) * (P.natDegree : ℤ))) =
-        (HahnSeries.C (P.coeff P.natDegree) * J ^ P.natDegree).coeff
-            (-((w : ℤ) * (P.natDegree : ℤ))) := by
-      apply Finset.sum_eq_single P.natDegree
-      · intro n hn hne
-        rw [HahnSeries.C_mul_eq_smul, HahnSeries.coeff_smul]
-        change P.coeff n *
-          (J ^ n).coeff (-((w : ℤ) * (P.natDegree : ℤ))) = 0
-        have hnlt : n < P.natDegree := by
-          have hnle : n ≤ P.natDegree :=
-            Nat.le_of_lt_succ (Finset.mem_range.mp hn)
-          exact lt_of_le_of_ne hnle hne
-        have hwz : (0 : ℤ) < w := by exact_mod_cast hw
-        have hlt : -((w : ℤ) * (P.natDegree : ℤ)) < (J ^ n).order := by
-          rw [laurentSeries_pow_order_of_order_neg J w n horder]
-          exact neg_lt_neg <| Int.mul_lt_mul_of_pos_left (by exact_mod_cast hnlt) hwz
-        rw [HahnSeries.coeff_eq_zero_of_lt_order hlt, mul_zero]
-      · simp
-    _ = P.leadingCoeff := by
-      rw [HahnSeries.C_mul_eq_smul, HahnSeries.coeff_smul]
-      change P.coeff P.natDegree *
-        (J ^ P.natDegree).coeff (-((w : ℤ) * (P.natDegree : ℤ))) = _
-      rw [← laurentSeries_pow_order_of_order_neg J w P.natDegree horder,
-        ← HahnSeries.leadingCoeff_eq,
-        laurentSeries_pow_leadingCoeff_of_eq_one J hleading,
-        mul_one, Polynomial.coeff_natDegree]
+  rw [Polynomial.eval₂_eq_sum_range, HahnSeries.coeff_sum,
+    Finset.sum_eq_single P.natDegree]
+  · rw [HahnSeries.C_mul_eq_smul, HahnSeries.coeff_smul,
+      ← laurentSeries_pow_order_of_order_neg J w P.natDegree horder,
+      ← HahnSeries.leadingCoeff_eq, HahnSeries.leadingCoeff_pow, hleading, one_pow,
+      smul_eq_mul, mul_one, Polynomial.coeff_natDegree]
+  · intro n hn hne
+    have hnlt : n < P.natDegree :=
+      lt_of_le_of_ne (Nat.le_of_lt_succ (Finset.mem_range.mp hn)) hne
+    have hlt : -((w : ℤ) * (P.natDegree : ℤ)) < (J ^ n).order := by
+      rw [laurentSeries_pow_order_of_order_neg J w n horder]
+      exact neg_lt_neg <| by exact_mod_cast Nat.mul_lt_mul_of_pos_left hnlt hw
+    rw [HahnSeries.C_mul_eq_smul, HahnSeries.coeff_smul,
+      HahnSeries.coeff_eq_zero_of_lt_order hlt, smul_zero]
+  · simp
+
+/-- For `P ≠ 0`, the order of `P(J)` is `-(w · deg P)`. -/
+theorem polynomial_eval₂_laurentSeries_order (J : LaurentSeries K) (w : ℕ) (hw : 0 < w)
+    (horder : J.order = -(w : ℤ)) (hleading : J.leadingCoeff = 1)
+    {P : Polynomial K} (hP : P ≠ 0) :
+    (P.eval₂ (HahnSeries.C : K →+* LaurentSeries K) J).order =
+      -((w : ℤ) * (P.natDegree : ℤ)) :=
+  HahnSeries.order_eq_of_coeff_ne_zero_of_forall_lt
+    ((polynomial_eval₂_laurentSeries_coeff J w hw horder hleading P).trans_ne
+      (Polynomial.leadingCoeff_ne_zero.mpr hP))
+    fun _ hi ↦ polynomial_eval₂_laurentSeries_coeff_eq_zero_of_lt J w horder P hi
+
+/-- The leading coefficient of `P(J)` is the leading coefficient of `P`. -/
+theorem polynomial_eval₂_laurentSeries_leadingCoeff (J : LaurentSeries K) (w : ℕ)
+    (hw : 0 < w) (horder : J.order = -(w : ℤ)) (hleading : J.leadingCoeff = 1)
+    (P : Polynomial K) :
+    (P.eval₂ (HahnSeries.C : K →+* LaurentSeries K) J).leadingCoeff = P.leadingCoeff := by
+  rcases eq_or_ne P 0 with rfl | hP
+  · simp
+  rw [HahnSeries.leadingCoeff_eq, polynomial_eval₂_laurentSeries_order J w hw horder hleading hP,
+    polynomial_eval₂_laurentSeries_coeff J w hw horder hleading P]
+
+end LowestTerm
 
 /-- Evaluation at a Laurent series with a pole and unit leading coefficient is injective. -/
 theorem polynomial_eval₂_laurentSeries_injective
-    {K : Type*} [Field K] (J : LaurentSeries K) (w : ℕ) (hw : 0 < w)
+    {K : Type*} [CommRing K] [NoZeroDivisors K] (J : LaurentSeries K) (w : ℕ) (hw : 0 < w)
     (horder : J.order = -(w : ℤ)) (hleading : J.leadingCoeff = 1) :
     Function.Injective (Polynomial.eval₂RingHom
       (HahnSeries.C : K →+* LaurentSeries K) J) := by
-  intro P Q hPQ
-  apply sub_eq_zero.mp
-  let R := P - Q
-  have hR : R.eval₂ (HahnSeries.C : K →+* LaurentSeries K) J = 0 := by
-    simpa only [R, Polynomial.eval₂_sub, sub_eq_zero] using hPQ
-  by_contra hR0
-  have hcoeff := polynomial_eval₂_laurentSeries_coeff
-    J w hw horder hleading R
-  rw [hR] at hcoeff
-  simp only [HahnSeries.coeff_zero] at hcoeff
-  exact (Polynomial.leadingCoeff_ne_zero.mpr hR0) hcoeff.symm
+  refine (injective_iff_map_eq_zero _).2 fun P hP ↦ Polynomial.leadingCoeff_eq_zero.mp ?_
+  rw [← polynomial_eval₂_laurentSeries_coeff J w hw horder hleading P]
+  exact congrArg (HahnSeries.coeff · _) hP |>.trans (HahnSeries.coeff_zero)
 
 end Cox

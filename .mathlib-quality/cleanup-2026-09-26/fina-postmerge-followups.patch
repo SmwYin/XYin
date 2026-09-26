@@ -1,0 +1,54 @@
+--- XYin/PhD/Cox/UpperHalfPlaneFunctionField.lean	2026-09-26 20:02:24
++++ XYin/PhD/Cox/UpperHalfPlaneFunctionField.lean	2026-09-26 20:12:18
+@@ -125,19 +125,10 @@
+ def precompAlgEquiv (delta : SL(2, ℤ)) : FunctionField ≃ₐ[RatFunc ℂ] FunctionField :=
+   AlgEquiv.ofRingEquiv (precomp_ratFunc delta)
+ 
+-private lemma transformed_leading (m : ℕ+) (sigma : CoxMatrix m) :
+-    (transformedJSeries (zeta m) sigma).coeff (-((sigma.a : ℤ) ^ 2)) =
+-      zeta m ^ (-((sigma.a : ℤ) * (sigma.b : ℤ))) := by
+-  rw [transformedJSeries_coeff, if_pos]
+-  · have ha0 : (sigma.a : ℤ) ^ 2 ≠ 0 := by
+-      exact_mod_cast (pow_ne_zero 2 sigma.a_pos.ne')
+-    simp [ha0, jIntCoeff_neg_one]
+-  · exact ⟨dvd_neg.mpr (dvd_refl _), le_rfl⟩
+-
+ private lemma transformed_leading_ne (m : ℕ+) (sigma : CoxMatrix m) :
+     (transformedJSeries (zeta m) sigma).coeff (-((sigma.a : ℤ) ^ 2)) ≠ 0 := by
+-  rw [transformed_leading]
+-  exact zpow_ne_zero _ ((zeta_isPrimitiveRoot m).ne_zero (PNat.ne_zero m))
++  rw [transformedJSeries_coeff_neg_sq]
++  exact zpow_ne_zero _ (zeta_ne_zero m)
+ 
+ private lemma cox_a_le {m : ℕ+} {sigma tau : CoxMatrix m}
+     (h : transformedJSeries (zeta m) sigma = transformedJSeries (zeta m) tau) :
+@@ -161,7 +152,7 @@
+       zeta m ^ (-((sigma.a : ℤ) * (tau.b : ℤ))) := by
+   have hc := congrArg (fun F : LaurentSeries ℂ ↦ F.coeff (-((sigma.a : ℤ) ^ 2))) h
+   dsimp only at hc
+-  rw [transformed_leading, ha, transformed_leading] at hc
++  rw [transformedJSeries_coeff_neg_sq, ha, transformedJSeries_coeff_neg_sq] at hc
+   simpa only [ha] using hc
+ 
+ private lemma cox_b_eq {m : ℕ+} {sigma tau : CoxMatrix m}
+@@ -171,7 +162,7 @@
+     sigma.b = tau.b := by
+   let x : ℤ := -((sigma.a : ℤ) * (sigma.b : ℤ))
+   let y : ℤ := -((sigma.a : ℤ) * (tau.b : ℤ))
+-  have hzeta0 : zeta m ≠ 0 := (zeta_isPrimitiveRoot m).ne_zero (PNat.ne_zero m)
++  have hzeta0 : zeta m ≠ 0 := zeta_ne_zero m
+   have hpow : zeta m ^ (x - y) = 1 := by
+     rw [zpow_sub₀ hzeta0, show zeta m ^ x = zeta m ^ y by simpa [x, y] using hphase]
+     exact div_self (zpow_ne_zero _ hzeta0)
+--- XYin/PhD/Modularforms/Eisenstein.lean	2026-09-26 19:25:26
++++ XYin/PhD/Modularforms/Eisenstein.lean	2026-09-26 20:12:18
+@@ -9,9 +9,6 @@
+ public import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
+ public import XYin.PhD.Modularforms.Delta
+ public import XYin.PhD.Modularforms.E2
+--- Not used here: re-exported for downstream files that relied on it through a (now deleted)
+--- `Mathlib.Tactic` import (`XYin.PhD.Cox.LevelThree` uses the `norm_num` big-operator extension).
+-public import Mathlib.Tactic.NormNum.BigOperators
+ 
+ /-!
+ # The Eisenstein series `E₄`, `E₆` at level `Γ(1)`

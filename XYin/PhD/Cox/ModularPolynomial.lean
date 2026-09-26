@@ -11,6 +11,7 @@ import XYin.PhD.Cox.ModularPolynomial.Irreducibility
 /-!
 # Cox's modular polynomial
 
-This module collects the construction, interpolation theorem, irreducibility theorem, and
-integral descent of Cox's modular polynomial.
+This module collects the analytic support lemmas (`ModularPolynomial.AnalyticSupport`), the
+construction, the interpolation theorem, the irreducibility theorem, and the integral descent of
+Cox's modular polynomial.
 -/

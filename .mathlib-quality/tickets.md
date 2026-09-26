@@ -1,9 +1,98 @@
 # Ticket board: Cox §11.B–C and report extensions
 
+## 2026-09-21 Cox migration (user-authorized)
+
+### [CX001] Bundled theorem inputs and generators
+- **Status:** done
+- **Files:** `Cox/ModularFunction.lean`, `ModularFunctions/Congruence.lean`, Cox callers.
+- **Result:** new `ModularFunction` inputs, bundled `levelJModularFunction`, shared cusp API;
+  raw intermediate data explicitly distinguished from canonical representatives.
+- **Validation:** focused `ModularFunction` and `Congruence` build passed.
+
+### [CX002] Meromorphic ambient field and direct field equalities
+- **Status:** done
+- **Files:** `Cox/UpperHalfPlaneFunctionField.lean`, `Cox/ModularFunctionField.lean`.
+- **Result:** removed legacy holomorphic FractionRing and Represents relation; proofs use
+  `ModularFunction.toMeromorphicField`. General field infrastructure moves to the shared library.
+
+### [CX003] Remove duplication and integrate polynomial proofs
+- **Status:** done
+- **Files:** `Cox/LatticeJ.lean`, `Cox/CoxMatrices/LaurentExpansion.lean`, polynomial modules.
+- **Result:** shared j holomorphy/periodicity; genuinely bundled Cox-product coefficients;
+  all dependent names and interfaces migrated.
+
+### [CX-CLEANUP] Final verification
+- **Status:** done
+- **Acceptance:** source review, no placeholder axioms, focused and full build, key axiom checks,
+  profiling and a migration verification report with generated-field semantics made explicit.
+- **Validation:** full build passed (3918 jobs), 11 key axiom audits passed, 7 modules profiled;
+  independent final review passed. See `cox-modular-functions-migration.md`.
+
+
+## 2026-09-20 modular functions extension (user-authorized)
+
+### [MF001] Codiscrete field and canonical upper-half-plane representatives
+- **Status:** done
+- **Files:** `ModularFunctions/MeromorphicField.lean`
+- **Statement:** `Field (MeromorphicOn.germRing ℂ U)` for connected nontrivial U;
+  `UpperHalfPlane.MeromorphicField.toFun` with normal-form range and holomorphic inclusion.
+- **Source:** ProjectVD commit `9c218722ad71e9bd2ba357892bc835c8c648aaa8`, `VD/Field`.
+- **Proof sketch:** image of meromorphic subring in `Germ (codiscreteWithin U) ℂ`;
+  identity theorem implies a nonzero class has codiscrete nonzero locus; inverse is pointwise.
+  Normalize representatives with `toMeromorphicNFOn`; use uniqueness on open sets.
+- **Progress:** completed pinned codiscrete field port, canonical representative API, and Field/Algebra checks.
+
+### [MF002] Exponential growth and cusp meromorphy
+- **Status:** done
+- **Files:** `ModularFunctions/CuspGrowth.lean`, `ModularFunctions/NormalFormGrowth.lean`
+- **Statement:** for h>0 and h-periodic f eventually holomorphic,
+  `IsOfExponentialGrowth f ↔ MeromorphicAt (cuspFunction h f) 0`;
+  normal meromorphic f with this bound is eventually holomorphic.
+- **Source:** linked growth conversation, proposition and proof; Mathlib meromorphic order,
+  removable singularities, normal forms, and QExpansion source.
+- **Proof sketch:** q has norm exp(-2π Im τ/h); choose N>ρh/(2π), regularize by q^N,
+  remove the singularity. Reverse implication uses the analytic regularization's local bound.
+  For NF regularity, locally bounded functions cannot tend to cobounded at a pole.
+- **Progress:** proved both directions and derived eventual holomorphy from normal form plus growth.
+
+### [MF003] Bundled definition and cusp comparison
+- **Status:** done
+- **Depends on:** MF001, MF002
+- **Files:** `ModularFunctions/Basic.lean`, `ModularFunctions/GrowthAtCusp.lean`
+- **Statement:** `structure ModularFunction (Γ : Subgroup (GL (Fin 2) ℝ))
+  extends SlashInvariantForm Γ 0` with canonical field membership and period-free growth
+  at every `IsCusp`; prove comparison with cusp-function meromorphy using positive periods.
+- **Source:** user's requested structure; Mathlib ModularForm/BoundedAtCusp definitions.
+- **Proof sketch:** use range of canonical representatives as the first Prop field;
+  second field quantifies cusp transforms just like ModularForm. Apply MF002 at each transform.
+- **Progress:** implemented all-GL growth transport, positive cusp periods, bundled API, and all-cusp equivalence.
+
+### [MF004] Bundle the classical j-function
+- **Status:** done
+- **Depends on:** MF003
+- **Files:** `ModularFunctions/JInvariant.lean`, `XYin.lean`
+- **Statement:** `jModularFunction : ModularFunction 𝒮ℒ` with underlying function `j`.
+- **Source:** existing jfunction.lean `j_slash_invariant`, `j_cuspFunction_meromorphicAt`.
+- **Proof sketch:** j holomorphic since Δ is nowhere zero; use MF001 holomorphic inclusion;
+  meromorphy in width 1 gives exponential growth; transport to every rational cusp.
+- **Validation:** `jModularFunction` compiles, underlying function is definitionally `j`, standard axioms only.
+
+### [MF-CLEANUP] Review, simplify, profile, and verify new modules
+- **Status:** done
+- **Depends on:** MF001, MF002, MF003, MF004
+- **Files:** all newly changed Lean files
+- **Acceptance:** independent review of mathematical statements, actual focused/full builds,
+  source attribution and no-sorry audit, standard axioms on new principal declarations,
+  cleanup/simplify and elaboration performance evidence recorded.
+- **Validation:** full build passed (3916 jobs), 12 principal axiom audits passed, all 9 modules profiled;
+  see `modular-functions-verification.md` for source, review, and timing evidence.
+
 ## Summary
 
 - Original Cox §11.B–C board: complete (`T001`–`T029`).
 - Takeover extension: complete (`T030`–`T037`).
+- Modular functions extension: complete (`MF001`–`MF004`, `MF-CLEANUP`).
+- Cox migration: complete (`CX001`–`CX003`, `CX-CLEANUP`).
 - Execution status: **beastmode complete**.
 - Open tickets with met dependencies: none.
 - Source mappings and adversarial attacks: `.mathlib-quality/decomposition.md`.

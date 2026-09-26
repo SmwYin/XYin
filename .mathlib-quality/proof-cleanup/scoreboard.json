@@ -1,0 +1,749 @@
+[
+  {
+    "path": "XYin/Basic.lean",
+    "before_lines": 1,
+    "after_lines": 1,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "a88fef4d3efa63c9f9f5c948dd5ba1de3ea09d828ce8388ee83fa3d039e734a4"
+  },
+  {
+    "path": "XYin/PhD/Cox/Arithmetic.lean",
+    "before_lines": 359,
+    "after_lines": 346,
+    "status": "verified",
+    "changed_theorem_bodies": 5,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "686cf2070f7168c47af9bc6f61b18e181ef1029a89396f6a189ebfda5d9c4ef4"
+  },
+  {
+    "path": "XYin/PhD/Cox/CoxMatrices/Basic.lean",
+    "before_lines": 897,
+    "after_lines": 822,
+    "status": "verified",
+    "changed_theorem_bodies": 7,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "377433cd2793dcd517f34d058a40c3d6b8f391858bb13b2ca5bfa43992ae1bb6"
+  },
+  {
+    "path": "XYin/PhD/Cox/CoxMatrices/Cardinality.lean",
+    "before_lines": 299,
+    "after_lines": 278,
+    "status": "verified",
+    "changed_theorem_bodies": 4,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "b548aaf8d91e997af90aa918c3d72fcf173d3e00ad946b580c77b80a754878ab"
+  },
+  {
+    "path": "XYin/PhD/Cox/CoxMatrices/LaurentExpansion.lean",
+    "before_lines": 438,
+    "after_lines": 354,
+    "status": "verified",
+    "changed_theorem_bodies": 6,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "f14bde44ff37d97901af928862c97a2b75e08c2de970fd949365865f67356d4d"
+  },
+  {
+    "path": "XYin/PhD/Cox/CoxMatrices.lean",
+    "before_lines": 14,
+    "after_lines": 14,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "2e517709f58cf144da2b64c9dfe28a949e2fc5e37936261cab43f9d3be75aeb6"
+  },
+  {
+    "path": "XYin/PhD/Cox/CyclicSublattice/Classification.lean",
+    "before_lines": 423,
+    "after_lines": 370,
+    "status": "verified",
+    "changed_theorem_bodies": 7,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "eb6292f457ee7376cc6391c11aaa666f162115d2581ada49b6cebc5bd9c077f3"
+  },
+  {
+    "path": "XYin/PhD/Cox/CyclicSublattice.lean",
+    "before_lines": 671,
+    "after_lines": 541,
+    "status": "verified",
+    "changed_theorem_bodies": 12,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "a95a25f39bb04d1c9917e1f1c3a773b42df41d10e0393a34150d6e301e6a2983"
+  },
+  {
+    "path": "XYin/PhD/Cox/DiagonalLaurent.lean",
+    "before_lines": 370,
+    "after_lines": 293,
+    "status": "verified",
+    "changed_theorem_bodies": 7,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "7e9e94bc7564d1cb6a815388c80902ac37bae52d6fd4a699b0d7da039a14cf90"
+  },
+  {
+    "path": "XYin/PhD/Cox/FormalCoxProduct.lean",
+    "before_lines": 272,
+    "after_lines": 228,
+    "status": "verified",
+    "changed_theorem_bodies": 5,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "7edeedfd74c1ca167110374d315ac2f1165e027f29837b16fa43f599ebe09f30"
+  },
+  {
+    "path": "XYin/PhD/Cox/HermiteNormalForm.lean",
+    "before_lines": 473,
+    "after_lines": 408,
+    "status": "verified",
+    "changed_theorem_bodies": 9,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "8579d24c70b2cbea578241137a60983f0c71f77a065ee52d964bb9a77a08bc59"
+  },
+  {
+    "path": "XYin/PhD/Cox/Kronecker.lean",
+    "before_lines": 793,
+    "after_lines": 771,
+    "status": "verified",
+    "changed_theorem_bodies": 2,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "a50622b1f828fbba91ffc2d5ff2dabd6279d17968d7eb4b91145c7751e473647"
+  },
+  {
+    "path": "XYin/PhD/Cox/KroneckerFrobenius.lean",
+    "before_lines": 241,
+    "after_lines": 233,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "c8d562eb8df2411435c46562d962fc0581c6635ba4c6b1a989ae28639653dd66"
+  },
+  {
+    "path": "XYin/PhD/Cox/LatticeJ.lean",
+    "before_lines": 691,
+    "after_lines": 632,
+    "status": "verified",
+    "changed_theorem_bodies": 10,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "112cece1d221ec3dea861d7148eb19cb82c65ce18bedd7b5d32ef9ae6c0fab7b"
+  },
+  {
+    "path": "XYin/PhD/Cox/LaurentPolynomialEvaluation.lean",
+    "before_lines": 176,
+    "after_lines": 151,
+    "status": "verified",
+    "changed_theorem_bodies": 3,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "400aed7fb57c09f6bf9d55599e990656cccf5a34fd9a726074bde46a18449f22"
+  },
+  {
+    "path": "XYin/PhD/Cox/LevelThree.lean",
+    "before_lines": 878,
+    "after_lines": 858,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "ef909c514008ca826bc2645d85b538029a154a1bd7757e78d7cd6e284cda94b8"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularFunction/CuspData.lean",
+    "before_lines": 154,
+    "after_lines": 154,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "72a4598af73bc3392eb6485448b0452e321aab70cc556b5e7097eb1dd60a6c94"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularFunction/LevelJ.lean",
+    "before_lines": 331,
+    "after_lines": 329,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "49393a3e2cf9e3e550431c2267fcf020c8a20d416097b74e8495ac6b8e86fc16"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularFunction.lean",
+    "before_lines": 449,
+    "after_lines": 439,
+    "status": "verified",
+    "changed_theorem_bodies": 2,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "e8f473e0da0c2977872efd2c962dfad308d5e6b7ab253d486f1152c365377165"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularFunctionField.lean",
+    "before_lines": 197,
+    "after_lines": 186,
+    "status": "verified",
+    "changed_theorem_bodies": 2,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "f335737e2cb568a8599a2b6548fe1e48b1e30c6021e3834325b60491abfff41e"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularPolynomial/AnalyticSupport.lean",
+    "before_lines": 106,
+    "after_lines": 96,
+    "status": "verified",
+    "changed_theorem_bodies": 2,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "f227f4302e71c7263270e3eebcdc900be30243102bd2488c18451cf97408b743"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularPolynomial/Construction.lean",
+    "before_lines": 445,
+    "after_lines": 379,
+    "status": "verified",
+    "changed_theorem_bodies": 7,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "9935257accaca84573ed1f838a909305591fa24dc7c804c8f6771f0fc87a33a3"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularPolynomial/IntegralDescent.lean",
+    "before_lines": 372,
+    "after_lines": 305,
+    "status": "verified",
+    "changed_theorem_bodies": 5,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "1523cc4b47ab4922e5e2cdfd1dd627945e914a1e70f174f2a3a0725760627619"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularPolynomial/Interpolation.lean",
+    "before_lines": 649,
+    "after_lines": 498,
+    "status": "verified",
+    "changed_theorem_bodies": 10,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "13fe1f60181570f1ebeb942aecf4357a8feab754fdbbeae2a6a29c120b152d2f"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularPolynomial/Irreducibility.lean",
+    "before_lines": 158,
+    "after_lines": 141,
+    "status": "verified",
+    "changed_theorem_bodies": 3,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "50382f8f5b2aabb829de173057e7470bc5d58a1405986f757bad4953522a3f1f"
+  },
+  {
+    "path": "XYin/PhD/Cox/ModularPolynomial.lean",
+    "before_lines": 16,
+    "after_lines": 16,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "9050d3d9fd5889b98ae82b2eeccb99dfdec89f5ca3e168ce21b96d9a2a5ff5a9"
+  },
+  {
+    "path": "XYin/PhD/Cox/Section11BC.lean",
+    "before_lines": 22,
+    "after_lines": 22,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "41ac5f5812ab55f64c806df3e0637e09bb9189873c786ba3fb6367d55315610b"
+  },
+  {
+    "path": "XYin/PhD/Cox/SingularModuli.lean",
+    "before_lines": 250,
+    "after_lines": 238,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "8df975dd29c6d13951f700056fe8eb23509ab9251c7bb5a2bfef008203fd698a"
+  },
+  {
+    "path": "XYin/PhD/Cox/SymmetricCubicLaurent.lean",
+    "before_lines": 452,
+    "after_lines": 391,
+    "status": "verified",
+    "changed_theorem_bodies": 6,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "9412e753765b9f0e9985665e543e1000fe1c1a347d63fe8ac08f419b0e5da17a"
+  },
+  {
+    "path": "XYin/PhD/Cox/UpperHalfPlaneFunctionField.lean",
+    "before_lines": 293,
+    "after_lines": 264,
+    "status": "verified",
+    "changed_theorem_bodies": 3,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "7fe9232f09dc9b1d47893f3d1aafc4688bb9257eabbbdadd52f6aa79839a5c30"
+  },
+  {
+    "path": "XYin/PhD/IntegralPowerSeries/IntegralPowerSeries.lean",
+    "before_lines": 240,
+    "after_lines": 229,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "fe6be36027b22008c8aa42357d4750c3582dc5f68dc910208621a7b982dfd949"
+  },
+  {
+    "path": "XYin/PhD/LaurentQExpansion/Algebra.lean",
+    "before_lines": 451,
+    "after_lines": 439,
+    "status": "verified",
+    "changed_theorem_bodies": 5,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "4ef424ba8d75362183dabe88e630455ab46d9ff68d74e21726f562813deb5d21"
+  },
+  {
+    "path": "XYin/PhD/LaurentQExpansion/LaurentQExpansion.lean",
+    "before_lines": 810,
+    "after_lines": 706,
+    "status": "verified",
+    "changed_theorem_bodies": 9,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "b36ed8e21e8136a3cd51db7a4f8edc032249543558ffc93493a200690bce7df2"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/Basic.lean",
+    "before_lines": 97,
+    "after_lines": 97,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "3849cf966bf9b2dbe34e341efefb1b077b344ce8f708e00624baeb8f5c3fbc46"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/Congruence.lean",
+    "before_lines": 150,
+    "after_lines": 150,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "691a1148abccffc206fca27c04344eb0673b7e64476207bc2cee752c61dd9cba"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/CuspGrowth.lean",
+    "before_lines": 114,
+    "after_lines": 114,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "5845e8fdf0fd4d2837bdded68a97b544ae01b23e9c48c0a1f63be21bf957d63b"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/CuspPeriod.lean",
+    "before_lines": 62,
+    "after_lines": 62,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "5b8f3530564a3f4143eab5462ff7c8c24e40ca6d7dfb8e5364fdebf4c934b6f1"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/Cusps.lean",
+    "before_lines": 88,
+    "after_lines": 88,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "e89c272cfa70c75ac97fb89484de2c9a203818a5ddf6e824a73f80f9a6fd6874"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/FieldAction.lean",
+    "before_lines": 149,
+    "after_lines": 149,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "e8b8e58a6d0266e4f7a4580255ca4b185eedc1b59626226ec1e8d063919a13d1"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/GrowthAtCusp.lean",
+    "before_lines": 73,
+    "after_lines": 73,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "63fa2b526d1a20d8fee3fca637bb389e6ced5cf76dbfc1c0c7850b4fe1c3e733"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/JInvariant.lean",
+    "before_lines": 68,
+    "after_lines": 57,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "18ecf2695b964096ba3eeca806680cd17a1d182d7e14f14263ee0b4ca4f5155c"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/MeromorphicField.lean",
+    "before_lines": 662,
+    "after_lines": 658,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "efd92083d32e20e62f05c82f799e741278b198e045d23ee41ea664215e65e6b1"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/NormalFormGrowth.lean",
+    "before_lines": 66,
+    "after_lines": 66,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "504ecc43b163e97627b7033d913fc5bd76c7bd0ec69d6636cffbd0a9432fbe4c"
+  },
+  {
+    "path": "XYin/PhD/ModularFunctions/NormalFormSlash.lean",
+    "before_lines": 97,
+    "after_lines": 97,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "81dc29a5567b0b7a1e6c0ddfb4a9964316be88e4bdd52624f13a53de201fd206"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/AtImInfty.lean",
+    "before_lines": 27,
+    "after_lines": 27,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "7d10272bea1cae1b09d39f849167b30e23ece296735a759a736d24bcbe067112"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/BigO.lean",
+    "before_lines": 149,
+    "after_lines": 61,
+    "status": "verified",
+    "changed_theorem_bodies": 5,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "5b8c394cb4ecb45eb0ee6ab063e0cc7442b744e7eddf2bded03454fc6d45f0d7"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/Delta.lean",
+    "before_lines": 598,
+    "after_lines": 408,
+    "status": "verified",
+    "changed_theorem_bodies": 12,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "865182abd1e9d82d74ec0942d20828ea402f65a1d793424a43adf48f370c25d4"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/DimensionFormulas.lean",
+    "before_lines": 509,
+    "after_lines": 200,
+    "status": "verified",
+    "changed_theorem_bodies": 16,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "dfb213b4444bf7249588ffcc3da6e23198cec0159072a517bdcbb8e61da4a0d5"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/E2.lean",
+    "before_lines": 181,
+    "after_lines": 109,
+    "status": "verified",
+    "changed_theorem_bodies": 4,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "369de5d7627449a0c0ce80cbbe9be3cedd2a66c8ff1c454dee7c269be4f9074e"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/Eisenstein.lean",
+    "before_lines": 940,
+    "after_lines": 692,
+    "status": "verified",
+    "changed_theorem_bodies": 12,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "010d987cd0a9243de7cdc99cdd54792b3024bc9c1f82067903e2b97d85586307"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/Eisensteinqexpansions.lean",
+    "before_lines": 343,
+    "after_lines": 155,
+    "status": "verified",
+    "changed_theorem_bodies": 7,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "cf0892c3b9ae4f922a93451f9149f01b259f75d31cd82ac7ff8ca60fc3fae2b4"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/ForMathlib_Cusps.lean",
+    "before_lines": 21,
+    "after_lines": 21,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "d7f4777b2842836a7ffe2ed1d73612fc9eaf3d931b006a959772e528b3aa49aa"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/IsCuspForm.lean",
+    "before_lines": 181,
+    "after_lines": 152,
+    "status": "verified",
+    "changed_theorem_bodies": 5,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "827a8dc0563a98b9bb71b28626713a406d61ebe2fea14fb47c7e9e4d19269853"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/NormNumI.lean",
+    "before_lines": 207,
+    "after_lines": 205,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "ab31cd0bc399e1e549c719bfb4b5e20b731628b8e501de39fef746cd5595b154"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/ResToImagAxis.lean",
+    "before_lines": 480,
+    "after_lines": 403,
+    "status": "verified",
+    "changed_theorem_bodies": 16,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "e43895cbce516206b8c0cf250b7352a6199d3bff7567464da2f77881bbb0d008"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/SlashActionAuxil.lean",
+    "before_lines": 310,
+    "after_lines": 287,
+    "status": "verified",
+    "changed_theorem_bodies": 3,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "851f7c929cba976d36390082a7955f0aa0d237c9424e14229cc32ef88ebaca0a"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/Summability/Basic.lean",
+    "before_lines": 363,
+    "after_lines": 206,
+    "status": "verified",
+    "changed_theorem_bodies": 16,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "c3e2beb1127fef8888776b43df894a07ebffd42bb734b5be2177ab1826d606c9"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/Summability/QExpansion.lean",
+    "before_lines": 748,
+    "after_lines": 296,
+    "status": "verified",
+    "changed_theorem_bodies": 24,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "dc5e3407a0abe9565a4e07759d5ee0733cf19e982433d15560ec7db15c38077e"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/Summability/Reciprocal.lean",
+    "before_lines": 688,
+    "after_lines": 297,
+    "status": "verified",
+    "changed_theorem_bodies": 24,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "3de717e650da8e0623c978610102881602f979db4c8acaf9de58c96e7eb91598"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/clog_arg_lems.lean",
+    "before_lines": 180,
+    "after_lines": 94,
+    "status": "verified",
+    "changed_theorem_bodies": 6,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "32983589effe33609c192e21c80f6525a319db8c86c44249e2538a6070091a51"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/csqrt.lean",
+    "before_lines": 79,
+    "after_lines": 57,
+    "status": "verified",
+    "changed_theorem_bodies": 3,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "f0c471e1bd5bc3a6e2c137ab879ab5af0d045f7b3b48d81fde67f6ce91abe849"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/equivs.lean",
+    "before_lines": 46,
+    "after_lines": 46,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "1ac9c2693e28ef71583601308de2fc91561296301606147203472f5276cce074"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/eta.lean",
+    "before_lines": 172,
+    "after_lines": 81,
+    "status": "verified",
+    "changed_theorem_bodies": 4,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "1f0229d5abbf6e5548a9a8524cbc8f4f5a46bbde8c3975fe9c5418912e8169ca"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/exp_lems.lean",
+    "before_lines": 36,
+    "after_lines": 29,
+    "status": "verified",
+    "changed_theorem_bodies": 2,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "1816c388d5d69c6602857924db3a780502f6d932608095fe9009b59cdc6b353d"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/iteratedderivs.lean",
+    "before_lines": 169,
+    "after_lines": 72,
+    "status": "verified",
+    "changed_theorem_bodies": 6,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "ab839a49ce0e82f8cec40d26cc82950e341e71d762a84267a7e22c7f6c62c7b7"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/multipliable_lems.lean",
+    "before_lines": 149,
+    "after_lines": 81,
+    "status": "verified",
+    "changed_theorem_bodies": 11,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "241ddf18f4cafa6232ccf997e2f16491a1b57d69d66c7eeccd6779af7581dba7"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/qExpansion_lems.lean",
+    "before_lines": 205,
+    "after_lines": 113,
+    "status": "verified",
+    "changed_theorem_bodies": 10,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "2288061341122f324ee686fb60f28ed783c9300404b03e0de9350cf847c7b417"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/summable_lems.lean",
+    "before_lines": 16,
+    "after_lines": 16,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "c83c7e8eb97b976a69427291d74586c2e9ac42cee5f28dc6b8f79bbf897d1bd0"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/tsumderivWithin.lean",
+    "before_lines": 138,
+    "after_lines": 138,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "ddf5b3e7ae84a689479827fc20c8bbca1991d734fe792a4e1e69415d5941bb6b"
+  },
+  {
+    "path": "XYin/PhD/Modularforms/upperhalfplane.lean",
+    "before_lines": 21,
+    "after_lines": 17,
+    "status": "verified",
+    "changed_theorem_bodies": 1,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "f78bebb51653cfb2828f02e5563e0a403c3b45abbaf55734012871f1b8d0d1b1"
+  },
+  {
+    "path": "XYin/PhD/Tactic2/LaurentQExpSimpTests.lean",
+    "before_lines": 63,
+    "after_lines": 63,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "9f4a899f3f8fdad59336b102e2e112533b93bb262119d7dd877493c6afd7b9d0"
+  },
+  {
+    "path": "XYin/PhD/Tactic2/QExpSimpAttr.lean",
+    "before_lines": 3,
+    "after_lines": 3,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "f94868f8b64730f61b2ae84cf08d7f88c8354b661db85bd7faa74707b25b8655"
+  },
+  {
+    "path": "XYin/PhD/Tactic2/QExpSimpConditionTests.lean",
+    "before_lines": 55,
+    "after_lines": 55,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "c881004448bac726bf6c39f6adcc820d3261661f30347376354ee160d03c66cc"
+  },
+  {
+    "path": "XYin/PhD/Tactic2/qexp_simp.lean",
+    "before_lines": 207,
+    "after_lines": 207,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "d338b06ae5747016b7b48de9e2386a229453805dc581387aebb1495858c197c1"
+  },
+  {
+    "path": "XYin/PhD/jFunction/Deltaqexpansions.lean",
+    "before_lines": 337,
+    "after_lines": 300,
+    "status": "verified",
+    "changed_theorem_bodies": 8,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "56d8e3a348f3c1d7a37d9a467f7233ccb4671621c88590e59ed7207b9446e71f"
+  },
+  {
+    "path": "XYin/PhD/jFunction/jInvariantLink.lean",
+    "before_lines": 81,
+    "after_lines": 81,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "04b80c927cada8b2ad2b3254440c53a1de822b743b0a6d746c1d05398e47e6de"
+  },
+  {
+    "path": "XYin/PhD/jFunction/jLevelN.lean",
+    "before_lines": 212,
+    "after_lines": 193,
+    "status": "verified",
+    "changed_theorem_bodies": 2,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "0e1bfaac926e0184b79ada5e512031a0477316f8662879afc80df7123a5af951"
+  },
+  {
+    "path": "XYin/PhD/jFunction/jfunction.lean",
+    "before_lines": 602,
+    "after_lines": 504,
+    "status": "verified",
+    "changed_theorem_bodies": 12,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "a1b8898ed50101dc315babe5c5d56286d4a8963002988fec3904a0f79b04e08e"
+  },
+  {
+    "path": "XYin/PhD/jFunction/qexp_coeffs.lean",
+    "before_lines": 163,
+    "after_lines": 163,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "3c388d33cafc35b975616990a3dea5b25af569c79b0223754192ad9673388bd9"
+  },
+  {
+    "path": "XYin/PhD/qExpansion_tactic/Examples.lean",
+    "before_lines": 65,
+    "after_lines": 65,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "b0883a0aeae1f2d843223ae2f265a12b62c51c7c150df79c88b428ba24f2e3cc"
+  },
+  {
+    "path": "XYin/PhD/qExpansion_tactic/Qj.lean",
+    "before_lines": 304,
+    "after_lines": 304,
+    "status": "inspected-unchanged",
+    "changed_theorem_bodies": 0,
+    "notes": "Complete file inspected; concise API, definitions, facade, tactic implementation, or coefficient examples retained.",
+    "sha256": "5474cd6d07ab9abf6499c62b5b7e7944c03b74cdb13c654c3d0aaa2ef1389272"
+  },
+  {
+    "path": "XYin/PhD/qExpansion_tactic/link.lean",
+    "before_lines": 438,
+    "after_lines": 408,
+    "status": "verified",
+    "changed_theorem_bodies": 3,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "40d74c2d8019be0ddba61e303437873565633c1897e6e9305974f2f1a32f3133"
+  },
+  {
+    "path": "XYin/uniqueness.lean",
+    "before_lines": 334,
+    "after_lines": 297,
+    "status": "verified",
+    "changed_theorem_bodies": 2,
+    "notes": "Direct Lean checks, cumulative lake build, signature/trust checks and independent review passed; see batch reports and verification.md.",
+    "sha256": "fb337914c92c951d3cfcf3ba343ccb92e61e6536be7ce9d333b825b459c9b1d7"
+  }
+]

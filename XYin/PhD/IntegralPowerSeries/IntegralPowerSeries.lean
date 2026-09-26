@@ -17,13 +17,17 @@ coefficients used throughout the q-expansion development.
 
 * `powerSeriesMapAlgHom`: coefficientwise base change `R⟦X⟧ →ₐ[R] A⟦X⟧`.
 * `HasCoeffsIn`: membership in the range subalgebra of `powerSeriesMapAlgHom`.
-* `IntegralPowerSeries.IsIntegralPowerSeries`: complex power series with integer coefficients.
+* `toHasCoeffsInPowerSeries`: a lift to `R⟦X⟧` of a power series with coefficients in `R`.
+* `IntegralPowerSeries.IsIntegralPowerSeries`, `IntegralPowerSeries.toIntegralPowerSeries`:
+  complex power series with integer coefficients, and their integer lifts.
 * `IntegralPowerSeries.modularFormQExpansionSubmodule`: the `R`-submodule of modular forms whose
   `q`-expansion has all coefficients in `R`.
 
 ## Main results
 
 * `hasCoeffsIn_iff_coeff`: coefficientwise characterisation of `HasCoeffsIn`.
+* `IntegralPowerSeries.coeff_toIntegralPowerSeries_cast`: the integer lift has the expected
+  coefficients.
 * `IntegralPowerSeries.IsIntegralPowerSeriesmod`: an integral power series all of whose integer
   coefficients are divisible by `c ≠ 0` remains integral after division by `c`.
 -/
@@ -39,13 +43,22 @@ lemma powerSeriesMapAlgHom_apply (R A : Type*) [CommSemiring R] [Semiring A] [Al
     (f : PowerSeries R) : powerSeriesMapAlgHom R A f = f.map (algebraMap R A) :=
   rfl
 
+lemma coeff_powerSeriesMapAlgHom (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
+    (f : PowerSeries R) (n : ℕ) :
+    (powerSeriesMapAlgHom R A f).coeff n = algebraMap R A (f.coeff n) := by
+  simp
+
+/-- The coefficients of the base change of an integer power series to `ℂ` are the casts of its
+coefficients. -/
+@[simp]
+lemma coeff_mapAlgHom_ofId_int (F : PowerSeries ℤ) (n : ℕ) :
+    (PowerSeries.mapAlgHom (Algebra.ofId ℤ ℂ) F).coeff n = (F.coeff n : ℂ) := by
+  rw [PowerSeries.mapAlgHom_apply, PowerSeries.coeff_map]
+  rfl
+
 /-- The `R`-subalgebra of `A⟦X⟧` of power series arising by base change from `R⟦X⟧`. -/
 noncomputable def powerSeriesMapSubalgebra (R A : Type*) [CommSemiring R] [Semiring A]
     [Algebra R A] : Subalgebra R (PowerSeries A) := (powerSeriesMapAlgHom R A).range
-
-/-- `powerSeriesMapSubalgebra` viewed as an `R`-submodule of `A⟦X⟧`. -/
-noncomputable def powerSeriesMapSubmodule (R A : Type*) [CommSemiring R] [Semiring A]
-    [Algebra R A] : Submodule R (PowerSeries A) := (powerSeriesMapSubalgebra R A).toSubmodule
 
 /-- The power series `x ∈ A⟦X⟧` has all its coefficients in the image of `algebraMap R A`. -/
 def HasCoeffsIn (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
@@ -63,33 +76,51 @@ lemma hasCoeffsIn_iff_coeff (R A : Type*) [CommSemiring R] [Semiring A] [Algebra
     choose r hr using h
     exact ⟨PowerSeries.mk r, PowerSeries.ext fun n => by simp [(hr n).symm]⟩
 
-lemma mem_powerSeriesMapSubmodule_iff (R A : Type*) [CommSemiring R] [Semiring A]
-    [Algebra R A] (x : PowerSeries A) :
-    x ∈ powerSeriesMapSubmodule R A ↔ HasCoeffsIn R A x :=
-  Iff.rfl
+section Closure
 
-lemma hasCoeffsIn_zero (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A] :
-    HasCoeffsIn R A (0 : PowerSeries A) :=
+variable (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
+
+lemma hasCoeffsIn_zero : HasCoeffsIn R A (0 : PowerSeries A) :=
   (powerSeriesMapSubalgebra R A).zero_mem
 
-lemma hasCoeffsIn_one (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A] :
-    HasCoeffsIn R A (1 : PowerSeries A) :=
+lemma hasCoeffsIn_one : HasCoeffsIn R A (1 : PowerSeries A) :=
   (powerSeriesMapSubalgebra R A).one_mem
 
-lemma hasCoeffsIn_add (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
-    {x y : PowerSeries A} (hx : HasCoeffsIn R A x) (hy : HasCoeffsIn R A y) :
+lemma hasCoeffsIn_add {x y : PowerSeries A} (hx : HasCoeffsIn R A x) (hy : HasCoeffsIn R A y) :
     HasCoeffsIn R A (x + y) :=
   (powerSeriesMapSubalgebra R A).add_mem hx hy
 
-lemma hasCoeffsIn_mul (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
-    {x y : PowerSeries A} (hx : HasCoeffsIn R A x) (hy : HasCoeffsIn R A y) :
+lemma hasCoeffsIn_mul {x y : PowerSeries A} (hx : HasCoeffsIn R A x) (hy : HasCoeffsIn R A y) :
     HasCoeffsIn R A (x * y) :=
   (powerSeriesMapSubalgebra R A).mul_mem hx hy
 
-lemma hasCoeffsIn_smul (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
-    (r : R) {x : PowerSeries A} (hx : HasCoeffsIn R A x) :
+lemma hasCoeffsIn_pow {x : PowerSeries A} (hx : HasCoeffsIn R A x) (n : ℕ) :
+    HasCoeffsIn R A (x ^ n) :=
+  (powerSeriesMapSubalgebra R A).pow_mem hx n
+
+lemma hasCoeffsIn_smul (r : R) {x : PowerSeries A} (hx : HasCoeffsIn R A x) :
     HasCoeffsIn R A (r • x) :=
   (powerSeriesMapSubalgebra R A).smul_mem hx r
+
+lemma hasCoeffsIn_algebraMap (r : R) : HasCoeffsIn R A (algebraMap R (PowerSeries A) r) :=
+  (powerSeriesMapSubalgebra R A).algebraMap_mem r
+
+lemma hasCoeffsIn_C_algebraMap (r : R) : HasCoeffsIn R A (PowerSeries.C (algebraMap R A r)) :=
+  ⟨PowerSeries.C r, by simp [PowerSeries.map_C]⟩
+
+lemma hasCoeffsIn_X : HasCoeffsIn R A (PowerSeries.X : PowerSeries A) :=
+  ⟨PowerSeries.X, by simp⟩
+
+lemma hasCoeffsIn_finset_sum {ι : Type*} {s : Finset ι} {x : ι → PowerSeries A}
+    (hx : ∀ i ∈ s, HasCoeffsIn R A (x i)) : HasCoeffsIn R A (∑ i ∈ s, x i) :=
+  (powerSeriesMapSubalgebra R A).sum_mem hx
+
+lemma hasCoeffsIn_finset_prod {A : Type*} [CommSemiring A] [Algebra R A] {ι : Type*}
+    {s : Finset ι} {x : ι → PowerSeries A} (hx : ∀ i ∈ s, HasCoeffsIn R A (x i)) :
+    HasCoeffsIn R A (∏ i ∈ s, x i) :=
+  (powerSeriesMapSubalgebra R A).prod_mem hx
+
+end Closure
 
 lemma hasCoeffsIn_neg (R A : Type*) [CommRing R] [Ring A] [Algebra R A] {x : PowerSeries A}
     (hx : HasCoeffsIn R A x) : HasCoeffsIn R A (-x) :=
@@ -99,30 +130,25 @@ lemma hasCoeffsIn_sub (R A : Type*) [CommRing R] [Ring A] [Algebra R A] {x y : P
     (hx : HasCoeffsIn R A x) (hy : HasCoeffsIn R A y) : HasCoeffsIn R A (x - y) :=
   (powerSeriesMapSubalgebra R A).sub_mem hx hy
 
-lemma hasCoeffsIn_C_algebraMap (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
-    (r : R) : HasCoeffsIn R A (PowerSeries.C (algebraMap R A r)) :=
-  ⟨PowerSeries.C r, by simp [PowerSeries.map_C]⟩
-
 /-- The coefficientwise coercion `R⟦X⟧ → ℂ⟦X⟧` as a ring homomorphism. -/
 abbrev coeToComplexPowerSeries.ringHom (R : Type*) [CommRing R] [Algebra R ℂ] :
     PowerSeries R →+* PowerSeries ℂ := (powerSeriesMapAlgHom R ℂ).toRingHom
 
-/-- The subring of `ℂ⟦X⟧` of power series with coefficients in the image of `R`. -/
-noncomputable abbrev RIntegralCPowerSeriesSubring (R : Type*) [CommRing R] [Algebra R ℂ] :
-    Subring (PowerSeries ℂ) := (powerSeriesMapSubalgebra R ℂ).toSubring
+@[simp]
+lemma coeToComplexPowerSeries.ringHom_apply (R : Type*) [CommRing R] [Algebra R ℂ]
+    (f : PowerSeries R) : coeToComplexPowerSeries.ringHom R f = f.map (algebraMap R ℂ) :=
+  rfl
 
-/-- A complex power series has all its coefficients in the image of `R`. -/
-abbrev IsRIntegralCPowerSeries (R : Type*) [CommRing R] [Algebra R ℂ] (x : PowerSeries ℂ) : Prop :=
-  HasCoeffsIn R ℂ x
+lemma coeToComplexPowerSeries.coeff_ringHom (R : Type*) [CommRing R] [Algebra R ℂ]
+    (f : PowerSeries R) (n : ℕ) :
+    (coeToComplexPowerSeries.ringHom R f).coeff n = algebraMap R ℂ (f.coeff n) :=
+  coeff_powerSeriesMapAlgHom R ℂ f n
 
-/-- A complex power series has integer coefficients. -/
-abbrev IsIntegralCPowerSeries (x : PowerSeries ℂ) : Prop :=
-  HasCoeffsIn ℤ ℂ x
-
-lemma isRIntegralCPowerSeries_iff_coeff (R : Type*) [CommRing R] [Algebra R ℂ]
-    (f : PowerSeries ℂ) : IsRIntegralCPowerSeries R f ↔
-      ∀ n : ℕ, ∃ r : R, PowerSeries.coeff n f = algebraMap R ℂ r := by
-  simpa [IsRIntegralCPowerSeries] using hasCoeffsIn_iff_coeff R ℂ f
+/-- The coefficients of the complexification of an integer power series are the casts of its
+coefficients. -/
+lemma coeToComplexPowerSeries.coeff_ringHom_int (f : PowerSeries ℤ) (n : ℕ) :
+    (coeToComplexPowerSeries.ringHom ℤ f).coeff n = (f.coeff n : ℂ) :=
+  coeff_mapAlgHom_ofId_int f n
 
 /-- A (noncanonical) lift to `R⟦X⟧` of a power series with coefficients in `R`. -/
 noncomputable def toHasCoeffsInPowerSeries (R A : Type*) [CommSemiring R] [Semiring A]
@@ -134,39 +160,53 @@ lemma map_toHasCoeffsInPowerSeries (R A : Type*) [CommSemiring R] [Semiring A] [
     (powerSeriesMapAlgHom R A) (toHasCoeffsInPowerSeries R A hf) = f :=
   Classical.choose_spec hf
 
-/-- The lift to `R⟦X⟧` of an `R`-integral complex power series. -/
-noncomputable def toRIntegralCPowerSeries (R : Type*) [CommRing R] [Algebra R ℂ]
-    {f : PowerSeries ℂ} (hf : IsRIntegralCPowerSeries R f) : PowerSeries R :=
-  toHasCoeffsInPowerSeries R ℂ hf
-
-lemma coeToComplexPowerSeries_of_toRIntegralCPowerSeries (R : Type*) [CommRing R] [Algebra R ℂ]
-    {f : PowerSeries ℂ} (hf : IsRIntegralCPowerSeries R f) :
-    (coeToComplexPowerSeries.ringHom R) (toRIntegralCPowerSeries R hf) = f :=
-  map_toHasCoeffsInPowerSeries R ℂ hf
+/-- The lift `toHasCoeffsInPowerSeries` has the expected coefficients. (Not `@[simp]`: it would
+collapse the specification `map_toHasCoeffsInPowerSeries` to `True` under `simpa`.) -/
+lemma coeff_toHasCoeffsInPowerSeries (R A : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
+    {f : PowerSeries A} (hf : HasCoeffsIn R A f) (n : ℕ) :
+    algebraMap R A ((toHasCoeffsInPowerSeries R A hf).coeff n) = f.coeff n := by
+  rw [← coeff_powerSeriesMapAlgHom, map_toHasCoeffsInPowerSeries]
 
 namespace IntegralPowerSeries
 
 /-- The subring of complex power series with integer coefficients. -/
 noncomputable abbrev IntegralPowerSeriesSubring : Subring (PowerSeries ℂ) :=
-  RIntegralCPowerSeriesSubring ℤ
+  (powerSeriesMapSubalgebra ℤ ℂ).toSubring
 
 /-- A complex power series has integer coefficients. -/
 abbrev IsIntegralPowerSeries (x : PowerSeries ℂ) : Prop :=
-  IsIntegralCPowerSeries x
+  HasCoeffsIn ℤ ℂ x
 
 /-- A complex power series is integral iff every coefficient is the coercion of an integer. -/
 lemma int_iff (f : PowerSeries ℂ) : IsIntegralPowerSeries f ↔
     ∀ n : ℕ, ∃ z : ℤ, PowerSeries.coeff n f = z := by
-  simpa [IsIntegralPowerSeries] using isRIntegralCPowerSeries_iff_coeff ℤ f
+  simpa using hasCoeffsIn_iff_coeff ℤ ℂ f
 
 /-- The integer-coefficient lift of an integral complex power series. -/
 noncomputable abbrev toIntegralPowerSeries {f : PowerSeries ℂ}
     (hf : IsIntegralPowerSeries f) : PowerSeries ℤ :=
-  toRIntegralCPowerSeries ℤ hf
+  toHasCoeffsInPowerSeries ℤ ℂ hf
 
 lemma coeTo_of_toIntegralPowerSeries {f : PowerSeries ℂ} (hf : IsIntegralPowerSeries f) :
-    (coeToComplexPowerSeries.ringHom ℤ) (toIntegralPowerSeries hf) = f := by
-  simpa [toIntegralPowerSeries] using coeToComplexPowerSeries_of_toRIntegralCPowerSeries ℤ hf
+    (coeToComplexPowerSeries.ringHom ℤ) (toIntegralPowerSeries hf) = f :=
+  map_toHasCoeffsInPowerSeries ℤ ℂ hf
+
+/-- `coeTo_of_toIntegralPowerSeries` stated with mathlib's `PowerSeries.mapAlgHom`. -/
+lemma mapAlgHom_ofId_toIntegralPowerSeries {f : PowerSeries ℂ} (hf : IsIntegralPowerSeries f) :
+    PowerSeries.mapAlgHom (Algebra.ofId ℤ ℂ) (toIntegralPowerSeries hf) = f :=
+  map_toHasCoeffsInPowerSeries ℤ ℂ hf
+
+/-- The coefficients of the integer lift, cast back to `ℂ`, are the original coefficients. -/
+lemma coeff_toIntegralPowerSeries_cast {f : PowerSeries ℂ} (hf : IsIntegralPowerSeries f)
+    (n : ℕ) : ((toIntegralPowerSeries hf).coeff n : ℂ) = f.coeff n := by
+  simpa using coeff_toHasCoeffsInPowerSeries ℤ ℂ hf n
+
+/-- The integer lift is the unique integer power series whose base change is `f`. -/
+lemma toIntegralPowerSeries_eq_of_map_eq {f : PowerSeries ℂ} (hf : IsIntegralPowerSeries f)
+    {g : PowerSeries ℤ} (hg : coeToComplexPowerSeries.ringHom ℤ g = f) :
+    toIntegralPowerSeries hf = g :=
+  PowerSeries.map_injective (algebraMap ℤ ℂ) Int.cast_injective
+    ((coeTo_of_toIntegralPowerSeries hf).trans hg.symm)
 
 /-- Divisibility descent: if all integer coefficients of an integral power series are divisible
 by `c ≠ 0`, then `(1 / c) • f` is again an integral power series. -/
@@ -175,22 +215,9 @@ lemma IsIntegralPowerSeriesmod {c : ℤ} (hc : c ≠ 0) {f : PowerSeries ℂ}
     ((toIntegralPowerSeries hf).coeff n) 0) : IsIntegralPowerSeries ((1 / c : ℂ) • f) := by
   rw [int_iff]
   intro n
-  let g : PowerSeries ℤ := toIntegralPowerSeries hf
-  have hg : (coeToComplexPowerSeries.ringHom ℤ) g = f := by
-    simpa [g] using coeTo_of_toIntegralPowerSeries hf
-  have hdiv : c ∣ g.coeff n := by
-    have hneg : c ∣ -g.coeff n := by
-      simpa [Int.sub_eq_add_neg] using Int.modEq_iff_dvd.mp (hmod n)
-    exact Int.dvd_neg.mp hneg
-  rcases hdiv with ⟨t, ht⟩
+  obtain ⟨t, ht⟩ := Int.modEq_zero_iff_dvd.mp (hmod n)
   refine ⟨t, ?_⟩
-  have hgn : (g.coeff n : ℂ) = f.coeff n := congrArg (PowerSeries.coeff n) hg
-  calc
-  _ = (1 / c : ℂ) * f.coeff n := by simp
-  _ = (1 / c : ℂ) * (g.coeff n : ℂ) := by simp [hgn]
-  _ = (1 / c : ℂ) * ((c * t : ℤ) : ℂ) := by simp [ht]
-  _ = (1 / c : ℂ) * ((c : ℂ) * (t : ℂ)) := by norm_cast
-  _ = _ := by simp [hc]
+  simp [← coeff_toIntegralPowerSeries_cast hf, ht, hc]
 
 section ModularForms
 

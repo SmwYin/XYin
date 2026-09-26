@@ -1,7 +1,7 @@
 name = "XYin"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["XYin"]
+defaultTargets = ["XYin", "XYinTest"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -16,3 +16,7 @@ rev = "master"
 
 [[lean_lib]]
 name = "XYin"
+
+# Tests and interactive examples (not part of the library).
+[[lean_lib]]
+name = "XYinTest"

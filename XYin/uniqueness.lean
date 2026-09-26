@@ -1,4 +1,11 @@
 /-
+Copyright (c) 2026 The XYin contributors. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: The XYin contributors
+-/
+import Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass
+
+/-!
 # Uniqueness theorem for complex lattices
 
 A period lattice is determined by its invariants `g₂` and `g₃`:
@@ -15,13 +22,43 @@ Proof outline (the classical one):
    connected set `(Λ₁ ∪ Λ₂)ᶜ`) everywhere off the lattices.
 4. The lattice is the polar set of its `℘` function (pole of order 2 at lattice
    points, analytic elsewhere), so the lattices agree.
+
+## Main results
+
+* `PeriodPair.lattice_eq_of_g₂_eq_of_g₃_eq`: the uniqueness theorem.
+* `iteratedDeriv_sq_mul`: the Leibniz rule for `z ↦ z ^ 2 * g z` at `0`.
+* `AnalyticAt.eventuallyEq_of_iteratedDeriv_eq`: analytic functions with the same iterated
+  derivatives at a point agree near that point.
 -/
-import Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass
-import Mathlib.Data.Nat.Choose.Cast
-import Mathlib.Topology.Algebra.Module.Cardinality
 
 open Filter Topology
 open scoped Nat
+
+/-- Two functions analytic at `x` whose iterated derivatives at `x` all agree coincide on a
+neighbourhood of `x`. -/
+theorem AnalyticAt.eventuallyEq_of_iteratedDeriv_eq {𝕜 : Type*} [NontriviallyNormedField 𝕜]
+    [CompleteSpace 𝕜] [CharZero 𝕜] {f g : 𝕜 → 𝕜} {x : 𝕜} (hf : AnalyticAt 𝕜 f x)
+    (hg : AnalyticAt 𝕜 g x) (h : ∀ n, iteratedDeriv n f x = iteratedDeriv n g x) :
+    f =ᶠ[𝓝 x] g := by
+  have hf' := hf.hasFPowerSeriesAt
+  simp_rw [h] at hf'
+  filter_upwards [hf'.eventually_hasSum_sub, hg.hasFPowerSeriesAt.eventually_hasSum_sub]
+    with z h₁ h₂
+  exact h₁.unique h₂
+
+/-- Leibniz collapse: the `n`-th derivative of `z² g(z)` at `0`, for `g` smooth enough at `0`. -/
+lemma iteratedDeriv_sq_mul {𝕜 : Type*} [NontriviallyNormedField 𝕜] (g : 𝕜 → 𝕜) {n : ℕ}
+    (hg : ContDiffAt 𝕜 n g 0) (hn : 2 ≤ n) :
+    iteratedDeriv n (fun z ↦ z ^ 2 * g z) 0 =
+      (n : 𝕜) * ((n : 𝕜) - 1) * iteratedDeriv (n - 2) g 0 := by
+  have h2 : ((n.choose 2 : ℕ) : 𝕜) * ((Nat.factorial 2 : ℕ) : 𝕜) = n * (n - 1) := by
+    rw [← Nat.cast_mul, mul_comm, ← Nat.descFactorial_eq_factorial_mul_choose,
+      Nat.descFactorial_succ, Nat.descFactorial_one, Nat.cast_mul, Nat.cast_sub (by omega),
+      Nat.cast_one, mul_comm]
+  rw [iteratedDeriv_fun_mul (by fun_prop) hg, Finset.sum_eq_single_of_mem 2
+    (Finset.mem_range.mpr (by omega))
+    (fun i _ hi ↦ by rw [iteratedDeriv_fun_pow_zero, if_neg hi, Nat.cast_zero, mul_zero, zero_mul]),
+    iteratedDeriv_fun_pow_zero, if_pos rfl, h2]
 
 namespace PeriodPair
 
@@ -106,48 +143,27 @@ lemma key_eventuallyEq :
     (fun z : ℂ ↦ z ^ 2 * deriv ℘'[L - (0 : ℂ)] z) =ᶠ[𝓝 (0 : ℂ)]
       fun z ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))
         + 12 * ℘[L - (0 : ℂ)] z - L.g₂ / 2 * z ^ 2 := by
-  have h1 : (fun z : ℂ ↦ z ^ 2 * deriv ℘'[L - (0 : ℂ)] z) =ᶠ[𝓝[≠] (0 : ℂ)]
-      fun z ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))
-        + 12 * ℘[L - (0 : ℂ)] z - L.g₂ / 2 * z ^ 2 := by
-    filter_upwards [L.eventually_notMem_lattice, self_mem_nhdsWithin,
-      L.eventually_deriv_derivWeierstrassP] with z hzL (hz0 : z ≠ 0) hD
-    have hEq : ℘'[L - (0 : ℂ)] = fun w ↦ ℘'[L] w + 2 / w ^ 3 :=
-      funext L.derivWeierstrassPExcept_zero_eq
-    have hden : HasDerivAt (fun w : ℂ ↦ w ^ 3) (3 * z ^ 2) z := by
-      simpa using hasDerivAt_pow 3 z
-    have hz3 : HasDerivAt (fun w : ℂ ↦ 2 / w ^ 3) (-6 / z ^ 4) z := by
-      have h := (hasDerivAt_const z (2 : ℂ)).div hden (pow_ne_zero 3 hz0)
-      convert h using 1
-      field_simp
-      ring
-    have hd' : DifferentiableAt ℂ ℘'[L] z :=
-      (L.analyticOnNhd_derivWeierstrassP z hzL).differentiableAt
-    have hsum : HasDerivAt (fun w ↦ ℘'[L] w + 2 / w ^ 3)
-        (deriv ℘'[L] z + -6 / z ^ 4) z := hd'.hasDerivAt.add hz3
-    rw [hEq, hsum.deriv, hD, L.weierstrassP_eq z]
+  refine eventuallyEq_nhds_of_eventuallyEq_nhdsNE ?_ (by simp)
+  filter_upwards [L.eventually_notMem_lattice, self_mem_nhdsWithin,
+    L.eventually_deriv_derivWeierstrassP] with z hzL (hz0 : z ≠ 0) hD
+  have hEq : ℘'[L - (0 : ℂ)] = fun w ↦ ℘'[L] w + 2 / w ^ 3 :=
+    funext L.derivWeierstrassPExcept_zero_eq
+  have hden : HasDerivAt (fun w : ℂ ↦ w ^ 3) (3 * z ^ 2) z := by
+    simpa using hasDerivAt_pow 3 z
+  have hz3 : HasDerivAt (fun w : ℂ ↦ 2 / w ^ 3) (-6 / z ^ 4) z := by
+    have h := (hasDerivAt_const z (2 : ℂ)).div hden (pow_ne_zero 3 hz0)
+    convert h using 1
     field_simp
     ring
-  have h2 : (fun z : ℂ ↦ z ^ 2 * deriv ℘'[L - (0 : ℂ)] z) =ᶠ[pure (0 : ℂ)]
-      (fun z ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))
-        + 12 * ℘[L - (0 : ℂ)] z - L.g₂ / 2 * z ^ 2) :=
-    Filter.eventually_pure.mpr (by simp)
-  have h12 := Filter.eventually_sup.mpr ⟨h1, h2⟩
-  rwa [nhdsNE_sup_pure] at h12
+  have hd' : DifferentiableAt ℂ ℘'[L] z :=
+    (L.analyticOnNhd_derivWeierstrassP z hzL).differentiableAt
+  have hsum : HasDerivAt (fun w ↦ ℘'[L] w + 2 / w ^ 3)
+      (deriv ℘'[L] z + -6 / z ^ 4) z := hd'.hasDerivAt.add hz3
+  rw [hEq, hsum.deriv, hD, L.weierstrassP_eq z]
+  field_simp
+  ring
 
 /-! ### The coefficient recursion -/
-
-/-- Leibniz collapse: the `n`-th derivative of `z² g(z)` at `0` for analytic `g`. -/
-lemma iteratedDeriv_sq_mul (g : ℂ → ℂ) (hg : AnalyticAt ℂ g 0) {n : ℕ} (hn : 2 ≤ n) :
-    iteratedDeriv n (fun z : ℂ ↦ z ^ 2 * g z) 0 =
-      (n : ℂ) * ((n : ℂ) - 1) * iteratedDeriv (n - 2) g 0 := by
-  have e : iteratedDeriv n (fun z : ℂ ↦ z ^ 2 * g z) 0 =
-      ∑ i ∈ Finset.range (n + 1), (n.choose i : ℂ) * iteratedDeriv i (· ^ 2 : ℂ → ℂ) 0 *
-        iteratedDeriv (n - i) g 0 :=
-    iteratedDeriv_fun_mul (by fun_prop) hg.contDiffAt
-  rw [e, Finset.sum_eq_single_of_mem 2 (Finset.mem_range.mpr (by omega))
-    (fun i _ hi ↦ by rw [iteratedDeriv_fun_pow_zero, if_neg hi]; ring),
-    iteratedDeriv_fun_pow_zero, if_pos rfl, Nat.cast_choose_two]
-  norm_num [Nat.factorial_two]
 
 /-- The recursion: for `n ≥ 3`, the `n`-th Taylor coefficient of `℘[L - 0]` at `0`
 is determined by the earlier ones. -/
@@ -160,63 +176,39 @@ lemma recursion {n : ℕ} (hn : 3 ≤ n) :
   -- the `n`-th derivative of the left-hand side of `key_eventuallyEq`
   have hL : iteratedDeriv n (fun z : ℂ ↦ z ^ 2 * deriv ℘'[L - (0 : ℂ)] z) 0 =
       (n : ℂ) * ((n : ℂ) - 1) * iteratedDeriv n ℘[L - (0 : ℂ)] 0 := by
-    rw [iteratedDeriv_sq_mul _ ((L.analyticAt_derivWeierstrassPExcept 0).deriv) (by omega)]
+    rw [iteratedDeriv_sq_mul _ (L.analyticAt_derivWeierstrassPExcept 0).deriv.contDiffAt
+      (by omega)]
     congr 1
     rw [← iteratedDeriv_succ', show n - 2 + 1 = n - 1 by omega,
       L.iteratedDeriv_derivWeierstrassPExcept_self 0,
       L.iteratedDeriv_weierstrassPExcept_zero n, if_neg (by omega),
       show n - 1 + 2 = n + 1 by omega, show n - 1 + 3 = n + 2 by omega, sumInvPow_zero]
   -- the `n`-th derivative of the right-hand side, piece by piece
-  have e1 : iteratedDeriv n (fun z : ℂ ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))
-        + 12 * ℘[L - (0 : ℂ)] z - L.g₂ / 2 * z ^ 2) 0 =
-      iteratedDeriv n (fun z : ℂ ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))
-        + 12 * ℘[L - (0 : ℂ)] z) 0 - iteratedDeriv n (fun z : ℂ ↦ L.g₂ / 2 * z ^ 2) 0 :=
-    iteratedDeriv_fun_sub (by fun_prop) (by fun_prop)
-  have e2 : iteratedDeriv n (fun z : ℂ ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))
-        + 12 * ℘[L - (0 : ℂ)] z) 0 =
-      iteratedDeriv n (fun z : ℂ ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))) 0
-        + iteratedDeriv n (fun z : ℂ ↦ 12 * ℘[L - (0 : ℂ)] z) 0 :=
-    iteratedDeriv_fun_add (by fun_prop) (by fun_prop)
-  have e3 : iteratedDeriv n (fun z : ℂ ↦ L.g₂ / 2 * z ^ 2) 0 = 0 := by
-    rw [iteratedDeriv_const_mul_field, iteratedDeriv_fun_pow_zero, if_neg (by omega)]
-    simp
-  have e4 : iteratedDeriv n (fun z : ℂ ↦ 12 * ℘[L - (0 : ℂ)] z) 0 =
-      12 * iteratedDeriv n ℘[L - (0 : ℂ)] 0 := by
-    rw [iteratedDeriv_const_mul_field]
-  have e5 : iteratedDeriv n
-        (fun z : ℂ ↦ 6 * (z ^ 2 * (℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z))) 0 =
-      6 * ((n : ℂ) * ((n : ℂ) - 1) *
-        iteratedDeriv (n - 2) (fun z : ℂ ↦ ℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z) 0) := by
-    rw [iteratedDeriv_const_mul_field]
-    congr 1
-    exact iteratedDeriv_sq_mul _ (hfa.mul hfa) (by omega)
-  have e6 : iteratedDeriv (n - 2) (fun z : ℂ ↦ ℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z) 0 =
-      ∑ k ∈ Finset.range (n - 1), ((n - 2).choose k : ℂ) * iteratedDeriv k ℘[L - (0 : ℂ)] 0 *
-        iteratedDeriv (n - 2 - k) ℘[L - (0 : ℂ)] 0 := by
-    have e : iteratedDeriv (n - 2) (fun z : ℂ ↦ ℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z) 0 =
-        ∑ k ∈ Finset.range (n - 2 + 1), ((n - 2).choose k : ℂ) *
-          iteratedDeriv k ℘[L - (0 : ℂ)] 0 * iteratedDeriv (n - 2 - k) ℘[L - (0 : ℂ)] 0 :=
-      iteratedDeriv_fun_mul hfa.contDiffAt hfa.contDiffAt
-    rw [e, show n - 2 + 1 = n - 1 by omega]
   have key := L.key_eventuallyEq.iteratedDeriv_eq n
-  rw [hL, e1, e2, e3, e4, e5, e6] at key
+  rw [hL, iteratedDeriv_fun_sub (by fun_prop) (by fun_prop),
+    iteratedDeriv_fun_add (by fun_prop) (by fun_prop),
+    iteratedDeriv_const_mul_field, iteratedDeriv_const_mul_field,
+    iteratedDeriv_const_mul_field, iteratedDeriv_fun_pow_zero, if_neg (by omega),
+    iteratedDeriv_sq_mul (fun z ↦ ℘[L - (0 : ℂ)] z * ℘[L - (0 : ℂ)] z)
+      (by fun_prop) (by omega),
+    iteratedDeriv_fun_mul hfa.contDiffAt hfa.contDiffAt,
+    show n - 2 + 1 = n - 1 by omega] at key
   linear_combination key
 
 /-! ### The invariants determine all coefficients -/
 
+/-- Equal invariants `g₂`, `g₃` force all Taylor coefficients of `℘[L - 0]` at `0` to agree. -/
 lemma iteratedDeriv_eq_of_invariants {L₁ L₂ : PeriodPair}
     (hg₂ : L₁.g₂ = L₂.g₂) (hg₃ : L₁.g₃ = L₂.g₃) (n : ℕ) :
     iteratedDeriv n ℘[L₁ - (0 : ℂ)] 0 = iteratedDeriv n ℘[L₂ - (0 : ℂ)] 0 := by
+  have hG4 : L₁.G 4 = L₂.G 4 := by
+    simp only [g₂] at hg₂
+    exact mul_left_cancel₀ (by norm_num) hg₂
+  have hG6 : L₁.G 6 = L₂.G 6 := by
+    simp only [g₃] at hg₃
+    exact mul_left_cancel₀ (by norm_num) hg₃
   induction n using Nat.strong_induction_on with
   | _ n ih =>
-    have hG4 : L₁.G 4 = L₂.G 4 := by
-      have h := hg₂
-      simp only [g₂] at h
-      exact mul_left_cancel₀ (by norm_num) h
-    have hG6 : L₁.G 6 = L₂.G 6 := by
-      have h := hg₃
-      simp only [g₃] at h
-      exact mul_left_cancel₀ (by norm_num) h
     rcases lt_or_ge n 5 with hn | hn
     · interval_cases n
       · simp [iteratedDeriv_weierstrassPExcept_zero]
@@ -236,41 +228,23 @@ lemma iteratedDeriv_eq_of_invariants {L₁ L₂ : PeriodPair}
         Finset.sum_congr rfl fun k hk ↦ by
           have hk' := Finset.mem_range.mp hk
           rw [ih k (by omega), ih (n - 2 - k) (by omega)]
-      have h20 : 5 * 4 ≤ n * (n - 1) := Nat.mul_le_mul (by omega) (by omega)
       have hcoef : ((n : ℂ) * ((n : ℂ) - 1) - 12) ≠ 0 := by
-        have hne : n * (n - 1) ≠ 12 := by omega
-        have hc : ((n : ℂ) * ((n : ℂ) - 1) - 12) = ((n * (n - 1) : ℕ) : ℂ) - 12 := by
-          push_cast [Nat.cast_sub (show 1 ≤ n by omega)]
-          ring
-        rw [hc, sub_ne_zero]
-        exact_mod_cast hne
+        have hn' : (5 : ℤ) ≤ n := by exact_mod_cast hn
+        exact_mod_cast (by nlinarith : (0 : ℤ) < n * (n - 1) - 12).ne'
       apply mul_left_cancel₀ hcoef
       rw [h₁, h₂, hsum]
 
 /-! ### From equal coefficients to equal `℘`, and to equal lattices -/
 
+/-- Equal Taylor coefficients of `℘[L - 0]` at `0` give equal `℘` functions near `0`. -/
 lemma weierstrassP_eventuallyEq {L₁ L₂ : PeriodPair}
     (h : ∀ n, iteratedDeriv n ℘[L₁ - (0 : ℂ)] 0 = iteratedDeriv n ℘[L₂ - (0 : ℂ)] 0) :
     ℘[L₁] =ᶠ[𝓝 (0 : ℂ)] ℘[L₂] := by
-  have h₁ := (L₁.analyticAt_weierstrassPExcept 0).hasFPowerSeriesAt
-  have h₂ := (L₂.analyticAt_weierstrassPExcept 0).hasFPowerSeriesAt
-  have hp : (FormalMultilinearSeries.ofScalars ℂ
-        fun n ↦ iteratedDeriv n ℘[L₁ - (0 : ℂ)] 0 / n !) =
-      FormalMultilinearSeries.ofScalars ℂ
-        fun n ↦ iteratedDeriv n ℘[L₂ - (0 : ℂ)] 0 / n ! := by
-    congr 1
-    funext n
-    rw [h n]
-  rw [hp] at h₁
-  have hsub : HasFPowerSeriesAt (℘[L₁ - (0 : ℂ)] - ℘[L₂ - (0 : ℂ)])
-      (0 : FormalMultilinearSeries ℂ ℂ ℂ) 0 := by
-    simpa using h₁.sub h₂
-  have hEq : ℘[L₁ - (0 : ℂ)] =ᶠ[𝓝 (0 : ℂ)] ℘[L₂ - (0 : ℂ)] := by
-    filter_upwards [hsub.eventually_eq_zero] with z hz
-    simpa [sub_eq_zero] using hz
-  filter_upwards [hEq] with z hz
+  filter_upwards [(L₁.analyticAt_weierstrassPExcept 0).eventuallyEq_of_iteratedDeriv_eq
+    (L₂.analyticAt_weierstrassPExcept 0) h] with z hz
   rw [L₁.weierstrassP_eq z, L₂.weierstrassP_eq z, hz]
 
+/-- Identity theorem: `℘` functions agreeing near `0` agree off both lattices. -/
 lemma eqOn_weierstrassP {L₁ L₂ : PeriodPair} (hev : ℘[L₁] =ᶠ[𝓝 (0 : ℂ)] ℘[L₂]) :
     Set.EqOn ℘[L₁] ℘[L₂] ((L₁.lattice : Set ℂ) ∪ (L₂.lattice : Set ℂ))ᶜ := by
   have hc₁ : (L₁.lattice : Set ℂ).Countable :=
@@ -290,6 +264,8 @@ lemma eqOn_weierstrassP {L₁ L₂ : PeriodPair} (hev : ℘[L₁] =ᶠ[𝓝 (0 :
     (L₂.analyticOnNhd_weierstrassP.mono
       (Set.compl_subset_compl.mpr Set.subset_union_right)) hpre hz₀c hev'
 
+/-- The lattice is the polar set of `℘`, so agreement of the `℘` functions off both lattices
+gives an inclusion of lattices. -/
 lemma lattice_le_of_eqOn {L₁ L₂ : PeriodPair}
     (h : Set.EqOn ℘[L₁] ℘[L₂] ((L₁.lattice : Set ℂ) ∪ (L₂.lattice : Set ℂ))ᶜ) :
     L₁.lattice ≤ L₂.lattice := by
@@ -323,11 +299,6 @@ theorem lattice_eq_of_g₂_eq_of_g₃_eq {L₁ L₂ : PeriodPair}
   refine le_antisymm (lattice_le_of_eqOn hEqOn) (lattice_le_of_eqOn ?_)
   rw [Set.union_comm]
   exact fun z hz ↦ (hEqOn hz).symm
-
-/-- The uniqueness theorem in the form of `InvariantsDetermineLattice` from `talk4.lean`. -/
-theorem invariantsDetermineLattice :
-    ∀ L₁ L₂ : PeriodPair, L₁.g₂ = L₂.g₂ → L₁.g₃ = L₂.g₃ → L₁.lattice = L₂.lattice :=
-  fun _ _ => lattice_eq_of_g₂_eq_of_g₃_eq
 
 end
 

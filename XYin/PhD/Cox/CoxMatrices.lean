@@ -9,6 +9,8 @@ import XYin.PhD.Cox.CoxMatrices.LaurentExpansion
 /-!
 # Cox representatives
 
-This module collects the Cox-matrix classification, cardinality formula, Laurent expansions,
-and Galois reindexing used in Section 11 of Cox.
+This module collects the Cox matrices `C(m)` and their identification with the right cosets
+of `Γ₀(m)` (`CoxMatrices.Basic`), the cardinality formula (`CoxMatrices.Cardinality`), and the
+Laurent expansions and Galois reindexing (`CoxMatrices.LaurentExpansion`) used in Section 11 of
+Cox.
 -/

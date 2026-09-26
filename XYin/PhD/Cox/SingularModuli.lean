@@ -59,141 +59,61 @@ theorem fixingMatrix_det (n : ℤ) :
 private lemma not_isSquare_of_between_sq_aux {k : ℤ} {N : ℕ} (hk : 0 ≤ k)
     (hlo : k ^ 2 < (N : ℤ)) (hhi : (N : ℤ) < (k + 1) ^ 2) :
     ¬ IsSquare N := by
-  intro hsq
-  obtain ⟨r, hr⟩ := hsq.exists_sq
-  have hr' : (N : ℤ) = (r : ℤ) ^ 2 := by
-    exact_mod_cast hr
-  have hkr : k < (r : ℤ) := by
-    rw [hr'] at hlo
-    exact (sq_lt_sq₀ hk (Int.natCast_nonneg r)).mp hlo
-  have hrk : (r : ℤ) < k + 1 := by
-    rw [hr'] at hhi
-    exact (sq_lt_sq₀ (Int.natCast_nonneg r) (by omega)).mp hhi
-  omega
+  lift k to ℕ using hk
+  rintro ⟨r, rfl⟩
+  exact Nat.not_exists_sq' (by exact_mod_cast hlo) (by exact_mod_cast hhi) ⟨r, sq r⟩
 
-private lemma exists_positive_nonsquare_det_of_even_aux {b : ℤ} (hB : q.B = 2 * b) :
-    ∃ (n : ℤ) (N : ℕ+),
-      (q.fixingMatrix n).det = (N : ℤ) ∧ ¬ IsSquare (N : ℕ) := by
-  let k : ℤ := q.A * q.C - b ^ 2
-  have hk : 0 < k := by
-    have hd := q.discriminant_neg
-    rw [hB] at hd
-    dsimp [k]
-    nlinarith
-  let D : ℤ := k ^ 2 + k
-  have hD : 0 < D := by
-    dsimp [D]
-    nlinarith [sq_nonneg k]
-  let N : ℕ+ := ⟨D.toNat, (Int.lt_toNat).mpr hD⟩
-  have hN : (N : ℤ) = D := by
-    change ((D.toNat : ℕ) : ℤ) = D
-    exact Int.toNat_of_nonneg hD.le
-  refine ⟨k - b, N, ?_, not_isSquare_of_between_sq_aux hk.le ?_ ?_⟩
-  · rw [fixingMatrix_det, hN]
-    dsimp [D, k]
-    rw [hB]
-    ring
-  · rw [hN]
-    dsimp [D]
-    nlinarith
-  · rw [hN]
-    dsimp [D]
-    nlinarith
-
-private lemma exists_positive_nonsquare_det_of_odd_aux {b : ℤ} (hB : q.B = 2 * b + 1) :
-    ∃ (n : ℤ) (N : ℕ+),
-      (q.fixingMatrix n).det = (N : ℤ) ∧ ¬ IsSquare (N : ℕ) := by
-  let k : ℤ := q.A * q.C - b * (b + 1)
-  have hk : 0 < k := by
-    have hd := q.discriminant_neg
-    rw [hB] at hd
-    dsimp [k]
-    nlinarith
-  let D : ℤ := k ^ 2 + 2 * k
-  have hD : 0 < D := by
-    dsimp [D]
-    nlinarith [sq_nonneg k]
-  let N : ℕ+ := ⟨D.toNat, (Int.lt_toNat).mpr hD⟩
-  have hN : (N : ℤ) = D := by
-    change ((D.toNat : ℕ) : ℤ) = D
-    exact Int.toNat_of_nonneg hD.le
-  refine ⟨k - b, N, ?_, not_isSquare_of_between_sq_aux hk.le ?_ ?_⟩
-  · rw [fixingMatrix_det, hN]
-    dsimp [D, k]
-    rw [hB]
-    ring
-  · rw [hN]
-    dsimp [D]
-    nlinarith
-  · rw [hN]
-    dsimp [D]
-    nlinarith
-
-/-- An explicit parity choice gives a positive nonsquare determinant in the family `Mₙ`. -/
+/-- An explicit choice of `n` gives a positive nonsquare determinant in the family `Mₙ`: writing
+`B = 2b + e` with `e ∈ {0, 1}` and `k = AC - b(b + e) > 0`, the determinant of `M_{k-b}` is
+`k² + (e + 1)k`, strictly between `k²` and `(k + 1)²`. -/
 theorem exists_positive_nonsquare_det :
     ∃ (n : ℤ) (N : ℕ+),
       (q.fixingMatrix n).det = (N : ℤ) ∧ ¬ IsSquare (N : ℕ) := by
-  obtain ⟨b, hB | hB⟩ := Int.even_or_odd' q.B
-  · exact exists_positive_nonsquare_det_of_even_aux q hB
-  · exact exists_positive_nonsquare_det_of_odd_aux q hB
+  obtain ⟨b, e, hB, he0, he1⟩ : ∃ b e : ℤ, q.B = 2 * b + e ∧ 0 ≤ e ∧ e ≤ 1 :=
+    ⟨q.B / 2, q.B % 2, by omega, by omega, by omega⟩
+  set k := q.A * q.C - b * (b + e) with hk_def
+  have hk : 0 < k := by
+    have hd := q.discriminant_neg
+    rw [hB] at hd
+    nlinarith [sq_nonneg e]
+  have hD : 0 < k ^ 2 + (e + 1) * k := by nlinarith
+  refine ⟨k - b, ⟨(k ^ 2 + (e + 1) * k).toNat, Int.lt_toNat.mpr hD⟩, ?_,
+    not_isSquare_of_between_sq_aux hk.le ?_ ?_⟩ <;>
+    simp only [PNat.mk_coe, Int.toNat_of_nonneg hD.le]
+  · rw [fixingMatrix_det, hB, hk_def]
+    ring
+  · nlinarith
+  · nlinarith
 
 /-- Every fixing matrix attached to a primitive quadratic equation is primitive. -/
 theorem fixingMatrix_content_eq_one (n : ℤ) :
     Matrix.rankTwoContent (q.fixingMatrix n) = 1 := by
-  let k := Matrix.rankTwoContent (q.fixingMatrix n)
-  have hkn : k ∣ n.natAbs := by
-    dsimp [k, Matrix.rankTwoContent, fixingMatrix]
-    exact (Nat.gcd_dvd_left _ _).trans
-      ((Nat.gcd_dvd_left _ _).trans (Nat.gcd_dvd_left _ _))
-  have hkC : k ∣ q.C.natAbs := by
-    dsimp [k, Matrix.rankTwoContent, fixingMatrix]
-    simpa using (Nat.gcd_dvd_left _ _).trans
-      ((Nat.gcd_dvd_left _ _).trans (Nat.gcd_dvd_right n.natAbs (-q.C).natAbs))
-  have hkA : k ∣ q.A.natAbs := by
-    dsimp [k, Matrix.rankTwoContent, fixingMatrix]
-    exact (Nat.gcd_dvd_left _ _).trans (Nat.gcd_dvd_right _ _)
-  have hknB : k ∣ (n + q.B).natAbs := by
-    dsimp [k, Matrix.rankTwoContent, fixingMatrix]
-    exact Nat.gcd_dvd_right _ _
-  have hkBInt : (k : ℤ) ∣ q.B := by
-    have hknInt : (k : ℤ) ∣ n := Int.natCast_dvd.mpr hkn
-    have hknBInt : (k : ℤ) ∣ n + q.B := Int.natCast_dvd.mpr hknB
-    simpa using hknBInt.sub hknInt
-  have hkB : k ∣ q.B.natAbs := Int.natCast_dvd.mp hkBInt
-  apply Nat.eq_one_of_dvd_one
-  rw [← q.primitive]
-  exact Nat.dvd_gcd (Nat.dvd_gcd hkA hkB) hkC
+  rw [fixingMatrix, Matrix.rankTwoContent_fin_two_of, Int.natAbs_neg]
+  calc
+    _ = Nat.gcd (Int.gcd n (n + q.B)) (Nat.gcd q.A.natAbs q.C.natAbs) := by
+      unfold Int.gcd
+      ac_rfl
+    _ = Nat.gcd n.natAbs (Nat.gcd (Nat.gcd q.A.natAbs q.B.natAbs) q.C.natAbs) := by
+      rw [add_comm n q.B, Int.gcd_add_self_right]
+      unfold Int.gcd
+      ac_rfl
+    _ = 1 := by rw [q.primitive]; simp
 
 private lemma coxMatrix_act_eq_smul_aux {n : ℤ} {N : ℕ+} {γ : SL(2, ℤ)}
     {σ : CoxMatrix N} (hmat : γ.1 * q.fixingMatrix n = σ.mobiusMatrix) :
     σ.act τ = γ • τ := by
-  apply UpperHalfPlane.ext
-  rw [CoxMatrix.coe_act, UpperHalfPlane.coe_specialLinearGroup_apply]
-  have h00 := congrArg (fun x : ℤ ↦ (x : ℂ)) (congrFun (congrFun hmat 0) 0)
-  have h01 := congrArg (fun x : ℤ ↦ (x : ℂ)) (congrFun (congrFun hmat 0) 1)
-  have h10 := congrArg (fun x : ℤ ↦ (x : ℂ)) (congrFun (congrFun hmat 1) 0)
-  have h11 := congrArg (fun x : ℤ ↦ (x : ℂ)) (congrFun (congrFun hmat 1) 1)
-  simp only [fixingMatrix, CoxMatrix.mobiusMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one] at h00 h01 h10 h11
-  push_cast at h00 h01 h10 h11
-  have hden : (((γ 1 0 : ℤ) : ℂ) * (τ : ℂ) + (γ 1 1 : ℤ)) ≠ 0 := by
-    simpa [ModularGroup.denom_apply, algebraMap_int_eq] using
-      UpperHalfPlane.denom_ne_zero γ τ
-  have hσd : (σ.d : ℂ) ≠ 0 := by
-    exact_mod_cast σ.d_pos.ne'
-  have hden' : (τ : ℂ) * ((γ 1 0 : ℤ) : ℂ) + (γ 1 1 : ℤ) ≠ 0 := by
-    simpa [mul_comm] using hden
-  change
-    ((σ.a : ℂ) * (τ : ℂ) + (σ.b : ℂ)) / (σ.d : ℂ) =
-      ((((γ 0 0 : ℤ) : ℂ) * (τ : ℂ) + (γ 0 1 : ℤ)) /
-        (((γ 1 0 : ℤ) : ℂ) * (τ : ℂ) + (γ 1 1 : ℤ)))
-  field_simp [hden', hσd]
-  rw [← h00, ← h01, ← h11]
-  linear_combination
-    ((((γ 0 1 : ℤ) : ℂ) * ((γ 1 0 : ℤ) : ℂ) -
-        ((γ 0 0 : ℤ) : ℂ) * ((γ 1 1 : ℤ) : ℂ)) * q.equation) +
-      ((((γ 0 0 : ℤ) : ℂ) * (τ : ℂ) ^ 2 +
-        ((γ 0 1 : ℤ) : ℂ) * (τ : ℂ)) * h10)
+  refine σ.act_eq_smul_of_mul_eq hmat τ τ ?_
+  have hA : (q.A : ℂ) ≠ 0 := by
+    have hd := q.discriminant_neg
+    refine Int.cast_ne_zero.2 fun hA ↦ ?_
+    rw [hA] at hd
+    nlinarith [sq_nonneg q.B]
+  have hden : (q.A : ℂ) * τ + ((n + q.B : ℤ) : ℂ) ≠ 0 := fun h ↦ hA <| by
+    simpa [τ.im_pos.ne'] using congrArg Complex.im h
+  simp only [fixingMatrix, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
+  rw [eq_div_iff hden]
+  push_cast
+  linear_combination q.equation
 
 include q
 
@@ -218,14 +138,10 @@ theorem exists_nonsquare_modularPolynomialDiagonal_root {τ : ℍ}
   obtain ⟨q⟩ := hτ
   obtain ⟨N, hN, σ, hσ⟩ := q.exists_nonsquare_coxMatrix_j_eq
   refine ⟨N, hN, ?_⟩
-  rw [modularPolynomialDiagonal, BivariatePolynomial.diagonal_eval₂,
-    Polynomial.eval₂_eval₂RingHom_apply]
-  change (BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial N)).eval
-    (j τ) (j τ) = 0
-  rw [modularPolynomial_map_complex, ← BivariatePolynomial.specializeY_eval,
-    modularPolynomialC_specializeY, coxPhiAtJ, Polynomial.eval_prod]
-  apply Finset.prod_eq_zero (Finset.mem_univ σ)
-  simp [hσ]
+  rw [Polynomial.eval₂_eq_eval_map, modularPolynomialDiagonal,
+    ← BivariatePolynomial.diagonal_map, BivariatePolynomial.diagonal_eval,
+    modularPolynomial_map_complex]
+  simpa [hσ] using modularPolynomialC_eval_act_j N σ τ
 
 /-- Report Theorem 5.9: the `j`-value of an imaginary-quadratic point is integral over `ℤ`. -/
 theorem isIntegral_j_of_isImaginaryQuadratic {τ : ℍ}

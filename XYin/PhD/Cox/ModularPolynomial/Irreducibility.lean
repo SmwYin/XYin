@@ -11,7 +11,8 @@ import XYin.PhD.Cox.UpperHalfPlaneFunctionField
 # Irreducibility of Cox's modular polynomial
 
 This file proves irreducibility of the complex modular polynomial in its root variable over
-`ℂ(Y)`.
+`ℂ(Y)`: `Φ_m` is the minimal polynomial over `ℂ(Y)` of the conjugate `j(mτ)`, because it has
+as many distinct conjugates `j(mγτ)` as its degree.
 -/
 
 open Complex Function MatrixGroups ModularForm UpperHalfPlane
@@ -30,18 +31,12 @@ private theorem modularPolynomialHolomorphic_eq_product (m : ℕ+) :
       ∏ c : Gamma0RightCosets m,
         (Polynomial.X - Polynomial.C (rightCosetFunction m c)) := by
   classical
-  apply Polynomial.ext
-  intro n
-  apply Subtype.ext
-  funext tau
+  ext n : 1
+  refine HolomorphicFunction.ext fun tau ↦ ?_
   have h := congrArg (fun p : Polynomial ℂ ↦ p.coeff n)
     (modularPolynomialC_rightCosetProduct m tau)
-  rw [Polynomial.coeff_map, evalJ_apply]
-  change _ = evaluation tau ((∏ c : Gamma0RightCosets m,
-    (Polynomial.X - Polynomial.C (rightCosetFunction m c))).coeff n)
-  rw [← Polynomial.coeff_map]
-  simpa [BivariatePolynomial.specializeY, Polynomial.coeff_map,
-    Polynomial.map_prod, rightCosetFunction] using h
+  rw [Polynomial.coeff_map, evalJ_apply, ← evaluation_apply, ← Polynomial.coeff_map]
+  simpa [BivariatePolynomial.specializeY, Polynomial.coeff_map, Polynomial.map_prod] using h
 
 private abbrev modularPolynomialRatFunc (m : ℕ+) : Polynomial (RatFunc ℂ) :=
   Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ))
@@ -54,17 +49,10 @@ private theorem modularPolynomialFunctionField_eq_map (m : ℕ+) :
     modularPolynomialFunctionField m =
       Polynomial.map (algebraMap HolomorphicFunction FunctionField)
         (Polynomial.map evalJ (modularPolynomialC m)) := by
-  calc
-    modularPolynomialFunctionField m =
-        Polynomial.map evalJFracPoly (modularPolynomialC m) := by
-      apply Polynomial.ext
-      intro n
-      rw [Polynomial.coeff_map, Polynomial.coeff_map, Polynomial.coeff_map]
-      exact ratFuncEvalJ_algebraMap _
-    _ = Polynomial.map (algebraMap HolomorphicFunction FunctionField)
-        (Polynomial.map evalJ (modularPolynomialC m)) := by
-      rw [Polynomial.map_map]
-      rfl
+  apply Polynomial.ext
+  intro n
+  simp only [modularPolynomialFunctionField, modularPolynomialRatFunc, Polynomial.coeff_map]
+  exact ratFuncEvalJ_algebraMap _
 
 private theorem modularPolynomialFunctionField_eq_product (m : ℕ+) :
     modularPolynomialFunctionField m =
@@ -89,70 +77,58 @@ private theorem minpoly_aeval_rightCosetRoot (m : ℕ+) (c : Gamma0RightCosets m
     Polynomial.aeval (rightCosetRoot m c)
       (minpoly (RatFunc ℂ) (rightCosetRoot m (baseRightCoset m))) = 0 := by
   obtain ⟨delta, hdelta⟩ := exists_rightCosetMul_baseRightCoset_eq m c
-  have h := minpoly.aeval_algHom (RatFunc ℂ) (precompAlgEquiv delta).toAlgHom
-    (rightCosetRoot m (baseRightCoset m))
-  have he : (precompAlgEquiv delta).toAlgHom (rightCosetRoot m (baseRightCoset m)) =
-      rightCosetRoot m c := by
-    change precompAlgEquiv delta (rightCosetRoot m (baseRightCoset m)) = _
-    rw [precompAlgEquiv_rightCosetRoot, hdelta]
-  simpa only [he] using h
+  simpa only [AlgEquiv.coe_algHom, precompAlgEquiv_rightCosetRoot, hdelta] using
+    minpoly.aeval_algHom (RatFunc ℂ) (precompAlgEquiv delta).toAlgHom
+      (rightCosetRoot m (baseRightCoset m))
 
-private lemma card_le_minpoly_natDegree_of_injective_roots
-    {F E iota : Type*} [Field F] [CommRing E] [IsDomain E] [Algebra F E] [Fintype iota]
-    {alpha : E} (halphaIntegral : IsIntegral F alpha)
-    (conjugate : iota → E) (hinjective : Function.Injective conjugate)
-    (hroots : ∀ i, Polynomial.aeval (conjugate i) (minpoly F alpha) = 0) :
-    Fintype.card iota ≤ (minpoly F alpha).natDegree := by
-  let q := (minpoly F alpha).map (algebraMap F E)
-  have hqmonic : q.Monic := (minpoly.monic halphaIntegral).map (algebraMap F E)
-  have hqdegree : q.natDegree = (minpoly F alpha).natDegree :=
-    (minpoly.monic halphaIntegral).natDegree_map (algebraMap F E)
-  rw [← hqdegree]
+/-- A nonzero polynomial over a field vanishing at `card ι` distinct points of a domain has
+degree at least `card ι`. -/
+private lemma card_le_natDegree_of_injective_roots
+    {F E ι : Type*} [Field F] [CommRing E] [IsDomain E] [Algebra F E] [Fintype ι]
+    {p : Polynomial F} (hp : p ≠ 0) (conjugate : ι → E)
+    (hinjective : Function.Injective conjugate)
+    (hroots : ∀ i, Polynomial.aeval (conjugate i) p = 0) :
+    Fintype.card ι ≤ p.natDegree := by
+  rw [← Polynomial.natDegree_map (algebraMap F E)]
   by_contra hdegree
-  have hzero : q = 0 :=
-    Polynomial.eq_zero_of_natDegree_lt_card_of_eval_eq_zero q hinjective
-      (fun i ↦ by simpa [q, Polynomial.aeval_def] using hroots i)
+  exact Polynomial.map_ne_zero hp <|
+    Polynomial.eq_zero_of_natDegree_lt_card_of_eval_eq_zero _ hinjective
+      (fun i ↦ by simpa [Polynomial.aeval_def, Polynomial.eval_map] using hroots i)
       (Nat.lt_of_not_ge hdegree)
-  exact hqmonic.ne_zero hzero
 
-private lemma irreducible_of_card_conjugates
-    {F E iota : Type*} [Field F] [CommRing E] [IsDomain E] [Algebra F E] [Fintype iota]
-    {p : Polynomial F} (hp : p.Monic) {alpha : E} (halpha : Polynomial.aeval alpha p = 0)
-    (conjugate : iota → E) (hinjective : Function.Injective conjugate)
-    (hroots : ∀ i, Polynomial.aeval (conjugate i) (minpoly F alpha) = 0)
-    (hdegree : p.natDegree ≤ Fintype.card iota) : Irreducible p := by
-  have halphaIntegral : IsIntegral F alpha := ⟨p, hp, halpha⟩
-  have hpdegree := hdegree.trans <|
-    card_le_minpoly_natDegree_of_injective_roots halphaIntegral conjugate hinjective hroots
-  have hpmin : p = minpoly F alpha :=
-    Polynomial.eq_of_monic_of_dvd_of_natDegree_le (minpoly.monic halphaIntegral) hp
-      (minpoly.dvd F alpha halpha) hpdegree
-  exact hpmin.symm ▸ minpoly.irreducible halphaIntegral
+/-- A monic polynomial vanishing at `α` whose degree is at most the number of distinct roots of
+the minimal polynomial of `α` is that minimal polynomial. -/
+private lemma eq_minpoly_of_card_conjugates
+    {F E ι : Type*} [Field F] [CommRing E] [IsDomain E] [Algebra F E] [Fintype ι]
+    {p : Polynomial F} (hp : p.Monic) {α : E} (hα : Polynomial.aeval α p = 0)
+    (conjugate : ι → E) (hinjective : Function.Injective conjugate)
+    (hroots : ∀ i, Polynomial.aeval (conjugate i) (minpoly F α) = 0)
+    (hdegree : p.natDegree ≤ Fintype.card ι) : p = minpoly F α := by
+  have hmin := minpoly.ne_zero (show IsIntegral F α from ⟨p, hp, hα⟩)
+  refine minpoly.unique_of_degree_le_degree_minpoly F α hp hα ?_
+  rw [Polynomial.degree_eq_natDegree hp.ne_zero, Polynomial.degree_eq_natDegree hmin]
+  exact_mod_cast hdegree.trans
+    (card_le_natDegree_of_injective_roots hmin conjugate hinjective hroots)
 
-private theorem modularPolynomialRatFunc_irreducible (m : ℕ+) :
-    Irreducible (modularPolynomialRatFunc m) := by
-  apply irreducible_of_card_conjugates
-    ((modularPolynomialC_monic m).map
-      (algebraMap (Polynomial ℂ) (RatFunc ℂ)))
-    (modularPolynomialRatFunc_aeval_base m)
-    (rightCosetRoot m) (rightCosetRoot_injective m)
-    (minpoly_aeval_rightCosetRoot m)
-  apply le_of_eq
-  calc
-    (modularPolynomialRatFunc m).natDegree = (modularPolynomialC m).natDegree :=
-      (modularPolynomialC_monic m).natDegree_map _
-    _ = Fintype.card (CoxMatrix m) := modularPolynomialC_natDegree m
-    _ = Fintype.card (Gamma0RightCosets m) :=
-      Fintype.card_congr (coxMatrixEquivRightCosets m)
+/-- Over `ℂ(Y)`, `Φ_m` is the minimal polynomial of the conjugate `j(mτ)` attached to the
+identity coset. -/
+theorem modularPolynomialC_map_eq_minpoly (m : ℕ+) :
+    Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ)) (modularPolynomialC m) =
+      minpoly (RatFunc ℂ) (rightCosetRoot m (baseRightCoset m)) := by
+  refine eq_minpoly_of_card_conjugates ((modularPolynomialC_monic m).map _)
+    (modularPolynomialRatFunc_aeval_base m) (rightCosetRoot m) (rightCosetRoot_injective m)
+    (minpoly_aeval_rightCosetRoot m) (le_of_eq ?_)
+  rw [(modularPolynomialC_monic m).natDegree_map, modularPolynomialC_natDegree]
+  exact Fintype.card_congr (coxMatrixEquivRightCosets m)
 
 /-- Exercise 11.10 / Theorem 11.18(ii), function-field form: `Φ_m` is irreducible in the
 root variable over `ℂ(Y)`. -/
 theorem modularPolynomialC_irreducibleInX (m : ℕ+) :
     Irreducible (Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ))
       (modularPolynomialC m)) :=
-  modularPolynomialRatFunc_irreducible m
+  modularPolynomialC_map_eq_minpoly m ▸ minpoly.irreducible
+    ⟨_, (modularPolynomialC_monic m).map _, modularPolynomialRatFunc_aeval_base m⟩
 
 end Irreducibility
 
 end Cox
-
