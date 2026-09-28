@@ -12,12 +12,12 @@ Demonstrations of the `q`-expansion tactic layer from `XYin.PhD.qExpansion_tacti
 the informational `#qexp _ coeff` / `#qexp _ precision` commands and the proof-producing
 `qexp_coeff` term elaborator, in both its automatic form (the coefficient value is
 computed during elaboration) and its manual form (the expected value is supplied and
-certified).  All examples are facts about the formal power series `qj_qexpansion` and
-`Delta_qexpansion` in `ℤ⟦X⟧`; see `XYin.PhD.qExpansion_tactic.link` for the bridge to
+certified).  All examples are facts about the formal power series `qjQExpansion` and
+`deltaQExpansion` in `ℤ⟦X⟧`; see `XYin.PhD.qExpansion_tactic.link` for the bridge to
 the analytic modular objects.
 -/
 
-open XYin.PhD.qExpansion_tactic
+open QExpansionTactic
 
 -- Display the fourth `q·j` coefficient, and all coefficients up to the fourth.
 #qexp qj coeff 4
@@ -29,23 +29,23 @@ open XYin.PhD.qExpansion_tactic
 
 -- Auto mode: the value `864299970` (the `j`-invariant coefficient `c(3)`) is
 -- discovered during elaboration.
-example : qj_qexpansion.coeff 4 = 864299970 := qexp_coeff qj 4
+example : qjQExpansion.coeff 4 = 864299970 := qexp_coeff qj 4
 
 -- Manual mode: the expected value is supplied and certified.
-example : qj_qexpansion.coeff 4 = 864299970 := qexp_coeff qj 4 864299970
+example : qjQExpansion.coeff 4 = 864299970 := qexp_coeff qj 4 864299970
 
 -- The same commands for the discriminant `Δ`.
-#qexp Delta coeff 4
-#qexp Delta precision 4
+#qexp discriminant coeff 4
+#qexp discriminant precision 4
 
-#check qexp_coeff Delta 4
-#check qexp_coeff Delta 4 (-1472)
+#check qexp_coeff discriminant 4
+#check qexp_coeff discriminant 4 (-1472)
 
 -- Auto mode for `Δ`: the Ramanujan tau value `τ(4) = -1472` is discovered.
-example : Delta_qexpansion.coeff 4 = -1472 := qexp_coeff Delta 4
+example : deltaQExpansion.coeff 4 = -1472 := qexp_coeff discriminant 4
 
 -- Manual mode for `Δ`.
-example : Delta_qexpansion.coeff 4 = -1472 := qexp_coeff Delta 4 (-1472)
+example : deltaQExpansion.coeff 4 = -1472 := qexp_coeff discriminant 4 (-1472)
 
 -- A larger instance: the hundredth coefficient is still computed instantly (the option
 -- `qexp.reportTiming` also logs the elapsed time).

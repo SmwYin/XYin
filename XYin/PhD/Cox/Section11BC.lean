@@ -20,7 +20,7 @@ Umbrella module for the formalization of Cox, *Primes of the form `x² + ny²`*,
   (`theorem_11_9_i_subfield`, `theorem_11_9_ii_subfield`);
 * Lemma 11.11 (`coxMatrixEquivRightCosets`) and equations (11.12)–(11.17): the Cox
   representatives `C(m)`, the modular polynomial `modularPolynomialC` characterized by
-  `modularPolynomialC_specializeY`, and the interpolation and recovery formulas
+  `modularPolynomialC_map_evalRingHom`, and the interpolation and recovery formulas
   (`interpolationAt`, `recoveryFormula`);
 * Theorem 11.18: integrality and irreducibility (`theorem_11_18_i`, `theorem_11_18_ii`),
   symmetry (`theorem_11_18_iii`), the diagonal (`theorem_11_18_iv_leadingCoeff`,

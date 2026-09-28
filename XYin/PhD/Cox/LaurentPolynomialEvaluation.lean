@@ -3,6 +3,7 @@ Copyright (c) 2026 The XYin contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
+import Mathlib.Algebra.Polynomial.Bivariate
 import XYin.PhD.Cox.LaurentSeriesAux
 
 /-!
@@ -11,73 +12,66 @@ import XYin.PhD.Cox.LaurentSeriesAux
 This file records the lowest-term argument behind Hasse's q-expansion principle. If a Laurent
 series `J` has order `-w`, for `w > 0`, and leading coefficient one, then the lowest coefficient
 of `P(J)` is the leading coefficient of `P`. In particular, substitution at `J` is injective.
-It also packages the substitution of Laurent series into iterated polynomials and its
+It also packages the substitution of Laurent series into bivariate polynomials `R[X][Y]` and its
 compatibility with coefficientwise base change.
 -/
 
+open scoped Polynomial.Bivariate
+
 noncomputable section
+
+namespace HahnSeries
+
+variable {Γ R S : Type*} [PartialOrder Γ] [AddCommMonoid Γ] [IsOrderedCancelAddMonoid Γ]
+  [CommSemiring R] [CommSemiring S]
+
+/-- Evaluating a polynomial at a Hahn series commutes with coefficientwise base change. -/
+theorem mapRingHom_comp_eval₂RingHom (f : R →+* S) {J : HahnSeries Γ R}
+    {J' : HahnSeries Γ S} (hJ : mapRingHom f J = J') :
+    (mapRingHom f).comp (Polynomial.eval₂RingHom C J) =
+      (Polynomial.eval₂RingHom C J').comp (Polynomial.mapRingHom f) := by
+  apply Polynomial.ringHom_ext
+  · intro r
+    simpa using map_C r f
+  · simp [hJ]
+
+end HahnSeries
 
 namespace Cox
 
 section BaseChange
 
-variable {R S : Type*}
+variable {R S : Type*} [CommSemiring R] [CommSemiring S]
 
-/-- Coefficientwise application of a ring homomorphism to Laurent series, bundled as a ring
-homomorphism: `HahnSeries.mapRingHom` for `ℤ`-indexed series. -/
-abbrev laurentSeriesMapRingHom [Semiring R] [Semiring S] (f : R →+* S) :
-    LaurentSeries R →+* LaurentSeries S :=
-  HahnSeries.mapRingHom f
-
-@[simp]
-theorem laurentSeriesMapRingHom_coeff [Semiring R] [Semiring S]
-    (f : R →+* S) (F : LaurentSeries R) (k : ℤ) :
-    (laurentSeriesMapRingHom f F).coeff k = f (F.coeff k) :=
-  rfl
-
-variable [CommSemiring R] [CommSemiring S]
-
-/-- Evaluating a polynomial at a Laurent series commutes with coefficientwise base change. -/
-theorem laurentSeriesMapRingHom_comp_eval₂RingHom (f : R →+* S) {J : LaurentSeries R}
-    {J' : LaurentSeries S} (hJ : laurentSeriesMapRingHom f J = J') :
-    (laurentSeriesMapRingHom f).comp (Polynomial.eval₂RingHom HahnSeries.C J) =
-      (Polynomial.eval₂RingHom HahnSeries.C J').comp (Polynomial.mapRingHom f) := by
-  apply Polynomial.ringHom_ext
-  · intro r
-    simpa using HahnSeries.map_C r f
-  · simp [hJ]
-
-/-- Substitute a Laurent series for the coefficient variable of an iterated polynomial. -/
+/-- Substitute a Laurent series for the inner variable `C X` of a bivariate polynomial. -/
 def bivariateSpecializeLaurent (J : LaurentSeries R) :
-    Polynomial (Polynomial R) →+* Polynomial (LaurentSeries R) :=
+    R[X][Y] →+* Polynomial (LaurentSeries R) :=
   Polynomial.mapRingHom (Polynomial.eval₂RingHom HahnSeries.C J)
 
-/-- Laurent specialization of an iterated polynomial commutes with coefficientwise base
+/-- Laurent specialization of a bivariate polynomial commutes with coefficientwise base
 change. -/
 theorem bivariateSpecializeLaurent_map (f : R →+* S) (J : LaurentSeries R) (J' : LaurentSeries S)
-    (hJ : laurentSeriesMapRingHom f J = J') :
-    (Polynomial.mapRingHom (laurentSeriesMapRingHom f)).comp
+    (hJ : HahnSeries.mapRingHom f J = J') :
+    (Polynomial.mapRingHom (HahnSeries.mapRingHom f)).comp
         (bivariateSpecializeLaurent J) =
       (bivariateSpecializeLaurent J').comp
         (Polynomial.mapRingHom (Polynomial.mapRingHom f)) := by
   simp only [bivariateSpecializeLaurent, Polynomial.mapRingHom_comp,
-    laurentSeriesMapRingHom_comp_eval₂RingHom f hJ]
+    HahnSeries.mapRingHom_comp_eval₂RingHom f hJ]
 
 /-- Pointwise form of `bivariateSpecializeLaurent_map`. -/
 theorem bivariateSpecializeLaurent_map_apply (f : R →+* S) (J : LaurentSeries R)
-    (J' : LaurentSeries S) (hJ : laurentSeriesMapRingHom f J = J')
-    (P : Polynomial (Polynomial R)) :
-    (bivariateSpecializeLaurent J P).map (laurentSeriesMapRingHom f) =
+    (J' : LaurentSeries S) (hJ : HahnSeries.mapRingHom f J = J') (P : R[X][Y]) :
+    (bivariateSpecializeLaurent J P).map (HahnSeries.mapRingHom f) =
       bivariateSpecializeLaurent J' (P.map (Polynomial.mapRingHom f)) :=
   DFunLike.congr_fun (bivariateSpecializeLaurent_map f J J' hJ) P
 
-/-- Evaluation of an iterated polynomial at a pair of Laurent series: the outer variable is
-sent to `T` and the inner (coefficient) variable to `J`. -/
-def bivariateLaurentEvalHom (T J : LaurentSeries R) :
-    Polynomial (Polynomial R) →+* LaurentSeries R :=
+/-- Evaluation of a bivariate polynomial at a pair of Laurent series: the outer variable `Y` is
+sent to `T` and the inner variable `C X` to `J`. -/
+def bivariateLaurentEvalHom (T J : LaurentSeries R) : R[X][Y] →+* LaurentSeries R :=
   Polynomial.eval₂RingHom (Polynomial.eval₂RingHom HahnSeries.C J) T
 
-theorem bivariateLaurentEvalHom_apply (T J : LaurentSeries R) (P : Polynomial (Polynomial R)) :
+theorem bivariateLaurentEvalHom_apply (T J : LaurentSeries R) (P : R[X][Y]) :
     bivariateLaurentEvalHom T J P = P.eval₂ (Polynomial.eval₂RingHom HahnSeries.C J) T :=
   rfl
 
@@ -100,12 +94,12 @@ theorem bivariateLaurentEvalHom_C_X (T J : LaurentSeries R) :
 
 /-- Bivariate Laurent evaluation commutes with coefficientwise base change. -/
 theorem bivariateLaurentEvalHom_map (f : R →+* S) {T J : LaurentSeries R}
-    {T' J' : LaurentSeries S} (hT : laurentSeriesMapRingHom f T = T')
-    (hJ : laurentSeriesMapRingHom f J = J') (P : Polynomial (Polynomial R)) :
-    laurentSeriesMapRingHom f (bivariateLaurentEvalHom T J P) =
+    {T' J' : LaurentSeries S} (hT : HahnSeries.mapRingHom f T = T')
+    (hJ : HahnSeries.mapRingHom f J = J') (P : R[X][Y]) :
+    HahnSeries.mapRingHom f (bivariateLaurentEvalHom T J P) =
       bivariateLaurentEvalHom T' J' (P.map (Polynomial.mapRingHom f)) := by
   simp only [bivariateLaurentEvalHom, Polynomial.coe_eval₂RingHom, Polynomial.hom_eval₂, hT,
-    Polynomial.eval₂_map, laurentSeriesMapRingHom_comp_eval₂RingHom f hJ]
+    Polynomial.eval₂_map, HahnSeries.mapRingHom_comp_eval₂RingHom f hJ]
 
 end BaseChange
 

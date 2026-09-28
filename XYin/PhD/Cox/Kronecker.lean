@@ -11,15 +11,17 @@ import XYin.PhD.Cox.DiagonalLaurent
 # Kronecker's congruence for the modular polynomial
 
 This file develops the cyclotomic descent and Laurent-series infrastructure used in the proof
-of Cox Theorem 11.18(v). At a prime level, the Cox representatives consist of the `p` matrices
-`(1,i;0,p)` and `(p,0;0,1)`. The final Frobenius factorization is proved in
+of Cox Theorem 11.18(v), Kronecker's congruence `Φ_p(X, Y) ≡ (X ^ p - Y) (X - Y ^ p) mod p` in
+Cox's notation; in the letters of `(ZMod p)[X][Y]` (see `Cox.modularPolynomialC`) the right-hand
+side is `(Y ^ p - C X) * (Y - C X ^ p)`. At a prime level, the Cox representatives consist of the
+`p` matrices `(1,i;0,p)` and `(p,0;0,1)`. The final Frobenius factorization is proved in
 `KroneckerFrobenius.lean`.
-
-`Φ_p(X,Y) = (X^p - Y) * (X - Y^p) mod p`.
 
 The final descent from a specialized identity uses the lowest Laurent coefficient of `P(j)`;
 this is Cox Exercise 11.15, formalized in `LaurentPolynomialEvaluation.lean`.
 -/
+
+open scoped Polynomial.Bivariate
 
 noncomputable section
 
@@ -152,54 +154,53 @@ theorem jLaurentSeriesWidth_pow_prime (p : ℕ+) [Fact (p : ℕ).Prime] (m : ℕ
     jLaurentSeriesWidth (ZMod p) m ^ (p : ℕ) = jLaurentSeriesWidth (ZMod p) (m * p) := by
   simpa using jLaurentSeriesWidth_pow_prime_pow p m 1
 
-/-- Substitute the width-`p` Laurent series of `j` for the coefficient variable `Y`. -/
+/-- Substitute the width-`p` Laurent series of `j` for the parameter, i.e. for the inner
+variable `C X`. -/
 noncomputable def specializeJMod (p : ℕ+) :
-    BivariatePolynomial (ZMod (p : ℕ)) →+*
-      Polynomial (LaurentSeries (ZMod (p : ℕ))) :=
+    (ZMod (p : ℕ))[X][Y] →+* Polynomial (LaurentSeries (ZMod (p : ℕ))) :=
   bivariateSpecializeLaurent (jLaurentSeriesWidth (ZMod p) p)
 
+/-- `specializeJMod` sends the outer (root) variable `Y` to the variable of the target. -/
 @[simp]
-theorem specializeJMod_varX (p : ℕ+) :
-    specializeJMod p
-        (BivariatePolynomial.varX : BivariatePolynomial (ZMod (p : ℕ))) = Polynomial.X := by
-  simp [specializeJMod, bivariateSpecializeLaurent, BivariatePolynomial.varX]
+theorem specializeJMod_Y (p : ℕ+) :
+    specializeJMod p (Y : (ZMod (p : ℕ))[X][Y]) = Polynomial.X := by
+  simp [specializeJMod, bivariateSpecializeLaurent]
 
+/-- `specializeJMod` sends the inner variable `C X` to the width-`p` `j`-series. -/
 @[simp]
-theorem specializeJMod_varY (p : ℕ+) :
-    specializeJMod p
-        (BivariatePolynomial.varY : BivariatePolynomial (ZMod (p : ℕ))) =
+theorem specializeJMod_C_X (p : ℕ+) :
+    specializeJMod p (Polynomial.C Polynomial.X : (ZMod (p : ℕ))[X][Y]) =
       Polynomial.C (jLaurentSeriesWidth (ZMod p) p) := by
-  simp [specializeJMod, bivariateSpecializeLaurent, BivariatePolynomial.varY]
+  simp [specializeJMod, bivariateSpecializeLaurent]
 
-/-- Substitute the integral width-`m` expansion of `j` for the coefficient variable `Y`. -/
-def specializeJIntegral (m : ℕ+) :
-    BivariatePolynomial ℤ →+* Polynomial (LaurentSeries ℤ) :=
+/-- Substitute the integral width-`m` expansion of `j` for the parameter, i.e. for the inner
+variable `C X`. -/
+def specializeJIntegral (m : ℕ+) : ℤ[X][Y] →+* Polynomial (LaurentSeries ℤ) :=
   bivariateSpecializeLaurent (jLaurentSeriesWidth ℤ m)
 
 /-- Reduction modulo `p` commutes with integral specialization at the width-`p` `j`-series. -/
-theorem specializeJIntegral_map_zmod (p : ℕ+) (F : BivariatePolynomial ℤ) :
+theorem specializeJIntegral_map_zmod (p : ℕ+) (F : ℤ[X][Y]) :
     (specializeJIntegral p F).map
-        (laurentSeriesMapRingHom (Int.castRingHom (ZMod (p : ℕ)))) =
-      specializeJMod p
-        (BivariatePolynomial.map (Int.castRingHom (ZMod (p : ℕ))) F) :=
+        (HahnSeries.mapRingHom (Int.castRingHom (ZMod (p : ℕ)))) =
+      specializeJMod p (F.map (Polynomial.mapRingHom (Int.castRingHom (ZMod (p : ℕ))))) :=
   bivariateSpecializeLaurent_map_apply _ _ _ (jLaurentSeriesWidth_map _ p) F
 
 /-- Mapping the integral specialization to `ℂ` gives specialization at the analytic
 width-`m` Laurent expansion of `j`. -/
-theorem specializeJIntegral_map_complex (m : ℕ+) (F : BivariatePolynomial ℤ) :
+theorem specializeJIntegral_map_complex (m : ℕ+) (F : ℤ[X][Y]) :
     (specializeJIntegral m F).map
-        (laurentSeriesMapRingHom (Int.castRingHom ℂ)) =
+        (HahnSeries.mapRingHom (Int.castRingHom ℂ)) =
       Polynomial.map
         (Polynomial.eval₂RingHom (HahnSeries.C : ℂ →+* LaurentSeries ℂ)
           (laurentqExpansion ((m : ℕ) : ℝ) j))
-        (BivariatePolynomial.map (Int.castRingHom ℂ) F) :=
+        (F.map (Polynomial.mapRingHom (Int.castRingHom ℂ))) :=
   bivariateSpecializeLaurent_map_apply _ _ _ (jLaurentSeriesWidth_map_complex m) F
 
 /-- The integral specialization of the modular polynomial becomes its formal Cox product
 after extending coefficients to `ℂ`. -/
 theorem specializeJIntegral_modularPolynomial_map_complex (m : ℕ+) :
     (specializeJIntegral m (modularPolynomial m)).map
-        (laurentSeriesMapRingHom (Int.castRingHom ℂ)) =
+        (HahnSeries.mapRingHom (Int.castRingHom ℂ)) =
       formalCoxPolynomial m (zeta m) := by
   rw [specializeJIntegral_map_complex, modularPolynomial_map_complex,
     ← formalCoxPolynomial_eq_modularPolynomialC_map_j]
@@ -279,7 +280,7 @@ noncomputable def cyclotomicCoxPolynomial
 product. -/
 theorem cyclotomicCoxPolynomial_map {K : Type*} [Field K] (p : ℕ+) (φ : Polynomial ℤ →+* K)
     (ζ : K) (hφ : ∀ e : ℤ, φ (phasePolynomial p e) = ζ ^ e) :
-    (cyclotomicCoxPolynomial p).map (laurentSeriesMapRingHom φ) = formalCoxPolynomial p ζ := by
+    (cyclotomicCoxPolynomial p).map (HahnSeries.mapRingHom φ) = formalCoxPolynomial p ζ := by
   classical
   simp [cyclotomicCoxPolynomial, formalCoxPolynomial, Polynomial.map_prod,
     cyclotomicTransformedJSeries_map p _ φ ζ hφ]
@@ -287,7 +288,7 @@ theorem cyclotomicCoxPolynomial_map {K : Type*} [Field K] (p : ℕ+) (φ : Polyn
 /-- At `ζ = ζ_p`, the cyclotomic Cox product specializes to the complex formal Cox product. -/
 theorem cyclotomicCoxPolynomial_map_complex (p : ℕ+) :
     (cyclotomicCoxPolynomial p).map
-        (laurentSeriesMapRingHom (phaseEvalComplex p)) =
+        (HahnSeries.mapRingHom (phaseEvalComplex p)) =
       formalCoxPolynomial p (zeta p) :=
   cyclotomicCoxPolynomial_map p _ _ (phasePolynomial_eval_zeta p)
 
@@ -295,7 +296,7 @@ theorem cyclotomicCoxPolynomial_map_complex (p : ℕ+) :
 product over `ZMod p`. -/
 theorem cyclotomicCoxPolynomial_map_mod (p : ℕ+) [Fact (Nat.Prime (p : ℕ))] :
     (cyclotomicCoxPolynomial p).map
-        (laurentSeriesMapRingHom (phaseEvalMod p)) =
+        (HahnSeries.mapRingHom (phaseEvalMod p)) =
       formalCoxPolynomial p (1 : ZMod (p : ℕ)) :=
   cyclotomicCoxPolynomial_map p _ _ fun e ↦ by simp [phaseEvalMod, phasePolynomial]
 
@@ -326,14 +327,14 @@ theorem cyclotomicDescent_polynomialLaurentSeries
     (p : ℕ+) [Fact (Nat.Prime (p : ℕ))]
     (A : Polynomial (LaurentSeries (Polynomial ℤ)))
     (B : Polynomial (LaurentSeries ℤ))
-    (h : A.map (laurentSeriesMapRingHom (phaseEvalComplex p)) =
-      B.map (laurentSeriesMapRingHom (Int.castRingHom ℂ))) :
-    A.map (laurentSeriesMapRingHom (phaseEvalMod p)) =
-      B.map (laurentSeriesMapRingHom (Int.castRingHom (ZMod (p : ℕ)))) := by
+    (h : A.map (HahnSeries.mapRingHom (phaseEvalComplex p)) =
+      B.map (HahnSeries.mapRingHom (Int.castRingHom ℂ))) :
+    A.map (HahnSeries.mapRingHom (phaseEvalMod p)) =
+      B.map (HahnSeries.mapRingHom (Int.castRingHom (ZMod (p : ℕ)))) := by
   ext n k
   have hcoeff := congrArg
     (fun P : Polynomial (LaurentSeries ℂ) ↦ (P.coeff n).coeff k) h
-  simp only [Polynomial.coeff_map, laurentSeriesMapRingHom_coeff] at hcoeff ⊢
+  simp only [Polynomial.coeff_map, HahnSeries.mapRingHom_coeff] at hcoeff ⊢
   rw [phaseEvalMod, Polynomial.coe_eval₂RingHom,
     show (1 : ZMod (p : ℕ)) = (Int.castRingHom (ZMod (p : ℕ))) (1 : ℤ) by simp,
     Polynomial.eval₂_at_apply]
@@ -344,8 +345,7 @@ formal Cox product. -/
 theorem specializeJMod_modularPolynomial_eq_formal
     (p : ℕ+) [Fact (Nat.Prime (p : ℕ))] :
     specializeJMod p
-        (BivariatePolynomial.map (Int.castRingHom (ZMod (p : ℕ)))
-          (modularPolynomial p)) =
+        ((modularPolynomial p).map (Polynomial.mapRingHom (Int.castRingHom (ZMod (p : ℕ))))) =
       formalCoxPolynomial p (1 : ZMod (p : ℕ)) := by
   rw [← specializeJIntegral_map_zmod, ← cyclotomicDescent_polynomialLaurentSeries p _ _
       ((cyclotomicCoxPolynomial_map_complex p).trans

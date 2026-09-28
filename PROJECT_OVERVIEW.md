@@ -12,18 +12,18 @@ pre-cleanup snapshot: `.mathlib-quality/backups/pre-cleanup-2026-09-26.tar.gz`.
 
 | Folder | Files | Lines | Declarations | `@[simp]` | sorry |
 |---|---:|---:|---:|---:|---:|
-| Cox | 29 → 30 | 9,786 → 7,693 | 821 → 753 | 52 → 67 | 0 → 0 |
-| Modularforms | 26 → 11 | 4,289 → 1,529 | 452 → 124 | 9 → 6 | 1 → 0 |
+| Cox | 29 → 30 | 9,786 → 7,579 | 821 → 732 | 52 → 65 | 0 → 0 |
+| Modularforms | 26 → 11 | 4,289 → 1,472 | 452 → 112 | 9 → 6 | 1 → 0 |
 | ModularFunctions | 11 → 12 | 1,622 → 2,913 | 138 → 334 | 16 → 68 | 0 → 0 |
-| jFunction | 5 → 5 | 1,246 → 936 | 157 → 132 | 2 → 3 | 0 → 0 |
+| jFunction | 5 → 5 | 1,246 → 934 | 157 → 130 | 2 → 3 | 0 → 0 |
 | LaurentQExpansion | 2 → 2 | 1,147 → 1,306 | 77 → 124 | 3 → 13 | 0 → 0 |
 | qExpansion_tactic | 2 → 2 | 714 → 594 | 71 → 63 | 0 → 0 | 0 → 0 |
 | uniqueness.lean | 1 → 1 | 298 → 306 | 15 → 15 | 0 → 0 | 0 → 0 |
 | IntegralPowerSeries | 1 → 1 | 230 → 268 | 33 → 39 | 1 → 4 | 0 → 0 |
-| Tactic2 | 2 → 2 | 212 → 185 | 27 → 16 | 0 → 0 | 0 → 0 |
-| Tests | 3 → 3 | 186 → 194 | 0 → 0 | 0 → 0 | 0 → 0 |
+| Tactic2 | 2 → 2 | 212 → 181 | 27 → 15 | 0 → 0 | 0 → 0 |
+| Tests | 3 → 3 | 186 → 195 | 0 → 0 | 0 → 0 | 0 → 0 |
 | Basic.lean | 1 → 0 | 2 → 0 | 1 → 0 | 0 → 0 | 0 → 0 |
-| **Total** | 83 → 69 | 19,732 → 15,924 | 1792 → 1600 | 83 → 161 | 1 → 0 |
+| **Total** | 83 → 69 | 19,732 → 15,748 | 1792 → 1564 | 83 → 159 | 1 → 0 |
 
 Highlights:
 - The last `sorry` is proved: `dim_gen_cong_levels` follows from a new Sturm bound for arithmetic subgroups
@@ -34,10 +34,15 @@ Highlights:
 - About 400 API declarations added (Laurent-layer closure/transport/simp lemmas, growth-predicate closure set, Hahn/Laurent-series
   ring homs and subrings, `CoxMatrix` API); `@[simp]` lemmas 83 → 161.
 - 16 `Modularforms/` files that duplicated pinned mathlib were deleted; duplicates across folders unified; tests moved to `XYinTest/`.
+- 2026-09-28: level-one objects use mathlib's `𝒮ℒ` convention (`ModularForm.E₄/E₆`, `ModularForm.discriminant`,
+  `CuspForm.discriminant`); one name per object (`levelJ`, `MeromorphicField`, `HahnSeries.mapRingHom`); definitions renamed
+  to mathlib style (`toQExpansion`, namespace `QExpansionTactic`, …). Rename table: `.mathlib-quality/cleanup-2026-09-26/SUMMARY.md`.
+- 2026-09-28: the bivariate layer uses mathlib's `R[X][Y]` API (`evalEval`, `Y`, `C X`, `Bivariate.swap`); `Cox.BivariatePolynomial`
+  is gone. Convention and rename table in the same summary. Names in the 2026-09-25 analysis below predate these renames.
 
-Still open (decisions for the author): the Γ(1) → 𝒮ℒ migration of `E₄`/`E₆`/`Delta`; naming/namespace renames; `CuspData` as a
-structure; Dedekind ψ as an `ArithmeticFunction`; rank-n HNF, bidegree-≤n and rank-2-module generalisations; upstream PRs and the
-per-declaration `/mathlibable` runs (Part 8 below lists the candidates).
+Still open, deliberately postponed: `CuspData` as a structure, Dedekind ψ as an `ArithmeticFunction`, Hermite normal
+form in any rank, upstream pull requests to mathlib, and a few smaller redesigns. Each is described, with the reason
+for postponing and an effort estimate, in `.mathlib-quality/deferred-changes.md`.
 
 ---
 

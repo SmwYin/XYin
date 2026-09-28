@@ -6,46 +6,33 @@ Authors: SmwYin
 module
 
 public import Mathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
-public import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
-public import XYin.PhD.Modularforms.Delta
 public import XYin.PhD.Modularforms.E2
+public import XYin.PhD.Modularforms.ResToImagAxis
 
 /-!
-# The Eisenstein series `E₄`, `E₆` at level `Γ(1)`
+# The Eisenstein series `E₄`, `E₆` and `E₂`
 
-This file defines the normalized Eisenstein series `E₄`, `E₆` as modular forms for `Γ(1)` (their
-underlying functions are mathlib's `ModularForm.E₄`, `ModularForm.E₆`), computes their
-`q`-expansions, and proves reality and boundedness properties of Eisenstein series on the
-imaginary axis.
+Complements to mathlib's normalized level-one Eisenstein series `ModularForm.E₄`, `ModularForm.E₆`
+(modular forms of weight 4 and 6 for `𝒮ℒ`): their `q`-expansions, and reality and boundedness
+properties of Eisenstein series on the imaginary axis.
 
 ## Main results
 
-* `E4_q_exp`, `E6_q_exp`: the `q`-expansion coefficients `240 σ₃(m)` and `-504 σ₅(m)`.
-* `Delta_eq_E4_E6`: `Δ = (E₄³ - E₆²) / 1728`.
+* `E₄_q_exp`, `E₆_q_exp`: the `q`-expansion coefficients `240 σ₃(m)` and `-504 σ₅(m)`.
 * `E_even_imag_axis_real`, `E₂_imag_axis_real`: `E_k(it)` (`k ≥ 4` even) and `E₂(it)` are real.
 * `E₂_isBoundedAtImInfty`: `E₂` is bounded at `i∞`.
 -/
 
 @[expose] public section
 
-open ModularForm hiding E₄ E₆
-open EisensteinSeries UpperHalfPlane Filter Complex ArithmeticFunction
+open ModularForm EisensteinSeries UpperHalfPlane Filter Complex ArithmeticFunction
 
 open scoped Real ArithmeticFunction.sigma
 
 noncomputable section
 
-/-- The normalized Eisenstein series of weight 4 for `Γ(1)`. The factor `1/2` normalizes the
-constant term to `1`, since `eisensteinSeriesMF` sums over coprime pairs. -/
-def E₄ : ModularForm (CongruenceSubgroup.Gamma ↑1) 4 :=
-  (1/2 : ℂ) • eisensteinSeriesMF (by norm_num) 0
-
-/-- The normalized Eisenstein series of weight 6 for `Γ(1)`. -/
-def E₆ : ModularForm (CongruenceSubgroup.Gamma ↑1) 6 :=
-  (1/2 : ℂ) • eisensteinSeriesMF (by norm_num) 0
-
 /-- The `q`-expansion of `E₄`: `E₄ = 1 + 240 ∑ σ₃(m) qᵐ`. -/
-lemma E4_q_exp : (fun m ↦ (qExpansion 1 E₄).coeff m) =
+lemma E₄_q_exp : (fun m ↦ (qExpansion 1 E₄).coeff m) =
     fun m ↦ if m = 0 then 1 else (240 : ℂ) * (σ 3 m) := by
   funext m
   convert E_qExpansion_coeff (show 3 ≤ 4 by decide) (show Even 4 from ⟨2, rfl⟩) m using 1
@@ -60,21 +47,12 @@ theorem bernoulli'_six : bernoulli' 6 = 1 / 42 := by
     show Nat.choose 6 2 = 15 by decide, show Nat.choose 6 4 = 15 by decide]
 
 /-- The `q`-expansion of `E₆`: `E₆ = 1 - 504 ∑ σ₅(m) qᵐ`. -/
-lemma E6_q_exp : (fun m ↦ (qExpansion 1 E₆).coeff m) =
+lemma E₆_q_exp : (fun m ↦ (qExpansion 1 E₆).coeff m) =
     fun m ↦ if m = 0 then 1 else -(504 : ℂ) * (σ 5 m) := by
   funext m
   convert E_qExpansion_coeff (show 3 ≤ 6 by decide) (show Even 6 from ⟨3, rfl⟩) m using 1
   norm_num [E₆, ModularForm.E, show bernoulli 6 = 1 / 42 by
     norm_num [bernoulli_eq_bernoulli'_of_ne_one], div_eq_mul_inv]
-
-/-- The first `q`-expansion coefficient of `Δ` is `1`. -/
-lemma Delta_q_one_term : (qExpansion 1 Delta).coeff 1 = 1 := by
-  rw [coe_Delta]
-  exact discriminant_qExpansion_coeff_one
-
-/-- The discriminant equals `(E₄³ - E₆²) / 1728` pointwise. -/
-theorem Delta_eq_E4_E6 (τ : ℍ) : Delta τ = (E₄ τ ^ 3 - E₆ τ ^ 2) / 1728 :=
-  (congrFun coe_Delta τ).trans (ModularForm.discriminant_eq_E₄_cube_sub_E₆_sq τ)
 
 /-! ## Eisenstein series on the imaginary axis -/
 

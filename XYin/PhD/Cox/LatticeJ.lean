@@ -40,7 +40,7 @@ protected def smul (a : ℂˣ) (L : PeriodPair) : PeriodPair where
       exact hst
     exact (mul_eq_zero.mp h).resolve_left a.ne_zero
 
-instance : SMul ℂˣ PeriodPair := ⟨PeriodPair.smul⟩
+instance instSMulUnitsComplex : SMul ℂˣ PeriodPair := ⟨PeriodPair.smul⟩
 
 @[simp] theorem smul_ω₁ (a : ℂˣ) (L : PeriodPair) : (a • L).ω₁ = a * L.ω₁ := rfl
 
@@ -189,38 +189,38 @@ private lemma riemannZeta_six_aux : riemannZeta 6 = (π : ℂ) ^ 6 / 945 := by
   ring
 
 /-- The lattice Eisenstein invariant `g₂([1,τ])` in terms of the normalized `E₄`. -/
-theorem periodPair_g₂_eq_E4 (τ : ℍ) :
-    (UpperHalfPlane.periodPair τ).g₂ = 4 * (π : ℂ) ^ 4 / 3 * E4 τ := by
+theorem periodPair_g₂_eq_E₄ (τ : ℍ) :
+    (UpperHalfPlane.periodPair τ).g₂ = 4 * (π : ℂ) ^ 4 / 3 * E₄ τ := by
   rw [PeriodPair.g₂, periodPair_G_eq_aux τ (by norm_num)]
   norm_num [riemannZeta_four]
-  rw [show eisensteinSeries (N := 1) 0 4 τ = 2 * E4 τ by
-    rw [show E4 τ = (1 / 2 : ℂ) • eisensteinSeriesSIF (N := 1) 0 4 τ from rfl,
+  rw [show eisensteinSeries (N := 1) 0 4 τ = 2 * E₄ τ by
+    rw [show E₄ τ = (1 / 2 : ℂ) • eisensteinSeriesSIF (N := 1) 0 4 τ from rfl,
       eisensteinSeriesSIF_apply]
     simp]
   ring
 
 /-- The lattice Eisenstein invariant `g₃([1,τ])` in terms of the normalized `E₆`. -/
-theorem periodPair_g₃_eq_E6 (τ : ℍ) :
-    (UpperHalfPlane.periodPair τ).g₃ = 8 * (π : ℂ) ^ 6 / 27 * E6 τ := by
+theorem periodPair_g₃_eq_E₆ (τ : ℍ) :
+    (UpperHalfPlane.periodPair τ).g₃ = 8 * (π : ℂ) ^ 6 / 27 * E₆ τ := by
   rw [PeriodPair.g₃, periodPair_G_eq_aux τ (by norm_num)]
   norm_num [riemannZeta_six_aux]
-  rw [show eisensteinSeries (N := 1) 0 6 τ = 2 * E6 τ by
-    rw [show E6 τ = (1 / 2 : ℂ) • eisensteinSeriesSIF (N := 1) 0 6 τ from rfl,
+  rw [show eisensteinSeries (N := 1) 0 6 τ = 2 * E₆ τ by
+    rw [show E₆ τ = (1 / 2 : ℂ) • eisensteinSeriesSIF (N := 1) 0 6 τ from rfl,
       eisensteinSeriesSIF_apply]
     simp]
   ring
 
 /-- The analytic modular `j` agrees with the lattice invariant of `[1,τ]`. -/
 theorem j_eq_periodPair_j (τ : ℍ) : j τ = (UpperHalfPlane.periodPair τ).j := by
-  rw [j, PeriodPair.j, PeriodPair.discriminant, periodPair_g₂_eq_E4,
-    periodPair_g₃_eq_E6, Delta_eq_E4_E6]
+  rw [j, PeriodPair.j, PeriodPair.discriminant, periodPair_g₂_eq_E₄,
+    periodPair_g₃_eq_E₆, discriminant_eq_E₄_cube_sub_E₆_sq]
   have hK : (64 * (π : ℂ) ^ 12 / 27) ≠ 0 := by
     norm_num [Complex.ofReal_ne_zero, Real.pi_ne_zero]
-  rw [show (4 * (π : ℂ) ^ 4 / 3 * E4 τ) ^ 3 -
-        27 * (8 * (π : ℂ) ^ 6 / 27 * E6 τ) ^ 2 =
-      (64 * (π : ℂ) ^ 12 / 27) * (E4 τ ^ 3 - E6 τ ^ 2) by ring,
-    show 1728 * (4 * (π : ℂ) ^ 4 / 3 * E4 τ) ^ 3 =
-      (64 * (π : ℂ) ^ 12 / 27) * (1728 * E4 τ ^ 3) by ring,
+  rw [show (4 * (π : ℂ) ^ 4 / 3 * E₄ τ) ^ 3 -
+        27 * (8 * (π : ℂ) ^ 6 / 27 * E₆ τ) ^ 2 =
+      (64 * (π : ℂ) ^ 12 / 27) * (E₄ τ ^ 3 - E₆ τ ^ 2) by ring,
+    show 1728 * (4 * (π : ℂ) ^ 4 / 3 * E₄ τ) ^ 3 =
+      (64 * (π : ℂ) ^ 12 / 27) * (1728 * E₄ τ ^ 3) by ring,
     mul_div_mul_left _ _ hK, div_div_eq_mul_div]
   ring
 
@@ -253,13 +253,13 @@ theorem exists_homothetic_periodPair (L : PeriodPair) :
     simp [PeriodPair.lattice, UpperHalfPlane.periodPair, inv_mul_cancel₀ hω₁,
       div_eq_mul_inv, mul_comm]
 
-private lemma E4_cube_sub_E6_sq_ne_zero_aux (τ : ℍ) : E4 τ ^ 3 - E6 τ ^ 2 ≠ 0 := fun h ↦
-  Δ_ne_zero τ (by rw [← Delta_apply, Delta_eq_E4_E6, h, zero_div])
+private lemma E₄_cube_sub_E₆_sq_ne_zero_aux (τ : ℍ) : E₄ τ ^ 3 - E₆ τ ^ 2 ≠ 0 := fun h ↦
+  discriminant_ne_zero τ (by rw [discriminant_eq_E₄_cube_sub_E₆_sq, h, zero_div])
 
 private lemma periodPair_discriminant_eq_aux (τ : ℍ) :
     (UpperHalfPlane.periodPair τ).discriminant =
-      64 * (π : ℂ) ^ 12 / 27 * (E4 τ ^ 3 - E6 τ ^ 2) := by
-  rw [PeriodPair.discriminant, periodPair_g₂_eq_E4, periodPair_g₃_eq_E6]
+      64 * (π : ℂ) ^ 12 / 27 * (E₄ τ ^ 3 - E₆ τ ^ 2) := by
+  rw [PeriodPair.discriminant, periodPair_g₂_eq_E₄, periodPair_g₃_eq_E₆]
   ring
 
 namespace PeriodPair
@@ -277,7 +277,7 @@ theorem discriminant_ne_zero (L : PeriodPair) : L.discriminant ≠ 0 := by
     rw [periodPair_discriminant_eq_aux]
     exact mul_ne_zero
       (div_ne_zero (mul_ne_zero (by norm_num) (pow_ne_zero _ hπ)) (by norm_num))
-      (E4_cube_sub_E6_sq_ne_zero_aux τ)
+      (E₄_cube_sub_E₆_sq_ne_zero_aux τ)
   exact hne hcongr.symm
 
 /-- Cox Theorem 10.9, easy direction. -/
@@ -568,13 +568,13 @@ private theorem inv_j_sub_mdiff_aux (c : ℂ) (hc : ∀ τ : ℍ, j τ ≠ c) :
     MDiff (fun τ : ℍ ↦ (j τ - c)⁻¹) := fun τ ↦
   ((j_mdifferentiable τ).sub mdifferentiableAt_const).inv (sub_ne_zero.mpr (hc τ))
 
-private lemma E4_tendsto_atImInfty_aux : Tendsto (E4 : ℍ → ℂ) atImInfty (nhds 1) := by
-  have h0 : (qExpansion 1 E4).coeff 0 = 1 := by simpa using congr_fun E4_q_exp 0
-  simpa [h0] using tendsto_atImInfty_qExpansion_coeff_zero E4 one_pos (by simp)
+private lemma E₄_tendsto_atImInfty_aux : Tendsto (E₄ : ℍ → ℂ) atImInfty (nhds 1) := by
+  have h0 : (qExpansion 1 E₄).coeff 0 = 1 := by simpa using congr_fun E₄_q_exp 0
+  simpa [h0] using tendsto_atImInfty_qExpansion_coeff_zero E₄ one_pos one_mem_strictPeriods_SL
 
 private lemma qj_tendsto_atImInfty_aux : Tendsto qj atImInfty (nhds 1) := by
-  rw [← E4_pow_three_mul_qOverDelta_eq_qj]
-  simpa using (E4_tendsto_atImInfty_aux.pow 3).mul qOverDelta_tendsto_atImInfty
+  rw [← E₄_pow_three_mul_qOverDelta_eq_qj]
+  simpa using (E₄_tendsto_atImInfty_aux.pow 3).mul qOverDelta_tendsto_atImInfty
 
 private theorem inv_j_sub_isZeroAtImInfty_aux (c : ℂ) :
     IsZeroAtImInfty (fun τ : ℍ ↦ (j τ - c)⁻¹) := by

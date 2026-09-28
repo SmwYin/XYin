@@ -21,7 +21,7 @@ function is reassembled into a Laurent series.
 
 * `UpperHalfPlane.poleOrder`: the order of the pole of `cuspFunction h f` at `q = 0`.
 * `UpperHalfPlane.poleRemoved`: the pole-cancelled function `𝕢 h τ ^ poleOrder h f * f τ`.
-* `UpperHalfPlane.to_qExpansion`: the q-expansion of the pole-removed function.
+* `UpperHalfPlane.toQExpansion`: the q-expansion of the pole-removed function.
 * `UpperHalfPlane.laurentqExpansion`: the Laurent q-expansion of `f` at the cusp.
 
 ## Main results
@@ -472,14 +472,14 @@ def UpperHalfPlane.poleRemoved (h : ℝ) (f : ℍ → ℂ) : ℍ → ℂ :=
 
 /-- The q-expansion of the pole-removed function, i.e. the regular part of the Laurent
 q-expansion shifted so that its constant term is the leading Laurent coefficient. -/
-def UpperHalfPlane.to_qExpansion (h : ℝ) (f : ℍ → ℂ) : PowerSeries ℂ :=
+def UpperHalfPlane.toQExpansion (h : ℝ) (f : ℍ → ℂ) : PowerSeries ℂ :=
   qExpansion h (poleRemoved h f)
 
 /-- The Laurent q-expansion of `f` at the cusp: `q ^ (-poleOrder h f)` times the power series
 of the pole-removed function, realized in `LaurentSeries ℂ`. -/
 def UpperHalfPlane.laurentqExpansion (h : ℝ) (f : ℍ → ℂ) : LaurentSeries ℂ :=
   HahnSeries.single (-(poleOrder h f : ℤ)) 1 * (HahnSeries.ofPowerSeries ℤ ℂ)
-    (to_qExpansion h f)
+    (toQExpansion h f)
 
 @[simp] lemma poleRemoved_apply (h : ℝ) (f : ℍ → ℂ) (τ : ℍ) :
     poleRemoved h f τ = 𝕢 h τ ^ poleOrder h f * f τ :=
@@ -491,14 +491,14 @@ lemma poleRemoved_of_poleOrder_eq_zero {h : ℝ} {f : ℍ → ℂ} (h0 : poleOrd
   funext τ
   simp [h0]
 
-/-- Without a pole, `to_qExpansion` is the ordinary q-expansion. -/
-lemma to_qExpansion_of_poleOrder_eq_zero {h : ℝ} {f : ℍ → ℂ} (h0 : poleOrder h f = 0) :
-    to_qExpansion h f = qExpansion h f := by
-  rw [UpperHalfPlane.to_qExpansion, poleRemoved_of_poleOrder_eq_zero h0]
+/-- Without a pole, `toQExpansion` is the ordinary q-expansion. -/
+lemma toQExpansion_of_poleOrder_eq_zero {h : ℝ} {f : ℍ → ℂ} (h0 : poleOrder h f = 0) :
+    toQExpansion h f = qExpansion h f := by
+  rw [UpperHalfPlane.toQExpansion, poleRemoved_of_poleOrder_eq_zero h0]
 
-@[simp] lemma to_qExpansion_const (h : ℝ) (a : ℂ) :
-    to_qExpansion h (fun _ : ℍ ↦ a) = PowerSeries.C a := by
-  rw [to_qExpansion_of_poleOrder_eq_zero (poleOrder_const h a), qExpansion_const]
+@[simp] lemma toQExpansion_const (h : ℝ) (a : ℂ) :
+    toQExpansion h (fun _ : ℍ ↦ a) = PowerSeries.C a := by
+  rw [toQExpansion_of_poleOrder_eq_zero (poleOrder_const h a), qExpansion_const]
 
 /-- On the punctured unit disc, the cusp function of `𝕢 h τ ^ n * f τ` is `q ^ n` times the
 cusp function of `f`. -/
@@ -601,11 +601,11 @@ lemma analyticAt_cuspFunction_iff_poleOrder_eq_zero {h : ℝ} {f : ℍ → ℂ}
 
 /-! ### Coefficients of the Laurent q-expansion -/
 
-/-- The coefficient of `laurentqExpansion h f` at `n` is the coefficient of `to_qExpansion h f`
+/-- The coefficient of `laurentqExpansion h f` at `n` is the coefficient of `toQExpansion h f`
 (as a Laurent series) at `n + poleOrder h f`. -/
 lemma laurentqExpansion.coeff_eq_HahnSeries_add (h : ℝ) (f : ℍ → ℂ) {n : ℤ} :
     (laurentqExpansion h f).coeff n =
-    ((HahnSeries.ofPowerSeries ℤ ℂ) (to_qExpansion h f)).coeff (n + poleOrder h f) := by
+    ((HahnSeries.ofPowerSeries ℤ ℂ) (toQExpansion h f)).coeff (n + poleOrder h f) := by
   rw [laurentqExpansion, HahnSeries.coeff_single_mul, one_mul, sub_neg_eq_add]
 
 /-- The Laurent q-expansion vanishes below `-poleOrder h f`. -/
@@ -613,16 +613,16 @@ lemma laurentqExpansion.coeff_eq_zero_of_lt {h : ℝ} {f : ℍ → ℂ} {n : ℤ
     (hn : n < -(poleOrder h f : ℤ)) : (laurentqExpansion h f).coeff n = 0 := by
   rw [laurentqExpansion.coeff_eq_HahnSeries_add, PowerSeries.coeff_coe, if_pos (by omega)]
 
-/-- The coefficient at `-poleOrder h f + n` is the `n`-th coefficient of `to_qExpansion h f`. -/
+/-- The coefficient at `-poleOrder h f + n` is the `n`-th coefficient of `toQExpansion h f`. -/
 @[simp] lemma laurentqExpansion.coeff_neg_poleOrder_add (h : ℝ) (f : ℍ → ℂ) (n : ℕ) :
-    (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ) + n) = (to_qExpansion h f).coeff n := by
+    (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ) + n) = (toQExpansion h f).coeff n := by
   simp [laurentqExpansion.coeff_eq_HahnSeries_add, PowerSeries.coeff_coe]
 
-/-- From `-poleOrder h f` on, the Laurent coefficients are those of `to_qExpansion h f`. -/
+/-- From `-poleOrder h f` on, the Laurent coefficients are those of `toQExpansion h f`. -/
 lemma laurentqExpansion.coeff_of_geq {h : ℝ} {f : ℍ → ℂ} {n : ℤ}
     (hn : -(poleOrder h f : ℤ) ≤ n) :
     (laurentqExpansion h f).coeff n =
-      (to_qExpansion h f).coeff (Int.toNat (n + poleOrder h f)) := by
+      (toQExpansion h f).coeff (Int.toNat (n + poleOrder h f)) := by
   obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = -(poleOrder h f : ℤ) + k := ⟨(n + poleOrder h f).toNat, by omega⟩
   rw [laurentqExpansion.coeff_neg_poleOrder_add,
     show (-(poleOrder h f : ℤ) + k + poleOrder h f).toNat = k by omega]
@@ -636,40 +636,40 @@ lemma laurentqExpansion.coeff_eq_zero_of_lt' {h : ℝ} {f : ℍ → ℂ} {M : �
 /-- `laurentqExpansion.coeff_neg_poleOrder_add` with the pole order given by an equation. -/
 lemma laurentqExpansion.coeff_neg_poleOrder_add' {h : ℝ} {f : ℍ → ℂ} {M : ℕ}
     (hM : poleOrder h f = M) (n : ℕ) :
-    (laurentqExpansion h f).coeff (-(M : ℤ) + n) = (to_qExpansion h f).coeff n := by
+    (laurentqExpansion h f).coeff (-(M : ℤ) + n) = (toQExpansion h f).coeff n := by
   subst hM
   exact laurentqExpansion.coeff_neg_poleOrder_add h f n
 
 /-- `laurentqExpansion.coeff_of_geq` with the pole order given by an equation. -/
 lemma laurentqExpansion.coeff_of_geq' {h : ℝ} {f : ℍ → ℂ} {M : ℕ} {n : ℤ}
     (hM : poleOrder h f = M) (hn : -(M : ℤ) ≤ n) :
-    (laurentqExpansion h f).coeff n = (to_qExpansion h f).coeff (Int.toNat (n + M)) := by
+    (laurentqExpansion h f).coeff n = (toQExpansion h f).coeff (Int.toNat (n + M)) := by
   subst hM
   exact laurentqExpansion.coeff_of_geq hn
 
 /-- Every Laurent coefficient, as an `if`: zero below `-poleOrder h f`, a coefficient of
-`to_qExpansion h f` from there on. -/
+`toQExpansion h f` from there on. -/
 lemma laurentqExpansion.coeff_of_qExpansion (h : ℝ) (f : ℍ → ℂ) (n : ℤ) :
     (laurentqExpansion h f).coeff n = if n < -(poleOrder h f : ℤ) then 0
-    else (to_qExpansion h f).coeff (Int.toNat (n + poleOrder h f)) := by
+    else (toQExpansion h f).coeff (Int.toNat (n + poleOrder h f)) := by
   split_ifs with hlt
   · exact laurentqExpansion.coeff_eq_zero_of_lt hlt
   · exact laurentqExpansion.coeff_of_geq (le_of_not_gt hlt)
 
-/-- The leading Laurent coefficient is the constant coefficient of `to_qExpansion h f`. -/
+/-- The leading Laurent coefficient is the constant coefficient of `toQExpansion h f`. -/
 @[simp] lemma laurentqExpansion.coeff_neg_poleOrder (h : ℝ) (f : ℍ → ℂ) :
-    (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ)) = (to_qExpansion h f).coeff 0 := by
+    (laurentqExpansion h f).coeff (-(poleOrder h f : ℤ)) = (toQExpansion h f).coeff 0 := by
   simpa using laurentqExpansion.coeff_neg_poleOrder_add h f 0
 
 /-- The constant Laurent coefficient. -/
 lemma laurentqExpansion.coeff_zero (h : ℝ) (f : ℍ → ℂ) :
-    (laurentqExpansion h f).coeff 0 = (to_qExpansion h f).coeff (poleOrder h f) := by
+    (laurentqExpansion h f).coeff 0 = (toQExpansion h f).coeff (poleOrder h f) := by
   simpa using laurentqExpansion.coeff_neg_poleOrder_add h f (poleOrder h f)
 
 /-- Without a pole, the Laurent q-expansion is the ordinary q-expansion. -/
 lemma laurentqExpansion.eq_qExpansion_of_poleOrder_eq_zero {h : ℝ} {f : ℍ → ℂ}
     (h0 : poleOrder h f = 0) : laurentqExpansion h f = qExpansion h f := by
-  simp [laurentqExpansion, to_qExpansion_of_poleOrder_eq_zero h0, h0]
+  simp [laurentqExpansion, toQExpansion_of_poleOrder_eq_zero h0, h0]
 
 /-- If the cusp function is analytic at `0`, the Laurent q-expansion is the ordinary
 q-expansion. -/
@@ -684,9 +684,9 @@ lemma meromorphicOrderAt_cuspFunction_eq_neg_poleOrder {h : ℝ} {f : ℍ → �
   (poleOrder_eq_iff h0).1 rfl
 
 /-- At a genuine pole, the leading coefficient of the Laurent q-expansion does not vanish. -/
-lemma to_qExpansion_coeff_zero_ne {h : ℝ} {f : ℍ → ℂ}
+lemma toQExpansion_coeff_zero_ne {h : ℝ} {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (h0 : poleOrder h f ≠ 0) :
-    (to_qExpansion h f).coeff 0 ≠ 0 := by
+    (toQExpansion h f).coeff 0 ≠ 0 := by
   have hord := meromorphicOrderAt_cuspFunction_eq_neg_poleOrder h0
   have hEq : cuspFunction h f =ᶠ[𝓝[≠] (0 : ℂ)] fun z ↦
       (z - 0) ^ (meromorphicOrderAt (cuspFunction h f) 0).untop₀ •
@@ -699,13 +699,13 @@ lemma to_qExpansion_coeff_zero_ne {h : ℝ} {f : ℍ → ℂ}
   have hne := hmero.meromorphicTrailingCoeffAt_ne_zero (by rw [hord]; exact WithTop.coe_ne_top)
   rw [(analyticAt_cuspFunction_poleRemoved hmero).meromorphicTrailingCoeffAt_of_eq_nhdsNE hEq]
     at hne
-  simpa [UpperHalfPlane.to_qExpansion, qExpansion_coeff] using hne
+  simpa [UpperHalfPlane.toQExpansion, qExpansion_coeff] using hne
 
-/-- At a genuine pole, `to_qExpansion h f` is nonzero. -/
-lemma to_qExpansion_ne_zero {h : ℝ} {f : ℍ → ℂ}
+/-- At a genuine pole, `toQExpansion h f` is nonzero. -/
+lemma toQExpansion_ne_zero {h : ℝ} {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (h0 : poleOrder h f ≠ 0) :
-    to_qExpansion h f ≠ 0 := fun hq ↦ by
-  simpa [hq] using to_qExpansion_coeff_zero_ne hmero h0
+    toQExpansion h f ≠ 0 := fun hq ↦ by
+  simpa [hq] using toQExpansion_coeff_zero_ne hmero h0
 
 /-- At a genuine pole, the Laurent q-expansion is nonzero. -/
 lemma laurentqExpansion.ne_zero {h : ℝ} {f : ℍ → ℂ}
@@ -713,7 +713,7 @@ lemma laurentqExpansion.ne_zero {h : ℝ} {f : ℍ → ℂ}
     laurentqExpansion h f ≠ 0 :=
   HahnSeries.ne_zero_of_coeff_ne_zero <| by
     rw [laurentqExpansion.coeff_neg_poleOrder]
-    exact to_qExpansion_coeff_zero_ne hmero h0
+    exact toQExpansion_coeff_zero_ne hmero h0
 
 /-- A genuine pole of order `r` gives a Laurent q-expansion of order `-r`. -/
 lemma laurentqExpansion.order_eq_neg_poleOrder {h : ℝ} {f : ℍ → ℂ}
@@ -721,7 +721,7 @@ lemma laurentqExpansion.order_eq_neg_poleOrder {h : ℝ} {f : ℍ → ℂ}
     (laurentqExpansion h f).order = -(poleOrder h f : ℤ) := by
   refine le_antisymm (HahnSeries.order_le_of_coeff_ne_zero ?_) (le_of_not_gt fun hlt ↦ ?_)
   · rw [laurentqExpansion.coeff_neg_poleOrder]
-    exact to_qExpansion_coeff_zero_ne hmero h0
+    exact toQExpansion_coeff_zero_ne hmero h0
   · exact HahnSeries.coeff_order_eq_zero.not.2 (laurentqExpansion.ne_zero hmero h0)
       (laurentqExpansion.coeff_eq_zero_of_lt hlt)
 
@@ -731,11 +731,11 @@ lemma laurentqExpansion.poleOrder_to_order {h : ℝ} {f : ℍ → ℂ}
     poleOrder h f = -(laurentqExpansion h f).order := by
   rw [laurentqExpansion.order_eq_neg_poleOrder hmero h0, neg_neg]
 
-/-- At a genuine pole, `to_qExpansion h f` is the power-series part of the Laurent
+/-- At a genuine pole, `toQExpansion h f` is the power-series part of the Laurent
 q-expansion. -/
-lemma laurentqExpansion.to_qExpansion_eq_powerSeriesPart {h : ℝ} {f : ℍ → ℂ}
+lemma laurentqExpansion.toQExpansion_eq_powerSeriesPart {h : ℝ} {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) (h0 : poleOrder h f ≠ 0) :
-    to_qExpansion h f = (laurentqExpansion h f).powerSeriesPart := by
+    toQExpansion h f = (laurentqExpansion h f).powerSeriesPart := by
   ext n
   rw [LaurentSeries.powerSeriesPart_coeff, laurentqExpansion.order_eq_neg_poleOrder hmero h0,
     laurentqExpansion.coeff_neg_poleOrder_add]
@@ -744,7 +744,7 @@ lemma laurentqExpansion.to_qExpansion_eq_powerSeriesPart {h : ℝ} {f : ℍ → 
 lemma laurentqExpansion.eq_qExpansion_iff {h : ℝ} {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction h f) (0 : ℂ)) :
     laurentqExpansion h f = qExpansion h f ↔ poleOrder h f = 0 := by
-  refine ⟨fun heq ↦ by_contra fun h0 ↦ to_qExpansion_coeff_zero_ne hmero h0 ?_,
+  refine ⟨fun heq ↦ by_contra fun h0 ↦ toQExpansion_coeff_zero_ne hmero h0 ?_,
     laurentqExpansion.eq_qExpansion_of_poleOrder_eq_zero⟩
   rw [← laurentqExpansion.coeff_neg_poleOrder, heq, PowerSeries.coeff_coe, if_pos (by omega)]
 
@@ -844,6 +844,6 @@ lemma laurentqExpansion_coeff_eq_circleIntegral {h : ℝ} {f : ℍ → ℂ}
       circleIntegral_cuspFunction_div_zpow_eq_zero hRpos hRlt1 hDiff hn, mul_zero]
   · have hm : ((Int.toNat (n + poleOrder h f) : ℕ) : ℤ) = n + poleOrder h f :=
       Int.toNat_of_nonneg (by linarith [le_of_not_gt hn])
-    rw [laurentqExpansion.coeff_of_geq (le_of_not_gt hn), UpperHalfPlane.to_qExpansion,
+    rw [laurentqExpansion.coeff_of_geq (le_of_not_gt hn), UpperHalfPlane.toQExpansion,
       qExpansion_coeff_eq_circleIntegral_of_differentiableOn hRpos hDiff _,
       circleIntegral_cuspFunction_poleRemoved_div_pow_eq hRpos hRlt1 hm]

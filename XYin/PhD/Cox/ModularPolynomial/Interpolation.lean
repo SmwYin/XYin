@@ -167,12 +167,13 @@ is separable over the function field.
 -/
 theorem recoveryFormula (m : ℕ+) {f : ℍ → ℂ}
     (hf : CuspData m f) (τ : ℍ)
-    (hderiv : ((modularPolynomialC m).specializeY (j τ)).derivative.eval
+    (hderiv : ((modularPolynomialC m).map (Polynomial.evalRingHom (j τ))).derivative.eval
       (levelJ m τ) ≠ 0) :
     f τ = (interpolationAt m hf τ).eval (levelJ m τ) /
-      ((modularPolynomialC m).specializeY (j τ)).derivative.eval (levelJ m τ) := by
+      ((modularPolynomialC m).map (Polynomial.evalRingHom (j τ))).derivative.eval
+        (levelJ m τ) := by
   classical
-  rw [← congrFun (j_act_sigmaZero m) τ, modularPolynomialC_specializeY, coxPhiAtJ_eq_nodal,
+  rw [← congrFun (j_act_sigmaZero m) τ, modularPolynomialC_map_evalRingHom, coxPhiAtJ_eq_nodal,
     Lagrange.eval_nodal_derivative_eval_node_eq (v := fun σ : CoxMatrix m ↦ j (σ.act τ))
       (Finset.mem_univ (sigmaZero m)), Lagrange.eval_nodal] at hderiv ⊢
   rw [interpolationAt, eval_interpolation_sum_at
@@ -249,7 +250,7 @@ private def modularDerivativeHolomorphic (m : ℕ+) : HolomorphicFunction :=
 
 private theorem modularDerivativeHolomorphic_apply (m : ℕ+) (τ : ℍ) :
     (modularDerivativeHolomorphic m).1 τ =
-      ((modularPolynomialC m).specializeY (j τ)).derivative.eval
+      ((modularPolynomialC m).map (Polynomial.evalRingHom (j τ))).derivative.eval
         (levelJ m τ) := by
   classical
   rw [modularPolynomialC_rightCosetProduct, ← congrFun (rightCosetEval_baseRightCoset m) τ,
@@ -271,11 +272,10 @@ private theorem interpolationDenominator_eval (m : ℕ+) (D : Polynomial ℂ)
     (τ : ℍ) :
     (interpolationDenominator m D).evalEval (j τ) (levelJ m τ) =
       D.eval (j τ) *
-        ((modularPolynomialC m).specializeY (j τ)).derivative.eval
+        ((modularPolynomialC m).map (Polynomial.evalRingHom (j τ))).derivative.eval
           (levelJ m τ) := by
   rw [interpolationDenominator, Polynomial.evalEval_mul, Polynomial.evalEval_C,
-    BivariatePolynomial.derivative_specializeY, BivariatePolynomial.specializeY_eval,
-    BivariatePolynomial.eval_eq_evalEval]
+    Polynomial.derivative_map, Polynomial.map_evalRingHom_eval]
 
 private theorem interpolationDenominator_onCurve_ne_zero (m : ℕ+)
     {D : Polynomial ℂ} (hD : D ≠ 0) :
@@ -307,7 +307,7 @@ private theorem rationalInTwo_of_interpolation_coeff_rational
   rw [interpolationDenominator_eval] at hdenom ⊢
   have hDeval : D.eval (j τ) ≠ 0 := left_ne_zero_of_mul hdenom
   have hderiv :
-      ((modularPolynomialC m).specializeY (j τ)).derivative.eval
+      ((modularPolynomialC m).map (Polynomial.evalRingHom (j τ))).derivative.eval
           (levelJ m τ) ≠ 0 :=
     right_ne_zero_of_mul hdenom
   rw [recoveryFormula m hf τ hderiv, hP τ hDeval, div_div]

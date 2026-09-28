@@ -19,10 +19,10 @@ arithmetic for the `q`-expansion coefficients of the discriminant `Δ` and of `q
 array convolutions, and power-series inversion, entirely in `Array Int`.  All definitions are
 structurally recursive, so they reduce in the kernel (`decide +kernel`, `rfl`).
 
-On top of the computational layer we define the formal power series `Delta_qexpansion`
-and `qj_qexpansion` in `ℤ⟦X⟧`, the informational `#qexp` commands, and the
+On top of the computational layer we define the formal power series `deltaQExpansion`
+and `qjQExpansion` in `ℤ⟦X⟧`, the informational `#qexp` commands, and the
 proof-producing `qexp_coeff` term elaborator, which certifies coefficient identities
-such as `qj_qexpansion.coeff 4 = 864299970` by compiled native evaluation.  Proofs
+such as `qjQExpansion.coeff 4 = 864299970` by compiled native evaluation.  Proofs
 produced this way depend on the `Lean.ofReduceBool` axiom (the `native_decide` trust
 base).  The identification of these formal series with the analytic `q`-expansions of
 `Δ` and `q·j` is carried out in `XYin.PhD.qExpansion_tactic.link`.
@@ -31,7 +31,7 @@ base).  The identification of these formal series with the analytic `q`-expansio
 
 * `deltaCoeffInt`, `qjCoeffInt`: the `n`-th `q`-expansion coefficient of `Δ`
   (the Ramanujan `τ` function) and of `q·j`, computed by array convolutions.
-* `Delta_qexpansion`, `qj_qexpansion`: the corresponding formal series in `ℤ⟦X⟧`.
+* `deltaQExpansion`, `qjQExpansion`: the corresponding formal series in `ℤ⟦X⟧`.
 * `mkQexpCoeffProof`: the `MetaM` routine producing `native_decide`-backed proofs of
   coefficient identities for a `QexpTarget`.
 * `qexp_coeff` (term syntax) and `#qexp` (command syntax): the user-facing entry points;
@@ -40,7 +40,7 @@ base).  The identification of these formal series with the analytic `q`-expansio
 
 open scoped Qq
 
-namespace XYin.PhD.qExpansion_tactic
+namespace QExpansionTactic
 
 /-- Whether the `#qexp` commands and the `qexp_coeff` elaborator log the elapsed wall-clock
 time. -/
@@ -96,7 +96,7 @@ def deltaCoeffsArrayUpTo (n : Nat) : Array Int :=
 /-- The `n`-th `q`-expansion coefficient of `Δ`, i.e. the Ramanujan `τ(n)`. -/
 def deltaCoeffInt (n : Nat) : Int := (deltaCoeffsArrayUpTo n).getD n 0
 
-/-- The list of `Δ`-coefficients `[τ(0), …, τ(n)]` (for `#qexp Delta precision`). -/
+/-- The list of `Δ`-coefficients `[τ(0), …, τ(n)]` (for `#qexp discriminant precision`). -/
 def deltaCoeffsUpTo (n : Nat) : List Int := (deltaCoeffsArrayUpTo n).toList
 
 /-- The `n`-th coefficient of the unit power series `Δ/q = 1 - 24q + 252q² - …`. -/
@@ -132,22 +132,22 @@ def qjCoeffsUpTo (n : Nat) : List Int := (qjCoeffsArrayUpTo n).toList
 
 /-- The formal power series `∑ qjCoeffInt(n)·qⁿ ∈ ℤ⟦q⟧`, the candidate `q`-expansion of
 `q·j`; identified with the analytic expansion in `link.lean`. -/
-def qj_qexpansion : PowerSeries ℤ :=
+def qjQExpansion : PowerSeries ℤ :=
   PowerSeries.mk qjCoeffInt
 
-/-- The `n`-th coefficient of `qj_qexpansion` is the computed integer `qjCoeffInt n`. -/
-theorem qj_qexpansion_coeff_eq (n : Nat) :
-    qj_qexpansion.coeff n = qjCoeffInt n :=
+/-- The `n`-th coefficient of `qjQExpansion` is the computed integer `qjCoeffInt n`. -/
+theorem qjQExpansion_coeff_eq (n : Nat) :
+    qjQExpansion.coeff n = qjCoeffInt n :=
   PowerSeries.coeff_mk n qjCoeffInt
 
 /-- The formal power series `∑ τ(n)·qⁿ ∈ ℤ⟦q⟧`, the candidate `q`-expansion of `Δ`;
 identified with the analytic expansion in `link.lean`. -/
-def Delta_qexpansion : PowerSeries ℤ :=
+def deltaQExpansion : PowerSeries ℤ :=
   PowerSeries.mk deltaCoeffInt
 
-/-- The `n`-th coefficient of `Delta_qexpansion` is the computed `deltaCoeffInt n`. -/
-theorem Delta_qexpansion_coeff_eq (n : Nat) :
-    Delta_qexpansion.coeff n = deltaCoeffInt n :=
+/-- The `n`-th coefficient of `deltaQExpansion` is the computed `deltaCoeffInt n`. -/
+theorem deltaQExpansion_coeff_eq (n : Nat) :
+    deltaQExpansion.coeff n = deltaCoeffInt n :=
   PowerSeries.coeff_mk n deltaCoeffInt
 
 open Lean Meta in
@@ -181,24 +181,24 @@ structure QexpTarget where
 
 /-- The `qexp_coeff`/`#qexp` target data for `q·j`. -/
 def qjTarget : QexpTarget where
-  series := q(qj_qexpansion)
+  series := q(qjQExpansion)
   coeffName := ``qjCoeffInt
-  coeffEqName := ``qj_qexpansion_coeff_eq
+  coeffEqName := ``qjQExpansion_coeff_eq
   coeffFn := qjCoeffInt
   coeffsUpTo := qjCoeffsUpTo
 
 /-- The `qexp_coeff`/`#qexp` target data for `Δ`. -/
 def deltaTarget : QexpTarget where
-  series := q(Delta_qexpansion)
+  series := q(deltaQExpansion)
   coeffName := ``deltaCoeffInt
-  coeffEqName := ``Delta_qexpansion_coeff_eq
+  coeffEqName := ``deltaQExpansion_coeff_eq
   coeffFn := deltaCoeffInt
   coeffsUpTo := deltaCoeffsUpTo
 
-/-- Look up the target data for a `#qexp`/`qexp_coeff` identifier (`qj` or `Delta`). -/
+/-- Look up the target data for a `#qexp`/`qexp_coeff` identifier (`qj` or `discriminant`). -/
 def qexpTarget? : Lean.Name → Option QexpTarget
   | `qj => some qjTarget
-  | `Delta => some deltaTarget
+  | `discriminant => some deltaTarget
   | _ => none
 
 open Lean Meta Qq in
@@ -216,11 +216,11 @@ def mkQexpCoeffProof (t : QexpTarget) (n : Nat) (xQ : Q(ℤ)) : MetaM Expr := do
   let target : Q(Prop) := q(($series).coeff $nQ = $xQ)
   mkExpectedTypeHint proofExpr target
 
-/-- `#qexp qj coeff n` / `#qexp Delta coeff n` prints a single `q`-expansion
+/-- `#qexp qj coeff n` / `#qexp discriminant coeff n` prints a single `q`-expansion
 coefficient (informational; produces no proof term). -/
 syntax (name := qexpCoeffCmd) "#qexp" ident "coeff" num : command
 
-/-- `#qexp qj precision n` / `#qexp Delta precision n` prints all coefficients up to
+/-- `#qexp qj precision n` / `#qexp discriminant precision n` prints all coefficients up to
 index `n` (informational; produces no proof term). -/
 syntax (name := qexpPrecisionCmd) "#qexp" ident "precision" num : command
 
@@ -228,7 +228,7 @@ open Lean Elab Command in
 elab_rules : command
   | `(command| #qexp $which:ident coeff $n:num) => do
       let some t := qexpTarget? which.getId
-        | throwErrorAt which "unknown q-expansion target; expected `qj` or `Delta`"
+        | throwErrorAt which "unknown q-expansion target; expected `qj` or `discriminant`"
       let t0 ← liftIO IO.monoMsNow
       logInfoAt n (toString (t.coeffFn n.getNat))
       let t1 ← liftIO IO.monoMsNow
@@ -236,30 +236,30 @@ elab_rules : command
         logInfoAt n m!"[qexp time: {t1 - t0}ms]"
   | `(command| #qexp $which:ident precision $n:num) => do
       let some t := qexpTarget? which.getId
-        | throwErrorAt which "unknown q-expansion target; expected `qj` or `Delta`"
+        | throwErrorAt which "unknown q-expansion target; expected `qj` or `discriminant`"
       let t0 ← liftIO IO.monoMsNow
       logInfoAt n (toString (t.coeffsUpTo n.getNat))
       let t1 ← liftIO IO.monoMsNow
       if qexp.reportTiming.get (← getOptions) then
         logInfoAt n m!"[qexp time: {t1 - t0}ms]"
 
-end XYin.PhD.qExpansion_tactic
+end QExpansionTactic
 
-/-- `qexp_coeff qj n` / `qexp_coeff Delta n`: a proof term of the coefficient identity
-`qj_qexpansion.coeff n = c` (resp. for `Delta_qexpansion`), with the value `c` computed
+/-- `qexp_coeff qj n` / `qexp_coeff discriminant n`: a proof term of the coefficient identity
+`qjQExpansion.coeff n = c` (resp. for `deltaQExpansion`), with the value `c` computed
 automatically.  The proof depends on the `Lean.ofReduceBool` axiom. -/
 syntax (name := qexpCoeffAuto) "qexp_coeff" ident num : term
 
-/-- `qexp_coeff qj n x` / `qexp_coeff Delta n x`: a proof term of
-`qj_qexpansion.coeff n = x` (resp. for `Delta_qexpansion`) for a user-supplied value
+/-- `qexp_coeff qj n x` / `qexp_coeff discriminant n x`: a proof term of
+`qjQExpansion.coeff n = x` (resp. for `deltaQExpansion`) for a user-supplied value
 `x`; elaboration fails if `x` is not the actual coefficient. -/
 syntax (name := qexpCoeffManual) "qexp_coeff" ident num term : term
 
-open Lean Elab Term XYin.PhD.qExpansion_tactic in
+open Lean Elab Term QExpansionTactic in
 elab_rules : term
   | `(qexp_coeff $which:ident $n:num) => do
       let some t := qexpTarget? which.getId
-        | throwErrorAt which "unknown q-expansion target; expected `qj` or `Delta`"
+        | throwErrorAt which "unknown q-expansion target; expected `qj` or `discriminant`"
       let nVal := n.getNat
       let t0 ← IO.monoMsNow
       let xQ : Q(ℤ) := Qq.mkIntLitQ (t.coeffFn nVal)
@@ -270,7 +270,7 @@ elab_rules : term
       pure proof
   | `(qexp_coeff $which:ident $n:num $x:term) => do
       let some t := qexpTarget? which.getId
-        | throwErrorAt which "unknown q-expansion target; expected `qj` or `Delta`"
+        | throwErrorAt which "unknown q-expansion target; expected `qj` or `discriminant`"
       let nVal := n.getNat
       let xExpr ← elabTermEnsuringType x q(ℤ)
       synthesizeSyntheticMVarsNoPostponing

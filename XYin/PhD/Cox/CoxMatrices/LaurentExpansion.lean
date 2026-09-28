@@ -313,8 +313,8 @@ private theorem poleRemoved_coxAction_aux (m : ℕ+) (σ : CoxMatrix m) :
   rw [poleRemoved_apply, poleOrder_coxAction_aux, qj_apply, qParam_coxAction_aux]
   field_simp [coxPhase_ne_zero_aux m σ]
 
-private theorem to_qExpansion_coxAction_aux (m : ℕ+) (σ : CoxMatrix m) :
-    to_qExpansion ((m : ℕ) : ℝ) (fun τ : ℍ ↦ j (σ.act τ)) =
+private theorem toQExpansion_coxAction_aux (m : ℕ+) (σ : CoxMatrix m) :
+    toQExpansion ((m : ℕ) : ℝ) (fun τ : ℍ ↦ j (σ.act τ)) =
       (coxPhaseAux m σ)⁻¹ •
         (PowerSeries.rescale (coxPhaseAux m σ) (qExpansion 1 qj)).expand
           (σ.a ^ 2) (pow_ne_zero _ σ.a_pos.ne') := by
@@ -392,7 +392,7 @@ private theorem laurentqExpansion_coxAction_coeff_aux
         zeta m ^ (((σ.a : ℤ) * (σ.b : ℤ)) * (k / (r : ℤ))) else 0
   by_cases hk : k < -(r : ℤ)
   · simp [hk, not_le_of_gt hk]
-  rw [if_neg hk, to_qExpansion_coxAction_aux]
+  rw [if_neg hk, toQExpansion_coxAction_aux]
   have hkge : 0 ≤ k + (r : ℤ) := by lia
   by_cases hdiv : (r : ℤ) ∣ k
   · obtain ⟨t, rfl⟩ := hdiv

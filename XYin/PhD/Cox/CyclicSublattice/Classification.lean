@@ -11,10 +11,12 @@ import XYin.PhD.Cox.ModularPolynomial
 
 This file proves Cox Lemma 11.24 and Theorem 11.23: cyclic index-`m` sublattices are
 classified by canonical HNF representatives, and their `j`-invariants are exactly the roots
-of the modular polynomial.
+of the modular polynomial. Cox's value `Φ_m(u, v)` is `Φ.evalEval v u` (see
+`Cox.modularPolynomialC`).
 -/
 
 open MatrixGroups UpperHalfPlane
+open scoped Polynomial.Bivariate
 
 noncomputable section
 
@@ -178,10 +180,10 @@ theorem CoxMatrix.toCyclicSublattice_j {m : ℕ+} (σ : CoxMatrix m) (τ : ℍ) 
 /-- Root classification over a normalized lattice, the local form of Theorem 11.23. -/
 theorem modularPolynomialC_zero_iff_normalizedCyclicSublattice
     (m : ℕ+) (τ : ℍ) (u : ℂ) :
-    (modularPolynomialC m).eval u (j τ) = 0 ↔
+    (modularPolynomialC m).evalEval (j τ) u = 0 ↔
       ∃ S : PeriodPair.CyclicSublattice (UpperHalfPlane.periodPair τ) m,
         u = S.j := by
-  rw [modularPolynomialC_eval_eq_zero_iff]
+  rw [modularPolynomialC_evalEval_eq_zero_iff]
   constructor
   · rintro ⟨σ, rfl⟩
     exact ⟨σ.toCyclicSublattice τ, (σ.toCyclicSublattice_j τ).symm⟩
@@ -191,9 +193,10 @@ theorem modularPolynomialC_zero_iff_normalizedCyclicSublattice
     exact congrArg PeriodPair.CyclicSublattice.j
       (CoxMatrix.toCoxMatrix_toCyclicSublatticeOfPeriodPair S).symm
 
-/-- Cox Theorem 11.23: zeros of `Φ_m` classify cyclic index-`m` lattice inclusions. -/
+/-- Cox Theorem 11.23: zeros of `Φ_m` classify cyclic index-`m` lattice inclusions; Cox's
+`Φ_m(u, v) = 0` iff `u = j(L')` and `v = j(L)` for a cyclic sublattice `L' ⊆ L` of index `m`. -/
 theorem theorem_11_23 (m : ℕ+) (u v : ℂ) :
-    (BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m)).eval u v = 0 ↔
+    ((modularPolynomial m).map (Polynomial.mapRingHom (Int.castRingHom ℂ))).evalEval v u = 0 ↔
       ∃ L : PeriodPair, ∃ S : PeriodPair.CyclicSublattice L m,
         u = S.j ∧ v = L.j := by
   rw [modularPolynomial_map_complex]

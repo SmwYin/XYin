@@ -11,9 +11,11 @@ import XYin.PhD.Cox.ModularPolynomial.AnalyticSupport
 /-!
 # The function field of the upper half-plane
 
-This file realizes `ℂ(Y)` inside the meromorphic function field on the upper half-plane
-by sending `Y` to the modular function `j`. Precomposition by `SL₂(ℤ)` then gives
-`ℂ(Y)`-automorphisms which act transitively on the right-coset conjugates `j(mγτ)`.
+This file realizes the rational function field `RatFunc ℂ` inside the meromorphic function field
+on the upper half-plane by sending the variable to the modular function `j`. In Cox's notation
+this is `ℂ(Y)`, the field of rational functions in the parameter `Y` of `Φ_m(X, Y)` (the inner
+variable of `ℂ[X][Y]`, see `Cox.modularPolynomialC`). Precomposition by `SL₂(ℤ)` then gives
+`RatFunc ℂ`-automorphisms which act transitively on the right-coset conjugates `j(mγτ)`.
 
 The distinctness proof is carried out for functions, rather than at a fixed point of the upper
 half-plane: specialized roots can collide at CM points.
@@ -27,9 +29,6 @@ noncomputable section
 
 namespace Cox
 namespace UpperHalfPlaneFunctionField
-
-/-- The codiscrete field of meromorphic functions on the upper half-plane. -/
-abbrev FunctionField := MeromorphicField
 
 /-- The modular function `j`, bundled as a holomorphic function. -/
 def jElement : HolomorphicFunction := ⟨j, j_mdifferentiable⟩
@@ -74,24 +73,24 @@ theorem evalJ_injective : Function.Injective evalJ := fun P Q hPQ ↦
     simpa using congrArg (·.1 tau) hPQ
 
 /-- Evaluation at `j`, followed by inclusion into the function field. -/
-def evalJFracPoly : Polynomial ℂ →+* FunctionField :=
-  (algebraMap HolomorphicFunction FunctionField).comp evalJ
+def evalJFracPoly : Polynomial ℂ →+* MeromorphicField :=
+  (algebraMap HolomorphicFunction MeromorphicField).comp evalJ
 
 /-- Evaluation at `j` remains injective after passing to the function field. -/
 theorem evalJFracPoly_injective : Function.Injective evalJFracPoly :=
   holomorphicToMeromorphic_injective.comp evalJ_injective
 
-/-- The embedding `ℂ(Y) → FunctionField` obtained by sending `Y` to `j`. -/
-def ratFuncEvalJ : RatFunc ℂ →+* FunctionField :=
+/-- The embedding `RatFunc ℂ → MeromorphicField` obtained by sending the variable to `j`. -/
+def ratFuncEvalJ : RatFunc ℂ →+* MeromorphicField :=
   RatFunc.liftRingHom evalJFracPoly
     (nonZeroDivisors_le_comap_nonZeroDivisors_of_injective _ evalJFracPoly_injective)
 
-noncomputable instance : Algebra (RatFunc ℂ) FunctionField := ratFuncEvalJ.toAlgebra
+noncomputable instance : Algebra (RatFunc ℂ) MeromorphicField := ratFuncEvalJ.toAlgebra
 
 /-- The chosen algebra structure is induced by `ratFuncEvalJ`. -/
 @[simp]
 theorem algebraMap_ratFunc (r : RatFunc ℂ) :
-    algebraMap (RatFunc ℂ) FunctionField r = ratFuncEvalJ r := rfl
+    algebraMap (RatFunc ℂ) MeromorphicField r = ratFuncEvalJ r := rfl
 
 /-- On polynomials, the rational-function embedding agrees with evaluation at `j`. -/
 @[simp]
@@ -100,8 +99,8 @@ theorem ratFuncEvalJ_algebraMap (P : Polynomial ℂ) :
       evalJFracPoly P := by
   simp [ratFuncEvalJ]
 
-/-- The embedding of `ℂ(Y)` extends the embedding of the constants. -/
-instance : IsScalarTower ℂ (RatFunc ℂ) FunctionField :=
+/-- The embedding of `RatFunc ℂ` extends the embedding of the constants. -/
+instance : IsScalarTower ℂ (RatFunc ℂ) MeromorphicField :=
   IsScalarTower.of_algebraMap_eq fun c ↦ by
     rw [IsScalarTower.algebraMap_apply ℂ (Polynomial ℂ) (RatFunc ℂ), algebraMap_ratFunc,
       ratFuncEvalJ_algebraMap, evalJFracPoly, RingHom.comp_apply, Polynomial.algebraMap_eq,
@@ -113,16 +112,16 @@ private theorem precomp_evalJPoly (delta : SL(2, ℤ)) (P : Polynomial ℂ) :
   precomp_algebraMap_eq_of_forall delta _ _ fun tau ↦ by
     simp only [evalJ_apply, j_modularGroup_smul]
 
-/-- Precomposition fixes the embedded copy of `ℂ(Y)`. -/
+/-- Precomposition fixes the embedded copy of `RatFunc ℂ`. -/
 private theorem precomp_ratFunc (delta : SL(2, ℤ)) (r : RatFunc ℂ) :
-    precomp delta (algebraMap (RatFunc ℂ) FunctionField r) =
-      algebraMap (RatFunc ℂ) FunctionField r := by
+    precomp delta (algebraMap (RatFunc ℂ) MeromorphicField r) =
+      algebraMap (RatFunc ℂ) MeromorphicField r := by
   induction r using RatFunc.induction_on with
   | f p q _ =>
       simp only [map_div₀, algebraMap_ratFunc, ratFuncEvalJ_algebraMap, precomp_evalJPoly]
 
-/-- Precomposition as a `ℂ(Y)`-algebra automorphism of the function field. -/
-def precompAlgEquiv (delta : SL(2, ℤ)) : FunctionField ≃ₐ[RatFunc ℂ] FunctionField :=
+/-- Precomposition as a `RatFunc ℂ`-algebra automorphism of the function field. -/
+def precompAlgEquiv (delta : SL(2, ℤ)) : MeromorphicField ≃ₐ[RatFunc ℂ] MeromorphicField :=
   AlgEquiv.ofRingEquiv (precomp_ratFunc delta)
 
 private theorem conjugate_injective (m : ℕ+) :
@@ -153,8 +152,8 @@ theorem rightCosetFunction_injective (m : ℕ+) : Function.Injective (rightCoset
   exact congrArg (coxMatrixEquivRightCosets m) hst
 
 /-- A right-coset conjugate embedded in the function field. -/
-def rightCosetRoot (m : ℕ+) (c : Gamma0RightCosets m) : FunctionField :=
-  algebraMap HolomorphicFunction FunctionField (rightCosetFunction m c)
+def rightCosetRoot (m : ℕ+) (c : Gamma0RightCosets m) : MeromorphicField :=
+  algebraMap HolomorphicFunction MeromorphicField (rightCosetFunction m c)
 
 /-- Distinct right cosets remain distinct after embedding into the function field. -/
 theorem rightCosetRoot_injective (m : ℕ+) : Function.Injective (rightCosetRoot m) :=

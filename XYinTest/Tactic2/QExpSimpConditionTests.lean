@@ -10,10 +10,11 @@ import XYin.PhD.jFunction.Deltaqexpansions
 # Tests for the `qexp_simp` tactic
 
 Side conditions of mathlib's `q`-expansion API for pointwise combinations of general functions
-(given the hypotheses as simp arguments) and for the level-one forms `E4` and `Delta`.
+(given the hypotheses as simp arguments) and for mathlib's level-one forms `ModularForm.E₄` and
+`CuspForm.discriminant`.
 -/
 
-open UpperHalfPlane
+open ModularForm UpperHalfPlane
 open scoped Manifold
 
 section GeneralFunctions
@@ -49,19 +50,19 @@ end GeneralFunctions
 
 section ModularAndCusp
 
-example : Function.Periodic (E4 ∘ UpperHalfPlane.ofComplex) 1 := by
+example : Function.Periodic (E₄ ∘ UpperHalfPlane.ofComplex) 1 := by
   qexp_simp
 
-example : MDiff E4 := by
+example : MDiff E₄ := by
   qexp_simp
 
-example : IsBoundedAtImInfty E4 := by
+example : IsBoundedAtImInfty E₄ := by
   qexp_simp
 
-example : IsZeroAtImInfty Delta := by
+example : IsZeroAtImInfty CuspForm.discriminant := by
   qexp_simp
 
-example : cuspFunction 1 Delta 0 = 0 := by
+example : cuspFunction 1 CuspForm.discriminant 0 = 0 := by
   qexp_simp
 
 end ModularAndCusp

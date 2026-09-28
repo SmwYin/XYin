@@ -10,9 +10,10 @@ import XYin.PhD.Cox.UpperHalfPlaneFunctionField
 /-!
 # Irreducibility of Cox's modular polynomial
 
-This file proves irreducibility of the complex modular polynomial in its root variable over
-`ℂ(Y)`: `Φ_m` is the minimal polynomial over `ℂ(Y)` of the conjugate `j(mτ)`, because it has
-as many distinct conjugates `j(mγτ)` as its degree.
+This file proves irreducibility of the complex modular polynomial in its root variable (the
+outer variable of `ℂ[X][Y]`) over Cox's `ℂ(Y)`, the rational function field `RatFunc ℂ` of the
+parameter: `Φ_m` is the minimal polynomial over `RatFunc ℂ` of the conjugate `j(mτ)`, because it
+has as many distinct conjugates `j(mγτ)` as its degree.
 -/
 
 open Complex Function MatrixGroups ModularForm UpperHalfPlane
@@ -36,18 +37,18 @@ private theorem modularPolynomialHolomorphic_eq_product (m : ℕ+) :
   have h := congrArg (fun p : Polynomial ℂ ↦ p.coeff n)
     (modularPolynomialC_rightCosetProduct m tau)
   rw [Polynomial.coeff_map, evalJ_apply, ← evaluation_apply, ← Polynomial.coeff_map]
-  simpa [BivariatePolynomial.specializeY, Polynomial.coeff_map, Polynomial.map_prod] using h
+  simpa [Polynomial.coeff_map, Polynomial.map_prod] using h
 
 private abbrev modularPolynomialRatFunc (m : ℕ+) : Polynomial (RatFunc ℂ) :=
   Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ))
     (modularPolynomialC m)
 
-private abbrev modularPolynomialFunctionField (m : ℕ+) : Polynomial FunctionField :=
-  Polynomial.map (algebraMap (RatFunc ℂ) FunctionField) (modularPolynomialRatFunc m)
+private abbrev modularPolynomialFunctionField (m : ℕ+) : Polynomial MeromorphicField :=
+  Polynomial.map (algebraMap (RatFunc ℂ) MeromorphicField) (modularPolynomialRatFunc m)
 
 private theorem modularPolynomialFunctionField_eq_map (m : ℕ+) :
     modularPolynomialFunctionField m =
-      Polynomial.map (algebraMap HolomorphicFunction FunctionField)
+      Polynomial.map (algebraMap HolomorphicFunction MeromorphicField)
         (Polynomial.map evalJ (modularPolynomialC m)) := by
   apply Polynomial.ext
   intro n
@@ -67,7 +68,7 @@ private theorem modularPolynomialRatFunc_aeval_base (m : ℕ+) :
     Polynomial.aeval (rightCosetRoot m (baseRightCoset m))
       (modularPolynomialRatFunc m) = 0 := by
   rw [Polynomial.aeval_def, ← Polynomial.eval_map,
-    show Polynomial.map (algebraMap (RatFunc ℂ) FunctionField)
+    show Polynomial.map (algebraMap (RatFunc ℂ) MeromorphicField)
       (modularPolynomialRatFunc m) = modularPolynomialFunctionField m from rfl,
     modularPolynomialFunctionField_eq_product, Polynomial.eval_prod]
   apply Finset.prod_eq_zero (Finset.mem_univ (baseRightCoset m))
@@ -110,8 +111,8 @@ private lemma eq_minpoly_of_card_conjugates
   exact_mod_cast hdegree.trans
     (card_le_natDegree_of_injective_roots hmin conjugate hinjective hroots)
 
-/-- Over `ℂ(Y)`, `Φ_m` is the minimal polynomial of the conjugate `j(mτ)` attached to the
-identity coset. -/
+/-- Over `RatFunc ℂ` (Cox's `ℂ(Y)`), `Φ_m` is the minimal polynomial of the conjugate `j(mτ)`
+attached to the identity coset. -/
 theorem modularPolynomialC_map_eq_minpoly (m : ℕ+) :
     Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ)) (modularPolynomialC m) =
       minpoly (RatFunc ℂ) (rightCosetRoot m (baseRightCoset m)) := by
@@ -122,8 +123,8 @@ theorem modularPolynomialC_map_eq_minpoly (m : ℕ+) :
   exact Fintype.card_congr (coxMatrixEquivRightCosets m)
 
 /-- Exercise 11.10 / Theorem 11.18(ii), function-field form: `Φ_m` is irreducible in the
-root variable over `ℂ(Y)`. -/
-theorem modularPolynomialC_irreducibleInX (m : ℕ+) :
+root variable (Cox's `X`, the outer variable) over `RatFunc ℂ` (Cox's `ℂ(Y)`). -/
+theorem irreducible_map_modularPolynomialC (m : ℕ+) :
     Irreducible (Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ))
       (modularPolynomialC m)) :=
   modularPolynomialC_map_eq_minpoly m ▸ minpoly.irreducible

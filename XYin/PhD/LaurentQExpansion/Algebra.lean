@@ -21,7 +21,7 @@ those obtained from the enlarged period `m * h`.
   `_finset_sum` and `_finset_prod` it behaves like a ring homomorphism.
 * `laurentqExpansion_polynomial_eval`: the Laurent q-expansion of `τ ↦ P.eval (f τ)` is
   `P.eval₂ HahnSeries.C (laurentqExpansion h f)`.
-* `to_qExpansion_nat_mul`, `laurentqExpansion_nat_mul`: enlarging the period from `h` to `m * h`
+* `toQExpansion_nat_mul`, `laurentqExpansion_nat_mul`: enlarging the period from `h` to `m * h`
   substitutes `q ↦ q ^ m` in the expansion, i.e. extends the domain of the Laurent series along
   `k ↦ m * k` (`HahnSeries.embDomain`); `laurentqExpansion_nat_mul_coeff` and
   `laurentqExpansion_nat_mul_coeff_of_not_dvd` are its coefficientwise forms.
@@ -102,7 +102,7 @@ private lemma laurentqExpansion_eq_shiftedLaurent
     (hN : poleOrder h f ≤ N) :
     laurentqExpansion h f = shiftedLaurent h N f := by
   have hq : qExpansion h (fun τ : ℍ ↦ (𝕢 h τ) ^ N * f τ) =
-      (PowerSeries.X : PowerSeries ℂ) ^ (N - poleOrder h f) * to_qExpansion h f := by
+      (PowerSeries.X : PowerSeries ℂ) ^ (N - poleOrder h f) * toQExpansion h f := by
     rw [qpow_mul_eq_qpow_sub_mul_poleRemoved hN,
       qExpansion_qpow_mul hh (analyticAt_cuspFunction_poleRemoved hf) (N - poleOrder h f)]
     rfl
@@ -373,10 +373,10 @@ private lemma cuspFunction_poleRemoved_nat_mul_eventuallyEq {h : ℝ} {m : ℕ} 
     pow_mul]
 
 /-- Enlarging a period by `m` expands the pole-removed q-expansion by `X ↦ X^m`. -/
-lemma to_qExpansion_nat_mul {h : ℝ} {m : ℕ} (hm : m ≠ 0) {f : ℍ → ℂ}
+lemma toQExpansion_nat_mul {h : ℝ} {m : ℕ} (hm : m ≠ 0) {f : ℍ → ℂ}
     (hmero : MeromorphicAt (cuspFunction h f) 0)
     (hfper : Periodic (f ∘ UpperHalfPlane.ofComplex) h) :
-    to_qExpansion ((m : ℝ) * h) f = (to_qExpansion h f).expand m hm := by
+    toQExpansion ((m : ℝ) * h) f = (toQExpansion h f).expand m hm := by
   have hFan : AnalyticAt ℂ (cuspFunction ((m : ℝ) * h) (poleRemoved ((m : ℝ) * h) f)) 0 :=
     analyticAt_cuspFunction_poleRemoved (meromorphicAt_cuspFunction_nat_mul hm hmero hfper)
   have hGan : AnalyticAt ℂ (cuspFunction h (poleRemoved h f)) 0 :=
@@ -428,7 +428,7 @@ theorem laurentqExpansion_nat_mul {h : ℝ} {m : ℕ} (hm : m ≠ 0) {f : ℍ �
       HahnSeries.embDomain (natMulOrderEmbedding m hm) (laurentqExpansion h f) := by
   rw [UpperHalfPlane.laurentqExpansion, UpperHalfPlane.laurentqExpansion,
     HahnSeries.embDomain_mul _ (fun _ _ ↦ by simp [mul_add]), HahnSeries.embDomain_single,
-    ← HahnSeries.ofPowerSeries_expand, ← to_qExpansion_nat_mul hm hmero hfper,
+    ← HahnSeries.ofPowerSeries_expand, ← toQExpansion_nat_mul hm hmero hfper,
     poleOrder_nat_mul hm hmero hfper, natMulOrderEmbedding_apply]
   congr 3
   push_cast

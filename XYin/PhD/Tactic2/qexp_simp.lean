@@ -27,15 +27,11 @@ set, falling back to applying the basic `q`-expansion lemmas.
 
 open Filter Function UpperHalfPlane
 
-open scoped CongruenceSubgroup Manifold
+open scoped Manifold
 
 namespace QExpSimp
 
 variable {h : ℝ} {f g : ℍ → ℂ}
-
-@[qexp_simps]
-lemma one_mem_strictPeriods_gamma1 : (1 : ℝ) ∈ (CongruenceSubgroup.Gamma 1).strictPeriods := by
-  simp
 
 @[qexp_simps]
 lemma analyticAt_cuspFunction_mul (hf : AnalyticAt ℂ (cuspFunction h f) 0)

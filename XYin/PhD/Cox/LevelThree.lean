@@ -19,25 +19,28 @@ complex-variable symmetry hypothesis. The numerical part is certified by kernel 
 finite jet of the integral `q`-expansion of `j`; no native-code proof oracle is used.
 -/
 
+open Polynomial
+open scoped Polynomial.Bivariate
+
 noncomputable section
 
 namespace Cox
 
-open XYin.PhD.qExpansion_tactic
+open QExpansionTactic
 open UpperHalfPlane
 
-/-- Cox's explicit level-three modular polynomial (equation (11.22)). -/
-def modularPolynomialThreeExplicit : BivariatePolynomial ℤ :=
-  let X : BivariatePolynomial ℤ := BivariatePolynomial.varX
-  let Y : BivariatePolynomial ℤ := BivariatePolynomial.varY
-  X * (X + 2 ^ 15 * 3 * 5 ^ 3) ^ 3 +
-  Y * (Y + 2 ^ 15 * 3 * 5 ^ 3) ^ 3 -
-  X ^ 3 * Y ^ 3 +
-  2 ^ 3 * 3 ^ 2 * 31 * X ^ 2 * Y ^ 2 * (X + Y) -
-  2 ^ 2 * 3 ^ 3 * 9907 * X * Y * (X ^ 2 + Y ^ 2) +
-  2 * 3 ^ 4 * 13 * 193 * 6367 * X ^ 2 * Y ^ 2 +
-  2 ^ 16 * 3 ^ 5 * 5 ^ 3 * 17 * 263 * X * Y * (X + Y) -
-  2 ^ 31 * 5 ^ 6 * 22973 * X * Y
+/-- Cox's explicit level-three modular polynomial (equation (11.22)), written in the letters of
+`ℤ[X][Y]`: Cox's root variable `X` is the outer variable `Y` and Cox's parameter `Y` is the inner
+variable `C X` (see `Cox.modularPolynomialC`). -/
+def modularPolynomialThreeExplicit : ℤ[X][Y] :=
+  Y * (Y + 2 ^ 15 * 3 * 5 ^ 3) ^ 3 +
+  C X * (C X + 2 ^ 15 * 3 * 5 ^ 3) ^ 3 -
+  Y ^ 3 * C X ^ 3 +
+  2 ^ 3 * 3 ^ 2 * 31 * Y ^ 2 * C X ^ 2 * (Y + C X) -
+  2 ^ 2 * 3 ^ 3 * 9907 * Y * C X * (Y ^ 2 + C X ^ 2) +
+  2 * 3 ^ 4 * 13 * 193 * 6367 * Y ^ 2 * C X ^ 2 +
+  2 ^ 16 * 3 ^ 5 * 5 ^ 3 * 17 * 263 * Y * C X * (Y + C X) -
+  2 ^ 31 * 5 ^ 6 * 22973 * Y * C X
 
 private def qjCoeffTableThree (n : ℕ) : ℤ :=
   [1, 744, 196884, 21493760, 864299970, 20245856256, 333202640600,
@@ -58,37 +61,32 @@ private def explicitCoeffThree (i : Fin 5) (d : ℕ) : ℤ :=
   | 4 => [1, 0, 0, 0, 0].getD d 0
   | _ => 0
 
-private def modularPolynomialThreeTable : BivariatePolynomial ℤ :=
-  ∑ i : Fin 5, ∑ d : Fin 5,
-    (explicitCoeffThree i d : BivariatePolynomial ℤ) *
-      BivariatePolynomial.varX ^ (i : ℕ) * BivariatePolynomial.varY ^ (d : ℕ)
+private def modularPolynomialThreeTable : ℤ[X][Y] :=
+  ∑ i : Fin 5, ∑ d : Fin 5, (explicitCoeffThree i d : ℤ[X][Y]) * Y ^ (i : ℕ) * C X ^ (d : ℕ)
 
 private theorem modularPolynomialThreeExplicit_eq_table :
     modularPolynomialThreeExplicit = modularPolynomialThreeTable := by
   simp only [modularPolynomialThreeTable, modularPolynomialThreeExplicit,
-    explicitCoeffThree, BivariatePolynomial.varX, BivariatePolynomial.varY,
-    Fin.sum_univ_succ, Fin.val_zero, Fin.val_succ, List.getD_cons_zero,
+    explicitCoeffThree, Fin.sum_univ_succ, Fin.val_zero, Fin.val_succ, List.getD_cons_zero,
     List.getD_cons_succ, List.getD_nil]
   ring_nf
 
 private theorem modularPolynomialThreeExplicit_monic :
     modularPolynomialThreeExplicit.Monic := by
-  unfold modularPolynomialThreeExplicit BivariatePolynomial.varX BivariatePolynomial.varY
+  unfold modularPolynomialThreeExplicit
   ring_nf
   monicity!
 
 private theorem modularPolynomialThreeExplicit_natDegree :
     modularPolynomialThreeExplicit.natDegree = 4 := by
-  unfold modularPolynomialThreeExplicit BivariatePolynomial.varX BivariatePolynomial.varY
+  unfold modularPolynomialThreeExplicit
   ring_nf
   compute_degree!
 
 private theorem modularPolynomialThreeExplicit_swap :
-    Polynomial.Bivariate.swap modularPolynomialThreeExplicit =
-      modularPolynomialThreeExplicit := by
-  simp only [modularPolynomialThreeExplicit, BivariatePolynomial.varX,
-    BivariatePolynomial.varY, map_add, map_sub, map_mul, map_pow, map_ofNat,
-    Polynomial.Bivariate.swap_Y, Polynomial.Bivariate.swap_X]
+    Bivariate.swap modularPolynomialThreeExplicit = modularPolynomialThreeExplicit := by
+  simp only [modularPolynomialThreeExplicit, map_add, map_sub, map_mul, map_pow, map_ofNat,
+    Bivariate.swap_Y, Bivariate.swap_X]
   ring
 
 private def jetMul (F G : ℕ → ℤ) (n : ℕ) : ℤ :=
@@ -108,8 +106,9 @@ private def sigmaJetThree : ℕ → ℤ := jetExpand 9 qjCoeffTableThree
 
 private def widthJetThree : ℕ → ℤ := jetExpand 3 qjCoeffTableThree
 
-/-- The coefficient of `q^n` in `q³⁶ · Φ(j(9τ), j(3τ))` for the explicit candidate `Φ`,
-computed from finite jets of the `q`-expansion of `j`. -/
+/-- The coefficient of `q^n` in `q³⁶ · Φ(j(9τ), j(3τ))` (Cox's notation, i.e.
+`Φ.evalEval (j(3τ)) (j(9τ))`) for the explicit candidate `Φ`, computed from finite jets of the
+`q`-expansion of `j`. -/
 private def explicitCandidateClearedJetThree (n : ℕ) : ℤ :=
   ∑ i : Fin 5, ∑ d : Fin 5, explicitCoeffThree i d *
     jetShift (36 - (9 * (i : ℕ) + 3 * (d : ℕ)))
@@ -256,8 +255,8 @@ private theorem explicitCandidateClearedLaurentEvalThree :
       (explicitCandidateClearedPowerSeriesThree : LaurentSeries ℤ) := by
   rw [explicitCandidateLaurentEvalThree, modularPolynomialThreeExplicit_eq_table]
   simp only [modularPolynomialThreeTable, explicitCandidateClearedPowerSeriesThree, map_sum,
-    map_mul, map_pow, map_intCast, BivariatePolynomial.varX, BivariatePolynomial.varY,
-    bivariateLaurentEvalHom_X, bivariateLaurentEvalHom_C_X, Finset.mul_sum]
+    map_mul, map_pow, map_intCast, bivariateLaurentEvalHom_X, bivariateLaurentEvalHom_C_X,
+    Finset.mul_sum]
   refine Finset.sum_congr rfl fun i _ ↦ Finset.sum_congr rfl fun d _ ↦ ?_
   simpa only [eq_intCast (HahnSeries.C : ℤ →+* LaurentSeries ℤ), mul_assoc, map_mul,
     map_pow] using explicitCandidateClearedLaurentTermThree i d
@@ -279,28 +278,26 @@ private theorem explicitCandidateLaurentEvalThree_coeff_triangular {i j : ℕ} (
   rw [show ((36 - (9 * i + 3 * j) : ℕ) : ℤ) - 36 = -(9 * (i : ℤ) + 3 * j) by lia] at h
   rw [h, explicitCandidateClearedJetThree_triangular i hi j hji]
 
-private def modularPolynomialThreeComplexExplicit : BivariatePolynomial ℂ :=
-  BivariatePolynomial.map (Int.castRingHom ℂ) modularPolynomialThreeExplicit
+private def modularPolynomialThreeComplexExplicit : ℂ[X][Y] :=
+  modularPolynomialThreeExplicit.map (mapRingHom (Int.castRingHom ℂ))
 
-private def modularPolynomialThreeDifference : BivariatePolynomial ℂ :=
+private def modularPolynomialThreeDifference : ℂ[X][Y] :=
   modularPolynomialC (3 : ℕ+) - modularPolynomialThreeComplexExplicit
 
 private theorem modularPolynomialThreeComplexExplicit_monic :
     modularPolynomialThreeComplexExplicit.Monic :=
-  modularPolynomialThreeExplicit_monic.map (Polynomial.mapRingHom (Int.castRingHom ℂ))
+  modularPolynomialThreeExplicit_monic.map (mapRingHom (Int.castRingHom ℂ))
 
 private theorem modularPolynomialThreeComplexExplicit_natDegree :
     modularPolynomialThreeComplexExplicit.natDegree = 4 :=
   (modularPolynomialThreeExplicit_monic.natDegree_map
-    (Polynomial.mapRingHom (Int.castRingHom ℂ))).trans modularPolynomialThreeExplicit_natDegree
+    (mapRingHom (Int.castRingHom ℂ))).trans modularPolynomialThreeExplicit_natDegree
 
 private theorem modularPolynomialThreeDifference_swap
-    (hsymm : Polynomial.Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
-      modularPolynomialC (3 : ℕ+)) :
-    Polynomial.Bivariate.swap modularPolynomialThreeDifference =
-      modularPolynomialThreeDifference := by
+    (hsymm : Bivariate.swap (modularPolynomialC (3 : ℕ+)) = modularPolynomialC (3 : ℕ+)) :
+    Bivariate.swap modularPolynomialThreeDifference = modularPolynomialThreeDifference := by
   rw [modularPolynomialThreeDifference, map_sub, hsymm, modularPolynomialThreeComplexExplicit,
-    ← BivariatePolynomial.map_swap, modularPolynomialThreeExplicit_swap]
+    ← Bivariate.map_mapRingHom_swap, modularPolynomialThreeExplicit_swap]
 
 private theorem modularPolynomialThreeDifference_natDegree_le :
     modularPolynomialThreeDifference.natDegree ≤ 3 := by
@@ -313,24 +310,24 @@ private theorem modularPolynomialThreeDifference_natDegree_le :
       modularPolynomialThreeComplexExplicit_monic⟩
 
 private theorem modularPolynomialThreeDifference_inner_natDegree_le
-    (hsymm : Polynomial.Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
+    (hsymm : Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
       modularPolynomialC (3 : ℕ+)) (i : ℕ) :
     (modularPolynomialThreeDifference.coeff i).natDegree ≤ 3 := by
   refine Polynomial.natDegree_le_iff_coeff_eq_zero.2 fun n hn ↦ ?_
-  rw [← BivariatePolynomial.coeff_coeff_swap, modularPolynomialThreeDifference_swap hsymm,
+  rw [← Bivariate.coeff_coeff_swap, modularPolynomialThreeDifference_swap hsymm,
     Polynomial.coeff_eq_zero_of_natDegree_lt
       (modularPolynomialThreeDifference_natDegree_le.trans_lt hn), Polynomial.coeff_zero]
 
 private theorem modularPolynomialThreeDifference_eq_zero
-    (hsymm : Polynomial.Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
+    (hsymm : Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
       modularPolynomialC (3 : ℕ+)) :
     modularPolynomialThreeDifference = 0 := by
   have hζ := zeta_ne_zero 3
-  have hT : laurentSeriesMapRingHom (Int.castRingHom ℂ) (jLaurentSeriesWidth ℤ 9) =
+  have hT : HahnSeries.mapRingHom (Int.castRingHom ℂ) (jLaurentSeriesWidth ℤ 9) =
       transformedJSeries (zeta 3) (sigmaZero 3) := by
     rw [transformedJSeries_eq_jLaurentSeriesWidth _ _ (by simp [sigmaZero])]
     exact jLaurentSeriesWidth_map _ 9
-  have hJ : laurentSeriesMapRingHom (Int.castRingHom ℂ) (jLaurentSeriesWidth ℤ 3) =
+  have hJ : HahnSeries.mapRingHom (Int.castRingHom ℂ) (jLaurentSeriesWidth ℤ 3) =
       laurentqExpansion 3 j := by
     simpa using jLaurentSeriesWidth_map_complex 3
   have hroot : bivariateLaurentEvalHom (transformedJSeries (zeta 3) (sigmaZero 3))
@@ -349,13 +346,13 @@ private theorem modularPolynomialThreeDifference_eq_zero
     (modularPolynomialThreeDifference_inner_natDegree_le hsymm)
     (modularPolynomialThreeDifference_swap hsymm) fun i j hji hi ↦ ?_
   rw [modularPolynomialThreeDifference, map_sub, hroot, zero_sub, HahnSeries.coeff_neg,
-    neg_eq_zero, modularPolynomialThreeComplexExplicit, BivariatePolynomial.map,
-    ← bivariateLaurentEvalHom_map _ hT hJ, laurentSeriesMapRingHom_coeff]
+    neg_eq_zero, modularPolynomialThreeComplexExplicit, ← bivariateLaurentEvalHom_map _ hT hJ,
+    HahnSeries.mapRingHom_coeff]
   exact (congrArg _ (explicitCandidateLaurentEvalThree_coeff_triangular hji hi)).trans
     (map_zero _)
 
 private theorem modularPolynomialC_three_eq_explicit
-    (hsymm : Polynomial.Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
+    (hsymm : Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
       modularPolynomialC (3 : ℕ+)) :
     modularPolynomialC (3 : ℕ+) = modularPolynomialThreeComplexExplicit := by
   rw [← sub_eq_zero]
@@ -363,14 +360,13 @@ private theorem modularPolynomialC_three_eq_explicit
 
 /-- Symmetry of the complex level-three modular polynomial implies Cox's explicit formula. -/
 theorem modularPolynomial_three_of_complex_swap
-    (hsymm : Polynomial.Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
+    (hsymm : Bivariate.swap (modularPolynomialC (3 : ℕ+)) =
       modularPolynomialC (3 : ℕ+)) :
     modularPolynomial (3 : ℕ+) = modularPolynomialThreeExplicit := by
-  have hmap :
-      BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial (3 : ℕ+)) =
-        BivariatePolynomial.map (Int.castRingHom ℂ) modularPolynomialThreeExplicit := by
+  have hmap : (modularPolynomial (3 : ℕ+)).map (mapRingHom (Int.castRingHom ℂ)) =
+      modularPolynomialThreeExplicit.map (mapRingHom (Int.castRingHom ℂ)) := by
     rw [modularPolynomial_map_complex]
     exact modularPolynomialC_three_eq_explicit hsymm
-  exact BivariatePolynomial.map_injective Int.cast_injective hmap
+  exact map_injective _ (map_injective _ Int.cast_injective) hmap
 
 end Cox

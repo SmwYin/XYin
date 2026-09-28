@@ -139,9 +139,9 @@ theorem exists_nonsquare_modularPolynomialDiagonal_root {τ : ℍ}
   obtain ⟨N, hN, σ, hσ⟩ := q.exists_nonsquare_coxMatrix_j_eq
   refine ⟨N, hN, ?_⟩
   rw [Polynomial.eval₂_eq_eval_map, modularPolynomialDiagonal,
-    ← BivariatePolynomial.diagonal_map, BivariatePolynomial.diagonal_eval,
+    ← Polynomial.map_mapRingHom_eval_map, Polynomial.map_X, Polynomial.Bivariate.eval_eval_X,
     modularPolynomial_map_complex]
-  simpa [hσ] using modularPolynomialC_eval_act_j N σ τ
+  simpa [hσ] using modularPolynomialC_evalEval_j_act N σ τ
 
 /-- Report Theorem 5.9: the `j`-value of an imaginary-quadratic point is integral over `ℤ`. -/
 theorem isIntegral_j_of_isImaginaryQuadratic {τ : ℍ}

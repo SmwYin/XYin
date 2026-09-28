@@ -48,6 +48,10 @@ def mapRingHom (f : R →+* S) : HahnSeries Γ R →+* HahnSeries Γ S where
 theorem mapRingHom_apply (f : R →+* S) (x : HahnSeries Γ R) : mapRingHom f x = x.map f :=
   rfl
 
+theorem mapRingHom_coeff (f : R →+* S) (x : HahnSeries Γ R) (g : Γ) :
+    (mapRingHom f x).coeff g = f (x.coeff g) :=
+  rfl
+
 end mapRingHom
 
 section coeffSubring

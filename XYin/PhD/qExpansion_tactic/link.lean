@@ -17,19 +17,19 @@ resulting formal `ℤ`-series with the analytic `q`-expansions after the base ch
 
 ## Main results
 
-* `Delta_qexpansion_link`: `Delta_qexpansion` maps to the `q`-expansion of `Δ` under
+* `deltaQExpansion_link`: `deltaQExpansion` maps to the `q`-expansion of `Δ` under
   `ℤ → ℂ`, so the array-computed coefficients are the Ramanujan `τ` values.
-* `qj_qexpansion_link`: `qj_qexpansion` maps to the `q`-expansion of `q·j`, so the
+* `qjQExpansion_link`: `qjQExpansion` maps to the `q`-expansion of `q·j`, so the
   array-computed coefficients are the `j`-invariant Fourier coefficients.
-* `Delta_qxp_coeff_link`, `ramanujanTau_link`, `qj_qxp_coeff_link`, `qjCoeffs_eq_qjCoeffInt`:
+* `discriminant_qxp_coeff_link`, `ramanujanTau_link`, `qj_qxp_coeff_link`, `qjCoeffs_eq_qjCoeffInt`:
   coefficientwise transfer statements consumed by `jFunction.qexp_coeffs` and `Cox.LevelThree`.
 -/
 
 open UpperHalfPlane PowerSeries ModularForm ModularFormClass
-open XYin.PhD.qExpansion_tactic
+open QExpansionTactic
 open IntegralPowerSeries
 
-namespace XYin.PhD.qExpansion_tactic
+namespace QExpansionTactic
 
 /-- `Array.getD` agrees with `List.getD` on the underlying list. -/
 lemma array_getD_eq_toList_getD (arr : Array Int) (i : Nat) :
@@ -54,7 +54,7 @@ lemma coeff_invOfUnit_one_succ {R : Type*} [Ring R] (φ : PowerSeries R) (m : Na
       Finset.sum_range_succ']
   simp [Nat.succ_sub_succ_eq_sub]
 
-end XYin.PhD.qExpansion_tactic
+end QExpansionTactic
 
 /-! ### Reading off the coefficient arrays -/
 
@@ -108,17 +108,17 @@ lemma e4CoeffInt_eq_integralE4_coeff (n : Nat) : e4CoeffInt n = integralE4.coeff
 lemma e6CoeffInt_eq_integralE6_coeff (n : Nat) : e6CoeffInt n = integralE6.coeff n :=
   (integralE6_coeff n).symm
 
-lemma E4_int_series_eq : PowerSeries.mk e4CoeffInt = integralE4 :=
+lemma E₄_int_series_eq : PowerSeries.mk e4CoeffInt = integralE4 :=
   PowerSeries.ext fun n ↦ (coeff_mk _ _).trans (e4CoeffInt_eq_integralE4_coeff n)
 
-lemma E6_int_series_eq : PowerSeries.mk e6CoeffInt = integralE6 :=
+lemma E₆_int_series_eq : PowerSeries.mk e6CoeffInt = integralE6 :=
   PowerSeries.ext fun n ↦ (coeff_mk _ _).trans (e6CoeffInt_eq_integralE6_coeff n)
 
 /-- The array-computed `E₄` coefficients form the q-expansion of `E₄`. -/
-lemma E4_int_link :
-    mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk e4CoeffInt) = qExpansion 1 E4 := by
-  rw [E4_int_series_eq]
-  exact mapAlgHom_ofId_toIntegralPowerSeries E4_isIntegralPowerSeries
+lemma E₄_int_link :
+    mapAlgHom (Algebra.ofId ℤ ℂ) (PowerSeries.mk e4CoeffInt) = qExpansion 1 E₄ := by
+  rw [E₄_int_series_eq]
+  exact mapAlgHom_ofId_toIntegralPowerSeries E₄_isIntegralPowerSeries
 
 /-- Entry `k` of the `Δ`-coefficient table `deltaCoeffsArrayUpTo top` is the `k`-th
 coefficient of the formal series `(E₄³ - E₆²) / 1728`, independently of the table size. -/
@@ -146,37 +146,37 @@ lemma delta_array_getD (top k : Nat) (hk : k ≤ top) :
 `n`-th `q`-expansion coefficient of the modular form `E₄³ - E₆²`. -/
 lemma eisenstein_difference_coeff_cast (n : ℕ) :
     (((integralE4 ^ 3 - integralE6 ^ 2).coeff n : ℤ) : ℂ) =
-      (qExpansion 1 (⇑E4 ^ 3 - ⇑E6 ^ 2)).coeff n := by
+      (qExpansion 1 (⇑E₄ ^ 3 - ⇑E₆ ^ 2)).coeff n := by
   rw [← coeToComplexPowerSeries.coeff_ringHom_int, map_integralE4_pow_three_sub_integralE6_pow_two]
 
 /-- **Soundness for `Δ`**: the base change to `ℂ` of the array-computed series
-`Delta_qexpansion` is the q-expansion of `Δ`, so `deltaCoeffInt n` is the Ramanujan `τ(n)`. -/
-theorem Delta_qexpansion_link :
-    mapAlgHom (Algebra.ofId ℤ ℂ) Delta_qexpansion = qExpansion 1 Delta := by
+`deltaQExpansion` is the q-expansion of `Δ`, so `deltaCoeffInt n` is the Ramanujan `τ(n)`. -/
+theorem deltaQExpansion_link :
+    mapAlgHom (Algebra.ofId ℤ ℂ) deltaQExpansion = qExpansion 1 discriminant := by
   ext n
-  rw [coeff_mapAlgHom_ofId_int, Delta_qexpansion_coeff_eq, deltaCoeffInt_eq, E4_int_series_eq,
-    E6_int_series_eq, Delta_qExpansion_eq_smul_eisenstein_difference, PowerSeries.coeff_smul,
+  rw [coeff_mapAlgHom_ofId_int, deltaQExpansion_coeff_eq, deltaCoeffInt_eq, E₄_int_series_eq,
+    E₆_int_series_eq, discriminant_qExpansion_eq_smul_eisenstein_difference, PowerSeries.coeff_smul,
     ← eisenstein_difference_coeff_cast,
     Int.cast_div_charZero (Int.modEq_zero_iff_dvd.1 (eisenstein_difference_coeff_modEq_zero n)),
     smul_eq_mul, div_eq_inv_mul, one_div]
   push_cast
   rfl
 
-/-- Coefficientwise form of `Delta_qexpansion_link`. -/
-theorem Delta_qxp_coeff_link (n : ℕ) :
-    (qExpansion 1 Delta).coeff n = Delta_qexpansion.coeff n :=
-  (congrArg (PowerSeries.coeff n) Delta_qexpansion_link).symm
+/-- Coefficientwise form of `deltaQExpansion_link`. -/
+theorem discriminant_qxp_coeff_link (n : ℕ) :
+    (qExpansion 1 discriminant).coeff n = deltaQExpansion.coeff n :=
+  (congrArg (PowerSeries.coeff n) deltaQExpansion_link).symm
 
-/-- Cast form of `Delta_qexpansion_link`: the array-computed integer `τ(n)`, viewed in `ℂ`,
+/-- Cast form of `deltaQExpansion_link`: the array-computed integer `τ(n)`, viewed in `ℂ`,
 is the `n`-th analytic `q`-expansion coefficient of `Δ`. -/
 lemma deltaCoeffInt_cast (n : ℕ) :
-    ((deltaCoeffInt n : ℤ) : ℂ) = (qExpansion 1 Delta).coeff n := by
-  rw [← Delta_qexpansion_coeff_eq, ← coeff_mapAlgHom_ofId_int, Delta_qexpansion_link]
+    ((deltaCoeffInt n : ℤ) : ℂ) = (qExpansion 1 discriminant).coeff n := by
+  rw [← deltaQExpansion_coeff_eq, ← coeff_mapAlgHom_ofId_int, deltaQExpansion_link]
 
 /-- The Ramanujan tau values `ramanujanTau n` (the coefficients of the integral lift of the
 q-expansion of `Δ`) are the array-computed coefficients. -/
-theorem ramanujanTau_link (n : ℕ) : ramanujanTau n = Delta_qexpansion.coeff n := by
-  rw [Delta_qexpansion_coeff_eq]
+theorem ramanujanTau_link (n : ℕ) : ramanujanTau n = deltaQExpansion.coeff n := by
+  rw [deltaQExpansion_coeff_eq]
   exact_mod_cast (ramanujanTau_cast n).trans (deltaCoeffInt_cast n).symm
 
 /-! ### The unit `Δ / q` and its inverse -/
@@ -190,7 +190,7 @@ lemma deltaOverQ_qexpansion_link :
     deltaOverQ_qExpansion_coeff]
 
 lemma deltaOverQCoeffInt_zero : deltaOverQCoeffInt 0 = 1 := by
-  exact_mod_cast (deltaCoeffInt_cast 1).trans Delta_q_one_term
+  exact_mod_cast (deltaCoeffInt_cast 1).trans discriminant_qExpansion_coeff_one
 
 /-- Loop invariant for `inverseOnePlusCoeffsUpTo`: after `K` steps the accumulator array
 tabulates the coefficients of `(PowerSeries.mk α).invOfUnit 1` on `0..K-1`, provided the
@@ -289,21 +289,21 @@ lemma qj_series_eq :
   PowerSeries.ext fun n ↦ (coeff_mk _ _).trans (qjCoeffInt_eq n)
 
 /-- **Soundness for `q·j`**: the base change to `ℂ` of the array-computed series
-`qj_qexpansion` is the q-expansion of `qj = q · j`, so `qjCoeffInt n` is the Fourier
+`qjQExpansion` is the q-expansion of `qj = q · j`, so `qjCoeffInt n` is the Fourier
 coefficient `c(n - 1)` of `j`. -/
-theorem qj_qexpansion_link :
-    mapAlgHom (Algebra.ofId ℤ ℂ) qj_qexpansion = qExpansion 1 qj := by
-  rw [qj_qexpansion, qj_series_eq, map_mul, map_pow, E4_int_link, qOverDelta_qexpansion_link,
-    ← E4_pow_three_qExpansion, ← qExpansion_mul E4_pow_three_cuspFunction_analyticAt
-      qOverDelta_cuspFunction_analyticAt, E4_pow_three_mul_qOverDelta_eq_qj]
+theorem qjQExpansion_link :
+    mapAlgHom (Algebra.ofId ℤ ℂ) qjQExpansion = qExpansion 1 qj := by
+  rw [qjQExpansion, qj_series_eq, map_mul, map_pow, E₄_int_link, qOverDelta_qexpansion_link,
+    ← E₄_pow_three_qExpansion, ← qExpansion_mul E₄_pow_three_cuspFunction_analyticAt
+      qOverDelta_cuspFunction_analyticAt, E₄_pow_three_mul_qOverDelta_eq_qj]
 
-/-- Coefficientwise form of `qj_qexpansion_link`. -/
+/-- Coefficientwise form of `qjQExpansion_link`. -/
 theorem qj_qxp_coeff_link (n : ℕ) :
-    (qExpansion 1 qj).coeff n = qj_qexpansion.coeff n :=
-  (congrArg (PowerSeries.coeff n) qj_qexpansion_link).symm
+    (qExpansion 1 qj).coeff n = qjQExpansion.coeff n :=
+  (congrArg (PowerSeries.coeff n) qjQExpansion_link).symm
 
 /-- The integral q-expansion coefficients `qjCoeffs n` of `qj` are the array-computed integers
 `qjCoeffInt n`. -/
 theorem qjCoeffs_eq_qjCoeffInt (n : ℕ) : qjCoeffs n = qjCoeffInt n := by
-  rw [← qj_qexpansion_coeff_eq]
+  rw [← qjQExpansion_coeff_eq]
   exact_mod_cast (qjCoeffs_cast n).trans (qj_qxp_coeff_link n)

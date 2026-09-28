@@ -13,7 +13,8 @@ import XYin.PhD.LaurentQExpansion.Algebra
 # Integral descent of Cox's modular polynomial
 
 This file proves Hasse's coefficient principle and descends the complex modular polynomial to
-its canonical monic representative in `ℤ[X,Y]`.
+its canonical monic representative in `ℤ[X][Y]` (same variable convention as
+`Cox.modularPolynomialC`).
 -/
 
 open Complex Function MatrixGroups ModularForm UpperHalfPlane
@@ -131,39 +132,38 @@ theorem coxPhiFunction_coeff_integerLaurent (m : ℕ+) (n : ℕ) :
   rw [mul_one, coxPhiFunction_coeff_laurentqExpansion_widthM, hz] at hscale
   exact ⟨z, hscale⟩
 
-/-- Cox Theorem 11.18(i): the complex modular polynomial descends to `ℤ[X,Y]`. -/
+/-- Cox Theorem 11.18(i): the complex modular polynomial descends to `ℤ[X][Y]`. -/
 theorem exists_modularPolynomialZ (m : ℕ+) :
-    ∃ Φ : BivariatePolynomial ℤ,
-      BivariatePolynomial.map (Int.castRingHom ℂ) Φ = modularPolynomialC m :=
+    ∃ Φ : ℤ[X][Y],
+      Φ.map (Polynomial.mapRingHom (Int.castRingHom ℂ)) = modularPolynomialC m :=
   (Polynomial.mem_lifts _).1 <| (Polynomial.lifts_iff_coeff_lifts _).2 fun n ↦
     (Polynomial.mem_lifts _).1 <| hasse_qExpansion_principle <| by
       rw [modularPolynomialC_coeff_polynomialIn]
       exact coxPhiFunction_coeff_integerLaurent m n
 
-/-- The canonical integer descent of the modular polynomial. -/
-noncomputable def modularPolynomial (m : ℕ+) : BivariatePolynomial ℤ :=
+/-- The canonical integer descent of the modular polynomial: Cox's `Φ_m(X, Y) ∈ ℤ[X, Y]`, with
+Cox's root variable `X` as the outer variable `Y` of `ℤ[X][Y]` and Cox's parameter `Y` as the
+inner variable `C X`. -/
+noncomputable def modularPolynomial (m : ℕ+) : ℤ[X][Y] :=
   (exists_modularPolynomialZ m).choose
 
+/-- The integral modular polynomial maps to the complex one. -/
 theorem modularPolynomial_map_complex (m : ℕ+) :
-    BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m) =
+    (modularPolynomial m).map (Polynomial.mapRingHom (Int.castRingHom ℂ)) =
       modularPolynomialC m :=
   (exists_modularPolynomialZ m).choose_spec
 
 /-- Swapping the variables commutes with the complexification of `Φ_m`. -/
 theorem modularPolynomial_map_complex_swap (m : ℕ+) :
-    BivariatePolynomial.map (Int.castRingHom ℂ)
-        (Polynomial.Bivariate.swap (modularPolynomial m)) =
+    (Polynomial.Bivariate.swap (modularPolynomial m)).map
+        (Polynomial.mapRingHom (Int.castRingHom ℂ)) =
       Polynomial.Bivariate.swap (modularPolynomialC m) := by
-  rw [BivariatePolynomial.map_swap, modularPolynomial_map_complex]
+  rw [Polynomial.Bivariate.map_mapRingHom_swap, modularPolynomial_map_complex]
 
 /-- The integral modular polynomial retains the monic normalization in the root variable. -/
-theorem modularPolynomial_monic (m : ℕ+) : (modularPolynomial m).Monic := by
-  let f := Polynomial.mapRingHom (Int.castRingHom ℂ)
-  have hf : Function.Injective f :=
-    Polynomial.map_injective _ Int.cast_injective
-  apply Polynomial.monic_of_injective hf
-  change (BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m)).Monic
-  rw [modularPolynomial_map_complex]
-  exact modularPolynomialC_monic m
+theorem modularPolynomial_monic (m : ℕ+) : (modularPolynomial m).Monic :=
+  Polynomial.monic_of_injective (f := Polynomial.mapRingHom (Int.castRingHom ℂ))
+    (Polynomial.map_injective _ Int.cast_injective)
+    (modularPolynomial_map_complex m ▸ modularPolynomialC_monic m)
 
 end Cox

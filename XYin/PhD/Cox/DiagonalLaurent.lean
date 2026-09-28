@@ -11,7 +11,8 @@ import XYin.PhD.Cox.ModularPolynomial
 
 This file formalizes Cox equation (11.19). At the width-`m` cusp, `j` has order `-m`, while
 the root indexed by `σ` has order `-σ.a ^ 2`. For nonsquare `m` these orders never agree, so
-the leading coefficient of every difference is either `1` or a signed power of `ζ_m`.
+the leading coefficient of every difference is either `1` or a signed power of `ζ_m`. The
+diagonal `Φ_m(X, X)` of Cox's modular polynomial is `(modularPolynomialC m).eval X`.
 -/
 
 open UpperHalfPlane
@@ -62,7 +63,7 @@ theorem cox_diagonal_factor_leadingCoeff_pow (m : ℕ+) (hm : ¬ IsSquare (m : �
     rw [(even_two_mul (m : ℕ)).neg_pow, Nat.mul_comm, pow_mul, hx, one_pow]
 
 /-- The formal Cox polynomial is obtained from `Φ_m` by substituting the width-`m` Laurent
-series of `j` into its coefficient variable. -/
+series of `j` for its parameter (the inner variable). -/
 theorem formalCoxPolynomial_eq_modularPolynomialC_map_j (m : ℕ+) :
     formalCoxPolynomial m (zeta m) =
       Polynomial.map
@@ -74,27 +75,26 @@ theorem formalCoxPolynomial_eq_modularPolynomialC_map_j (m : ℕ+) :
   exact laurentqExpansion_polynomial_eval (by positivity)
     (by simpa using (j_cuspData m).meromorphicAt_cuspFunction 1) _
 
-/-- Substituting the width-`m` Laurent series of `j` into the diagonal of `Φ_m` gives the
+/-- Substituting the width-`m` Laurent series of `j` into the diagonal `Φ_m(X, X)` gives the
 product of the diagonal Cox factors. -/
-theorem modularPolynomialC_diagonal_series (m : ℕ+) :
-    (BivariatePolynomial.diagonal (modularPolynomialC m)).eval₂
+theorem modularPolynomialC_eval_X_eval₂_j (m : ℕ+) :
+    ((modularPolynomialC m).eval Polynomial.X).eval₂
         (HahnSeries.C : ℂ →+* LaurentSeries ℂ)
         (laurentqExpansion ((m : ℕ) : ℝ) j) =
       ∏ σ : CoxMatrix m,
         (laurentqExpansion ((m : ℕ) : ℝ) j -
           transformedJSeries (zeta m) σ) := by
-  rw [BivariatePolynomial.diagonal_eval₂, ← Polynomial.eval_map,
+  rw [Polynomial.Bivariate.eval₂_eval_X, ← Polynomial.eval_map,
     ← formalCoxPolynomial_eq_modularPolynomialC_map_j]
   simp [formalCoxPolynomial, Polynomial.eval_prod]
 
-/-- Cox equation (11.19): for nonsquare `m`, the complex diagonal leading coefficient has
-`2m`-th power one. -/
-theorem modularPolynomialC_diagonal_leadingCoeff_pow
+/-- Cox equation (11.19): for nonsquare `m`, the leading coefficient of the complex diagonal
+`Φ_m(X, X)` has `2m`-th power one. -/
+theorem modularPolynomialC_eval_X_leadingCoeff_pow
     (m : ℕ+) (hm : ¬ IsSquare (m : ℕ)) :
-    (BivariatePolynomial.diagonal (modularPolynomialC m)).leadingCoeff ^
-      (2 * (m : ℕ)) = 1 := by
+    ((modularPolynomialC m).eval Polynomial.X).leadingCoeff ^ (2 * (m : ℕ)) = 1 := by
   rw [← polynomial_eval₂_laurentSeries_leadingCoeff _ m m.pos (laurentqExpansion_j_order_widthM m)
-      (laurentqExpansion_j_leadingCoeff_widthM m), modularPolynomialC_diagonal_series]
+      (laurentqExpansion_j_leadingCoeff_widthM m), modularPolynomialC_eval_X_eval₂_j]
   exact Finset.prod_induction _ (fun F : LaurentSeries ℂ ↦ F.leadingCoeff ^ (2 * (m : ℕ)) = 1)
     (fun a b ha hb ↦ by
       dsimp only at ha hb ⊢

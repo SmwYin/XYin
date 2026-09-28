@@ -11,13 +11,14 @@ import XYin.PhD.qExpansion_tactic.link
 This file computes initial coefficients of the discriminant and the normalized `j`-function,
 then records the corresponding Laurent q-expansion coefficients of `j`. Each value is certified
 once, on the integer side, by kernel evaluation (`rfl`) of the integer engine of
-`XYin.PhD.qExpansion_tactic`; the complex-valued statements are derived from it through the
+`QExpansionTactic`; the complex-valued statements are derived from it through the
 cast lemmas `ramanujanTau_cast` and `qjCoeffs_cast`.
 
 ## Main results
 
 * `ramanujanTau_one`, …, `ramanujanTau_five`: the first Ramanujan tau values.
-* `Delta_qExpansion_coeff_two`: the start of the discriminant q-expansion coefficient API.
+* `discriminant_qExpansion_coeff_two`: the continuation (after mathlib's
+  `ModularForm.discriminant_qExpansion_coeff_one`) of the discriminant q-expansion coefficient API.
 * `qjCoeffs_one`: the continuation (after `qjCoeffs_zero`, proved analytically in
   `XYin.PhD.jFunction.jfunction`) of the integral regularized-`j` coefficient API.
 * `exists_int_coeff_j_eq_principal_part_add_tsum_with_initial`: an explicit convergent expansion.
@@ -25,53 +26,53 @@ cast lemmas `ramanujanTau_cast` and `qjCoeffs_cast`.
 -/
 
 open Complex ModularForm ModularFormClass UpperHalfPlane Real IntegralPowerSeries
-open XYin.PhD.qExpansion_tactic
+open QExpansionTactic
 open scoped Manifold
 
 noncomputable section
 
 /-- The first Ramanujan tau value: `τ(1) = 1`. -/
 lemma ramanujanTau_one : ramanujanTau 1 = 1 := by
-  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rw [ramanujanTau_link, deltaQExpansion_coeff_eq]
   rfl
 
 /-- The second Ramanujan tau value: `τ(2) = -24`. -/
 lemma ramanujanTau_two : ramanujanTau 2 = -24 := by
-  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rw [ramanujanTau_link, deltaQExpansion_coeff_eq]
   rfl
 
 /-- The third Ramanujan tau value: `τ(3) = 252`. -/
 lemma ramanujanTau_three : ramanujanTau 3 = 252 := by
-  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rw [ramanujanTau_link, deltaQExpansion_coeff_eq]
   rfl
 
 /-- The fourth Ramanujan tau value: `τ(4) = -1472`. -/
 lemma ramanujanTau_four : ramanujanTau 4 = -1472 := by
-  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rw [ramanujanTau_link, deltaQExpansion_coeff_eq]
   rfl
 
 /-- The fifth Ramanujan tau value: `τ(5) = 4830`. -/
 lemma ramanujanTau_five : ramanujanTau 5 = 4830 := by
-  rw [ramanujanTau_link, Delta_qexpansion_coeff_eq]
+  rw [ramanujanTau_link, deltaQExpansion_coeff_eq]
   rfl
 
 /-- The `q²`-coefficient of the q-expansion of `Δ` is `τ(2) = -24`. -/
-lemma Delta_qExpansion_coeff_two : (qExpansion 1 Delta).coeff 2 = -24 := by
+lemma discriminant_qExpansion_coeff_two : (qExpansion 1 discriminant).coeff 2 = -24 := by
   rw [← ramanujanTau_cast, ramanujanTau_two]
   norm_num
 
 /-- The `q³`-coefficient of the q-expansion of `Δ` is `τ(3) = 252`. -/
-lemma Delta_qExpansion_coeff_three : (qExpansion 1 Delta).coeff 3 = 252 := by
+lemma discriminant_qExpansion_coeff_three : (qExpansion 1 discriminant).coeff 3 = 252 := by
   rw [← ramanujanTau_cast, ramanujanTau_three]
   norm_num
 
 /-- The `q⁴`-coefficient of the q-expansion of `Δ` is `τ(4) = -1472`. -/
-lemma Delta_qExpansion_coeff_four : (qExpansion 1 Delta).coeff 4 = -1472 := by
+lemma discriminant_qExpansion_coeff_four : (qExpansion 1 discriminant).coeff 4 = -1472 := by
   rw [← ramanujanTau_cast, ramanujanTau_four]
   norm_num
 
 /-- The `q⁵`-coefficient of the q-expansion of `Δ` is `τ(5) = 4830`. -/
-lemma Delta_qExpansion_coeff_five : (qExpansion 1 Delta).coeff 5 = 4830 := by
+lemma discriminant_qExpansion_coeff_five : (qExpansion 1 discriminant).coeff 5 = 4830 := by
   rw [← ramanujanTau_cast, ramanujanTau_five]
   norm_num
 

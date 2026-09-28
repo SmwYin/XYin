@@ -14,6 +14,8 @@ When two Laurent series have respective orders `-9` and `-3` and unit leading co
 the ten corresponding triangular leading exponents detect whether the polynomial is zero.
 -/
 
+open scoped Polynomial.Bivariate
+
 noncomputable section
 
 namespace Cox
@@ -22,8 +24,8 @@ section CommRing
 
 variable {K : Type*} [CommRing K]
 
-private def symmetricCubicExpansion (P : BivariatePolynomial K) : BivariatePolynomial K :=
-  let c (i j : ℕ) : BivariatePolynomial K :=
+private def symmetricCubicExpansion (P : K[X][Y]) : K[X][Y] :=
+  let c (i j : ℕ) : K[X][Y] :=
     Polynomial.monomial i (Polynomial.monomial j ((P.coeff i).coeff j))
   c 0 0 +
     (c 1 0 + Polynomial.monomial 0 (Polynomial.monomial 1 ((P.coeff 1).coeff 0))) +
@@ -37,12 +39,12 @@ private def symmetricCubicExpansion (P : BivariatePolynomial K) : BivariatePolyn
     c 3 3
 
 private theorem symmetricCubicExpansion_coeff_aux
-    (P : BivariatePolynomial K) (i : ℕ) (hi : i ≤ 3)
+    (P : K[X][Y]) (i : ℕ) (hi : i ≤ 3)
     (hinner : (P.coeff i).natDegree ≤ 3)
     (hsymm : Polynomial.Bivariate.swap P = P) :
     (symmetricCubicExpansion P).coeff i = P.coeff i := by
   have hcomm (i j : ℕ) : (P.coeff i).coeff j = (P.coeff j).coeff i := by
-    rw [← BivariatePolynomial.coeff_coeff_swap, hsymm]
+    rw [← Polynomial.Bivariate.coeff_coeff_swap, hsymm]
   ext j
   by_cases hj : j ≤ 3
   · interval_cases i <;> interval_cases j <;>
@@ -57,7 +59,7 @@ private theorem symmetricCubicExpansion_coeff_aux
         Polynomial.coeff_C, hj0, hj1, hj2, hj3, eq_comm]
 
 private theorem eq_symmetricCubicExpansion
-    (P : BivariatePolynomial K) (houter : P.natDegree ≤ 3)
+    (P : K[X][Y]) (houter : P.natDegree ≤ 3)
     (hinner : ∀ i, (P.coeff i).natDegree ≤ 3)
     (hsymm : Polynomial.Bivariate.swap P = P) :
     P = symmetricCubicExpansion P := by
@@ -74,7 +76,7 @@ private theorem eq_symmetricCubicExpansion
     simp [symmetricCubicExpansion, Polynomial.coeff_monomial, Polynomial.coeff_C, hi0, hi1,
       hi2, hi3, eq_comm]
 
-private def symmetricBivariateMonomial (i j : ℕ) (a : K) : BivariatePolynomial K :=
+private def symmetricBivariateMonomial (i j : ℕ) (a : K) : K[X][Y] :=
   if i = j then Polynomial.monomial i (Polynomial.monomial j a)
   else Polynomial.monomial i (Polynomial.monomial j a) +
     Polynomial.monomial j (Polynomial.monomial i a)
@@ -83,21 +85,20 @@ private def cubicI : Fin 10 → ℕ := ![0, 1, 1, 2, 2, 2, 3, 3, 3, 3]
 
 private def cubicJ : Fin 10 → ℕ := ![0, 0, 1, 0, 1, 2, 0, 1, 2, 3]
 
-private def cubicCoeff (P : BivariatePolynomial K) (k : Fin 10) : K :=
+private def cubicCoeff (P : K[X][Y]) (k : Fin 10) : K :=
   (P.coeff (cubicI k)).coeff (cubicJ k)
 
-private def symmetricCubicPolynomialExpansionFin (P : BivariatePolynomial K) :
-    BivariatePolynomial K :=
+private def symmetricCubicPolynomialExpansionFin (P : K[X][Y]) : K[X][Y] :=
   ∑ k : Fin 10, symmetricBivariateMonomial (cubicI k) (cubicJ k) (cubicCoeff P k)
 
-private theorem symmetricCubicExpansion_eq_fin (P : BivariatePolynomial K) :
+private theorem symmetricCubicExpansion_eq_fin (P : K[X][Y]) :
     symmetricCubicExpansion P = symmetricCubicPolynomialExpansionFin P := by
   simp [symmetricCubicExpansion, symmetricCubicPolynomialExpansionFin,
     symmetricBivariateMonomial, cubicCoeff, cubicI, cubicJ, Fin.sum_univ_succ]
   abel
 
 private theorem eq_zero_of_cubicCoeff_eq_zero
-    (P : BivariatePolynomial K) (houter : P.natDegree ≤ 3)
+    (P : K[X][Y]) (houter : P.natDegree ≤ 3)
     (hinner : ∀ i, (P.coeff i).natDegree ≤ 3)
     (hsymm : Polynomial.Bivariate.swap P = P)
     (hall : ∀ k, cubicCoeff P k = 0) : P = 0 := by
@@ -124,11 +125,11 @@ private def cubicBasis (T J : LaurentSeries K) (k : Fin 10) : LaurentSeries K :=
   symmetricLaurentMonomial T J (cubicI k) (cubicJ k)
 
 private def symmetricCubicLaurentExpansionFin (T J : LaurentSeries K)
-    (P : BivariatePolynomial K) : LaurentSeries K :=
+    (P : K[X][Y]) : LaurentSeries K :=
   ∑ k : Fin 10, HahnSeries.C (cubicCoeff P k) * cubicBasis T J k
 
 private theorem bivariateLaurentEvalHom_eq_symmetricCubicLaurentExpansionFin
-    (T J : LaurentSeries K) (P : BivariatePolynomial K)
+    (T J : LaurentSeries K) (P : K[X][Y])
     (houter : P.natDegree ≤ 3) (hinner : ∀ i, (P.coeff i).natDegree ≤ 3)
     (hsymm : Polynomial.Bivariate.swap P = P) :
     bivariateLaurentEvalHom T J P = symmetricCubicLaurentExpansionFin T J P := by
@@ -234,7 +235,7 @@ private theorem cubicBasis_coeff_zero_of_lt
       (cubicWeight_strictMono hkl)
 
 private theorem symmetricCubicLaurentExpansionFin_coeff_eq
-    (T J : LaurentSeries K) (P : BivariatePolynomial K)
+    (T J : LaurentSeries K) (P : K[X][Y])
     (hTorder : T.order = -(9 : ℤ)) (hJorder : J.order = -(3 : ℤ))
     (hTlead : T.leadingCoeff = 1) (hJlead : J.leadingCoeff = 1) (k : Fin 10)
     (hzero : ∀ l : Fin 10, k < l → cubicCoeff P l = 0) :
@@ -256,12 +257,14 @@ private theorem symmetricCubicLaurentExpansionFin_coeff_eq
 
 /-- A symmetric bivariate cubic is detected by its ten triangular Laurent coefficients: if two
 Laurent series `T`, `J` of orders `-9`, `-3` with leading coefficients one satisfy
-`P(T, J) = O(t^(-(9i + 3j)))` at the ten exponents `0 ≤ j ≤ i ≤ 3`, then `P = 0`. -/
+`P(T, J) = O(t^(-(9i + 3j)))` at the ten exponents `0 ≤ j ≤ i ≤ 3`, then `P = 0`. Here
+`P(T, J) = bivariateLaurentEvalHom T J P` substitutes `T` for the outer variable `Y` and `J` for
+the inner variable `C X`. -/
 theorem symmetric_bidegree_three_eq_zero_of_laurent_coeff
     (T J : LaurentSeries K)
     (hTorder : T.order = -(9 : ℤ)) (hJorder : J.order = -(3 : ℤ))
     (hTlead : T.leadingCoeff = 1) (hJlead : J.leadingCoeff = 1)
-    (P : BivariatePolynomial K) (houter : P.natDegree ≤ 3)
+    (P : K[X][Y]) (houter : P.natDegree ≤ 3)
     (hinner : ∀ i, (P.coeff i).natDegree ≤ 3)
     (hsymm : Polynomial.Bivariate.swap P = P)
     (hcoeff : ∀ i j : ℕ, j ≤ i → i ≤ 3 →

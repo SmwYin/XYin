@@ -22,14 +22,6 @@ noncomputable section
 
 namespace Cox
 
-/-- The project's `τ ↦ j(Nτ)`, with positivity packaged by a positive natural level. -/
-noncomputable def levelJ (N : ℕ+) : ℍ → ℂ :=
-  jN N
-
-/-- `levelJ N τ = j (N · τ)`, with `N · τ` the scaling `UpperHalfPlane.natScale`. -/
-theorem levelJ_apply (N : ℕ+) (τ : ℍ) : levelJ N τ = j (natScale N τ) :=
-  rfl
-
 /-- The affine transform `τ ↦ (r + gτ) / s` of the upper half-plane. -/
 def affineUpperHalfPlane (g s : ℕ) (hg : 0 < g) (hs : 0 < s)
     (r : ℤ) (τ : ℍ) : ℍ :=
@@ -188,13 +180,13 @@ private lemma levelJ_meromorphicAt_cusp (N : ℕ+) (γ : SL(2, ℤ)) :
 /-- The level transform `j(Nτ)` is holomorphic on the upper half-plane. -/
 theorem levelJ_mdifferentiable (N : ℕ+) : MDiff (levelJ N) :=
   UpperHalfPlane.mdifferentiable_iff.mpr fun z hz ↦
-    (jN_differentiableAt (N : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
+    (levelJ_differentiableAt (N : ℕ) (z := ⟨z, hz⟩)).differentiableWithinAt
 
 /-- The second generator of the modular function field, using the shared bundled definition. -/
 def levelJModularFunction (N : ℕ+) :
     ModularFunction (CongruenceSubgroup.Gamma0 (N : ℕ)) :=
   ModularFunction.ofGamma0Holomorphic N (levelJ N) (levelJ_mdifferentiable N)
-    (fun γ ↦ jN_slash_invariant (N : ℕ) γ) (levelJ_meromorphicAt_cusp N)
+    (fun γ ↦ levelJ_slash_invariant (N : ℕ) γ) (levelJ_meromorphicAt_cusp N)
 
 /-- Analytic data for the bundled level transform. -/
 theorem levelJ_cuspData (N : ℕ+) : CuspData N (levelJ N) :=

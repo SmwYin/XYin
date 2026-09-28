@@ -10,13 +10,17 @@ import XYin.PhD.Cox.ModularFunctionField
 /-!
 # Arithmetic of the modular polynomial: Cox Theorem 11.18
 
-The integral modular polynomial `Φ_m ∈ ℤ[X, Y]` maps to the complex one (Theorem 11.18(i)), is
-irreducible over `ℂ(Y)` (ii), is symmetric for `m > 1` (iii), and for nonsquare `m` its diagonal
-`Φ_m(X, X)` has leading coefficient `±1` and degree `> 1` (iv). The explicit level-three
-polynomial (11.22) follows from the symmetry.
+The integral modular polynomial `Φ_m ∈ ℤ[X][Y]` maps to the complex one (Theorem 11.18(i)), is
+irreducible in its root variable over the rational function field of its parameter (ii), is
+symmetric for `m > 1` (iii), and for nonsquare `m` its diagonal `Φ_m(X, X)` (in Lean
+`Φ_m.eval X`) has leading coefficient `±1` and degree `> 1` (iv). The explicit level-three
+polynomial (11.22) follows from the symmetry. The variable convention (outer variable `Y` =
+Cox's root variable `X`, inner variable `C X` = Cox's parameter `Y`) is explained in
+`XYin.PhD.Cox.ModularPolynomial.Construction`.
 -/
 
-open UpperHalfPlane
+open Polynomial UpperHalfPlane
+open scoped Polynomial.Bivariate
 
 noncomputable section
 
@@ -40,80 +44,76 @@ open UpperHalfPlaneFunctionField
 
 /-- Theorem 11.18(i): the integral modular polynomial maps to the complex one. -/
 theorem theorem_11_18_i (m : ℕ+) :
-    BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m) =
-      modularPolynomialC m := modularPolynomial_map_complex m
+    (modularPolynomial m).map (mapRingHom (Int.castRingHom ℂ)) = modularPolynomialC m :=
+  modularPolynomial_map_complex m
 
-/-- Theorem 11.18(ii): irreducibility as a polynomial in the root variable `X`, over the
-coefficient field `ℂ(Y)`. -/
+/-- Theorem 11.18(ii): Cox's `Φ_m(X, Y)` is irreducible as a polynomial in the root variable `X`
+over `ℂ(Y)`. In Lean the root variable is the outer variable and `ℂ(Y)` is `RatFunc ℂ`, the
+fraction field of the coefficient ring `ℂ[X]` (the parameter being the inner variable). -/
 theorem theorem_11_18_ii (m : ℕ+) :
     Irreducible (Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ))
-      (modularPolynomialC m)) := modularPolynomialC_irreducibleInX m
+      (modularPolynomialC m)) := irreducible_map_modularPolynomialC m
 
 /-- Dual cyclic inclusions make the complex modular curve invariant under exchanging its two
-coordinates. -/
+coordinates: Cox's `Φ_m(u, v) = 0 ↔ Φ_m(v, u) = 0`. -/
 theorem modularPolynomial_map_complex_zero_swap (m : ℕ+) (u v : ℂ) :
-    (BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m)).eval u v = 0 ↔
-      (BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m)).eval v u = 0 := by
+    ((modularPolynomial m).map (mapRingHom (Int.castRingHom ℂ))).evalEval v u = 0 ↔
+      ((modularPolynomial m).map (mapRingHom (Int.castRingHom ℂ))).evalEval u v = 0 := by
   suffices hswap : ∀ u v : ℂ,
-      (BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m)).eval u v = 0 →
-      (BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m)).eval v u = 0 from
+      ((modularPolynomial m).map (mapRingHom (Int.castRingHom ℂ))).evalEval v u = 0 →
+      ((modularPolynomial m).map (mapRingHom (Int.castRingHom ℂ))).evalEval u v = 0 from
     ⟨hswap u v, hswap v u⟩
   intro u v h
   obtain ⟨L, S, hu, hv⟩ := (theorem_11_23 m u v).mp h
   exact (theorem_11_23 m v u).mpr
     ⟨S.toPeriodPair, S.dual, hv.trans S.dual_sub_j.symm, hu.trans S.dual_base_j.symm⟩
 
-private theorem modularPolynomialC_eval_j_levelJ (m : ℕ+) (τ : ℍ) :
-    (modularPolynomialC m).eval (j τ) (levelJ m τ) = 0 := by
+private theorem modularPolynomialC_evalEval_levelJ_j (m : ℕ+) (τ : ℍ) :
+    (modularPolynomialC m).evalEval (levelJ m τ) (j τ) = 0 := by
   rw [← modularPolynomial_map_complex]
   exact (modularPolynomial_map_complex_zero_swap m (levelJ m τ) (j τ)).mp <| by
     rw [modularPolynomial_map_complex]
-    exact modularPolynomialC_eval_levelJ_j m τ
+    exact modularPolynomialC_evalEval_j_levelJ m τ
 
-private theorem aeval_base_eq_zero_of_forall_eval_eq_zero
-    (m : ℕ+) (F : BivariatePolynomial ℂ)
-    (hF : ∀ τ : ℍ, F.eval (levelJ m τ) (j τ) = 0) :
-    Polynomial.aeval (rightCosetRoot m (baseRightCoset m))
-      (Polynomial.map (algebraMap (Polynomial ℂ) (RatFunc ℂ)) F) = 0 := by
+private theorem aeval_base_eq_zero_of_forall_evalEval_eq_zero
+    (m : ℕ+) (F : ℂ[X][Y])
+    (hF : ∀ τ : ℍ, F.evalEval (j τ) (levelJ m τ) = 0) :
+    aeval (rightCosetRoot m (baseRightCoset m))
+      (F.map (algebraMap (Polynomial ℂ) (RatFunc ℂ))) = 0 := by
   rw [rightCosetRoot_baseRightCoset, ← evalJLevel_eq_aeval, evalJLevel, RingHom.comp_apply,
     show evalJLevelHol m F = 0 from HolomorphicFunction.ext fun τ ↦ by
-      simpa [BivariatePolynomial.eval_eq_evalEval] using hF τ, map_zero]
+      simpa using hF τ, map_zero]
 
 /-- The modular polynomial divides its image under swapping the two variables. -/
 theorem modularPolynomial_dvd_swap (m : ℕ+) :
-    modularPolynomial m ∣ Polynomial.Bivariate.swap (modularPolynomial m) := by
-  have hQzero := aeval_base_eq_zero_of_forall_eval_eq_zero m
-    (Polynomial.Bivariate.swap (modularPolynomialC m)) fun τ ↦ by
-      rw [BivariatePolynomial.eval_swap]
-      exact modularPolynomialC_eval_j_levelJ m τ
-  have hC : modularPolynomialC m ∣ Polynomial.Bivariate.swap (modularPolynomialC m) :=
-    (Polynomial.map_dvd_map (algebraMap (Polynomial ℂ) (RatFunc ℂ))
+    modularPolynomial m ∣ Bivariate.swap (modularPolynomial m) := by
+  have hQzero := aeval_base_eq_zero_of_forall_evalEval_eq_zero m
+    (Bivariate.swap (modularPolynomialC m)) fun τ ↦ by
+      rw [← coe_aevalAeval_eq_evalEval, Bivariate.aevalAeval_swap, coe_aevalAeval_eq_evalEval]
+      exact modularPolynomialC_evalEval_levelJ_j m τ
+  have hC : modularPolynomialC m ∣ Bivariate.swap (modularPolynomialC m) :=
+    (map_dvd_map (algebraMap (Polynomial ℂ) (RatFunc ℂ))
       (IsFractionRing.injective (Polynomial ℂ) (RatFunc ℂ)) (modularPolynomialC_monic m)).mp
       (modularPolynomialC_map_eq_minpoly m ▸ minpoly.dvd _ _ hQzero)
-  refine (Polynomial.map_dvd_map (Polynomial.mapRingHom (Int.castRingHom ℂ))
-    (Polynomial.map_injective _ Int.cast_injective) (modularPolynomial_monic m)).mp ?_
-  change BivariatePolynomial.map (Int.castRingHom ℂ) (modularPolynomial m) ∣
-    BivariatePolynomial.map (Int.castRingHom ℂ) (Polynomial.Bivariate.swap (modularPolynomial m))
+  refine (map_dvd_map (mapRingHom (Int.castRingHom ℂ))
+    (map_injective _ Int.cast_injective) (modularPolynomial_monic m)).mp ?_
   rwa [modularPolynomial_map_complex_swap, modularPolynomial_map_complex]
 
 private theorem modularPolynomialC_not_anti (m : ℕ+) (hm : 1 < (m : ℕ)) :
-    Polynomial.Bivariate.swap (modularPolynomialC m) ≠ -(modularPolynomialC m) := by
+    Bivariate.swap (modularPolynomialC m) ≠ -(modularPolynomialC m) := by
   intro hanti
-  have hdiag : BivariatePolynomial.diagonal (modularPolynomialC m) = 0 := by
-    have h := congrArg BivariatePolynomial.diagonal hanti
-    rw [BivariatePolynomial.diagonal_swap] at h
-    simp only [BivariatePolynomial.diagonal, Polynomial.eval_neg] at h
+  have hdiag : (modularPolynomialC m).eval X = 0 := by
+    have h := congrArg (eval X) hanti
+    rw [Bivariate.eval_X_swap, eval_neg] at h
     exact CharZero.eq_neg_self_iff.mp h
-  have hdiv : Polynomial.X - Polynomial.C Polynomial.X ∣ modularPolynomialC m := by
-    rw [Polynomial.dvd_iff_isRoot]
-    simpa only [BivariatePolynomial.diagonal] using hdiag
+  have hdiv : Y - C X ∣ modularPolynomialC m := dvd_iff_isRoot.mpr hdiag
   let f : Polynomial ℂ →+* RatFunc ℂ := algebraMap _ _
   let P : Polynomial (RatFunc ℂ) := Polynomial.map f (modularPolynomialC m)
   have hdivP : Polynomial.X - Polynomial.C (f Polynomial.X) ∣ P := by
     simpa only [P, Polynomial.map_sub, Polynomial.map_X,
       Polynomial.map_C] using Polynomial.map_dvd f hdiv
   have hI : Irreducible P := by
-    simpa only [P, f] using modularPolynomialC_irreducibleInX m
+    simpa only [P, f] using irreducible_map_modularPolynomialC m
   obtain hunit | hassoc := hI.dvd_iff.mp hdivP
   · exact Polynomial.not_isUnit_X_sub_C (f Polynomial.X) hunit
   · have hdegree_le : P.natDegree ≤ 1 := by
@@ -141,27 +141,27 @@ theorem theorem_11_18_iii (m : ℕ+) (hm : 1 < (m : ℕ)) :
     (associated_of_dvd_dvd hdiv hdiv')
   · exact heq
   · refine absurd ?_ (modularPolynomialC_not_anti m hm)
-    have hmap := congrArg (BivariatePolynomial.map (Int.castRingHom ℂ)) hanti
-    rwa [modularPolynomial_map_complex_swap, BivariatePolynomial.map_neg,
+    have hmap := congrArg (Polynomial.map (mapRingHom (Int.castRingHom ℂ))) hanti
+    rwa [modularPolynomial_map_complex_swap, Polynomial.map_neg,
       modularPolynomial_map_complex] at hmap
 
-/-- The diagonal polynomial `Φ_m(X,X)`. -/
+/-- The diagonal polynomial, Cox's `Φ_m(X, X)`: both variables of `ℤ[X][Y]` are set to `X`. -/
 def modularPolynomialDiagonal (m : ℕ+) : Polynomial ℤ :=
-  BivariatePolynomial.diagonal (modularPolynomial m)
+  (modularPolynomial m).eval X
 
 /-- The integral form of Cox equation (11.19), with the explicit exponent `2m`. -/
 theorem modularPolynomialDiagonal_leadingCoeff_pow_two_mul
     (m : ℕ+) (hm : ¬ IsSquare (m : ℕ)) :
     (modularPolynomialDiagonal m).leadingCoeff ^ (2 * (m : ℕ)) = 1 := by
   let D := modularPolynomialDiagonal m
-  let DC := BivariatePolynomial.diagonal (modularPolynomialC m)
+  let DC := (modularPolynomialC m).eval X
   have hmap : D.map (Int.castRingHom ℂ) = DC := by
     dsimp only [D, DC, modularPolynomialDiagonal]
-    rw [← BivariatePolynomial.diagonal_map, modularPolynomial_map_complex]
+    rw [← map_mapRingHom_eval_map, map_X, modularPolynomial_map_complex]
   have hlc : (D.leadingCoeff : ℂ) = DC.leadingCoeff := by
     rw [← hmap, Polynomial.leadingCoeff_map_of_injective Int.cast_injective]
     rfl
-  have h := modularPolynomialC_diagonal_leadingCoeff_pow m hm
+  have h := modularPolynomialC_eval_X_leadingCoeff_pow m hm
   rw [← hlc] at h
   exact_mod_cast h
 
@@ -210,9 +210,9 @@ private theorem levelJ_diagonalFixedPoint (m : ℕ+) :
 private theorem modularPolynomialDiagonal_map_eval_fixedPoint (m : ℕ+) :
     ((modularPolynomialDiagonal m).map (Int.castRingHom ℂ)).eval
       (j (diagonalFixedPoint m)) = 0 := by
-  rw [modularPolynomialDiagonal, ← BivariatePolynomial.diagonal_map,
-    BivariatePolynomial.diagonal_eval, modularPolynomial_map_complex]
-  have h := modularPolynomialC_eval_levelJ_j m (diagonalFixedPoint m)
+  rw [modularPolynomialDiagonal, ← map_mapRingHom_eval_map, map_X, Bivariate.eval_eval_X,
+    modularPolynomial_map_complex]
+  have h := modularPolynomialC_evalEval_j_levelJ m (diagonalFixedPoint m)
   rwa [levelJ_diagonalFixedPoint] at h
 
 /-- Theorem 11.18(iv), degree assertion. -/
@@ -229,9 +229,9 @@ theorem theorem_11_18_iv_degree (m : ℕ+) (hm : ¬ IsSquare (m : ℕ)) :
   have hmgt : 1 < (m : ℕ) := lt_of_le_of_ne m.pos fun h ↦ hm ⟨1, by simp [← h]⟩
   -- By symmetry, the linear coefficient of the diagonal is even.
   have hcoeff : P.coeff 1 = 2 * ((modularPolynomial m).coeff 1).coeff 0 := by
-    change (BivariatePolynomial.diagonal (modularPolynomial m)).coeff 1 = _
-    rw [BivariatePolynomial.diagonal_coeff_one, ← BivariatePolynomial.coeff_coeff_swap _ 1 0,
-      theorem_11_18_iii m hmgt, two_mul]
+    change ((modularPolynomial m).eval X).coeff 1 = _
+    rw [Bivariate.coeff_eval_X_one, ← Bivariate.coeff_coeff_swap _ 1 0, theorem_11_18_iii m hmgt,
+      two_mul]
   have hne : P.natDegree ≠ 1 := fun hd ↦ by
     rw [← hd, Polynomial.coeff_natDegree] at hcoeff
     rcases hlc with hlc | hlc <;> lia

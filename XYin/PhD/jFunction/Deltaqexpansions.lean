@@ -11,8 +11,9 @@ import XYin.PhD.Modularforms.Eisenstein
 /-!
 # Integral q-expansions of the Eisenstein series and the discriminant
 
-This file constructs integral q-expansions of `E4`, `E6`, and `Delta`, and proves the
-divisibility needed to define the integral Ramanujan tau coefficients.
+This file constructs integral q-expansions of mathlib's level-one Eisenstein series
+`ModularForm.E₄`, `ModularForm.E₆` and of the modular discriminant `ModularForm.discriminant`, and
+proves the divisibility needed to define the integral Ramanujan tau coefficients.
 
 ## Main definitions
 
@@ -22,23 +23,16 @@ divisibility needed to define the integral Ramanujan tau coefficients.
 
 ## Main results
 
-* `ModularForm.qExpansion_coe_pow`, `E4_pow_three_qExpansion`, `E6_pow_two_qExpansion`: the
+* `ModularForm.qExpansion_coe_pow`, `E₄_pow_three_qExpansion`, `E₆_pow_two_qExpansion`: the
   q-expansion of a power of a modular form is the power of its q-expansion.
-* `E4_isIntegralPowerSeries`, `E6_isIntegralPowerSeries`: integrality of Eisenstein q-expansions.
-* `Delta_isIntegralPowerSeries`: integrality of the discriminant q-expansion.
+* `E₄_isIntegralPowerSeries`, `E₆_isIntegralPowerSeries`: integrality of Eisenstein q-expansions.
+* `discriminant_isIntegralPowerSeries`: integrality of the discriminant q-expansion.
 -/
 
-open Complex
-open ModularForm hiding E₄ E₆
-open ModularFormClass ArithmeticFunction UpperHalfPlane IntegralPowerSeries
+open Complex ModularForm ModularFormClass ArithmeticFunction UpperHalfPlane IntegralPowerSeries
+open scoped MatrixGroups
 
 noncomputable section
-
-/-- The normalized weight-four Eisenstein series. -/
-abbrev E4 := _root_.E₄
-
-/-- The normalized weight-six Eisenstein series. -/
-abbrev E6 := _root_.E₆
 
 /-- The q-expansion of a power of a modular form is the power of its q-expansion. -/
 lemma ModularForm.qExpansion_coe_pow {Γ : Subgroup (GL (Fin 2) ℝ)} [Γ.HasDetPlusMinusOne]
@@ -46,45 +40,45 @@ lemma ModularForm.qExpansion_coe_pow {Γ : Subgroup (GL (Fin 2) ℝ)} [Γ.HasDet
     qExpansion h (⇑f ^ n) = qExpansion h f ^ n := by
   simpa using f.qExpansion_pow hh hΓ n
 
-/-- The q-expansion of `E4 ^ 3` is the cube of the q-expansion of `E4`. -/
-lemma E4_pow_three_qExpansion : qExpansion 1 (E4 ^ 3) = qExpansion 1 E4 ^ 3 :=
-  ModularForm.qExpansion_coe_pow one_pos (by simp) E4 3
+/-- The q-expansion of `E₄ ^ 3` is the cube of the q-expansion of `E₄`. -/
+lemma E₄_pow_three_qExpansion : qExpansion 1 (E₄ ^ 3) = qExpansion 1 E₄ ^ 3 :=
+  ModularForm.qExpansion_coe_pow one_pos one_mem_strictPeriods_SL E₄ 3
 
-/-- The q-expansion of `E6 ^ 2` is the square of the q-expansion of `E6`. -/
-lemma E6_pow_two_qExpansion : qExpansion 1 (E6 ^ 2) = qExpansion 1 E6 ^ 2 :=
-  ModularForm.qExpansion_coe_pow one_pos (by simp) E6 2
+/-- The q-expansion of `E₆ ^ 2` is the square of the q-expansion of `E₆`. -/
+lemma E₆_pow_two_qExpansion : qExpansion 1 (E₆ ^ 2) = qExpansion 1 E₆ ^ 2 :=
+  ModularForm.qExpansion_coe_pow one_pos one_mem_strictPeriods_SL E₆ 2
 
-private lemma E4_qExpansion_coeff (n : ℕ) :
-    (qExpansion 1 E4).coeff n = ((if n = 0 then 1 else 240 * (sigma 3 n : ℤ) : ℤ) : ℂ) := by
-  simpa using congr_fun E4_q_exp n
+private lemma E₄_qExpansion_coeff (n : ℕ) :
+    (qExpansion 1 E₄).coeff n = ((if n = 0 then 1 else 240 * (sigma 3 n : ℤ) : ℤ) : ℂ) := by
+  simpa using congr_fun E₄_q_exp n
 
-private lemma E6_qExpansion_coeff (n : ℕ) :
-    (qExpansion 1 E6).coeff n = ((if n = 0 then 1 else -504 * (sigma 5 n : ℤ) : ℤ) : ℂ) := by
-  simpa using congr_fun E6_q_exp n
+private lemma E₆_qExpansion_coeff (n : ℕ) :
+    (qExpansion 1 E₆).coeff n = ((if n = 0 then 1 else -504 * (sigma 5 n : ℤ) : ℤ) : ℂ) := by
+  simpa using congr_fun E₆_q_exp n
 
 /-- The q-expansion of the normalized weight-four Eisenstein series has integral coefficients. -/
-lemma E4_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 E4) :=
-  (int_iff _).2 fun n ↦ ⟨_, E4_qExpansion_coeff n⟩
+lemma E₄_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 E₄) :=
+  (int_iff _).2 fun n ↦ ⟨_, E₄_qExpansion_coeff n⟩
 
 /-- The q-expansion of the normalized weight-six Eisenstein series has integral coefficients. -/
-lemma E6_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 E6) :=
-  (int_iff _).2 fun n ↦ ⟨_, E6_qExpansion_coeff n⟩
+lemma E₆_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 E₆) :=
+  (int_iff _).2 fun n ↦ ⟨_, E₆_qExpansion_coeff n⟩
 
 /-- The integral q-expansion of the normalized weight-four Eisenstein series. -/
-def integralE4 : PowerSeries ℤ := toIntegralPowerSeries E4_isIntegralPowerSeries
+def integralE4 : PowerSeries ℤ := toIntegralPowerSeries E₄_isIntegralPowerSeries
 
 /-- The integral q-expansion of the normalized weight-six Eisenstein series. -/
-def integralE6 : PowerSeries ℤ := toIntegralPowerSeries E6_isIntegralPowerSeries
+def integralE6 : PowerSeries ℤ := toIntegralPowerSeries E₆_isIntegralPowerSeries
 
 /-- The coefficients of `integralE4`: `E₄ = 1 + 240 ∑ σ₃(n) qⁿ`. -/
 lemma integralE4_coeff (n : ℕ) :
     integralE4.coeff n = if n = 0 then 1 else 240 * (sigma 3 n : ℤ) := by
-  exact_mod_cast (coeff_toIntegralPowerSeries_cast _ n).trans (E4_qExpansion_coeff n)
+  exact_mod_cast (coeff_toIntegralPowerSeries_cast _ n).trans (E₄_qExpansion_coeff n)
 
 /-- The coefficients of `integralE6`: `E₆ = 1 - 504 ∑ σ₅(n) qⁿ`. -/
 lemma integralE6_coeff (n : ℕ) :
     integralE6.coeff n = if n = 0 then 1 else -504 * (sigma 5 n : ℤ) := by
-  exact_mod_cast (coeff_toIntegralPowerSeries_cast _ n).trans (E6_qExpansion_coeff n)
+  exact_mod_cast (coeff_toIntegralPowerSeries_cast _ n).trans (E₆_qExpansion_coeff n)
 
 /-- The constant coefficient of `integralE4` is `1`. -/
 lemma integralE4_coeff_zero : integralE4.coeff 0 = 1 := by
@@ -104,9 +98,9 @@ lemma integralE6_coeff_of_pos (n : ℕ) (hn : 1 ≤ n) :
     integralE6.coeff n = -((504 : ℤ) * sigma 5 n) := by
   simp [integralE6_coeff, Nat.one_le_iff_ne_zero.1 hn]
 
-/-- The q-expansion of the cube of `E4` has integral coefficients. -/
-lemma E4_pow_three_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 (E4 ^ 3)) :=
-  E4_pow_three_qExpansion ▸ hasCoeffsIn_pow ℤ ℂ E4_isIntegralPowerSeries 3
+/-- The q-expansion of the cube of `E₄` has integral coefficients. -/
+lemma E₄_pow_three_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 (E₄ ^ 3)) :=
+  E₄_pow_three_qExpansion ▸ hasCoeffsIn_pow ℤ ℂ E₄_isIntegralPowerSeries 3
 
 private lemma twelve_dvd_weighted_sigma_aux (n : ℕ) :
     12 ∣ 5 * sigma 3 n + 7 * sigma 5 n := by
@@ -171,17 +165,17 @@ private lemma eisenstein_difference_coeff_dvd_aux (n : ℕ) :
     exact ⟨c, by linear_combination 144 * hc'⟩
 
 /-- Complexifying `integralE4 ^ 3 - integralE6 ^ 2` recovers the q-expansion of the modular
-form `E4 ^ 3 - E6 ^ 2`. -/
+form `E₄ ^ 3 - E₆ ^ 2`. -/
 lemma map_integralE4_pow_three_sub_integralE6_pow_two :
     (coeToComplexPowerSeries.ringHom ℤ) (integralE4 ^ 3 - integralE6 ^ 2) =
-      qExpansion 1 (E4 ^ 3 - E6 ^ 2) := by
+      qExpansion 1 (E₄ ^ 3 - E₆ ^ 2) := by
   rw [map_sub, map_pow, map_pow, integralE4, integralE6,
-    coeTo_of_toIntegralPowerSeries, coeTo_of_toIntegralPowerSeries, ← E4_pow_three_qExpansion,
-    ← E6_pow_two_qExpansion]
+    coeTo_of_toIntegralPowerSeries, coeTo_of_toIntegralPowerSeries, ← E₄_pow_three_qExpansion,
+    ← E₆_pow_two_qExpansion]
   symm
   simpa only [pow_three, pow_two, ModularForm.coe_mul] using
-    ModularForm.qExpansion_sub (hh := one_pos) (hΓ := by simp)
-      (E4.mul (E4.mul E4)) (E6.mul E6)
+    ModularForm.qExpansion_sub (hh := one_pos) (hΓ := one_mem_strictPeriods_SL)
+      (E₄.mul (E₄.mul E₄)) (E₆.mul E₆)
 
 /-- Every coefficient of `integralE4 ^ 3 - integralE6 ^ 2` vanishes modulo `1728`. -/
 lemma eisenstein_difference_coeff_modEq_zero (n : ℕ) :
@@ -189,37 +183,38 @@ lemma eisenstein_difference_coeff_modEq_zero (n : ℕ) :
   (Int.modEq_zero_iff_dvd).2 (eisenstein_difference_coeff_dvd_aux n)
 
 /-- The identity `Δ = (E₄³ - E₆²) / 1728` at the level of q-expansions. -/
-lemma Delta_qExpansion_eq_smul_eisenstein_difference :
-    qExpansion 1 Delta = (1 / 1728 : ℂ) • qExpansion 1 (E4 ^ 3 - E6 ^ 2) := by
-  let H : ModularForm (CongruenceSubgroup.Gamma 1) 12 :=
-    ModularForm.mcast (by decide) (E4.pow 3) - ModularForm.mcast (by decide) (E6.pow 2)
-  have hH : ⇑H = ⇑E4 ^ 3 - ⇑E6 ^ 2 := by
+lemma discriminant_qExpansion_eq_smul_eisenstein_difference :
+    qExpansion 1 discriminant = (1 / 1728 : ℂ) • qExpansion 1 (E₄ ^ 3 - E₆ ^ 2) := by
+  let H : ModularForm 𝒮ℒ 12 :=
+    ModularForm.mcast (by decide) (E₄.pow 3) - ModularForm.mcast (by decide) (E₆.pow 2)
+  have hH : ⇑H = ⇑E₄ ^ 3 - ⇑E₆ ^ 2 := by
     ext z
     simp only [H, coe_mcast, coe_pow, sub_apply, Pi.pow_apply, Pi.sub_apply]
-  have hDelta : ⇑Delta = (1 / 1728 : ℂ) • ⇑H := by
+  have hΔ : discriminant = (1 / 1728 : ℂ) • ⇑H := by
     ext z
-    rw [coe_Delta, discriminant_eq_E₄_cube_sub_E₆_sq z, hH, Pi.smul_apply, smul_eq_mul,
-      div_eq_inv_mul, one_div]
+    rw [discriminant_eq_E₄_cube_sub_E₆_sq z, hH, Pi.smul_apply, smul_eq_mul, div_eq_inv_mul,
+      one_div]
     rfl
-  rw [hDelta, qExpansion_smul (ModularFormClass.analyticAt_cuspFunction_zero H one_pos (by simp)),
-    hH]
+  rw [hΔ, qExpansion_smul (ModularFormClass.analyticAt_cuspFunction_zero H one_pos
+    one_mem_strictPeriods_SL), hH]
 
 /-- The q-expansion of the modular discriminant has integral coefficients. -/
-lemma Delta_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 Delta) := by
-  rw [Delta_qExpansion_eq_smul_eisenstein_difference]
+lemma discriminant_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 discriminant) := by
+  rw [discriminant_qExpansion_eq_smul_eisenstein_difference]
   apply IsIntegralPowerSeriesmod (by decide) ⟨_, map_integralE4_pow_three_sub_integralE6_pow_two⟩
   intro n
   rw [toIntegralPowerSeries_eq_of_map_eq _ map_integralE4_pow_three_sub_integralE6_pow_two]
   exact eisenstein_difference_coeff_modEq_zero n
 
 /-- The integral q-expansion of the modular discriminant. -/
-def integralDelta : PowerSeries ℤ := toIntegralPowerSeries Delta_isIntegralPowerSeries
+def integralDelta : PowerSeries ℤ := toIntegralPowerSeries discriminant_isIntegralPowerSeries
 
 /-- The Ramanujan tau coefficients of the integral discriminant q-expansion. -/
 def ramanujanTau : ℕ → ℤ := fun n ↦ integralDelta.coeff n
 
 /-- The Ramanujan tau values are the q-expansion coefficients of `Δ`. -/
-lemma ramanujanTau_cast (n : ℕ) : ((ramanujanTau n : ℤ) : ℂ) = (qExpansion 1 Delta).coeff n :=
-  coeff_toIntegralPowerSeries_cast Delta_isIntegralPowerSeries n
+lemma ramanujanTau_cast (n : ℕ) :
+    ((ramanujanTau n : ℤ) : ℂ) = (qExpansion 1 discriminant).coeff n :=
+  coeff_toIntegralPowerSeries_cast discriminant_isIntegralPowerSeries n
 
 end

@@ -16,6 +16,8 @@ width-`p` reduction, i.e. the `p²`-th power of the unit-step one. This file eva
 product in characteristic `p` and completes Cox Theorem 11.18(v).
 -/
 
+open scoped Polynomial.Bivariate
+
 noncomputable section
 
 namespace Cox
@@ -75,34 +77,24 @@ theorem formalCoxPolynomial_prime_one_frobenius
     transformedJSeries_one_sigmaZero_eq_jLaurent_pow, sub_pow_char, ← C_pow,
     jLaurentSeriesWidth_pow_prime, one_mul]
 
-/-- After specializing the second variable at the width-`p` `j`-series, the modular polynomial
-modulo `p` has the Kronecker factorization. -/
+/-- After specializing the parameter (the inner variable `C X`) at the width-`p` `j`-series, the
+modular polynomial modulo `p` has the Kronecker factorization. -/
 theorem kronecker_after_specializeJ
     (p : ℕ+) [Fact (Nat.Prime (p : ℕ))] :
-    specializeJMod p
-        (BivariatePolynomial.map (Int.castRingHom (ZMod (p : ℕ)))
-          (modularPolynomial p)) =
-      specializeJMod p
-        ((BivariatePolynomial.varX : BivariatePolynomial (ZMod (p : ℕ))) ^
-            (p : ℕ) - BivariatePolynomial.varY) *
-        specializeJMod p
-          (BivariatePolynomial.varX -
-            (BivariatePolynomial.varY : BivariatePolynomial (ZMod (p : ℕ))) ^
-              (p : ℕ)) := by
+    specializeJMod p ((modularPolynomial p).map (mapRingHom (Int.castRingHom (ZMod (p : ℕ))))) =
+      specializeJMod p ((Y : (ZMod (p : ℕ))[X][Y]) ^ (p : ℕ) - C X) *
+        specializeJMod p (Y - (C X : (ZMod (p : ℕ))[X][Y]) ^ (p : ℕ)) := by
   rw [specializeJMod_modularPolynomial_eq_formal,
     formalCoxPolynomial_prime_one_frobenius]
   simp
 
-/-- Cox Theorem 11.18(v), Kronecker's congruence. -/
+/-- Cox Theorem 11.18(v), Kronecker's congruence: Cox's `Φ_p(X, Y) ≡ (X ^ p - Y) (X - Y ^ p)`
+modulo `p`, written in the letters of `(ZMod p)[X][Y]`, whose outer variable `Y` is Cox's root
+variable `X` and whose inner variable `C X` is Cox's parameter `Y`. -/
 theorem theorem_11_18_v
     (p : ℕ+) [Fact (Nat.Prime (p : ℕ))] :
-    BivariatePolynomial.map (Int.castRingHom (ZMod (p : ℕ)))
-        (modularPolynomial p) =
-      ((BivariatePolynomial.varX : BivariatePolynomial (ZMod (p : ℕ))) ^
-          (p : ℕ) - BivariatePolynomial.varY) *
-        (BivariatePolynomial.varX -
-          (BivariatePolynomial.varY : BivariatePolynomial (ZMod (p : ℕ))) ^
-            (p : ℕ)) := by
+    (modularPolynomial p).map (mapRingHom (Int.castRingHom (ZMod (p : ℕ)))) =
+      (Y ^ (p : ℕ) - C X) * (Y - C X ^ (p : ℕ)) := by
   apply specializeJMod_injective p
   simpa only [map_mul] using kronecker_after_specializeJ p
 

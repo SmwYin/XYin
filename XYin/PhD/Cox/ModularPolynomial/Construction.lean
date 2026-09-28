@@ -10,11 +10,29 @@ import XYin.PhD.Cox.ModularPolynomial.AnalyticSupport
 /-!
 # Construction of Cox's modular polynomial
 
-This file develops the bivariate-polynomial API, the function-valued Cox product, and the
-canonical complex modular polynomial characterized by its specializations at `Y = j(τ)`.
+This file constructs Cox's complex modular polynomial `modularPolynomialC m`, the unique
+bivariate polynomial that is monic in its root variable and whose specializations at `j(τ)` are
+the Cox products `coxPhiAtJ m τ` of equation (11.15). It also proves a few general lemmas on
+bivariate polynomials that mathlib lacks (namespace `Polynomial.Bivariate`).
 
-`BivariatePolynomial.eval Φ x y` evaluates with the semantic argument order (root `x`,
-parameter `y`); it is mathlib's `Polynomial.evalEval y x` (`BivariatePolynomial.eval_eq_evalEval`).
+## Variable convention
+
+Bivariate polynomials are mathlib's `R[X][Y] = Polynomial (Polynomial R)` (scope
+`Polynomial.Bivariate`), whose **outer** variable is `Y = Polynomial.X` and whose **inner**
+variable is `C X = Polynomial.C Polynomial.X`. Cox writes `Φ_m(X, Y)` with root variable `X`
+(`Φ_m` is monic of degree `|C(m)|` in `X`) and parameter `Y`. The formalization represents
+`Φ_m` by `Φ : ℤ[X][Y]` (or `ℂ[X][Y]`) whose outer variable `Y` plays Cox's root variable `X`
+and whose inner variable `C X` plays Cox's parameter `Y`. Consequently:
+
+* Cox's value `Φ_m(x, y)` is `Φ.evalEval y x`: mathlib's `evalEval` substitutes its first
+  argument into the inner variable and its second into the outer one;
+* Cox's `Φ_m(X, j(τ))`, a polynomial in the root variable, is `Φ.map (evalRingHom (j τ))`;
+* Cox's diagonal `Φ_m(X, X)` is `Φ.eval X`;
+* Cox's `X` and `Y` are written `Y` and `C X`; for instance Cox's `(X ^ p - Y) * (X - Y ^ p)`
+  is `(Y ^ p - C X) * (Y - C X ^ p)`;
+* `Φ.Monic`, `Φ.natDegree` and `Φ.coeff` refer to the root variable, and
+  `Polynomial.Bivariate.swap` exchanges the two variables.
+
 The specialized Cox product `coxPhiAtJ m τ` is the Lagrange nodal polynomial of the nodes
 `j(σ τ)` (`coxPhiAtJ_eq_nodal`).
 -/
@@ -24,43 +42,73 @@ open scoped Manifold Polynomial.Bivariate
 
 noncomputable section
 
-namespace Cox
-
-/-- Bivariate polynomials with the outer variable interpreted as Cox's `X` and the inner
-variable as Cox's `Y`. -/
-abbrev BivariatePolynomial (R : Type*) [Semiring R] := Polynomial (Polynomial R)
-
-namespace BivariatePolynomial
+namespace Polynomial.Bivariate
 
 variable {R S : Type*}
 
-/-- Cox's first/root variable (the outer polynomial variable). -/
-def varX [Semiring R] : BivariatePolynomial R := Polynomial.X
+/-- A bivariate polynomial over an infinite domain is determined by its specializations
+`p.map (evalRingHom y)` of the inner variable. -/
+theorem ext_of_map_evalRingHom [CommRing R] [IsDomain R] [Infinite R] {p q : R[X][Y]}
+    (h : ∀ y : R, p.map (evalRingHom y) = q.map (evalRingHom y)) : p = q :=
+  Polynomial.ext fun n ↦ Polynomial.funext fun y ↦ by
+    simpa only [coeff_map, coe_evalRingHom] using congrArg (coeff · n) (h y)
 
-/-- Cox's second/parameter variable (the inner coefficient variable). -/
-def varY [Semiring R] : BivariatePolynomial R := Polynomial.C Polynomial.X
+/-- The coefficient of `Y ^ i * X ^ j` in `swap p` is the coefficient of `Y ^ j * X ^ i`
+in `p`. -/
+theorem coeff_coeff_swap [CommSemiring R] (p : R[X][Y]) (i j : ℕ) :
+    ((swap p).coeff i).coeff j = (p.coeff j).coeff i := by
+  induction p using Polynomial.induction_on' with
+  | add p q hp hq => simpa using congrArg₂ (· + ·) hp hq
+  | monomial n a =>
+      rw [swap_monomial, coeff_mul_C, coeff_map]
+      by_cases h : j = n <;> simp [coeff_monomial, h, eq_comm]
 
-/-- Evaluate with the semantic argument order `(x,y)`, compensating for mathlib's inner-first
-`Polynomial.evalEval` convention. -/
-def eval [Semiring R] (Φ : BivariatePolynomial R) (x y : R) : R :=
-  Φ.evalEval y x
+/-- Swapping the variables commutes with a coefficientwise ring homomorphism. -/
+theorem map_mapRingHom_swap [CommSemiring R] [CommSemiring S] (f : R →+* S) (p : R[X][Y]) :
+    (swap p).map (mapRingHom f) = swap (p.map (mapRingHom f)) := by
+  ext i j
+  simp [coeff_coeff_swap, coeff_map]
 
-/-- Substitute a value for the parameter variable `Y`, leaving a polynomial in `X`. -/
-def specializeY [CommSemiring R] (y : R) (Φ : BivariatePolynomial R) : Polynomial R :=
-  Polynomial.map (Polynomial.evalRingHom y) Φ
+/-- Evaluating the diagonal `p.eval X` at `x` is evaluating `p` at `(x, x)`. -/
+theorem eval_eval_X [CommSemiring R] (x : R) (p : R[X][Y]) :
+    (p.eval X).eval x = p.evalEval x x := by
+  rw [← map_evalRingHom_eval, eval_map, ← coe_evalRingHom, eval, hom_eval₂]
+  simp
 
-/-- Coefficientwise map of a bivariate polynomial. -/
-def map [Semiring R] [Semiring S] (f : R →+* S) (Φ : BivariatePolynomial R) :
-    BivariatePolynomial S :=
-  Polynomial.map (Polynomial.mapRingHom f) Φ
+/-- Evaluating the diagonal `p.eval X` along `f` at `x` evaluates `p` along `f` at `(x, x)`. -/
+theorem eval₂_eval_X [CommSemiring R] [CommSemiring S] (f : R →+* S) (x : S) (p : R[X][Y]) :
+    (p.eval X).eval₂ f x = p.eval₂ (eval₂RingHom f x) x := by
+  simpa using hom_eval₂ p (RingHom.id R[X]) (eval₂RingHom f x) X
 
-/-- Diagonal specialization `Φ(X,X)`. -/
-def diagonal [CommSemiring R] (Φ : BivariatePolynomial R) : Polynomial R :=
-  Polynomial.eval Polynomial.X Φ
+/-- The diagonal `p.eval X` is unchanged by swapping the two variables. -/
+@[simp]
+theorem eval_X_swap [CommSemiring R] (p : R[X][Y]) : (swap p).eval X = p.eval X := by
+  induction p using Polynomial.induction_on' with
+  | add p q hp hq => simp only [map_add, eval_add, hp, hq]
+  | monomial n a =>
+      rw [swap_monomial]
+      simp only [eval_mul, eval_map, eval₂_C_X, eval_C, eval_monomial]
 
-end BivariatePolynomial
+/-- The linear coefficient of the diagonal `p.eval X`. -/
+theorem coeff_eval_X_one [CommSemiring R] (p : R[X][Y]) :
+    (p.eval X).coeff 1 = (p.coeff 0).coeff 1 + (p.coeff 1).coeff 0 := by
+  induction p using Polynomial.induction_on' with
+  | add p q hp hq =>
+      simp only [eval_add, coeff_add, hp, hq]
+      ring
+  | monomial n a =>
+      rcases n with _ | _ | n
+      · simp
+      · simp
+      · rw [eval_monomial, coeff_mul_X_pow']
+        simp [coeff_monomial]
 
-/-- Equation (11.15) after specializing `Y=j(τ)`. -/
+end Polynomial.Bivariate
+
+namespace Cox
+
+/-- Equation (11.15): Cox's `Φ_m(X, j(τ)) = ∏_{σ ∈ C(m)} (X - j(σ τ))`, a polynomial in the
+root variable. -/
 noncomputable def coxPhiAtJ (m : ℕ+) (τ : ℍ) : Polynomial ℂ :=
   ∏ σ : CoxMatrix m, (Polynomial.X - Polynomial.C (j (σ.act τ)))
 
@@ -68,153 +116,6 @@ noncomputable def coxPhiAtJ (m : ℕ+) (τ : ℍ) : Polynomial ℂ :=
 noncomputable def coxPhiFunction (m : ℕ+) : Polynomial (ℍ → ℂ) :=
   ∏ σ : CoxMatrix m,
     (Polynomial.X - Polynomial.C (fun τ ↦ j (σ.act τ)))
-
-namespace BivariatePolynomial
-
-/-- Evaluating after specialization in `Y` agrees with bivariate evaluation. -/
-theorem specializeY_eval {R : Type*} [CommSemiring R] (Φ : BivariatePolynomial R)
-    (x y : R) : (specializeY y Φ).eval x = eval Φ x y :=
-  Polynomial.map_evalRingHom_eval y x Φ
-
-/-- Bivariate polynomials are determined by all specializations of their inner variable. -/
-theorem specializeY_ext {R : Type*} [CommRing R] [IsDomain R] [Infinite R]
-    {Φ Ψ : BivariatePolynomial R}
-    (h : ∀ y : R, Φ.specializeY y = Ψ.specializeY y) : Φ = Ψ := by
-  apply Polynomial.ext
-  intro n
-  apply Polynomial.funext
-  intro y
-  have hy := congrArg (fun p : Polynomial R ↦ p.coeff n) (h y)
-  simpa [specializeY, Polynomial.coeff_map] using hy
-
-/-- Bivariate evaluation in the semantic order `(x, y)` is mathlib's `evalEval y x`. -/
-theorem eval_eq_evalEval {R : Type*} [Semiring R] (Φ : BivariatePolynomial R) (x y : R) :
-    eval Φ x y = Φ.evalEval y x :=
-  rfl
-
-/-- Specializing the parameter commutes with differentiation in the root variable. -/
-theorem derivative_specializeY {R : Type*} [CommSemiring R] (y : R)
-    (Φ : BivariatePolynomial R) :
-    (specializeY y Φ).derivative = specializeY y Φ.derivative :=
-  Polynomial.derivative_map Φ _
-
-/-- `BivariatePolynomial.map` as a ring homomorphism. -/
-abbrev mapRingHom {R S : Type*} [Semiring R] [Semiring S] (f : R →+* S) :
-    BivariatePolynomial R →+* BivariatePolynomial S :=
-  Polynomial.mapRingHom (Polynomial.mapRingHom f)
-
-/-- `BivariatePolynomial.mapRingHom f` is `BivariatePolynomial.map f`. (Not `@[simp]`: `simp`
-unfolds the abbreviation `mapRingHom` first, so the left-hand side is not in simp normal form.) -/
-theorem coe_mapRingHom {R S : Type*} [Semiring R] [Semiring S] (f : R →+* S) :
-    ⇑(mapRingHom f) = map f :=
-  rfl
-
-/-- Coefficientwise maps along injective ring homomorphisms are injective. -/
-theorem map_injective {R S : Type*} [Semiring R] [Semiring S] {f : R →+* S}
-    (hf : Function.Injective f) : Function.Injective (map f) :=
-  Polynomial.map_injective _ (Polynomial.map_injective f hf)
-
-/-- Coefficientwise maps commute with negation. -/
-theorem map_neg {R S : Type*} [Ring R] [Ring S] (f : R →+* S) (Φ : BivariatePolynomial R) :
-    map f (-Φ) = -map f Φ :=
-  Polynomial.map_neg _
-
-/-- Coefficientwise maps commute with subtraction. -/
-theorem map_sub {R S : Type*} [Ring R] [Ring S] (f : R →+* S) (Φ Ψ : BivariatePolynomial R) :
-    map f (Φ - Ψ) = map f Φ - map f Ψ :=
-  Polynomial.map_sub _
-
-end BivariatePolynomial
-
-/-- Swapping the variables exchanges the two semantic evaluation arguments. -/
-theorem BivariatePolynomial.eval_swap {R : Type*} [CommSemiring R]
-    (Φ : BivariatePolynomial R) (x y : R) :
-    BivariatePolynomial.eval (Polynomial.Bivariate.swap Φ) x y =
-      BivariatePolynomial.eval Φ y x := by
-  simpa only [BivariatePolynomial.eval, Polynomial.coe_aevalAeval_eq_evalEval] using
-    Polynomial.Bivariate.aevalAeval_swap y x Φ
-
-/-- The coefficient at `(i,j)` after swapping variables is the original coefficient at
-`(j,i)`. -/
-theorem BivariatePolynomial.coeff_coeff_swap {R : Type*} [CommSemiring R]
-    (Φ : BivariatePolynomial R) (i j : ℕ) :
-    ((Polynomial.Bivariate.swap Φ).coeff i).coeff j = (Φ.coeff j).coeff i := by
-  induction Φ using Polynomial.induction_on' with
-  | add P Q hP hQ => simpa using congrArg₂ (· + ·) hP hQ
-  | monomial n P =>
-      rw [Polynomial.Bivariate.swap_monomial, Polynomial.coeff_mul_C,
-        Polynomial.coeff_map]
-      by_cases h : j = n <;> simp [Polynomial.coeff_monomial, h, eq_comm]
-
-/-- Swapping variables commutes with a coefficientwise ring homomorphism. -/
-theorem BivariatePolynomial.map_swap {R S : Type*} [CommSemiring R] [CommSemiring S]
-    (f : R →+* S) (Φ : BivariatePolynomial R) :
-    BivariatePolynomial.map f (Polynomial.Bivariate.swap Φ) =
-      Polynomial.Bivariate.swap (BivariatePolynomial.map f Φ) := by
-  ext i j
-  simp [BivariatePolynomial.map, BivariatePolynomial.coeff_coeff_swap, Polynomial.coeff_map]
-
-/-- Evaluating the diagonal specialization at `x` is bivariate evaluation at `(x,x)`. -/
-theorem BivariatePolynomial.diagonal_eval {R : Type*} [CommSemiring R]
-    (Φ : BivariatePolynomial R) (x : R) :
-    (BivariatePolynomial.diagonal Φ).eval x = BivariatePolynomial.eval Φ x x := by
-  rw [BivariatePolynomial.diagonal, BivariatePolynomial.eval]
-  rw [← congrFun (congrFun (Polynomial.eval₂_evalRingHom x) x) Φ]
-  simpa using
-    (Polynomial.hom_eval₂ Φ (RingHom.id (Polynomial R))
-      (Polynomial.evalRingHom x) Polynomial.X)
-
-/-- Coefficientwise maps commute with diagonal specialization. -/
-theorem BivariatePolynomial.diagonal_map {R S : Type*} [CommSemiring R] [CommSemiring S]
-    (f : R →+* S) (Φ : BivariatePolynomial R) :
-    BivariatePolynomial.diagonal (BivariatePolynomial.map f Φ) =
-      (BivariatePolynomial.diagonal Φ).map f := by
-  simpa only [BivariatePolynomial.diagonal, BivariatePolynomial.map, Polynomial.map_X] using
-    Polynomial.map_mapRingHom_eval_map f Φ Polynomial.X
-
-/-- Evaluating a diagonal after changing coefficients is simultaneous evaluation in both
-variables. -/
-theorem BivariatePolynomial.diagonal_eval₂ {R S : Type*} [CommSemiring R] [CommSemiring S]
-    (f : R →+* S) (x : S) (Φ : BivariatePolynomial R) :
-    (BivariatePolynomial.diagonal Φ).eval₂ f x =
-      Φ.eval₂ (Polynomial.eval₂RingHom f x) x := by
-  simpa [BivariatePolynomial.diagonal] using
-    Polynomial.hom_eval₂ Φ (RingHom.id (Polynomial R))
-      (Polynomial.eval₂RingHom f x) Polynomial.X
-
-/-- The diagonal specialization is unchanged by swapping the two variables. -/
-@[simp]
-theorem BivariatePolynomial.diagonal_swap {R : Type*} [CommSemiring R]
-    (Φ : BivariatePolynomial R) :
-    BivariatePolynomial.diagonal (Polynomial.Bivariate.swap Φ) =
-      BivariatePolynomial.diagonal Φ := by
-  induction Φ using Polynomial.induction_on' with
-  | add P Q hP hQ =>
-      simpa only [BivariatePolynomial.diagonal, map_add, Polynomial.eval_add] using
-        congrArg₂ (· + ·) hP hQ
-  | monomial n P =>
-      rw [Polynomial.Bivariate.swap_monomial]
-      simp only [diagonal, Polynomial.eval_mul, Polynomial.eval_map,
-        Polynomial.eval₂_C_X, Polynomial.eval_C, Polynomial.eval_monomial]
-
-/-- The linear coefficient of the diagonal specialization. -/
-theorem BivariatePolynomial.diagonal_coeff_one {R : Type*} [CommSemiring R]
-    (Φ : BivariatePolynomial R) :
-    (BivariatePolynomial.diagonal Φ).coeff 1 =
-      (Φ.coeff 0).coeff 1 + (Φ.coeff 1).coeff 0 := by
-  induction Φ using Polynomial.induction_on' with
-  | add P Q hP hQ =>
-      simp only [BivariatePolynomial.diagonal, Polynomial.eval_add,
-        Polynomial.coeff_add] at hP hQ ⊢
-      rw [hP, hQ]
-      ring
-  | monomial n P =>
-      rcases n with _ | _ | n
-      · simp [BivariatePolynomial.diagonal]
-      · simp [BivariatePolynomial.diagonal]
-      · simp only [BivariatePolynomial.diagonal, Polynomial.eval_monomial]
-        rw [Polynomial.coeff_mul_X_pow']
-        simp [Polynomial.coeff_monomial]
 
 /-- The specialized Cox product is the Lagrange nodal polynomial of the nodes `j(σ τ)`. -/
 theorem coxPhiAtJ_eq_nodal (m : ℕ+) (τ : ℍ) :
@@ -295,7 +196,7 @@ theorem coxPhiFunction_coeff_widthOne_cuspMeromorphicAt (m : ℕ+) (n : ℕ) :
 
 /-- Coefficients of the Cox product are level-one modular functions; this is the invariant
 coefficient argument immediately preceding equation (11.14). -/
-def coxPhiFunction_coeff_modularFunction (m : ℕ+) (n : ℕ) : ModularFunction 𝒮ℒ :=
+def coxPhiFunctionCoeffModularFunction (m : ℕ+) (n : ℕ) : ModularFunction 𝒮ℒ :=
   ModularFunction.ofLevelOneHolomorphic _ (coxPhiFunction_coeff_mdifferentiable m n)
     (coxPhiFunction_coeff_slashInvariant m n) (coxPhiFunction_coeff_widthOne_cuspMeromorphicAt m n)
 
@@ -303,7 +204,7 @@ def coxPhiFunction_coeff_modularFunction (m : ℕ+) (n : ℕ) : ModularFunction 
 theorem coxPhiFunction_coeff_polynomialInJ (m : ℕ+) (n : ℕ) :
     ∃ P : Polynomial ℂ, (coxPhiFunction m).coeff n = polynomialIn P j :=
   levelOne_polynomialInJ_of_holomorphic
-    (coxPhiFunction_coeff_modularFunction m n)
+    (coxPhiFunctionCoeffModularFunction m n)
     (coxPhiFunction_coeff_mdifferentiable m n)
 
 private noncomputable def coxCoefficientPolynomialAux
@@ -317,19 +218,16 @@ private theorem coxCoefficientPolynomialAux_eval
   simpa [polynomialIn] using congrFun
     (coxPhiFunction_coeff_polynomialInJ m n).choose_spec.symm τ
 
-private noncomputable def modularPolynomialCandidateAux
-    (m : ℕ+) : BivariatePolynomial ℂ :=
-  Polynomial.X ^ Fintype.card (CoxMatrix m) +
+private noncomputable def modularPolynomialCandidateAux (m : ℕ+) : ℂ[X][Y] :=
+  Y ^ Fintype.card (CoxMatrix m) +
     ∑ n ∈ Finset.range (Fintype.card (CoxMatrix m)),
       Polynomial.monomial n (coxCoefficientPolynomialAux m n)
 
-private theorem modularPolynomialCandidateAux_specializeY
-    (m : ℕ+) (τ : ℍ) :
-    (modularPolynomialCandidateAux m).specializeY (j τ) = coxPhiAtJ m τ := by
+private theorem modularPolynomialCandidateAux_map_evalRingHom (m : ℕ+) (τ : ℍ) :
+    (modularPolynomialCandidateAux m).map (Polynomial.evalRingHom (j τ)) = coxPhiAtJ m τ := by
   classical
-  simpa [modularPolynomialCandidateAux, BivariatePolynomial.specializeY,
-    Polynomial.map_sum, coxCoefficientPolynomialAux_eval, coxPhiFunction_coeff_apply,
-    coxPhiAtJ_natDegree, Polynomial.C_mul_X_pow_eq_monomial] using
+  simpa [modularPolynomialCandidateAux, Polynomial.map_sum, coxCoefficientPolynomialAux_eval,
+    coxPhiFunction_coeff_apply, coxPhiAtJ_natDegree, Polynomial.C_mul_X_pow_eq_monomial] using
     (coxPhiAtJ_monic m τ).as_sum.symm
 
 private theorem modularPolynomialCandidateAux_monic (m : ℕ+) :
@@ -343,73 +241,76 @@ private theorem modularPolynomialCandidateAux_monic (m : ℕ+) :
     exact (Polynomial.degree_monomial_le _ _).trans_lt (WithBot.coe_lt_coe.mpr hn)
   · exact WithBot.bot_lt_coe _
 
-/-- Existence and uniqueness of equation (11.14), normalized to be monic in the outer/root
-variable `X`. -/
+/-- Existence and uniqueness of equation (11.14): exactly one `Φ : ℂ[X][Y]` is monic in the
+root variable and satisfies Cox's `Φ(X, j(τ)) = coxPhiAtJ m τ` for every `τ`. -/
 theorem existsUnique_modularPolynomialC (m : ℕ+) :
-    ∃! Φ : BivariatePolynomial ℂ,
-      Φ.Monic ∧ ∀ τ : ℍ, Φ.specializeY (j τ) = coxPhiAtJ m τ := by
+    ∃! Φ : ℂ[X][Y],
+      Φ.Monic ∧ ∀ τ : ℍ, Φ.map (Polynomial.evalRingHom (j τ)) = coxPhiAtJ m τ := by
   refine ⟨modularPolynomialCandidateAux m,
     ⟨modularPolynomialCandidateAux_monic m,
-      modularPolynomialCandidateAux_specializeY m⟩, ?_⟩
+      modularPolynomialCandidateAux_map_evalRingHom m⟩, ?_⟩
   intro Φ hΦ
-  apply BivariatePolynomial.specializeY_ext
+  apply Polynomial.Bivariate.ext_of_map_evalRingHom
   intro y
   obtain ⟨τ, rfl⟩ := j_surjective y
-  rw [hΦ.2 τ, modularPolynomialCandidateAux_specializeY]
+  rw [hΦ.2 τ, modularPolynomialCandidateAux_map_evalRingHom]
 
-/-- Cox's complex modular polynomial. -/
-noncomputable def modularPolynomialC (m : ℕ+) : BivariatePolynomial ℂ :=
+/-- Cox's complex modular polynomial `Φ_m`. The outer variable `Y` of `ℂ[X][Y]` is Cox's root
+variable `X` and the inner variable `C X` is Cox's parameter `Y`, so Cox's `Φ_m(x, y)` is
+`(modularPolynomialC m).evalEval y x` (see the module docstring). -/
+noncomputable def modularPolynomialC (m : ℕ+) : ℂ[X][Y] :=
   (existsUnique_modularPolynomialC m).choose
 
+/-- `Φ_m` is monic in the root variable. -/
 theorem modularPolynomialC_monic (m : ℕ+) : (modularPolynomialC m).Monic :=
   (existsUnique_modularPolynomialC m).choose_spec.1.1
 
-/-- Equation (11.15), the product formula indexed by `C(m)`. -/
-theorem modularPolynomialC_specializeY (m : ℕ+) (τ : ℍ) :
-    (modularPolynomialC m).specializeY (j τ) = coxPhiAtJ m τ :=
+/-- Equation (11.15), the product formula indexed by `C(m)`: Cox's
+`Φ_m(X, j(τ)) = ∏_{σ ∈ C(m)} (X - j(σ τ))`. -/
+theorem modularPolynomialC_map_evalRingHom (m : ℕ+) (τ : ℍ) :
+    (modularPolynomialC m).map (Polynomial.evalRingHom (j τ)) = coxPhiAtJ m τ :=
   (existsUnique_modularPolynomialC m).choose_spec.1.2 τ
 
 /-- The coefficient polynomials of `Φ_m` recover the function-valued Cox-product
-coefficients after substituting `Y = j`. -/
+coefficients after substituting `j` for the parameter. -/
 theorem modularPolynomialC_coeff_polynomialIn (m : ℕ+) (n : ℕ) :
     polynomialIn ((modularPolynomialC m).coeff n) j =
       (coxPhiFunction m).coeff n := by
   funext τ
   have hcoeff := congrArg (fun P : Polynomial ℂ ↦ P.coeff n)
-    (modularPolynomialC_specializeY m τ)
+    (modularPolynomialC_map_evalRingHom m τ)
   rw [coxPhiFunction_coeff_apply]
-  simpa [polynomialIn, BivariatePolynomial.specializeY,
-    Polynomial.coeff_map] using hcoeff
+  simpa [polynomialIn, Polynomial.coeff_map] using hcoeff
 
 /-- Equation (11.14), the equivalent right-coset product. -/
 theorem modularPolynomialC_rightCosetProduct (m : ℕ+) (τ : ℍ) :
-    (modularPolynomialC m).specializeY (j τ) =
+    (modularPolynomialC m).map (Polynomial.evalRingHom (j τ)) =
       ∏ c : Gamma0RightCosets m,
         (Polynomial.X - Polynomial.C (rightCosetEval m c τ)) := by
-  rw [modularPolynomialC_specializeY, coxPhiAtJ_eq_rightCosetProduct]
+  rw [modularPolynomialC_map_evalRingHom, coxPhiAtJ_eq_rightCosetProduct]
 
-/-- The roots of `Φ_m(X, j(τ))` are exactly the values `j(σ τ)`, `σ ∈ C(m)`. -/
-theorem modularPolynomialC_eval_eq_zero_iff (m : ℕ+) (τ : ℍ) (u : ℂ) :
-    (modularPolynomialC m).eval u (j τ) = 0 ↔ ∃ σ : CoxMatrix m, u = j (σ.act τ) := by
-  simp [← BivariatePolynomial.specializeY_eval, modularPolynomialC_specializeY, coxPhiAtJ,
-    Polynomial.eval_prod, Finset.prod_eq_zero_iff, sub_eq_zero]
+/-- The roots of Cox's `Φ_m(X, j(τ))` are exactly the values `j(σ τ)`, `σ ∈ C(m)`. -/
+theorem modularPolynomialC_evalEval_eq_zero_iff (m : ℕ+) (τ : ℍ) (u : ℂ) :
+    (modularPolynomialC m).evalEval (j τ) u = 0 ↔ ∃ σ : CoxMatrix m, u = j (σ.act τ) := by
+  rw [← Polynomial.map_evalRingHom_eval, modularPolynomialC_map_evalRingHom]
+  simp [coxPhiAtJ, Polynomial.eval_prod, Finset.prod_eq_zero_iff, sub_eq_zero]
 
-/-- Every Cox transform gives a root: `Φ_m(j(σ τ), j(τ)) = 0`. -/
-theorem modularPolynomialC_eval_act_j (m : ℕ+) (σ : CoxMatrix m) (τ : ℍ) :
-    (modularPolynomialC m).eval (j (σ.act τ)) (j τ) = 0 :=
-  (modularPolynomialC_eval_eq_zero_iff m τ _).2 ⟨σ, rfl⟩
+/-- Every Cox transform gives a root: Cox's `Φ_m(j(σ τ), j(τ)) = 0`. -/
+theorem modularPolynomialC_evalEval_j_act (m : ℕ+) (σ : CoxMatrix m) (τ : ℍ) :
+    (modularPolynomialC m).evalEval (j τ) (j (σ.act τ)) = 0 :=
+  (modularPolynomialC_evalEval_eq_zero_iff m τ _).2 ⟨σ, rfl⟩
 
-/-- The distinguished root `Φ_m(j(mτ),j(τ))=0`. -/
-theorem modularPolynomialC_eval_levelJ_j (m : ℕ+) (τ : ℍ) :
-    (modularPolynomialC m).eval (levelJ m τ) (j τ) = 0 := by
+/-- The distinguished root, Cox's `Φ_m(j(mτ), j(τ)) = 0`. -/
+theorem modularPolynomialC_evalEval_j_levelJ (m : ℕ+) (τ : ℍ) :
+    (modularPolynomialC m).evalEval (j τ) (levelJ m τ) = 0 := by
   rw [← j_act_sigmaZero]
-  exact modularPolynomialC_eval_act_j m (sigmaZero m) τ
+  exact modularPolynomialC_evalEval_j_act m (sigmaZero m) τ
 
 /-- Degree in the root variable. -/
 theorem modularPolynomialC_natDegree (m : ℕ+) :
     (modularPolynomialC m).natDegree = Fintype.card (CoxMatrix m) := by
   rw [← coxPhiAtJ_natDegree m UpperHalfPlane.I,
-    ← modularPolynomialC_specializeY m UpperHalfPlane.I]
+    ← modularPolynomialC_map_evalRingHom m UpperHalfPlane.I]
   exact ((modularPolynomialC_monic m).natDegree_map
     (Polynomial.evalRingHom (j UpperHalfPlane.I))).symm
 

@@ -13,7 +13,7 @@ import XYin.PhD.LaurentQExpansion.Algebra
 /-!
 # The modular `j`-function and its Laurent q-expansion
 
-This file defines the classical modular function `j = E4 ^ 3 / Delta`. It constructs the
+This file defines the classical modular function `j = E₄ ^ 3 / Δ`. It constructs the
 holomorphic regularization `qj`, proves that its q-expansion has integral coefficients and
 constant coefficient one, and deduces the pole order and integrality of the Laurent q-expansion
 of `j` at infinity.
@@ -27,7 +27,8 @@ of `j` at infinity.
 
 ## Main results
 
-* `qExpansion_Delta_eq_X_mul`: the q-expansion of `Δ` is `X` times the q-expansion of `Δ / q`.
+* `qExpansion_discriminant_eq_X_mul`: the q-expansion of `Δ` is `X` times the q-expansion of
+  `Δ / q`.
 * `qj_isIntegralPowerSeries`: the q-expansion of `qj` has integral coefficients.
 * `j_eq_qjCoeffs_tsum`: the convergent q-series reconstruction of `j`.
 * `j_poleOrder`: the function `j` has a simple pole at infinity.
@@ -63,36 +64,35 @@ private lemma cexp_vadd_one_aux (τ : ℍ) :
     cexp (2 * π * Complex.I * ↑((1 : ℝ) +ᵥ τ)) = cexp (2 * π * Complex.I * τ) := by
   simp [UpperHalfPlane.coe_vadd, mul_add, Complex.exp_add]
 
-private lemma E4_vadd_one_aux (τ : ℍ) : E4 ((1 : ℝ) +ᵥ τ) = E4 τ :=
-  SlashInvariantForm.vAdd_apply_of_mem_strictPeriods E4 τ (by simp)
+private lemma E₄_vadd_one_aux (τ : ℍ) : E₄ ((1 : ℝ) +ᵥ τ) = E₄ τ :=
+  SlashInvariantForm.vAdd_apply_of_mem_strictPeriods E₄ τ one_mem_strictPeriods_SL
 
-private lemma Delta_vadd_one_aux (τ : ℍ) : Delta ((1 : ℝ) +ᵥ τ) = Delta τ :=
-  SlashInvariantForm.vAdd_apply_of_mem_strictPeriods Delta τ (by simp)
+private lemma discriminant_vadd_one_aux (τ : ℍ) :
+    discriminant ((1 : ℝ) +ᵥ τ) = discriminant τ :=
+  SlashInvariantForm.vAdd_apply_of_mem_strictPeriods CuspForm.discriminant τ
+    one_mem_strictPeriods_SL
 
-/-- The classical modular invariant `j = E4 ^ 3 / Delta`. -/
-def j : ℍ → ℂ := fun τ ↦ (E4 τ) ^ 3 / Delta τ
+/-- The classical modular invariant `j = E₄ ^ 3 / Δ`. -/
+def j : ℍ → ℂ := fun τ ↦ E₄ τ ^ 3 / discriminant τ
 
 /-- The modular invariant is holomorphic on the upper half-plane. -/
 lemma j_mdifferentiable : MDiff j := by
   simpa only [j, Function.comp_def] using
-    ((ModularFormClass.holo E4).pow 3).div (ModularFormClass.holo Delta)
-      (fun τ ↦ Δ_ne_zero τ)
+    ((ModularFormClass.holo E₄).pow 3).div (ModularFormClass.holo CuspForm.discriminant)
+      discriminant_ne_zero
 
 /-- The modular invariant `j` is invariant under the weight-zero slash action of `SL₂(ℤ)`. -/
 lemma j_slash_invariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
-  let f := E4.mul (E4.mul E4)
-  have hj : j = (f : ℍ → ℂ) / Delta := by
+  let f := E₄.mul (E₄.mul E₄)
+  have hj : j = (f : ℍ → ℂ) / discriminant := by
     simp only [f, ModularForm.coe_mul]
     ext z
     simp [j, pow_three]
-  have hγ : (γ : GL (Fin 2) ℝ) ∈
-      Subgroup.map (Matrix.SpecialLinearGroup.mapGL ℝ) (CongruenceSubgroup.Gamma 1) :=
-    (Subgroup.mem_map_iff_mem Matrix.SpecialLinearGroup.mapGL_injective).mpr
-      (CongruenceSubgroup.mem_Gamma_one γ)
+  have hγ : (γ : GL (Fin 2) ℝ) ∈ 𝒮ℒ := ⟨γ, rfl⟩
   rw [hj]
-  change ((f : ℍ → ℂ) / Delta) ∣[(12 - 12 : ℤ)] γ = _
+  change ((f : ℍ → ℂ) / CuspForm.discriminant) ∣[(12 - 12 : ℤ)] γ = _
   rw [div_slash_SL2, SL_slash, SL_slash]
-  exact congrArg₂ (· / ·) (f.slash_action_eq' γ hγ) (Delta.slash_action_eq' γ hγ)
+  exact congrArg₂ (· / ·) (f.slash_action_eq' γ hγ) (CuspForm.discriminant.slash_action_eq' γ hγ)
 
 /-- The modular invariant `j` is unchanged by the action of `SL₂(ℤ)`. -/
 lemma j_modularGroup_smul (γ : SL(2, ℤ)) (z : ℍ) : j (γ • z) = j z := by
@@ -106,54 +106,55 @@ def deltaOverQ : ℍ → ℂ :=
   fun z ↦ ∏' (n : ℕ), (1 - cexp (2 * π * Complex.I * (n + 1) * z)) ^ 24
 
 /-- The infinite product `deltaOverQ` is the discriminant divided by the q-parameter. -/
-lemma deltaOverQ_eq_qParam_inv_mul_Delta :
-    deltaOverQ = (fun z ↦ 1 / cexp (2 * π * Complex.I * z) : ℍ → ℂ) * Delta := by
+lemma deltaOverQ_eq_qParam_inv_mul_discriminant :
+    deltaOverQ = (fun z ↦ 1 / cexp (2 * π * Complex.I * z) : ℍ → ℂ) * discriminant := by
   ext z
-  simp [deltaOverQ, Delta_apply, Δ, Pi.mul_apply, mul_assoc]
+  simp [deltaOverQ, discriminant_eq_q_prod, eta_q_eq_cexp, Periodic.qParam, Pi.mul_apply]
 
 /-- The function `deltaOverQ` does not vanish on the upper half-plane. -/
 lemma deltaOverQ_ne_zero (z : ℍ) : deltaOverQ z ≠ 0 := by
-  rw [deltaOverQ_eq_qParam_inv_mul_Delta, Pi.mul_apply]
-  exact mul_ne_zero (one_div_ne_zero (Complex.exp_ne_zero _)) (Δ_ne_zero z)
+  rw [deltaOverQ_eq_qParam_inv_mul_discriminant, Pi.mul_apply]
+  exact mul_ne_zero (one_div_ne_zero (Complex.exp_ne_zero _)) (discriminant_ne_zero z)
 
 /-- The function `deltaOverQ` tends to `1` at infinity. -/
 lemma deltaOverQ_tendsto_atImInfty : Tendsto deltaOverQ atImInfty (𝓝 (1 : ℂ)) := by
-  simpa [deltaOverQ] using Delta_boundedfactor
+  simpa [deltaOverQ, eta_q_eq_cexp] using tendsto_atImInfty_tprod_one_sub_eta_q_pow
 
 private lemma deltaOverQ_vadd_one_aux (τ : ℍ) : deltaOverQ ((1 : ℝ) +ᵥ τ) = deltaOverQ τ := by
-  simp only [deltaOverQ_eq_qParam_inv_mul_Delta, Pi.mul_apply, cexp_vadd_one_aux,
-    Delta_vadd_one_aux]
+  simp only [deltaOverQ_eq_qParam_inv_mul_discriminant, Pi.mul_apply, cexp_vadd_one_aux,
+    discriminant_vadd_one_aux]
 
 private lemma deltaOverQ_periodic_aux : Periodic (deltaOverQ ∘ UpperHalfPlane.ofComplex) 1 :=
   periodic_comp_ofComplex_of_vadd deltaOverQ_vadd_one_aux
 
 private lemma deltaOverQ_mdifferentiable_aux : MDiff deltaOverQ := by
-  rw [deltaOverQ_eq_qParam_inv_mul_Delta]
+  rw [deltaOverQ_eq_qParam_inv_mul_discriminant]
   exact (mdifferentiable_const.div mdifferentiable_cexp_aux fun _ ↦ Complex.exp_ne_zero _).mul
-    (ModularFormClass.holo Delta)
+    (ModularFormClass.holo CuspForm.discriminant)
 
 /-- The cusp function of `deltaOverQ` is analytic at `q = 0`. -/
 lemma deltaOverQ_cuspFunction_analyticAt : AnalyticAt ℂ (cuspFunction 1 deltaOverQ) 0 :=
   analyticAt_cuspFunction_zero one_pos deltaOverQ_periodic_aux deltaOverQ_mdifferentiable_aux
     (isBoundedAtImInfty_of_tendsto deltaOverQ_tendsto_atImInfty)
 
-/-- The q-expansion of `Delta` is `X` times the q-expansion of `deltaOverQ = Δ / q`. -/
-lemma qExpansion_Delta_eq_X_mul : qExpansion 1 Delta = X * qExpansion 1 deltaOverQ := by
-  have h : ⇑Delta = fun τ : ℍ ↦ 𝕢 1 τ ^ 1 * deltaOverQ τ := by
+/-- The q-expansion of `Δ` is `X` times the q-expansion of `deltaOverQ = Δ / q`. -/
+lemma qExpansion_discriminant_eq_X_mul :
+    qExpansion 1 discriminant = X * qExpansion 1 deltaOverQ := by
+  have h : discriminant = fun τ : ℍ ↦ 𝕢 1 τ ^ 1 * deltaOverQ τ := by
     ext τ
-    simp [deltaOverQ_eq_qParam_inv_mul_Delta, Periodic.qParam]
+    simp [deltaOverQ_eq_qParam_inv_mul_discriminant, Periodic.qParam]
   rw [h, qExpansion_qpow_mul one_pos deltaOverQ_cuspFunction_analyticAt 1, pow_one]
 
-/-- The q-expansion coefficients of `deltaOverQ` are the shifted coefficients of `Delta`. -/
+/-- The q-expansion coefficients of `deltaOverQ` are the shifted coefficients of `Δ`. -/
 lemma deltaOverQ_qExpansion_coeff (n : ℕ) :
-    (qExpansion 1 deltaOverQ).coeff n = (qExpansion 1 Delta).coeff (n + 1) := by
-  rw [qExpansion_Delta_eq_X_mul, coeff_succ_X_mul]
+    (qExpansion 1 deltaOverQ).coeff n = (qExpansion 1 discriminant).coeff (n + 1) := by
+  rw [qExpansion_discriminant_eq_X_mul, coeff_succ_X_mul]
 
-/-- The q-expansion of `Delta` with its vanishing constant coefficient removed. -/
+/-- The q-expansion of `Δ` with its vanishing constant coefficient removed. -/
 def deltaShiftedQSeries : ℍ → ℂ :=
-  fun z ↦ ∑' n : ℕ, (qExpansion 1 Delta).coeff (n + 1) * cexp (2 * π * Complex.I * z) ^ n
+  fun z ↦ ∑' n : ℕ, (qExpansion 1 discriminant).coeff (n + 1) * cexp (2 * π * Complex.I * z) ^ n
 
-/-- The shifted q-series of `Delta` converges to `deltaOverQ` on the upper half-plane. -/
+/-- The shifted q-series of `Δ` converges to `deltaOverQ` on the upper half-plane. -/
 lemma deltaShiftedQSeries_eq_deltaOverQ : deltaShiftedQSeries = deltaOverQ := by
   ext z
   rw [← (hasSum_qExpansion one_pos deltaOverQ_periodic_aux deltaOverQ_mdifferentiable_aux
@@ -164,7 +165,7 @@ lemma deltaShiftedQSeries_eq_deltaOverQ : deltaShiftedQSeries = deltaOverQ := by
 values). -/
 lemma deltaOverQ_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 deltaOverQ) :=
   (int_iff _).2 fun n ↦ ⟨integralDelta.coeff (n + 1), (deltaOverQ_qExpansion_coeff n).trans
-    (coeff_toIntegralPowerSeries_cast Delta_isIntegralPowerSeries (n + 1)).symm⟩
+    (coeff_toIntegralPowerSeries_cast discriminant_isIntegralPowerSeries (n + 1)).symm⟩
 
 /-- The integral power series whose complexification is the q-expansion of `deltaOverQ`. -/
 def integralDeltaOverQ : PowerSeries ℤ := toIntegralPowerSeries deltaOverQ_isIntegralPowerSeries
@@ -185,7 +186,7 @@ private lemma integralDeltaOverQ_isUnit_aux : IsUnit integralDeltaOverQ := by
 
 /-! ### The regularization `qj = q · j` -/
 
-/-- The reciprocal of `deltaOverQ`, equivalently the q-parameter divided by `Delta`. -/
+/-- The reciprocal of `deltaOverQ`, equivalently the q-parameter divided by `Δ`. -/
 def qOverDelta : ℍ → ℂ := fun z ↦ 1 / deltaOverQ z
 
 /-- The holomorphic regularization of `j` obtained by multiplying it by the q-parameter. -/
@@ -195,10 +196,10 @@ def qj : ℍ → ℂ := (fun z ↦ cexp (2 * π * Complex.I * z) : ℍ → ℂ) 
 lemma qj_apply (τ : ℍ) : qj τ = 𝕢 1 τ * j τ := by
   simp [qj, Periodic.qParam]
 
-/-- The factorization `qj = E4 ^ 3 * (q / Delta)` of the regularized modular invariant. -/
-lemma E4_pow_three_mul_qOverDelta_eq_qj : E4 ^ 3 * qOverDelta = qj := by
+/-- The factorization `qj = E₄ ^ 3 * (q / Δ)` of the regularized modular invariant. -/
+lemma E₄_pow_three_mul_qOverDelta_eq_qj : E₄ ^ 3 * qOverDelta = qj := by
   ext z
-  simp only [qOverDelta, deltaOverQ_eq_qParam_inv_mul_Delta, Pi.mul_apply,
+  simp only [qOverDelta, deltaOverQ_eq_qParam_inv_mul_discriminant, Pi.mul_apply,
     mul_inv_rev, inv_inv, qj, j, Pi.pow_apply, div_eq_mul_inv]
   ring
 
@@ -214,10 +215,10 @@ lemma qOverDelta_cuspFunction_analyticAt : AnalyticAt ℂ (cuspFunction 1 qOverD
     (mdifferentiable_const.div deltaOverQ_mdifferentiable_aux deltaOverQ_ne_zero)
     (isBoundedAtImInfty_of_tendsto qOverDelta_tendsto_atImInfty)
 
-/-- The cusp function of `E4 ^ 3` is analytic at `q = 0`. -/
-lemma E4_pow_three_cuspFunction_analyticAt : AnalyticAt ℂ (cuspFunction 1 (E4 ^ 3)) 0 := by
+/-- The cusp function of `E₄ ^ 3` is analytic at `q = 0`. -/
+lemma E₄_pow_three_cuspFunction_analyticAt : AnalyticAt ℂ (cuspFunction 1 (E₄ ^ 3)) 0 := by
   simpa [ModularForm.coe_pow] using
-    ModularFormClass.analyticAt_cuspFunction_zero (E4.pow 3) one_pos (by simp)
+    ModularFormClass.analyticAt_cuspFunction_zero (E₄.pow 3) one_pos one_mem_strictPeriods_SL
 
 /-- The q-expansions of `deltaOverQ` and `qOverDelta` are multiplicative inverses. -/
 lemma integralDeltaOverQ_mul_qExpansion_qOverDelta :
@@ -239,9 +240,9 @@ private lemma qOverDelta_isIntegralPowerSeries_aux :
 
 /-- The q-expansion of the regularized modular invariant `qj` has integral coefficients. -/
 theorem qj_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 qj) := by
-  rw [← E4_pow_three_mul_qOverDelta_eq_qj,
-    qExpansion_mul E4_pow_three_cuspFunction_analyticAt qOverDelta_cuspFunction_analyticAt]
-  exact hasCoeffsIn_mul ℤ ℂ E4_pow_three_isIntegralPowerSeries
+  rw [← E₄_pow_three_mul_qOverDelta_eq_qj,
+    qExpansion_mul E₄_pow_three_cuspFunction_analyticAt qOverDelta_cuspFunction_analyticAt]
+  exact hasCoeffsIn_mul ℤ ℂ E₄_pow_three_isIntegralPowerSeries
     qOverDelta_isIntegralPowerSeries_aux
 
 /-- The integral coefficients of the q-expansion of `qj`. -/
@@ -252,7 +253,7 @@ lemma qjCoeffs_cast (n : ℕ) : ((qjCoeffs n : ℤ) : ℂ) = (qExpansion 1 qj).c
   coeff_toIntegralPowerSeries_cast qj_isIntegralPowerSeries n
 
 private lemma qj_vadd_one_aux (τ : ℍ) : qj ((1 : ℝ) +ᵥ τ) = qj τ := by
-  simp only [qj, j, Pi.mul_apply, cexp_vadd_one_aux, E4_vadd_one_aux, Delta_vadd_one_aux]
+  simp only [qj, j, Pi.mul_apply, cexp_vadd_one_aux, E₄_vadd_one_aux, discriminant_vadd_one_aux]
 
 /-- The complex extension of `qj` is one-periodic. -/
 lemma qj_periodic : Periodic (qj ∘ UpperHalfPlane.ofComplex) 1 :=
@@ -269,9 +270,9 @@ lemma qj_differentiableAt_of_im_pos : ∀ z : ℂ, 0 < Complex.im z →
 
 /-- The regularized modular invariant `qj` is bounded at infinity. -/
 lemma qj_isBoundedAtImInfty : IsBoundedAtImInfty qj := by
-  rw [← E4_pow_three_mul_qOverDelta_eq_qj]
-  exact (by simpa [ModularForm.coe_pow] using bdd_at_infty (E4.pow 3) :
-    IsBoundedAtImInfty (⇑E4 ^ 3)).mul (isBoundedAtImInfty_of_tendsto qOverDelta_tendsto_atImInfty)
+  rw [← E₄_pow_three_mul_qOverDelta_eq_qj]
+  exact (by simpa [ModularForm.coe_pow] using bdd_at_infty (E₄.pow 3) :
+    IsBoundedAtImInfty (⇑E₄ ^ 3)).mul (isBoundedAtImInfty_of_tendsto qOverDelta_tendsto_atImInfty)
 
 /-- The q-expansion of `qj` converges to `qj` at every point of the upper half-plane. -/
 lemma hasSum_qExpansion_qj {τ : ℍ} :
@@ -291,15 +292,15 @@ theorem j_eq_qjCoeffs_tsum (z : ℍ) :
 
 /-- The regularized modular invariant `qj` has constant coefficient one. -/
 lemma qj_qExpansion_coeff_zero : (qExpansion 1 qj).coeff 0 = 1 := by
-  have hE4 : constantCoeff (qExpansion 1 E4) = 1 := by
-    simpa using congr_fun E4_q_exp 0
+  have hE₄ : constantCoeff (qExpansion 1 E₄) = 1 := by
+    simpa using congr_fun E₄_q_exp 0
   have hqOverDelta : constantCoeff (qExpansion 1 qOverDelta) = 1 := by
     simp [← coeff_zero_eq_constantCoeff, qExpansion_coeff,
       cuspFunction_apply_zero_of_tendsto one_pos qOverDelta_tendsto_atImInfty]
-  rw [← E4_pow_three_mul_qOverDelta_eq_qj,
-    qExpansion_mul E4_pow_three_cuspFunction_analyticAt qOverDelta_cuspFunction_analyticAt,
-    E4_pow_three_qExpansion]
-  simp [hE4, hqOverDelta]
+  rw [← E₄_pow_three_mul_qOverDelta_eq_qj,
+    qExpansion_mul E₄_pow_three_cuspFunction_analyticAt qOverDelta_cuspFunction_analyticAt,
+    E₄_pow_three_qExpansion]
+  simp [hE₄, hqOverDelta]
 
 /-- The regularized `j`-function `qj` has constant coefficient `1`: at the cusp, `j` has a
 simple pole with leading coefficient `1`. -/
@@ -349,8 +350,8 @@ lemma j_poleRemoved : poleRemoved 1 j = qj := by
   rw [poleRemoved_apply, j_poleOrder, pow_one, qj_apply]
 
 /-- The regularized q-expansion of `j` is the q-expansion of `qj`. -/
-lemma j_to_qExpansion : to_qExpansion 1 j = qExpansion 1 qj := by
-  rw [UpperHalfPlane.to_qExpansion, j_poleRemoved]
+lemma j_toQExpansion : toQExpansion 1 j = qExpansion 1 qj := by
+  rw [UpperHalfPlane.toQExpansion, j_poleRemoved]
 
 /-! ### The Laurent q-expansion of `j` -/
 
@@ -363,7 +364,7 @@ theorem j_laurentQExpansion_coeff_eq_zero_of_lt_neg_one {n : ℤ} (hn : n < -1) 
 coefficients of `qj`, shifted by the order `1` of the pole of `j` at infinity. -/
 theorem j_laurentQExpansion_coeff_of_neg_one_le {n : ℤ} (hn : -1 ≤ n) :
     (laurentqExpansion 1 j).coeff n = (qExpansion 1 qj).coeff (n + 1).toNat := by
-  rw [laurentqExpansion.coeff_of_geq' j_poleOrder hn, j_to_qExpansion, Nat.cast_one]
+  rw [laurentqExpansion.coeff_of_geq' j_poleOrder hn, j_toQExpansion, Nat.cast_one]
 
 /-- The Laurent q-expansion coefficient of `j` at `n - 1` is the `n`-th q-expansion coefficient
 of `qj`. -/
