@@ -5,3 +5,7 @@ AGENTS.md
 .claude/
 .mathlib-quality/
 PDF/
+.mathlib-quality/decomposition.md
+.mathlib-quality/learnings.jsonl
+.mathlib-quality/plan.md
+.mathlib-quality/tickets.md
