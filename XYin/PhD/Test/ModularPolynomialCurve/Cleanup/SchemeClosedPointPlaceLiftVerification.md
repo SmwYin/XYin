@@ -1,0 +1,13 @@
+# Canonical closed-point place lift
+
+The retained `AINTLIBDrafts.SchemeClosedPointPlaceLift` uses the actual geometric field constants, the germ-defined stalk base algebra and its real scalar tower. Actual closedness and smooth relative dimension one supply the stalk DVR; the native DVR-place algebra equivalence gives `closedPointStalkAlgEquiv`. Its ring map is the positive map from the stalk to the place valuation ring.
+
+`closedPointPlaceLift` is literally `Spec.map` of that positive map followed by `X.fromSpecStalk x`, hence its source is the spectrum of the actual place valuation ring. Three proved interfaces identify its genuine generic triangle, its centre as the given `x`, and its base triangle using the independently geometric constants. The generic triangle uses the literal stalk embedding and native specialization identity. The centre uses genuine surjectivity/localness of the equivalence and typed canonical spectrum closed points. The base triangle uses the actual stalk-over-base theorem and the algebra equivalence's scalar law. No centre or triangle is assumed.
+
+Two native elliptic-curve API examples check the generic triangle and centre. Properness, residue finiteness, injectivity, place bijection and genus are outside this leaf's scope.
+
+The parent read and accepted the complete final 123-line temporary source and full fifth log before retention. Owner **63700 CLOSED exit 0**, fourteen permitted prints (thirteen standard-three and `AlgEquiv.commutes` with only `Quot.sound`), two examples, zero diagnostics. Full failed source/logs for the first, second and fourth attempts are separately archived and excluded from the successful receipt. Earlier core-only green source/log are also preserved. Repairs concerned only typed spectrum point aliases, named implicit arguments and taking the actual subtype value of a scalar equality; no new hypotheses/settings.
+
+Named retained source is **139 lines**, maximum width **89**, with the entire accepted expose suffix byte-preserved. Retained/work copies are byte-equal. Owner **63577 CLOSED exit 0** was explicitly polled. Full named log has the same fourteen exact permitted prints, two APIs, no diagnostics or `sorryAx`. Setup has the correct module name, both implicit flags false and empty plugins/dynlibs. All six canonical named artifacts plus C are present and individually hash/size verified.
+
+Exact source/setup/log and seven artifact hashes are recorded in `/private/tmp/SchemeClosedPointPlaceLift-receipt.json`; full log is `/private/tmp/SchemeClosedPointPlaceLift-named.log`. Source and outputs are frozen. No claim of injectivity or a point-place equivalence is included in this receipt.

@@ -180,7 +180,7 @@ variable {Γ : Subgroup (GL (Fin 2) ℝ)}
 def ofMeromorphicField (a : MeromorphicField) (ha : IsModular Γ a) : ModularFunction Γ where
   toFun := MeromorphicField.toFun a
   slash_action_eq' := ha.1
-  meromorphic' := ⟨a, rfl⟩
+  meromorphic' := mmeromorphicNF_iff.2 (MeromorphicField.meromorphicNFOn_toFun a)
   bdd_at_cusps' hc := ha.2 _ hc
 
 @[simp]

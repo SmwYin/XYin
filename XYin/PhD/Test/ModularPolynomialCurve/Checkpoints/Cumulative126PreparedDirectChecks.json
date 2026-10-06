@@ -1,0 +1,2368 @@
+{
+  "prepared_without_reading_rebuilding_artifacts": true,
+  "source_snapshot_sha256": "4d38e20e1b90f284d127ca89fb5497e851208b9e09f4b635ef0c8c8c1cbf5c9f",
+  "modules": {
+    "DVRPlaceAlgEquiv.lean": {
+      "source_sha256": "3f7dd678600c4b94a2ef6149995af4a5a6c0a121fbc7548d78fc232aa5bd7b2c",
+      "checks": [
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRingAlgEquiv",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRingAlgEquiv_coe",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRingAlgEquiv_symm_coe",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsDiscreteValuationRing.equivValuationSubring",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsDiscreteValuationRing.map_algebraMap_eq_valuationSubring",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.algebraValuationSubring",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.algebraMap_apply",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/DVRPlaceAlgEquiv-receipt.json",
+      "named_receipt_sha256": "31665637ce96a2c51c5051677c04634e914266b17df88b8042a974cc5782524e",
+      "log": "/private/tmp/DVRPlaceAlgEquiv-named.log",
+      "log_sha256": "5cf9064b4b99005cb653ffefbe4c7b959fe73b909a97c104a609c1f5b784d9c3",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/DVRPlaceAlgEquiv.setup.json",
+      "setup_sha256": "91a11399f7d03ebb5179eaa500d1a120443a518846788371d29e6222ced3103a",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/DVRPlaceAlgEquiv-receipt.json",
+          "sha256": "31665637ce96a2c51c5051677c04634e914266b17df88b8042a974cc5782524e"
+        }
+      ]
+    },
+    "DVRPlaceLocalUnramifiedValuation.lean": {
+      "source_sha256": "e5c172f7f2ebbbfc281be398f286077facb04d6a554f7f76b9d831bd49786034",
+      "checks": [
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRing_valuation_algebraMap_of_formallyUnramified",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsFractionRing.injective",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.algebraMap_eq",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Module.isTorsionFree_iff_algebraMap_injective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsLocalRing.maximalIdeal_comap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Ideal.ramificationIdx_eq_one",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsDedekindDomain.HeightOneSpectrum.valuation_liesOver",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRing_valuation_eq",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-dvr-place-local-unramified-valuation-receipt.json",
+      "named_receipt_sha256": "927700abd4ac414550a3c46cdea42c1f4364bc3a8475e7ffe81c668a67460d03",
+      "log": "/private/tmp/xyin-y0-dvr-place-local-unramified-valuation.log",
+      "log_sha256": "23d9cb259bf628ca73b9762f2cfc2c4190765f627696bc25d255e0e34c27abbe",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/DVRPlaceLocalUnramifiedValuation.setup.json",
+      "setup_sha256": "27ee776fc7abdb0ac3687c17c7a408379ecb0122e072e52a64b0c94cb5186638",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-dvr-place-local-unramified-valuation-receipt.json",
+          "sha256": "927700abd4ac414550a3c46cdea42c1f4364bc3a8475e7ffe81c668a67460d03"
+        }
+      ]
+    },
+    "DVRPlaceRecovery.lean": {
+      "source_sha256": "a2898ea3380d6620bebb93712d40b26daf59be631e7648134407bb763489d974",
+      "checks": [
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRing_eq_of_algebraMap_mem",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ValuationSubring.eq_of_le_of_ne_top",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Valuation.valuationSubring_isDiscreteValuationRing",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.mem_ofDiscreteValuationRing_iff",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/DVRPlaceRecovery-receipt.json",
+      "named_receipt_sha256": "50188491ad29f8f9325822a776f39a95b69874f9c4d110069c31d669efc7d6c4",
+      "log": "/private/tmp/DVRPlaceRecovery-named.log",
+      "log_sha256": "7b25752b5db4760d69160a8e20fce56865d7b261430769d74ff0ab7404ec4d6b",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/DVRPlaceRecovery.setup.json",
+      "setup_sha256": "8299b15c59c712b67501ba2ee2d02be014acce6a7282371228fe53434863798d",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/DVRPlaceRecovery-receipt.json",
+          "sha256": "50188491ad29f8f9325822a776f39a95b69874f9c4d110069c31d669efc7d6c4"
+        }
+      ]
+    },
+    "FiniteFieldPointClosed.lean": {
+      "source_sha256": "01684af0afa95f5732b06ef6629d6a511b3b95dcc0641cffe9d7f3a1d7621ba6",
+      "checks": [
+        {
+          "name": "AlgebraicGeometry.isClosed_image_of_finite_field",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.IsFinite.of_comp",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.IsFinite.SpecMap_iff",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.finite_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.isClosedMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/FiniteFieldPointClosed-receipt.json",
+      "named_receipt_sha256": "ae511baea1f98b4a707eda4809d16797b96a9a8610c42bf729ed5d8691ff6ff4",
+      "log": "/private/tmp/FiniteFieldPointClosed-named.log",
+      "log_sha256": "10387c4e941d7fe39e704d769192c7876c9b6c6b71974ab1456c0e99cddae713",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/FiniteFieldPointClosed.setup.json",
+      "setup_sha256": "ed50d2355f5e03c0c9cfcc67922ba9cb2cbe11770062dfd577c339d10b03dfd6",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/FiniteFieldPointClosed-receipt.json",
+          "sha256": "ae511baea1f98b4a707eda4809d16797b96a9a8610c42bf729ed5d8691ff6ff4"
+        }
+      ]
+    },
+    "GenericPointOverBase.lean": {
+      "source_sha256": "003005ef864d037a45df3264b153024fc1718b65e530453ed47b8dfc15701b7a",
+      "checks": [
+        {
+          "name": "AlgebraicGeometry.fromSpecFunctionField_comp_structureMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.functionFieldConstants",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.functionFieldBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.fromSpecStalk_appTop",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.\u0393SpecIso_naturality",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.ext_of_isAffine",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-generic-point-over-base-receipt.json",
+      "named_receipt_sha256": "cc46cfd919873cd6a48a69312ea68227bbc2bc044761c2752affe1375c976c9f",
+      "log": "/private/tmp/xyin-y0-generic-point-over-base.log",
+      "log_sha256": "54598f9362d9e98d9c64cafe84b00690707d55b11512ef70919102d2f5943a7c",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/GenericPointOverBase.setup.json",
+      "setup_sha256": "a0a935dc6ff8a218f06462138de032ede4afdac205f64f45e2137b2e268f7bab",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-generic-point-over-base-receipt.json",
+          "sha256": "cc46cfd919873cd6a48a69312ea68227bbc2bc044761c2752affe1375c976c9f"
+        }
+      ]
+    },
+    "IntrinsicPlaceResidueFinite.lean": {
+      "source_sha256": "0459523ce7449ff033434768beedb909ad5df5a9f02ac6d88ff198ab5213aadd",
+      "checks": [
+        {
+          "name": "FunctionField.Place.finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.degree_pos",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.exists_chart",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.finiteResidueAlgEquiv",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.infiniteResidueAlgEquiv",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Chart.PlaceA.finiteDimensionalResidueFieldFinite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Chart.PlaceA.finiteDimensionalResidueFieldInfinite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/IntrinsicPlaceResidueFinite-receipt.json",
+      "named_receipt_sha256": "1ce46ca614ec9c2577a252c01042c58b7e531b4f4df4a6d64cc6249de26922eb",
+      "log": "/private/tmp/IntrinsicPlaceResidueFinite-named.log",
+      "log_sha256": "ff3fbc4c2990cc08904579ad5042029b4bb83f975872dc764ade93a49bbc3346",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/IntrinsicPlaceResidueFinite.setup.json",
+      "setup_sha256": "54c9458c993a17e048d2ed49a423420720c9f3ffa8b6fcd6912b51db0b272cbe",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/IntrinsicPlaceResidueFinite-receipt.json",
+          "sha256": "1ce46ca614ec9c2577a252c01042c58b7e531b4f4df4a6d64cc6249de26922eb"
+        }
+      ]
+    },
+    "NativeCoordinateTowerObstruction.lean": {
+      "source_sha256": "9518c05e4d132ba0247c8a596e572f3489ffc9b4f8345875d2c53777abeb6821",
+      "checks": [
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeFieldRatFunc_finrank",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_coordinateTower_rank_dvd_two",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "WeierstrassCurve.Affine.finrank_ratFunc_eq_two",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Module.finrank_dvd_finrank_left",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_functionField_finrank",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/NativeCoordinateTowerObstruction-receipt.json",
+      "named_receipt_sha256": "92d14cc1474c5c64d7e85695293c78dfccbef62bbeead5c9caf6b80416fc01e0",
+      "log": "/private/tmp/NativeCoordinateTowerObstruction-named.log",
+      "log_sha256": "83dc8c8f04818b1742a42e3cfecae2ccdf5d1ca2473e3050bca9ddd7fa7a0270",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/NativeCoordinateTowerObstruction.setup.json",
+      "setup_sha256": "be5775ee455ebede6674d0f79bfa8623b442a19e7c924c7ad0ab5780a66260fd",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/NativeCoordinateTowerObstruction-receipt.json",
+          "sha256": "92d14cc1474c5c64d7e85695293c78dfccbef62bbeead5c9caf6b80416fc01e0"
+        }
+      ]
+    },
+    "NativePlaceGeometry.lean": {
+      "source_sha256": "d1ffbd6663f9c75d93fbbbee9ee8248c54172070bf9af7c33f97cfa9b4154a13",
+      "checks": [
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_exists_closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.exists_closedPointPlace_eq",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.modelEllipticCurve",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_isSeparable",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-native-place-geometry-receipt.json",
+      "named_receipt_sha256": "5df267b909d0f53c82dfd89a06ac7b65f3ea7a022e516d5887b9f703b9544643",
+      "log": "/private/tmp/xyin-y0-native-place-geometry.log",
+      "log_sha256": "139a21934466eaa1c396941bf66a662db822a256c7d0b95079c4f7566cfc3573",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/NativePlaceGeometry.setup.json",
+      "setup_sha256": "df95917d21a7ab10ba4a56bb369a3093709dfd4666f3a34c8f7b7153a71bc749",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-native-place-geometry-receipt.json",
+          "sha256": "5df267b909d0f53c82dfd89a06ac7b65f3ea7a022e516d5887b9f703b9544643"
+        }
+      ]
+    },
+    "NativePlaceResidueFinite.lean": {
+      "source_sha256": "0032658a38843a6b938c98ba2ffb77e9d6635a4f52a00c401fb28f9a5c886d65",
+      "checks": [
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_place_degree_pos",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_isSeparable",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeFieldPolynomial_baseTower",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeFieldRatFunc_polynomialTower",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Module.finrank_pos",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/NativePlaceResidueFinite-receipt.json",
+      "named_receipt_sha256": "3c069f574252c08d28f1b378905dac160442673d8b37c4f28f1f7a9bbb289ef0",
+      "log": "/private/tmp/NativePlaceResidueFinite-named.log",
+      "log_sha256": "bdbcb80d103447d0d41e47f50b0055cc376481227d9091497ddb939294ff6908",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/NativePlaceResidueFinite.setup.json",
+      "setup_sha256": "87326fb8ee405ddbf9972d7c1d91bbf65ea98614ee9565f513712e38d340510a",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/NativePlaceResidueFinite-receipt.json",
+          "sha256": "3c069f574252c08d28f1b378905dac160442673d8b37c4f28f1f7a9bbb289ef0"
+        }
+      ]
+    },
+    "PlaceCenterStalkSquare.lean": {
+      "source_sha256": "8378448602451a011e8d0a504cedd9dd816d89fc8d98cc5c586566dfd133a986",
+      "checks": [
+        {
+          "name": "AlgebraicGeometry.stalkClosedPointTo_comp_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.stalkClosedPointTo",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Spec_stalkClosedPointTo_fromSpecStalk",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.SpecMap_stalkSpecializes_fromSpecStalk",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.stalkClosedPointTo_fromSpecStalk",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Spec.faithful",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.stalkFunctionFieldAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "CategoryTheory.cancel_mono",
+          "axioms": []
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-place-center-stalk-square-receipt.json",
+      "named_receipt_sha256": "1e89ec3e6710bf901fd9f0f1c12d0bcd04d8f34f176b9c2c7e8505e395e61879",
+      "log": "/private/tmp/xyin-y0-place-center-stalk-square.log",
+      "log_sha256": "8ff55d3239501bd4cc8aa96638e18b170adb9249940b8b75e88ce5ea9381ccea",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/PlaceCenterStalkSquare.setup.json",
+      "setup_sha256": "25e135f8afc4d01062c8f5e4b62b179641cd771c165036e495d5991a4c8451df",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-place-center-stalk-square-receipt.json",
+          "sha256": "1e89ec3e6710bf901fd9f0f1c12d0bcd04d8f34f176b9c2c7e8505e395e61879"
+        }
+      ]
+    },
+    "ProperPlaceClosedCenter.lean": {
+      "source_sha256": "642ea2ad55eaaa8e33015300dd3255f0b740837967ecbc05a649988ec72cbbdf",
+      "checks": [
+        {
+          "name": "AlgebraicGeometry.isClosed_placeLift_center",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.exists_properPlaceLift_closed_center",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.isClosed_image_of_finite_field",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.exists_properPlaceLift",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsLocalRing.PrimeSpectrum.comap_residue",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsLocalRing.ResidueField.algebraMap_eq",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.algebraValuationSubring",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Spec.map_comp",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.comp_apply",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-proper-place-closed-center-receipt.json",
+      "named_receipt_sha256": "d6b01413966e15b3b90913e0cd5f19185c412183d1007524cfa54bd81a4aad3f",
+      "log": "/private/tmp/xyin-y0-proper-place-closed-center.log",
+      "log_sha256": "b3d9dd0d08e9bbe9d4203d79ab6fa455f6b93c5da948bf8e437c17ba1fa4b537",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/ProperPlaceClosedCenter.setup.json",
+      "setup_sha256": "0ce0928b5f50d278fd9eb7b9564109dbdb43f312e87363f9e37a3a688d19bbca",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-proper-place-closed-center-receipt.json",
+          "sha256": "d6b01413966e15b3b90913e0cd5f19185c412183d1007524cfa54bd81a4aad3f"
+        }
+      ]
+    },
+    "ProperPlaceLift.lean": {
+      "source_sha256": "9ad941e93939b95efd3973bab5684ee75907b3742e182938738cd4dbfc0688c1",
+      "checks": [
+        {
+          "name": "AlgebraicGeometry.exists_properPlaceLift",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.fromSpecFunctionField_comp_structureMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.IsProper.eq_valuativeCriterion",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.ValuativeCriterion.existence",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "CategoryTheory.CommSq.HasLift.exists_lift",
+          "axioms": []
+        },
+        {
+          "name": "FunctionField.Place.algebraValuationSubring",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ValuationSubring.algebraMap_apply",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.ValuativeCommSq",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-proper-place-lift-receipt.json",
+      "named_receipt_sha256": "ebb382beebcfd0f398f5ce1f466e429258d6e9327cf865159fbecef9c72a2cc6",
+      "log": "/private/tmp/xyin-y0-proper-place-lift.log",
+      "log_sha256": "58be98288a489662c172c9c14764a6fe1ff8739d554305da9416b67656f1bf04",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/ProperPlaceLift.setup.json",
+      "setup_sha256": "7ff1cbc70a94d494fb8e099ca1d085fa0275e0ac4ab3cf2cbf0a3b11f3c49c30",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-proper-place-lift-receipt.json",
+          "sha256": "ebb382beebcfd0f398f5ce1f466e429258d6e9327cf865159fbecef9c72a2cc6"
+        }
+      ]
+    },
+    "ProperPlaceRecovery.lean": {
+      "source_sha256": "7a8d054c38861b19b36ed71cc8a866c5f9ebb6e94f30c92364732adadde3847d",
+      "checks": [
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace_eq_of_generic_lift",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.exists_closedPointPlace_eq",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.stalkClosedPointTo_comp_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPoint_stalk_isDiscreteValuationRing",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.stalkBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.isScalarTower_stalkBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRing_eq_of_algebraMap_mem",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRing",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.exists_properPlaceLift_closed_center",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ValuationSubring.algebraMap_apply",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.functionFieldBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-proper-place-recovery-receipt.json",
+      "named_receipt_sha256": "b61bca8b3db4bb409e8f79671c88143c74b3299a3e02974bb2a80d33a86be733",
+      "log": "/private/tmp/xyin-y0-proper-place-recovery.log",
+      "log_sha256": "8ea008932dc451b4d140a5eebc90aa1def4b022806bcc17d291ad2b67e663fab",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/ProperPlaceRecovery.setup.json",
+      "setup_sha256": "00e2f2ee7b057d2d8b77747e9581a62c10a07a2f36533720a83edf87c63e574f",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-proper-place-recovery-receipt.json",
+          "sha256": "b61bca8b3db4bb409e8f79671c88143c74b3299a3e02974bb2a80d33a86be733"
+        }
+      ]
+    },
+    "RatFuncParameterScalars.lean": {
+      "source_sha256": "181736a18eb25c66e122498561c0b9af5ee18f7c20ce1a054aae7f1deece809c",
+      "checks": [
+        {
+          "name": "RatFunc.algHomOfTranscendental_polynomialTower",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.of_algHom",
+          "axioms": [
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.of_algebraMap_eq",
+          "axioms": [
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.algebraMap_apply",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/RatFuncParameterScalars-receipt.json",
+      "named_receipt_sha256": "7c85c44fca13c069ad4d958f476cf99c1a8726ca9d8fb27b6b90ce3bb0c643e9",
+      "log": "/private/tmp/RatFuncParameterScalars-named.log",
+      "log_sha256": "5657fe9c3c2cdaa26287c325478dbeda1d48d638fa790855f21bf6843667cfc2",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/RatFuncParameterScalars.setup.json",
+      "setup_sha256": "d4daac11b56312d5ca88bc93019728086f77b2826f154328ae6dada6ca2de624",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/RatFuncParameterScalars-receipt.json",
+          "sha256": "7c85c44fca13c069ad4d958f476cf99c1a8726ca9d8fb27b6b90ce3bb0c643e9"
+        }
+      ]
+    },
+    "RatFuncSubfieldParameter.lean": {
+      "source_sha256": "f5def847425d3ac083c5e85eb0a57276bc695e002fa2ac724278862230622dd7",
+      "checks": [
+        {
+          "name": "RatFunc.algHomOfTranscendental_finite_of_algHom",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.comp_algHomOfTranscendental",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FiniteDimensional.of_injective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.Finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.toAlgebra",
+          "axioms": []
+        },
+        {
+          "name": "RingHom.injective",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.toAlgHom",
+          "axioms": []
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-ratfunc-subfield-parameter-receipt.json",
+      "named_receipt_sha256": "3ba5e312c53a8e6f1906a29addddebb1a1f01120b289846b3cc5b5cd10736bc7",
+      "log": "/private/tmp/xyin-y0-ratfunc-subfield-parameter.log",
+      "log_sha256": "50e2e95103ed625361aae2255bd50adbdc6eb12e943ce1aafc98a81396a0d45d",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/RatFuncSubfieldParameter.setup.json",
+      "setup_sha256": "0915d0f3d5d33f7b6eb99006792c616bdaf3239096b0d3bd554c06eba47b6886",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-ratfunc-subfield-parameter-receipt.json",
+          "sha256": "3ba5e312c53a8e6f1906a29addddebb1a1f01120b289846b3cc5b5cd10736bc7"
+        }
+      ]
+    },
+    "RatFuncTranscendentalParameter.lean": {
+      "source_sha256": "aa9a04b31606780121c0aea2d14ac070217fb9216c13ad1209afee8b9e1a7054",
+      "checks": [
+        {
+          "name": "RatFunc.algHomOfTranscendental",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_X",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_comp_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algEquivOfTranscendental",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algEquivOfTranscendental_X",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algEquivOfTranscendental_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IntermediateField.AdjoinSimple.coe_aeval_gen_apply",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IntermediateField.val",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Algebra.algHom",
+          "axioms": []
+        },
+        {
+          "name": "AlgHom.comp",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-ratfunc-transcendental-parameter-receipt.json",
+      "named_receipt_sha256": "22ba1b22055ac51c8316e9f5bee5472c383b69f25f484a468f44c4e4cf13fa5b",
+      "log": "/private/tmp/xyin-y0-ratfunc-transcendental-parameter.log",
+      "log_sha256": "ca7e00432e08aca8849e04c497ad1bf4db01d79f1b65f8db9a03e9408a283b45",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/RatFuncTranscendentalParameter.setup.json",
+      "setup_sha256": "3b0e5783f683d7fec7dc4e2fa6556537094a429aa3ee9d3e75b5d5ba9e8047a1",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-ratfunc-transcendental-parameter-receipt.json",
+          "sha256": "22ba1b22055ac51c8316e9f5bee5472c383b69f25f484a468f44c4e4cf13fa5b"
+        }
+      ]
+    },
+    "RatFuncTranscendentalParameterFinite.lean": {
+      "source_sha256": "3654ee00691c2ee943809c93f36f44e640b1bb414cfb31e1d7fa175fd20bec4a",
+      "checks": [
+        {
+          "name": "RatFunc.algHomOfTranscendental_finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.comp_algHomOfTranscendental",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.finiteDimensional_of_adjoin_transcendental",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingEquiv.finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.Finite.comp",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.finite_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsLocalization.algHom_ext",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Polynomial.aeval_algHom",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "isAlgebraic_algHom_iff",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.injective",
+          "axioms": [
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_comp_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-ratfunc-transcendental-parameter-finite-receipt.json",
+      "named_receipt_sha256": "30f7a4d63a02c34e6766f3244d1953cec9e83bef0223faa1e36cf5e7113cee76",
+      "log": "/private/tmp/xyin-y0-ratfunc-transcendental-parameter-finite.log",
+      "log_sha256": "bca3455204f9fa77ffcd7bc150920e74198d39afc59d93657f89f1be530bf415",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/RatFuncTranscendentalParameterFinite.setup.json",
+      "setup_sha256": "4f4b654deb4e87bc401424752b87e99819d53daf03fdf69d72dcfcc5b10bbf46",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-ratfunc-transcendental-parameter-finite-receipt.json",
+          "sha256": "30f7a4d63a02c34e6766f3244d1953cec9e83bef0223faa1e36cf5e7113cee76"
+        }
+      ]
+    },
+    "SchemeClosedPointPlaceInjective.lean": {
+      "source_sha256": "6c782a11978e9f793e6d9ebccec966ac4a24076f8ae3fe3edd7ddbbf83ceb39c",
+      "checks": [
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace_injective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift_generic",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift_comp_structureMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift_center",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.IsSeparated.valuativeCriterion",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.ValuativeCommSq",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "CategoryTheory.CommSq.LiftStruct",
+          "axioms": []
+        },
+        {
+          "name": "FunctionField.Place.algebraValuationSubring",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/SchemeClosedPointPlaceInjective-receipt.json",
+      "named_receipt_sha256": "647fe35c4bd0a61104cef0ed145cb8c95002a4feeafc45a386b98150b5d39746",
+      "log": "/private/tmp/SchemeClosedPointPlaceInjective-named.log",
+      "log_sha256": "8ef827fe9ea69b33188cd4e4cbc6cdc25a6982c94bf28a2dc4c67177a5bc9f70",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/SchemeClosedPointPlaceInjective.setup.json",
+      "setup_sha256": "049e4cf2d24f2b1f22704a966245c7d8460bab83ee6839538200fc553eb87c37",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/SchemeClosedPointPlaceInjective-receipt.json",
+          "sha256": "647fe35c4bd0a61104cef0ed145cb8c95002a4feeafc45a386b98150b5d39746"
+        }
+      ]
+    },
+    "SchemeClosedPointPlaceLift.lean": {
+      "source_sha256": "3a0100953f371b3ce7fef56500cc622062c8a9f4488432c3efc7da892262facd",
+      "checks": [
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointStalkAlgEquiv",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift_generic",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift_center",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlaceLift_comp_structureMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRingAlgEquiv",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPoint_stalk_isDiscreteValuationRing",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.isScalarTower_stalkBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.SpecMap_stalkSpecializes_fromSpecStalk",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.fromSpecStalk_closedPoint",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Spec_closedPoint",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsLocalHom.of_surjective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.fromSpecStalk_comp_structureMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgEquiv.commutes",
+          "axioms": [
+            "Quot.sound"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/SchemeClosedPointPlaceLift-receipt.json",
+      "named_receipt_sha256": "c138cacdeadf5cf8a70c7a887834bfbd44a5bf3e6a2e8d93a2083b398e4b4906",
+      "log": "/private/tmp/SchemeClosedPointPlaceLift-named.log",
+      "log_sha256": "dc205f9d221db3b1c408804228072d5c0bdab5571cd3895d5114ff5553c7a469",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/SchemeClosedPointPlaceLift.setup.json",
+      "setup_sha256": "651c09e7087475fb2777eaf72138aa27a674e6627738ac6f8c778861d16bb59d",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/SchemeClosedPointPlaceLift-receipt.json",
+          "sha256": "c138cacdeadf5cf8a70c7a887834bfbd44a5bf3e6a2e8d93a2083b398e4b4906"
+        }
+      ]
+    },
+    "SchemeClosedPointPlaceValuation.lean": {
+      "source_sha256": "b7973f797252817bd15524613b9202a3e7c64d19a96fda3db1f45dfa5b7bfed3",
+      "checks": [
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace_valuation_functionFieldMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.stalkBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.isScalarTower_stalkBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPoint_stalk_isDiscreteValuationRing",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.functionFieldMap_comp_stalkFunctionFieldAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.functionFieldAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.stalkFunctionFieldAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.LocallyOfFiniteType.stalkMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.FormallyUnramified.stalkMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.essFiniteType_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RingHom.formallyUnramified_algebraMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.ofDiscreteValuationRing_valuation_algebraMap_of_formallyUnramified",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.of_algebraMap_eq",
+          "axioms": [
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-scheme-closed-point-place-valuation-receipt.json",
+      "named_receipt_sha256": "a02b77b56cfbb71ef8db4c16927e3eb3ac38ed0e8e98898e809b45156844baeb",
+      "log": "/private/tmp/xyin-y0-scheme-closed-point-place-valuation.log",
+      "log_sha256": "d6fd194d12b9673cf0fd354f0ea33d1c3ca6002cb7995dd96881c69e9d1bfafd",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/SchemeClosedPointPlaceValuation.setup.json",
+      "setup_sha256": "c882775c07e13a9c35abb35021b0ae74f5ac411e260eaf354718b7abf95a0ec9",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-scheme-closed-point-place-valuation-receipt.json",
+          "sha256": "a02b77b56cfbb71ef8db4c16927e3eb3ac38ed0e8e98898e809b45156844baeb"
+        }
+      ]
+    },
+    "StalkPointOverBase.lean": {
+      "source_sha256": "7faeee008a1097ead9c82f6764298b2044825e385fe0eab327ddb784b0843885",
+      "checks": [
+        {
+          "name": "AlgebraicGeometry.fromSpecStalk_comp_structureMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.stalkBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.fromSpecStalk_appTop",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.\u0393SpecIso_naturality",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.ext_of_isAffine",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Spec.map_comp",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/StalkPointOverBase-receipt.json",
+      "named_receipt_sha256": "6b6b53abfb3339dedca608829edb765fd5cac41bf8ba01bade18bce23a7ab285",
+      "log": "/private/tmp/StalkPointOverBase-named.log",
+      "log_sha256": "36aa2065f64469777f3e0c52294581b1c91ac765065d19ef83e1ddfa5e467dfb",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/StalkPointOverBase.setup.json",
+      "setup_sha256": "6033361a008bd1cf3702e1dce16be31dd656450c870f5d53e7110fe295e924f9",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/StalkPointOverBase-receipt.json",
+          "sha256": "6b6b53abfb3339dedca608829edb765fd5cac41bf8ba01bade18bce23a7ab285"
+        }
+      ]
+    },
+    "YZeroCoarseSubgroupQuotientClosedPointPlaceValuation.lean": {
+      "source_sha256": "6e326c78180f6cfb18fb78b6a4c049d8f6726957c48effd9b6838936ed8b8ce0",
+      "checks": [
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_isClosed_singleton",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_closedPointPlace_valuation",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient\u03c0_closedPointPlace_valuation",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.isClosedMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Set.image_singleton",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_isFinite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient\u03c0_isFinite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_isIntegral",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient_isIntegral",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotientS_smoothOfRelativeDimension_one",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotientS_smoothOfRelativeDimension_one",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_surjective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient\u03c0_surjective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_etale",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient\u03c0_etale",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace_valuation_functionFieldMap",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-subgroup-quotient-closed-point-place-valuation-receipt.json",
+      "named_receipt_sha256": "c5aaa6784c32af9da42881d7832f1bd5d1b59020cbd9b09f7524022bc8272eac",
+      "log": "/private/tmp/xyin-y0-subgroup-quotient-closed-point-place-valuation.log",
+      "log_sha256": "1aa5b000f3a073011eddda5187eda3135dad890a9bb30440460f65a01ef06589",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/YZeroCoarseSubgroupQuotientClosedPointPlaceValuation.setup.json",
+      "setup_sha256": "2c4d38d161e7cc8e1c164964c0f094d3cfcdd06134c3ca8fe8d6883f7dd06957",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-subgroup-quotient-closed-point-place-valuation-receipt.json",
+          "sha256": "c5aaa6784c32af9da42881d7832f1bd5d1b59020cbd9b09f7524022bc8272eac"
+        }
+      ]
+    },
+    "YZeroCoarseSubgroupQuotientParameterFinite.lean": {
+      "source_sha256": "5730c620cf0821be975e0d04e7ee07c998b53a2724155a5272f25ddbcc259888",
+      "checks": [
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_parameter_finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient_parameter_finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_finite_of_algHom",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeFieldRatFuncAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeFieldRatFunc_baseTower",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_functionFieldBaseAlgHom",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_isIntegral",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_surjective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.functionFieldBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-subgroup-quotient-parameter-finite-receipt.json",
+      "named_receipt_sha256": "16a98a71682db5e54320ce96fd96e593b4eb5de596ff19c7468f5db59e16e434",
+      "log": "/private/tmp/xyin-y0-subgroup-quotient-parameter-finite.log",
+      "log_sha256": "ad12711cf1b46af5d70c8fb662160336973d53b8b2dcfd4e4466ea51392a00bd",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/YZeroCoarseSubgroupQuotientParameterFinite.setup.json",
+      "setup_sha256": "e088ac36447ccb8120056ace16fea73471b4807218b0dafe374c782758be0497",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-subgroup-quotient-parameter-finite-receipt.json",
+          "sha256": "16a98a71682db5e54320ce96fd96e593b4eb5de596ff19c7468f5db59e16e434"
+        }
+      ]
+    },
+    "YZeroCoarseSubgroupQuotientParameterFunctionField.lean": {
+      "source_sha256": "4eee237db83cd3f6aec44a8d3fd82e1e5028b3939f94f20f6149d34586758649",
+      "checks": [
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_parameter_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient_parameter_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_parameter_isSeparable",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient_parameter_isSeparable",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_parameter_finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "RatFunc.algHomOfTranscendental_polynomialTower",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "IsScalarTower.of_algHom",
+          "axioms": [
+            "propext"
+          ]
+        },
+        {
+          "name": "Algebra.IsAlgebraic.of_finite",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Algebra.IsAlgebraic.isSeparable_of_perfectField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "PerfectField.ofCharZero",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.functionFieldBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-subgroup-quotient-parameter-function-field-receipt.json",
+      "named_receipt_sha256": "088b8f84957e3b0ffc6d02c3293ab300ff8e2ed1601cd2b728742013a32064bb",
+      "log": "/private/tmp/xyin-y0-subgroup-quotient-parameter-function-field.log",
+      "log_sha256": "af1ba75782438b323914b6a54a01506c80ec6fe30da6ffa770c154f3df0c56f2",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/YZeroCoarseSubgroupQuotientParameterFunctionField.setup.json",
+      "setup_sha256": "4c6efc643c7ac09f5c98cf8e2cf91fbf990c4c2224ed7251d62a2ff4ea25d757",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-subgroup-quotient-parameter-function-field-receipt.json",
+          "sha256": "088b8f84957e3b0ffc6d02c3293ab300ff8e2ed1601cd2b728742013a32064bb"
+        }
+      ]
+    },
+    "YZeroCoarseSubgroupQuotientPlaceGeometry.lean": {
+      "source_sha256": "755fd186e3efbd29ea5f4f2d2eea0948bc62a21d49c7ec8b54ee7c6444a42e3d",
+      "checks": [
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_exists_closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient_exists_closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_isIntegral",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotientS_smoothOfRelativeDimension_one",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotientS_isProper",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_place_finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.exists_closedPointPlace_eq",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularPolynomialCurveTest.AINTLIB.LocalValuation.closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.functionFieldBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-subgroup-quotient-place-geometry-receipt.json",
+      "named_receipt_sha256": "a1b955982c91c611976e1e18bfefcf78c712db0fbf0ca0bd962b74e99a1b4405",
+      "log": "/private/tmp/xyin-y0-subgroup-quotient-place-geometry.log",
+      "log_sha256": "7b3451ee2090578a23bb492d503a90232f47116cf673748aaf90620e78bd76ba",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/YZeroCoarseSubgroupQuotientPlaceGeometry.setup.json",
+      "setup_sha256": "412c41783aee74264bdff1468fb95b92c46b026a9c666ed30370b1873c74e264",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-subgroup-quotient-place-geometry-receipt.json",
+          "sha256": "a1b955982c91c611976e1e18bfefcf78c712db0fbf0ca0bd962b74e99a1b4405"
+        }
+      ]
+    },
+    "YZeroCoarseSubgroupQuotientPlaceResidueFinite.lean": {
+      "source_sha256": "463f1169ef893930c0a22aa273087c63fccfce2bad5d2c7165ea722c46eadbd8",
+      "checks": [
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_place_finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient_place_finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_place_degree_pos",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient_place_degree_pos",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_exists_transcendental",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_parameter_functionField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_parameter_isSeparable",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "FunctionField.Place.finite_residueField",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "Module.finrank_pos",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "AlgebraicGeometry.Scheme.Hom.functionFieldBaseAlgebra",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/xyin-y0-subgroup-quotient-place-residue-finite-receipt.json",
+      "named_receipt_sha256": "f8d186a78a7dd9717cc0026a75a46bfcac0c9e0f20bf4cfdba83e560d86314ea",
+      "log": "/private/tmp/xyin-y0-subgroup-quotient-place-residue-finite.log",
+      "log_sha256": "a563438107e41e11a0c6e318d4e67c7e1440e390d4e61f53341a6052ad234130",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/YZeroCoarseSubgroupQuotientPlaceResidueFinite.setup.json",
+      "setup_sha256": "74ce0369ee771c30bfa293a2568c10117dab1409bf1ef908b55c806719354c02",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/xyin-y0-subgroup-quotient-place-residue-finite-receipt.json",
+          "sha256": "f8d186a78a7dd9717cc0026a75a46bfcac0c9e0f20bf4cfdba83e560d86314ea"
+        }
+      ]
+    },
+    "YZeroCoarseSubgroupQuotientPlaceRestriction.lean": {
+      "source_sha256": "885cfd8cc12645b14548972e1dd49b846b119cfa1e83088ec6c2eb85e5b24e6f",
+      "checks": [
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_exists_place_valuation",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.quotient\u03c0_exists_place_valuation",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.YZeroCoarseJ.nativeField_exists_closedPointPlace",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_closedPointPlace_valuation",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_isClosed_singleton",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient_isIntegral",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotient\u03c0_surjective",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        },
+        {
+          "name": "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.gluedQuotientS_smoothOfRelativeDimension_one",
+          "axioms": [
+            "Classical.choice",
+            "Quot.sound",
+            "propext"
+          ]
+        }
+      ],
+      "examples": 2,
+      "named_receipt": "/private/tmp/YZeroCoarseSubgroupQuotientPlaceRestriction-receipt.json",
+      "named_receipt_sha256": "e231d8d3aae7536c60fb97b32ff4fe775e95f9eea36da65e2ba625f2ccf517c6",
+      "log": "/private/tmp/YZeroCoarseSubgroupQuotientPlaceRestriction-named.log",
+      "log_sha256": "599df4feab87f056ada22ed85a5a791e89fd82ef6715bf27168232a6be8500ea",
+      "setup": "/private/tmp/xyin-y0-aintlib-work/YZeroCoarseSubgroupQuotientPlaceRestriction.setup.json",
+      "setup_sha256": "ef06bffe05f5e9f0292d567ffad7f9d663b1f5461a2793458a4457f858b9795e",
+      "closed_exit_zero_recorded": true,
+      "all_matching_named_receipts": [
+        {
+          "path": "/private/tmp/YZeroCoarseSubgroupQuotientPlaceRestriction-receipt.json",
+          "sha256": "e231d8d3aae7536c60fb97b32ff4fe775e95f9eea36da65e2ba625f2ccf517c6"
+        }
+      ]
+    }
+  },
+  "module_count": 27,
+  "check_count": 236,
+  "example_count": 54
+}

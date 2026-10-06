@@ -1,0 +1,879 @@
+{
+  "verified_at_utc": "2026-10-04T01:02:42.944757+00:00",
+  "aintlib_revision": "ab1451487da02cd4483d0e2cdb2cc9e44bbbac17",
+  "mathlib_revision": "300d0e535721bc098547106fc297d8ba2a63f6bb",
+  "toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_version": "Lake version 5.0.0-src+470d5ce (Lean version 4.35.0-rc3)",
+  "targets": [
+    "AINTLIBDrafts.ComplexPointSeparation",
+    "AINTLIBDrafts.FieldGeometricJ",
+    "AINTLIBDrafts.GeometricJ",
+    "AINTLIBDrafts.ModelGeometricJ",
+    "AINTLIBDrafts.UpstreamAudit",
+    "AINTLIBDrafts.YZeroCoarseAxisGenerator",
+    "AINTLIBDrafts.YZeroCoarseClassifierPointIso",
+    "AINTLIBDrafts.YZeroCoarseComplexPointOrbits",
+    "AINTLIBDrafts.YZeroCoarseComplexPoints",
+    "AINTLIBDrafts.YZeroCoarseConstantAxis",
+    "AINTLIBDrafts.YZeroCoarseEllIsoHomOver",
+    "AINTLIBDrafts.YZeroCoarseFineComplexPoints",
+    "AINTLIBDrafts.YZeroCoarseFiniteType",
+    "AINTLIBDrafts.YZeroCoarseHomOverClassifiers",
+    "AINTLIBDrafts.YZeroCoarseInvariantSpec",
+    "AINTLIBDrafts.YZeroCoarseJ",
+    "AINTLIBDrafts.YZeroCoarseJInvariants",
+    "AINTLIBDrafts.YZeroCoarseMarkedComplexCurves",
+    "AINTLIBDrafts.YZeroCoarseMarkingClassifiers",
+    "AINTLIBDrafts.YZeroCoarseNativeClasses",
+    "AINTLIBDrafts.YZeroCoarseNativeRoundtrip",
+    "AINTLIBDrafts.YZeroCoarsePointLifting",
+    "AINTLIBDrafts.YZeroCoarsePointOrbits",
+    "AINTLIBDrafts.YZeroCoarseProjection",
+    "AINTLIBDrafts.YZeroCoarseReduced",
+    "AINTLIBDrafts.YZeroCoarseSourceJPolynomial",
+    "AINTLIBDrafts.YZeroCoarseSourceJSurjective"
+  ],
+  "source_sha256": {
+    "ComplexPointSeparation.lean": "406bd753e4276a1395e86231462eff211d81b767c29cf6b66106cf0f6e84e185",
+    "FieldGeometricJ.lean": "992743897a441e98d94799d3b12cc134a0d99ce6c24014a35fa7bc4974a4a9a3",
+    "GeometricJ.lean": "793f538cbce3c240093eb813612ce0fe03d801a478730198bdd487206435a9b9",
+    "ModelGeometricJ.lean": "2c852d800ab7ba165e1eef8d879b41a76d555bbb82b22c43a8165b85ef939ef7",
+    "UpstreamAudit.lean": "ac4045a15f6f917dcefa7705421313be1ba87817bd9307a47068e72e758648cf",
+    "YZeroCoarseAxisGenerator.lean": "d102529f57067ea5c5bb5eb2478551c2097c32a102cea007284aa233dd43b31f",
+    "YZeroCoarseClassifierPointIso.lean": "3ea4c8b5b922cb56253c24be6668a5763b52d1f53f63cdeb536238af7de8522e",
+    "YZeroCoarseComplexPointOrbits.lean": "1748d03839445c539ee36dab3726c771bd8b7a79d015b39ebe4a76dbfa338ac1",
+    "YZeroCoarseComplexPoints.lean": "5ff63d37a9ebb1eb61517a2c5a5e30f13cd6eeacc8425169fd0283c2570e2b83",
+    "YZeroCoarseConstantAxis.lean": "9e12d3f519116c86e09e9d52cdf5f22caa3f6eaf11c6e1c916b27960fe8a3072",
+    "YZeroCoarseEllIsoHomOver.lean": "17023dc57e5fd6b912e0e2516b24483a2fa06b9675747d0ccb92d62290369220",
+    "YZeroCoarseFineComplexPoints.lean": "1ba0db31b8273ae6a42f37e45dcb2ef1e3642718d491ad721d5e83225c02c9b3",
+    "YZeroCoarseFiniteType.lean": "bccad4edd7456c4b5f1f43111fab1a2e1829e5a4aca6651f57e4c0c67a0bec22",
+    "YZeroCoarseHomOverClassifiers.lean": "cbd657598d8d85a28a8ed30928888fd5e0c716d4314f35fb39294ee308581f65",
+    "YZeroCoarseInvariantSpec.lean": "12da3edb94512c89cd04f3ee9826595ca22bee77632e2e6c021bf34e10ebb0cf",
+    "YZeroCoarseJ.lean": "4077accf5d4f35961bef7f7938ec5b8c998673c276511678c80e91fb27e48f4a",
+    "YZeroCoarseJInvariants.lean": "e97b21ce1b4e88f2a68b0d0354294c8f7ee7923409a8967a240253088abde2e5",
+    "YZeroCoarseMarkedComplexCurves.lean": "f8bb25f74e3b3d10868794d02e2c09be90f56738361570602733213116c28bda",
+    "YZeroCoarseMarkingClassifiers.lean": "a5f2207e5493c363e7a6524c9ada1f3caa04c9452ed389f8d3be5d77c9b318d1",
+    "YZeroCoarseNativeClasses.lean": "90353b439ca8098e902eaed1cc32dce37ab59166727ce4f6ad40fcb415b0339b",
+    "YZeroCoarseNativeRoundtrip.lean": "38b4f33a1c91525ab22cbb816c65c4389a87ca6a9fb5d55b65b0507db4807f9a",
+    "YZeroCoarsePointLifting.lean": "51431ee27ab7c5a93fa07bf09340b7039b0e605d43e58e0eedb09431b25cd1ae",
+    "YZeroCoarsePointOrbits.lean": "20f8b19dd1e78eb5952cf1eee72829f4fd78200df6ee3620ca2a86ba0856a27a",
+    "YZeroCoarseProjection.lean": "c1ea5d95caa335e73d896e8a513339c0be83d74df4325041b29b08f189d874b0",
+    "YZeroCoarseReduced.lean": "e0031ac120a0273284cc0c0e19ddb58f046026f896b1e2d10a0c8d513c843424",
+    "YZeroCoarseSourceJPolynomial.lean": "544862a397e5cc6fb79643414f3de4daaed5ece4fee7b7ef8b9906f09be0ece5",
+    "YZeroCoarseSourceJSurjective.lean": "9c7d77aba7b8d1b5bd6aa5ef4739194f75d9bb391d437d38e70a11c0690d8760"
+  },
+  "source_file_count": 27,
+  "sanity_example_count": 33,
+  "sources_changed_during_build": [],
+  "target_sources_changed_during_build": [],
+  "source_inventory_changed_during_build": false,
+  "per_module_checks": {
+    "ComplexPointSeparation.lean": {
+      "expected_axiom_check_count": 4,
+      "observed_axiom_check_count": 4,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.eq_of_forall_algHom_eq",
+        "ModularPolynomialCurveTest.AINTLIB.eq_zero_of_forall_algHom_eq_zero",
+        "ModularPolynomialCurveTest.AINTLIB.eq_zero_of_forall_complex_algHom_eq_zero",
+        "ModularPolynomialCurveTest.AINTLIB.exists_algHom_ker_eq_of_isMaximal"
+      ],
+      "diagnostics": []
+    },
+    "FieldGeometricJ.lean": {
+      "expected_axiom_check_count": 6,
+      "observed_axiom_check_count": 6,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularCurves.YZeroCoarseJ.fieldTopAffineOpen",
+        "ModularCurves.YZeroCoarseJ.fieldTopPresentation",
+        "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel",
+        "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel_isElliptic",
+        "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel_j",
+        "ModularCurves.YZeroCoarseJ.nonempty_fieldTopPresentation"
+      ],
+      "diagnostics": []
+    },
+    "GeometricJ.lean": {
+      "expected_axiom_check_count": 6,
+      "observed_axiom_check_count": 6,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularCurves.YZeroCoarseJ.chartJ_eq",
+        "ModularCurves.YZeroCoarseJ.existsUnique_jSection",
+        "ModularCurves.YZeroCoarseJ.jMap_comp_base",
+        "ModularCurves.YZeroCoarseJ.jMap_naturality",
+        "ModularCurves.YZeroCoarseJ.jMap_pullback_X",
+        "ModularCurves.YZeroCoarseJ.jMap_pullback_hom"
+      ],
+      "diagnostics": []
+    },
+    "ModelGeometricJ.lean": {
+      "expected_axiom_check_count": 2,
+      "observed_axiom_check_count": 2,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularCurves.YZeroCoarseJ.modelTopPresentation",
+        "ModularCurves.YZeroCoarseJ.model_jSection"
+      ],
+      "diagnostics": []
+    },
+    "UpstreamAudit.lean": {
+      "expected_axiom_check_count": 7,
+      "observed_axiom_check_count": 7,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "AlgebraicGeometry.SchemeAction.existsUnique_relQuotientπ_lift",
+        "CategoryTheory.Functor.RepresentableBy.coarsePr_existsUnique_lift",
+        "ModularCurves.ModuliProblem.gammaFullNaive_isAffineHom_structMap",
+        "ModularCurves.YZeroCoarse",
+        "ModularCurves.gammaFullNaive_rigid_and_representable",
+        "ModularCurves.xFullNaive",
+        "ModularCurves.xFullNaiveRepr"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseAxisGenerator.lean": {
+      "expected_axiom_check_count": 26,
+      "observed_axiom_check_count": 26,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "AlgebraicGeometry.Scheme.Hom.ker_comp_of_isIso",
+        "AlgebraicGeometry.Scheme.IdealSheafData.ker_subschemeι",
+        "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.isCyclic_of_generator",
+        "ModularCurves.EllipticCurve.Section.HasExactOrder.baseChange",
+        "ModularCurves.EllipticCurve.Section.orderDivisor_baseChange",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisSection_factors_orderDivisor",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisSubgroup_divisor_ideal",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisSubgroup_isCyclic",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.firstSection_hasExactOrder",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointFirstSection_hasExactOrder",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_hasRank",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_isCyclic",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_subgroup",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_ι",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift_isIso",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift_ι",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift_π",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderIndex_multiple",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_hasRank",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_isCyclic",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_subgroup",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_ι",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.yZeroComplexSchemePoint_lifts_withGammaZeroStructure"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseClassifierPointIso.lean": {
+      "expected_axiom_check_count": 5,
+      "observed_axiom_check_count": 5,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "CategoryTheory.eqToIso",
+        "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingIsoOfPointEq",
+        "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingIsoOfPointEq_level",
+        "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingNativeIso_level",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointLevel_eqToIso"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseComplexPointOrbits.lean": {
+      "expected_axiom_check_count": 10,
+      "observed_axiom_check_count": 10,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexAlgebraPointOfScheme_borelTransform",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelOrbitEquivYZero",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelOrbitEquivYZero_mk",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelOrbitSetoid",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelTransform",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfBorelOrbit",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfBorelOrbit_bijective",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfBorelOrbit_mk",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfFull_eq_iff_borel",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfFull_eq_ofAlgebra"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseComplexPoints.lean": {
+      "expected_axiom_check_count": 5,
+      "observed_axiom_check_count": 5,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexAlgebraSchemePointEquiv",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariant_eq_of_forall_algHom_eq",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariant_eq_zero_of_forall_algHom_eq_zero",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_eq",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_of_algebra"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseConstantAxis.lean": {
+      "expected_axiom_check_count": 28,
+      "observed_axiom_check_count": 28,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisInclusion_comp_specIso",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisInclusion_fullLevelHom",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisInclusion_isClosedImmersion",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisPoint_add",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisPoint_range_iff_factoring",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.complexLevelNIsInvertible",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_finrank",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_flat",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_isFinite",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_lfp",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup_hasKillingInt",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup_hasRank",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup_ι",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis_factors_killed",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis_isClosedImmersion",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis_pointImage_isSubgroup",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointTorsionAxis_ι",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisSubgroup",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisSubgroup_hasKillingInt",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisSubgroup_hasRank",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_factors_killed",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_isClosedImmersion",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_mulByHom",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_pointImage_isSubgroup",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.torsionAxis_ι",
+        "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.torsionAxis_π"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseEllIsoHomOver.lean": {
+      "expected_axiom_check_count": 11,
+      "observed_axiom_check_count": 11,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [
+        "CategoryTheory.CommSq.w",
+        "CategoryTheory.Iso.hom_inv_id",
+        "CategoryTheory.Iso.inv_hom_id"
+      ],
+      "audited_declarations": [
+        "CategoryTheory.CommSq.w",
+        "CategoryTheory.Iso.hom_inv_id",
+        "CategoryTheory.Iso.inv_hom_id",
+        "ModularCurves.EllHom.zero_w",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_complexHomOverOfEllIso",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHom_baseHom_eq_id",
+        "ModularPolynomialCurveTest.AINTLIB.complexHomOverOfEllIso",
+        "ModularPolynomialCurveTest.AINTLIB.complexHomOverOfEllIso_hom",
+        "ModularPolynomialCurveTest.AINTLIB.complexHomOverOfEllIso_isIso",
+        "ModularPolynomialCurveTest.AINTLIB.complexTotalIsoOfEllIso"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseFineComplexPoints.lean": {
+      "expected_axiom_check_count": 11,
+      "observed_axiom_check_count": 11,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexAlgebraSchemePointEquiv",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointEllObj_structMap",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointLevel",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointLevel_eq_pullback",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointWeierstrassModel_isElliptic",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfAlgebra",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfAlgebra_comp_yZeroPr",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfFull_comp_sourceJ",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePoint_lifts",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_eq_weierstrassModel",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_of_full"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseFiniteType.lean": {
+      "expected_axiom_check_count": 13,
+      "observed_axiom_check_count": 13,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.fullObject_structMap_smooth",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRing_finiteType",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRing_isNoetherianRing",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexStruct_finiteType",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexStruct_locallyOfFiniteType",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantCoefficientHom_comp_inclusion",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantCoefficientHom_finiteType",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRing_finiteType",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRing_isNoetherianRing",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRingι_isIntegral",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroStruct_finiteType",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroStruct_locallyOfFiniteType",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroStruct_quasiCompact"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseHomOverClassifiers.lean": {
+      "expected_axiom_check_count": 7,
+      "observed_axiom_check_count": 7,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "CategoryTheory.IsPullback.of_horiz_isIso",
+        "ModularCurves.EllHom.pullSection",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_baseHom",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_pullSection_comp",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_pullSection_eq_iff",
+        "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_top"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseInvariantSpec.lean": {
+      "expected_axiom_check_count": 5,
+      "observed_axiom_check_count": 5,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.AffineInvariantQuotient.relQuotientπ_comp_invariantSpecIso_hom",
+        "ModularPolynomialCurveTest.AINTLIB.AffineInvariantQuotient.sectionsIso_hom_comp_inclusion",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantSpecIso",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroPr_comp_invariantSpecIso_hom",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroSectionsIso_hom_comp_inclusion"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseJ.lean": {
+      "expected_axiom_check_count": 10,
+      "observed_axiom_check_count": 10,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularCurves.YZeroCoarseJ.chartJ_eq",
+        "ModularCurves.YZeroCoarseJ.existsUnique_jSection",
+        "ModularCurves.YZeroCoarseJ.jMap_comp_base",
+        "ModularCurves.YZeroCoarseJ.jMap_naturality",
+        "ModularCurves.YZeroCoarseJ.jMap_pullback_X",
+        "ModularCurves.YZeroCoarseJ.jMap_pullback_hom",
+        "ModularCurves.YZeroCoarseJ.yZeroPr_sourceJ_pullback_X_res_chart",
+        "ModularCurves.YZeroCoarseJ.yZeroSourceJ",
+        "ModularCurves.YZeroCoarseJ.yZeroSourceJ_comp_base",
+        "ModularCurves.YZeroCoarseJ.yZeroThreeComplexSourceJ"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseJInvariants.lean": {
+      "expected_axiom_check_count": 7,
+      "observed_axiom_check_count": 7,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantCoefficients_comp_inclusion",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantSpecIso_hom_comp_base",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantSpecIso_hom_comp_sourceJ",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomialHom_X",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomial_C",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomial_comp_inclusion",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroSectionsIso_sourceJ_X"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseMarkedComplexCurves.lean": {
+      "expected_axiom_check_count": 9,
+      "observed_axiom_check_count": 9,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularCurves.exists_isNaiveFullLevel_of_isAlgClosed",
+        "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingNativeIso",
+        "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingNativeIso_level",
+        "ModularPolynomialCurveTest.AINTLIB.exists_yZeroComplexSchemePoint_sourceJ_eq",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking",
+        "ModularPolynomialCurveTest.AINTLIB.nonempty_complexFullMarking",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfMarking",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfMarking_comp_sourceJ",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_of_marking"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseMarkingClassifiers.lean": {
+      "expected_axiom_check_count": 2,
+      "observed_axiom_check_count": 2,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking_glSmul",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking_map"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseNativeClasses.lean": {
+      "expected_axiom_check_count": 13,
+      "observed_axiom_check_count": 13,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularCurves.GammaHClasses",
+        "ModularCurves.GammaHClasses.mk",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_mk",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_sourceJ_mk",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_symm_of_full",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_symm_of_lift",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_symm_of_marking",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_injective",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_mk",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_sourceJ_mk",
+        "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_surjective"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseNativeRoundtrip.lean": {
+      "expected_axiom_check_count": 4,
+      "observed_axiom_check_count": 4,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointIdentityHom",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointIdentityHom_level",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexPointIdentityHom_pullSection",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking_native"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarsePointLifting.lean": {
+      "expected_axiom_check_count": 3,
+      "observed_axiom_check_count": 3,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.exists_algHom_comp_eq_of_injective_integral",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexAlgebraPoint_lifts",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantInclusion"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarsePointOrbits.lean": {
+      "expected_axiom_check_count": 3,
+      "observed_axiom_check_count": 3,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.PointOrbit.algHom_eq_of_ker_eq",
+        "ModularPolynomialCurveTest.AINTLIB.PointOrbit.invariant_restriction_eq_iff_orbit",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRestriction_eq_iff_borel"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseProjection.lean": {
+      "expected_axiom_check_count": 5,
+      "observed_axiom_check_count": 5,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRingι_finite",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroPr_appTop_eq_zero_iff",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroPr_appTop_injective",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroPr_isFinite",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroPr_surjective"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseReduced.lean": {
+      "expected_axiom_check_count": 10,
+      "observed_axiom_check_count": 10,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.ReducednessDescent.isReduced_of_etale_over_domain",
+        "ModularPolynomialCurveTest.AINTLIB.ReducednessDescent.isReduced_of_smooth_over_domain",
+        "ModularPolynomialCurveTest.AINTLIB.fullBase_isReduced",
+        "ModularPolynomialCurveTest.AINTLIB.fullCoefficientHom_smooth",
+        "ModularPolynomialCurveTest.AINTLIB.fullComplexSections_isReduced",
+        "ModularPolynomialCurveTest.AINTLIB.fullSections_isReduced",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroCoarse_isReduced",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexCoarse_isReduced",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRing_isReduced",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRing_isReduced"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseSourceJPolynomial.lean": {
+      "expected_axiom_check_count": 3,
+      "observed_axiom_check_count": 3,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularPolynomialCurveTest.AINTLIB.sourceJ_polynomial_eval",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomialHom_complex_eq_zero_iff",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomialHom_complex_injective"
+      ],
+      "diagnostics": []
+    },
+    "YZeroCoarseSourceJSurjective.lean": {
+      "expected_axiom_check_count": 3,
+      "observed_axiom_check_count": 3,
+      "observed_axioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "axiom_free_declarations": [],
+      "audited_declarations": [
+        "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel_model_j",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantJValue_surjective",
+        "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_surjective"
+      ],
+      "diagnostics": []
+    }
+  },
+  "module_check_failures": [],
+  "strict_lean_options": {
+    "autoImplicit": false,
+    "relaxedAutoImplicit": false
+  },
+  "build_exit_code": 0,
+  "sorryAx_in_build_output": false,
+  "observed_axioms": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "audited_declarations": [
+    "AlgebraicGeometry.Scheme.Hom.ker_comp_of_isIso",
+    "AlgebraicGeometry.Scheme.IdealSheafData.ker_subschemeι",
+    "AlgebraicGeometry.SchemeAction.existsUnique_relQuotientπ_lift",
+    "CategoryTheory.CommSq.w",
+    "CategoryTheory.Functor.RepresentableBy.coarsePr_existsUnique_lift",
+    "CategoryTheory.IsPullback.of_horiz_isIso",
+    "CategoryTheory.Iso.hom_inv_id",
+    "CategoryTheory.Iso.inv_hom_id",
+    "CategoryTheory.eqToIso",
+    "ModularCurves.EllHom.pullSection",
+    "ModularCurves.EllHom.zero_w",
+    "ModularCurves.EllipticCurve.FiniteLocallyFreeSubgroup.isCyclic_of_generator",
+    "ModularCurves.EllipticCurve.Section.HasExactOrder.baseChange",
+    "ModularCurves.EllipticCurve.Section.orderDivisor_baseChange",
+    "ModularCurves.GammaHClasses",
+    "ModularCurves.GammaHClasses.mk",
+    "ModularCurves.ModuliProblem.gammaFullNaive_isAffineHom_structMap",
+    "ModularCurves.YZeroCoarse",
+    "ModularCurves.YZeroCoarseJ.chartJ_eq",
+    "ModularCurves.YZeroCoarseJ.existsUnique_jSection",
+    "ModularCurves.YZeroCoarseJ.fieldTopAffineOpen",
+    "ModularCurves.YZeroCoarseJ.fieldTopPresentation",
+    "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel",
+    "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel_isElliptic",
+    "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel_j",
+    "ModularCurves.YZeroCoarseJ.fieldWeierstrassModel_model_j",
+    "ModularCurves.YZeroCoarseJ.jMap_comp_base",
+    "ModularCurves.YZeroCoarseJ.jMap_naturality",
+    "ModularCurves.YZeroCoarseJ.jMap_pullback_X",
+    "ModularCurves.YZeroCoarseJ.jMap_pullback_hom",
+    "ModularCurves.YZeroCoarseJ.modelTopPresentation",
+    "ModularCurves.YZeroCoarseJ.model_jSection",
+    "ModularCurves.YZeroCoarseJ.nonempty_fieldTopPresentation",
+    "ModularCurves.YZeroCoarseJ.yZeroPr_sourceJ_pullback_X_res_chart",
+    "ModularCurves.YZeroCoarseJ.yZeroSourceJ",
+    "ModularCurves.YZeroCoarseJ.yZeroSourceJ_comp_base",
+    "ModularCurves.YZeroCoarseJ.yZeroThreeComplexSourceJ",
+    "ModularCurves.exists_isNaiveFullLevel_of_isAlgClosed",
+    "ModularCurves.gammaFullNaive_rigid_and_representable",
+    "ModularCurves.xFullNaive",
+    "ModularCurves.xFullNaiveRepr",
+    "ModularPolynomialCurveTest.AINTLIB.AffineInvariantQuotient.relQuotientπ_comp_invariantSpecIso_hom",
+    "ModularPolynomialCurveTest.AINTLIB.AffineInvariantQuotient.sectionsIso_hom_comp_inclusion",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisInclusion_comp_specIso",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisInclusion_fullLevelHom",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisInclusion_isClosedImmersion",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisPoint_add",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisPoint_range_iff_factoring",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisSection_factors_orderDivisor",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisSubgroup_divisor_ideal",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.axisSubgroup_isCyclic",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.complexLevelNIsInvertible",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_finrank",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_flat",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_isFinite",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.constProjection_lfp",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.firstSection_hasExactOrder",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup_hasKillingInt",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup_hasRank",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxisSubgroup_ι",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis_factors_killed",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis_isClosedImmersion",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointAxis_pointImage_isSubgroup",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointFirstSection_hasExactOrder",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_hasRank",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_isCyclic",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_subgroup",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointGammaZeroStructure_ι",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.fullComplexPointTorsionAxis_ι",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift_isIso",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift_ι",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderDivisorAxisLift_π",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.orderIndex_multiple",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_hasRank",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_isCyclic",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_subgroup",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisGammaZeroStructure_ι",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisSubgroup",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisSubgroup_hasKillingInt",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxisSubgroup_hasRank",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_factors_killed",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_isClosedImmersion",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_mulByHom",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.sectionAxis_pointImage_isSubgroup",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.torsionAxis_ι",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.torsionAxis_π",
+    "ModularPolynomialCurveTest.AINTLIB.ConstantAxis.yZeroComplexSchemePoint_lifts_withGammaZeroStructure",
+    "ModularPolynomialCurveTest.AINTLIB.PointOrbit.algHom_eq_of_ker_eq",
+    "ModularPolynomialCurveTest.AINTLIB.PointOrbit.invariant_restriction_eq_iff_orbit",
+    "ModularPolynomialCurveTest.AINTLIB.ReducednessDescent.isReduced_of_etale_over_domain",
+    "ModularPolynomialCurveTest.AINTLIB.ReducednessDescent.isReduced_of_smooth_over_domain",
+    "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver",
+    "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_baseHom",
+    "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_complexHomOverOfEllIso",
+    "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_pullSection_comp",
+    "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_pullSection_eq_iff",
+    "ModularPolynomialCurveTest.AINTLIB.complexEllHomOfHomOver_top",
+    "ModularPolynomialCurveTest.AINTLIB.complexEllHom_baseHom_eq_id",
+    "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingIsoOfPointEq",
+    "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingIsoOfPointEq_level",
+    "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingNativeIso",
+    "ModularPolynomialCurveTest.AINTLIB.complexFullMarkingNativeIso_level",
+    "ModularPolynomialCurveTest.AINTLIB.complexHomOverOfEllIso",
+    "ModularPolynomialCurveTest.AINTLIB.complexHomOverOfEllIso_hom",
+    "ModularPolynomialCurveTest.AINTLIB.complexHomOverOfEllIso_isIso",
+    "ModularPolynomialCurveTest.AINTLIB.complexTotalIsoOfEllIso",
+    "ModularPolynomialCurveTest.AINTLIB.eq_of_forall_algHom_eq",
+    "ModularPolynomialCurveTest.AINTLIB.eq_zero_of_forall_algHom_eq_zero",
+    "ModularPolynomialCurveTest.AINTLIB.eq_zero_of_forall_complex_algHom_eq_zero",
+    "ModularPolynomialCurveTest.AINTLIB.exists_algHom_comp_eq_of_injective_integral",
+    "ModularPolynomialCurveTest.AINTLIB.exists_algHom_ker_eq_of_isMaximal",
+    "ModularPolynomialCurveTest.AINTLIB.exists_yZeroComplexSchemePoint_sourceJ_eq",
+    "ModularPolynomialCurveTest.AINTLIB.fullBase_isReduced",
+    "ModularPolynomialCurveTest.AINTLIB.fullCoefficientHom_smooth",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexAlgebraPointOfScheme_borelTransform",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexAlgebraSchemePointEquiv",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelOrbitEquivYZero",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelOrbitEquivYZero_mk",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelOrbitSetoid",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexBorelTransform",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointEllObj_structMap",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointIdentityHom",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointIdentityHom_level",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointIdentityHom_pullSection",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointLevel",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointLevel_eqToIso",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointLevel_eq_pullback",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexPointWeierstrassModel_isElliptic",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfAlgebra",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfAlgebra_comp_yZeroPr",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking_glSmul",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking_map",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexSchemePointOfMarking_native",
+    "ModularPolynomialCurveTest.AINTLIB.fullComplexSections_isReduced",
+    "ModularPolynomialCurveTest.AINTLIB.fullObject_structMap_smooth",
+    "ModularPolynomialCurveTest.AINTLIB.fullSections_isReduced",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_mk",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_sourceJ_mk",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_symm_of_full",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_symm_of_lift",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPointEquiv_symm_of_marking",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_injective",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_mk",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_sourceJ_mk",
+    "ModularPolynomialCurveTest.AINTLIB.gammaHClassesComplexPoint_surjective",
+    "ModularPolynomialCurveTest.AINTLIB.nonempty_complexFullMarking",
+    "ModularPolynomialCurveTest.AINTLIB.sourceJ_polynomial_eval",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroCoarse_isReduced",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexAlgebraPoint_lifts",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexAlgebraSchemePointEquiv",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexCoarse_isReduced",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantInclusion",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantJValue_surjective",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRestriction_eq_iff_borel",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRing_finiteType",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRing_isNoetherianRing",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariantRing_isReduced",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariant_eq_of_forall_algHom_eq",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexInvariant_eq_zero_of_forall_algHom_eq_zero",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfBorelOrbit",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfBorelOrbit_bijective",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfBorelOrbit_mk",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfFull_comp_sourceJ",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfFull_eq_iff_borel",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfFull_eq_ofAlgebra",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfMarking",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePointOfMarking_comp_sourceJ",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSchemePoint_lifts",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_eq",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_eq_weierstrassModel",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_of_algebra",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_of_full",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_of_marking",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexSourceJValue_surjective",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexStruct_finiteType",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroComplexStruct_locallyOfFiniteType",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantCoefficientHom_comp_inclusion",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantCoefficientHom_finiteType",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantCoefficients_comp_inclusion",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRing_finiteType",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRing_isNoetherianRing",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRing_isReduced",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRingι_finite",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantRingι_isIntegral",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantSpecIso",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantSpecIso_hom_comp_base",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroInvariantSpecIso_hom_comp_sourceJ",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomialHom_X",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomialHom_complex_eq_zero_iff",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomialHom_complex_injective",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomial_C",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroJPolynomial_comp_inclusion",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroPr_appTop_eq_zero_iff",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroPr_appTop_injective",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroPr_comp_invariantSpecIso_hom",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroPr_isFinite",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroPr_surjective",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroSectionsIso_hom_comp_inclusion",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroSectionsIso_sourceJ_X",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroStruct_finiteType",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroStruct_locallyOfFiniteType",
+    "ModularPolynomialCurveTest.AINTLIB.yZeroStruct_quasiCompact"
+  ],
+  "axiom_free_declarations": [
+    "CategoryTheory.CommSq.w",
+    "CategoryTheory.Iso.hom_inv_id",
+    "CategoryTheory.Iso.inv_hom_id"
+  ],
+  "unexpected_axioms": [],
+  "expected_axiom_check_count": 218,
+  "observed_axiom_check_count": 218,
+  "bridge_diagnostics": [],
+  "build_log": "/private/tmp/xyin-y0-aintlib-work/yzero-bridge-build.log"
+}

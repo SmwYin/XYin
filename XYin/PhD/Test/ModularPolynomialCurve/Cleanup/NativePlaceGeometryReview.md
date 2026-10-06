@@ -1,0 +1,9 @@
+# Native closed-point representation: independent named review
+
+**PASS.** Read the full 66-line retained `NativePlaceGeometry.lean`, the actual native residue-finiteness wrapper, full seven-print named log, setup and receipt. This is a read-only review of the newly composed representation leaf, in addition to the separate full proper-place-recovery review. No compiler or Lean edits.
+
+The actual native `E.π.functionFieldBaseAlgebra` is fixed before both residue-finiteness and proper recovery are applied. `nativeField_finite_residueField E v` supplies the genuine finite-residue premise, so the endpoint does not assume residue finiteness. The existing proper smooth-curve theorem supplies an actual closed point and equality of its intrinsic place with `v`. The native-curve and actual Weierstrass-model examples use those same interfaces. No point injectivity, converse classification, quotient genus, or place bijection is claimed. This review does not repeat every upstream parameter-pack proof; the full named endpoint and printed exact native inputs have only the standard three axioms.
+
+The accepted 47-line expose suffix is byte-exact and retained/work copies agree. Owner **96105 CLOSED exit 0** is confirmed by the owner and `/private/tmp/xyin-y0-native-place-geometry-receipt.json`. Full named log independently parsed as seven exact standard-three prints, two APIs and no diagnostics. Setup uses the correct module name, false implicit flags and empty plugins/dynlibs.
+
+Recomputed source `d1ffbd6663f9c75d93fbbbee9ee8248c54172070bf9af7c33f97cfa9b4154a13`, setup `df95917d21a7ab10ba4a56bb369a3093709dfd4666f3a34c8f7b7153a71bc749`, and log `139a21934466eaa1c396941bf66a662db822a256c7d0b95079c4f7566cfc3573` match the receipt. All six canonical artifact hashes/sizes and C match: **16464 / 7096 / 1696 / 5943 / 1568 / 176**, C **3434** bytes. No issue identified.

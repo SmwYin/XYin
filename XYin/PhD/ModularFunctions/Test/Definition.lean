@@ -3,7 +3,7 @@ Copyright (c) 2026 The XYin contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
-import Mathlib.Geometry.Manifold.Notation
+import XYin.PhD.ModularFunctions.ManifoldMeromorphic
 import Mathlib.NumberTheory.ModularForms.Basic
 import XYin.PhD.ModularFunctions.MeromorphicField
 import XYin.PhD.ModularFunctions.Cusps
@@ -11,8 +11,8 @@ import XYin.PhD.ModularFunctions.Cusps
 /-!
 # Test: manifold-level meromorphy and the definition of modular functions
 
-Nothing imports this file. It records the proposed mathlib-facing definitions and checks them
-against the pinned mathlib and the existing repository API.
+This isolated prototype records a bundled-class interface and checks it against the production
+manifold and cusp predicates. Its namespace keeps it separate from the production bundle.
 
 ## Contents
 
@@ -37,150 +37,10 @@ open scoped Manifold MatrixGroups ModularForm Topology
 
 noncomputable section
 
-/-! ## 1. Meromorphy on a space charted over `ℂ` -/
+/-! The independent manifold predicates and the all-weight growth API are now production
+modules. This remaining prototype adds a `ModularFunctionClass` interface. -/
 
-section Manifold
-
-variable {M : Type*} [TopologicalSpace M] [ChartedSpace ℂ M]
-
-/-- `f : M → ℂ` is meromorphic at `x`, read in the preferred chart at `x`. -/
-def MMeromorphicAt (f : M → ℂ) (x : M) : Prop :=
-  MeromorphicAt (f ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x)
-
-/-- `f : M → ℂ` is meromorphic in normal form at `x`, read in the preferred chart at `x`. -/
-def MMeromorphicNFAt (f : M → ℂ) (x : M) : Prop :=
-  MeromorphicNFAt (f ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x)
-
-/-- `f : M → ℂ` is meromorphic at every point. -/
-def MMeromorphic (f : M → ℂ) : Prop := ∀ x, MMeromorphicAt f x
-
-/-- `f : M → ℂ` is meromorphic in normal form at every point. -/
-def MMeromorphicNF (f : M → ℂ) : Prop := ∀ x, MMeromorphicNFAt f x
-
-/-- The order of `f : M → ℂ` at `x`, read in the preferred chart at `x`. -/
-def mmeromorphicOrderAt (f : M → ℂ) (x : M) : WithTop ℤ :=
-  meromorphicOrderAt (f ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x)
-
-variable {f : M → ℂ} {x : M}
-
-theorem MMeromorphicNFAt.mmeromorphicAt (hf : MMeromorphicNFAt f x) : MMeromorphicAt f x :=
-  MeromorphicNFAt.meromorphicAt hf
-
-theorem MMeromorphicNF.mmeromorphic (hf : MMeromorphicNF f) : MMeromorphic f :=
-  fun x ↦ (hf x).mmeromorphicAt
-
-theorem MMeromorphicNFAt.mmeromorphicOrderAt_nonneg_iff_analyticAt (hf : MMeromorphicNFAt f x) :
-    0 ≤ mmeromorphicOrderAt f x ↔
-      AnalyticAt ℂ (f ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) :=
-  MeromorphicNFAt.meromorphicOrderAt_nonneg_iff_analyticAt hf
-
-end Manifold
-
-/-! ## 2. The upper half-plane -/
-
-namespace UpperHalfPlane
-
-/-- The preferred chart of `ℍ` is the inclusion into `ℂ`. -/
-theorem chartAt_eq (τ : ℍ) : chartAt ℂ τ = isOpenEmbedding_coe.toOpenPartialHomeomorph _ := rfl
-
-/-- The inverse of the preferred chart of `ℍ` is `ofComplex`. -/
-theorem chartAt_symm_eq_ofComplex (τ : ℍ) : (chartAt ℂ τ).symm = ofComplex := rfl
-
-theorem extChartAt_symm_eq_ofComplex (τ : ℍ) : ⇑(extChartAt 𝓘(ℂ) τ).symm = ofComplex := by
-  rw [extChartAt_coe_symm, modelWithCornersSelf_coe_symm, chartAt_symm_eq_ofComplex,
-    Function.comp_id]
-
-theorem extChartAt_apply_eq_coe (τ : ℍ) : extChartAt 𝓘(ℂ) τ τ = (τ : ℂ) := by
-  rw [extChartAt_coe]
-  rfl
-
-variable {f : ℍ → ℂ} {τ : ℍ}
-
-theorem mmeromorphicAt_iff : MMeromorphicAt f τ ↔ MeromorphicAt (f ∘ ofComplex) τ := by
-  rw [MMeromorphicAt, extChartAt_symm_eq_ofComplex, extChartAt_apply_eq_coe]
-
-theorem mmeromorphicNFAt_iff : MMeromorphicNFAt f τ ↔ MeromorphicNFAt (f ∘ ofComplex) τ := by
-  rw [MMeromorphicNFAt, extChartAt_symm_eq_ofComplex, extChartAt_apply_eq_coe]
-
-theorem mmeromorphicOrderAt_eq :
-    mmeromorphicOrderAt f τ = meromorphicOrderAt (f ∘ ofComplex) τ := by
-  rw [mmeromorphicOrderAt, extChartAt_symm_eq_ofComplex, extChartAt_apply_eq_coe]
-
-/-- The analogue of `mdifferentiable_iff` for meromorphy in normal form. -/
-theorem mmeromorphicNF_iff :
-    MMeromorphicNF f ↔ MeromorphicNFOn (f ∘ ofComplex) upperHalfPlaneSet :=
-  ⟨fun h z hz ↦ mmeromorphicNFAt_iff.1 (h ⟨z, hz⟩), fun h τ ↦ mmeromorphicNFAt_iff.2 (h τ.im_pos)⟩
-
-theorem mmeromorphic_iff : MMeromorphic f ↔ MeromorphicOn (f ∘ ofComplex) upperHalfPlaneSet :=
-  ⟨fun h z hz ↦ mmeromorphicAt_iff.1 (h ⟨z, hz⟩), fun h τ ↦ mmeromorphicAt_iff.2 (h τ τ.im_pos)⟩
-
-/-- Holomorphic functions on `ℍ` are meromorphic in normal form. -/
-theorem _root_.MDifferentiable.mmeromorphicNF (hf : MDiff f) : MMeromorphicNF f :=
-  mmeromorphicNF_iff.2 hf.meromorphicNFOn_comp_ofComplex
-
-/-- A function on `ℍ` is holomorphic iff it is meromorphic in normal form without poles. -/
-theorem mdifferentiable_iff_mmeromorphicNF :
-    MDiff f ↔ MMeromorphicNF f ∧ ∀ τ : ℍ, 0 ≤ mmeromorphicOrderAt f τ := by
-  refine ⟨fun hf ↦ ⟨hf.mmeromorphicNF, fun τ ↦ ?_⟩, fun ⟨hNF, hord⟩ τ ↦ ?_⟩
-  · rw [mmeromorphicOrderAt_eq,
-      (mmeromorphicNFAt_iff.1 (hf.mmeromorphicNF τ)).meromorphicOrderAt_nonneg_iff_analyticAt]
-    exact (mdifferentiable_iff.1 hf).analyticOnNhd isOpen_upperHalfPlaneSet τ τ.im_pos
-  · rw [mdifferentiableAt_iff]
-    refine ((mmeromorphicNFAt_iff.1 (hNF τ)).meromorphicOrderAt_nonneg_iff_analyticAt.1
-      ?_).differentiableAt
-    rw [← mmeromorphicOrderAt_eq]
-    exact hord τ
-
-end UpperHalfPlane
-
-/-! ## 3. Growth at cusps, in every weight -/
-
-namespace OnePoint
-
-/-- At most exponential growth at the cusp `c` in weight `k`: for every `g` with `g • ∞ = c`, the
-function `f ∣[k] g` has at most exponential growth at `∞`. Mirrors `OnePoint.IsBoundedAt`. -/
-def IsExpBoundedAt (c : OnePoint ℝ) (f : ℍ → ℂ) (k : ℤ) : Prop :=
-  ∀ g : GL (Fin 2) ℝ, g • ∞ = c → IsOfExponentialGrowth (f ∣[k] g)
-
-variable {c : OnePoint ℝ} {f f' : ℍ → ℂ} {k k' : ℤ} {g : GL (Fin 2) ℝ}
-
-/-- At weight `0`, this is the repository's growth condition. -/
-theorem isExpBoundedAt_zero_iff : IsExpBoundedAt c f 0 ↔ IsOfExponentialGrowthAt c f :=
-  Iff.rfl
-
-theorem IsExpBoundedAt.smul_iff :
-    IsExpBoundedAt (g • c) f k ↔ IsExpBoundedAt c (f ∣[k] g) k := by
-  rw [IsExpBoundedAt, IsExpBoundedAt, (Equiv.mulLeft g⁻¹).forall_congr_left]
-  simp [mul_smul, ← SlashAction.slash_mul]
-
-theorem isExpBoundedAt_infty_iff : IsExpBoundedAt ∞ f k ↔ IsOfExponentialGrowth f :=
-  ⟨fun h ↦ by simpa using h 1 (by simp), fun h _ hg ↦ h.slash (smul_infty_eq_self_iff.mp hg)⟩
-
-/-- One scaling matrix is enough to test the growth condition at a cusp. -/
-theorem isExpBoundedAt_iff (hg : g • ∞ = c) :
-    IsExpBoundedAt c f k ↔ IsOfExponentialGrowth (f ∣[k] g) :=
-  ⟨fun hc ↦ hc g hg, by simp [← hg, IsExpBoundedAt.smul_iff, isExpBoundedAt_infty_iff]⟩
-
-theorem IsBoundedAt.isExpBoundedAt (h : IsBoundedAt c f k) : IsExpBoundedAt c f k :=
-  fun g hg ↦ IsOfExponentialGrowth.of_isBoundedAtImInfty (h g hg)
-
-theorem IsExpBoundedAt.add (hf : IsExpBoundedAt c f k) (hf' : IsExpBoundedAt c f' k) :
-    IsExpBoundedAt c (f + f') k :=
-  fun g hg ↦ by simpa only [SlashAction.add_slash] using (hf g hg).add (hf' g hg)
-
-theorem IsExpBoundedAt.neg (hf : IsExpBoundedAt c f k) : IsExpBoundedAt c (-f) k :=
-  fun g hg ↦ by simpa only [SlashAction.neg_slash] using (hf g hg).neg
-
-/-- The product of functions of weights `k` and `k'` has weight `k + k'`. -/
-theorem IsExpBoundedAt.mul (hf : IsExpBoundedAt c f k) (hf' : IsExpBoundedAt c f' k') :
-    IsExpBoundedAt c (f * f') (k + k') := fun g hg ↦ by
-  rw [ModularForm.mul_slash]
-  exact ((hf g hg).mul (hf' g hg)).smul _
-
-theorem isExpBoundedAt_const (a : ℂ) : IsExpBoundedAt c (fun _ ↦ a) 0 :=
-  IsOfExponentialGrowthAt.const a
-
-end OnePoint
+namespace ModularFunctionPrototype
 
 /-! ## 4. Modular functions -/
 
@@ -365,5 +225,7 @@ example (f : ModularFunction 𝒮ℒ) {c : OnePoint ℝ} (hc : IsCusp c 𝒮ℒ)
   f.meromorphic_at_cusps hc
 
 end Checks
+
+end ModularFunctionPrototype
 
 end

@@ -100,6 +100,27 @@ theorem isOfExponentialGrowthAt_iff_isMeromorphicAt
     obtain ⟨h, hh, hper, hmer⟩ := hm g hg
     exact isOfExponentialGrowth_of_meromorphicAt_cuspFunction hh hper hmer
 
+/-- The weight-zero exponential cusp condition is meromorphy in any positive-period
+q-coordinate. -/
+theorem isExpBoundedAt_zero_iff_meromorphicAt_cuspFunction
+    {c : OnePoint ℝ} {f : ℍ → ℂ}
+    (hf : MeromorphicNFOn (f ∘ ofComplex) upperHalfPlaneSet)
+    {g : GL (Fin 2) ℝ} (hg : g • ∞ = c) {h : ℝ} (hh : 0 < h)
+    (hper : Periodic ((f ∣[(0 : ℤ)] g) ∘ ofComplex) h) :
+    c.IsExpBoundedAt f 0 ↔ MeromorphicAt (cuspFunction h (f ∣[(0 : ℤ)] g)) 0 :=
+  IsExpBoundedAt.iff_at_zero.trans
+    (isOfExponentialGrowthAt_iff_meromorphicAt_cuspFunction hf hg hh hper)
+
+/-- For a canonical slash-invariant function on a discrete group with determinants in `{±1}`,
+the period-free weight-zero exponential condition equals the usual meromorphic cusp condition. -/
+theorem isExpBoundedAt_zero_iff_isMeromorphicAt
+    {Γ : Subgroup (GL (Fin 2) ℝ)} [DiscreteTopology Γ] [Γ.HasDetPlusMinusOne]
+    (f : SlashInvariantForm Γ 0)
+    (hf : MeromorphicNFOn ((f : ℍ → ℂ) ∘ ofComplex) upperHalfPlaneSet)
+    {c : OnePoint ℝ} (hc : IsCusp c Γ) :
+    c.IsExpBoundedAt f 0 ↔ c.IsMeromorphicAt f :=
+  IsExpBoundedAt.iff_at_zero.trans (isOfExponentialGrowthAt_iff_isMeromorphicAt f hf hc)
+
 /-- The reciprocal of a canonical slash-invariant meromorphic function with exponential growth
 at a cusp has exponential growth at that cusp. The group assumptions ensure positive periods in
 cusp charts. -/
@@ -126,5 +147,16 @@ theorem exponential_growth_at_cusps_iff
       ∀ c, IsCusp c Γ → c.IsMeromorphicAt f :=
   forall_congr' fun _ ↦ forall_congr' fun hc ↦
     OnePoint.isOfExponentialGrowthAt_iff_isMeromorphicAt f hf hc
+
+/-- The modular-function cusp field can equivalently be given by the usual q-coordinate
+meromorphy condition. -/
+theorem exp_bounded_at_cusps_zero_iff
+    {Γ : Subgroup (GL (Fin 2) ℝ)} [DiscreteTopology Γ] [Γ.HasDetPlusMinusOne]
+    (f : SlashInvariantForm Γ 0)
+    (hf : MeromorphicNFOn ((f : ℍ → ℂ) ∘ ofComplex) upperHalfPlaneSet) :
+    (∀ c, IsCusp c Γ → c.IsExpBoundedAt f 0) ↔
+      ∀ c, IsCusp c Γ → c.IsMeromorphicAt f :=
+  forall_congr' fun _ ↦ forall_congr' fun hc ↦
+    OnePoint.isExpBoundedAt_zero_iff_isMeromorphicAt f hf hc
 
 end SlashInvariantForm

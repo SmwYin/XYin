@@ -4,16 +4,19 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
 import XYin.PhD.ModularFunctions.MeromorphicField
+import XYin.PhD.ModularFunctions.ManifoldMeromorphic
 import XYin.PhD.ModularFunctions.Cusps
 import Mathlib.NumberTheory.ModularForms.SlashInvariantForms
 
 /-!
 # Modular functions
 
-A modular function is a weight-zero slash-invariant function which is the canonical
-representative of an element of the meromorphic function field on the upper half-plane,
-and which has at most exponential growth at every cusp. As in `ModularForm`, growth is
-uniform on a sufficiently high half-plane and is tested after every scaling transformation.
+A modular function is a weight-zero slash-invariant function which is meromorphic in normal
+form on the upper half-plane and has at most exponential growth at every cusp.
+The analytic condition is the independent predicate `MMeromorphicNF` on the function itself;
+its element of the meromorphic function field is constructed afterwards. As in `ModularForm`,
+growth is uniform on a sufficiently high half-plane and is tested after every scaling
+transformation.
 The definition of growth does not choose a period or cusp width.
 
 Canonical representatives remove arbitrary values at removable singularities and assign zero
@@ -40,10 +43,10 @@ noncomputable section
 /-- A weight-zero modular function, realized as a canonical meromorphic representative with
 at most exponential growth at all cusps. -/
 structure ModularFunction (Γ : Subgroup (GL (Fin 2) ℝ)) extends SlashInvariantForm Γ 0 where
-  /-- The underlying function is the canonical representative of a meromorphic field element. -/
-  meromorphic' : ∃ a : MeromorphicField, MeromorphicField.toFun a = toFun
+  /-- The underlying function is meromorphic in normal form in manifold charts. -/
+  meromorphic' : MMeromorphicNF toFun
   /-- Every cusp transform grows at most exponentially, uniformly in its real part. -/
-  bdd_at_cusps' {c : OnePoint ℝ} (hc : IsCusp c Γ) : c.IsOfExponentialGrowthAt toFun
+  bdd_at_cusps' {c : OnePoint ℝ} (hc : IsCusp c Γ) : c.IsExpBoundedAt toFun 0
 
 namespace ModularFunction
 
@@ -68,17 +71,22 @@ theorem coe_mk (f : SlashInvariantForm Γ 0) (h₁ h₂) :
 theorem ext {f g : ModularFunction Γ} (h : ∀ τ, f τ = g τ) : f = g := DFunLike.ext f g h
 
 /-- The ambient meromorphic function field element represented by a modular function. -/
-def toMeromorphicField (f : ModularFunction Γ) : MeromorphicField := f.meromorphic'.choose
+def toMeromorphicField (f : ModularFunction Γ) : MeromorphicField :=
+  MeromorphicField.ofMeromorphic f (mmeromorphicNF_iff.1 f.meromorphic').meromorphicOn
 
 /-- The field element's canonical representative is exactly the bundled function. -/
 @[simp]
 theorem toFun_toMeromorphicField (f : ModularFunction Γ) :
-    MeromorphicField.toFun f.toMeromorphicField = f := f.meromorphic'.choose_spec
+    MeromorphicField.toFun f.toMeromorphicField = f :=
+  MeromorphicField.toFun_ofMeromorphic (mmeromorphicNF_iff.1 f.meromorphic')
+
+/-- The analytic predicate is imposed directly on the underlying function. -/
+theorem meromorphicNF (f : ModularFunction Γ) : MMeromorphicNF f := f.meromorphic'
 
 /-- Modular functions have meromorphic normal form throughout the upper half-plane. -/
 theorem meromorphicNFOn (f : ModularFunction Γ) :
     MeromorphicNFOn (f ∘ ofComplex) upperHalfPlaneSet :=
-  (MeromorphicField.meromorphicNFOn_iff_exists f).mpr f.meromorphic'
+  mmeromorphicNF_iff.1 f.meromorphic'
 
 /-- In particular, a modular function is meromorphic at every point of the upper half-plane. -/
 theorem meromorphicOn (f : ModularFunction Γ) :
@@ -102,12 +110,12 @@ theorem toMeromorphicField_injective :
 
 /-- The growth condition of a modular function at a specified cusp. -/
 theorem bdd_at_cusps (f : ModularFunction Γ) {c : OnePoint ℝ} (hc : IsCusp c Γ) :
-    c.IsOfExponentialGrowthAt f := f.bdd_at_cusps' hc
+    c.IsExpBoundedAt f 0 := f.bdd_at_cusps' hc
 
 /-- A modular function is meromorphic at every cusp, in the usual q-coordinate sense. -/
 theorem meromorphic_at_cusps [DiscreteTopology Γ] [Γ.HasDetPlusMinusOne]
     (f : ModularFunction Γ) {c : OnePoint ℝ} (hc : IsCusp c Γ) : c.IsMeromorphicAt f :=
-  (OnePoint.isOfExponentialGrowthAt_iff_isMeromorphicAt f.toSlashInvariantForm
+  (OnePoint.isExpBoundedAt_zero_iff_isMeromorphicAt f.toSlashInvariantForm
     f.meromorphicNFOn hc).mp (f.bdd_at_cusps hc)
 
 /-- Meromorphy in any chosen positive-period chart of a cusp. -/
@@ -115,7 +123,7 @@ theorem meromorphicAt_cuspFunction (f : ModularFunction Γ) {c : OnePoint ℝ}
     (hc : IsCusp c Γ) {g : GL (Fin 2) ℝ} (hg : g • OnePoint.infty = c)
     {h : ℝ} (hh : 0 < h) (hper : Function.Periodic ((f ∣[(0 : ℤ)] g) ∘ ofComplex) h) :
     MeromorphicAt (cuspFunction h (f ∣[(0 : ℤ)] g)) 0 :=
-  (OnePoint.isOfExponentialGrowthAt_iff_meromorphicAt_cuspFunction
+  (OnePoint.isExpBoundedAt_zero_iff_meromorphicAt_cuspFunction
     f.meromorphicNFOn hg hh hper).mp (f.bdd_at_cusps hc)
 
 end ModularFunction
@@ -141,7 +149,7 @@ def ofLevelOneCuspData (f : ℍ → ℂ) (hf : MeromorphicNFOn (f ∘ ofComplex)
   slash_action_eq' := by
     rintro _ ⟨γ, rfl⟩
     exact hinv γ
-  meromorphic' := (MeromorphicField.meromorphicNFOn_iff_exists f).mp hf
+  meromorphic' := mmeromorphicNF_iff.2 hf
   bdd_at_cusps' hc := OnePoint.isOfExponentialGrowthAt_of_forall_SL2Z (fun γ ↦ by
     rw [hinv γ]
     exact isOfExponentialGrowth_of_meromorphicAt_cuspFunction one_pos

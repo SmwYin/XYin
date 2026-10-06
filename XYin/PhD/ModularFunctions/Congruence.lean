@@ -92,7 +92,7 @@ def ofGamma0CuspData (N : ℕ+) (f : ℍ → ℂ)
   slash_action_eq' := by
     rintro _ ⟨γ, hγ, rfl⟩
     exact hinv ⟨γ, hγ⟩
-  meromorphic' := (MeromorphicField.meromorphicNFOn_iff_exists f).mp hf
+  meromorphic' := mmeromorphicNF_iff.2 hf
   bdd_at_cusps' hc := OnePoint.isOfExponentialGrowthAt_of_forall_sl2 (h := (N : ℝ))
     (Nat.cast_pos.mpr N.pos) (fun γ ↦ by
       simpa only [Function.comp_def, ofReal_natCast] using

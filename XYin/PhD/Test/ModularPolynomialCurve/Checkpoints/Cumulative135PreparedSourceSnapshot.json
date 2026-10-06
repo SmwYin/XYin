@@ -1,0 +1,718 @@
+{
+  "prepared_at_utc": "2026-10-04T09:12:25.679506+00:00",
+  "prepared_source_only": true,
+  "inspected_rebuilding_artifacts": false,
+  "root_source_freeze_confirmation_required": true,
+  "preparation_script": "/private/tmp/PrepareCumulativePost99.py",
+  "preparation_script_sha256": "0dc4f1a29ac66377d6c2d0e3212a5b249f03e593b48d3672f3b339054898b34f",
+  "module_count": 135,
+  "check_count": 1263,
+  "example_count": 258,
+  "source_sha256": {
+    "ClosedPointStalkDVR.lean": "91cbf00e6ce879a63e2859d72e29350997ac7d5b35c15af8916e843f80563f9b",
+    "ComplexPointSeparation.lean": "406bd753e4276a1395e86231462eff211d81b767c29cf6b66106cf0f6e84e185",
+    "DVRPlace.lean": "a196e5ae617763dab2ad013710837f9c607839683bacaa2c9ef3d1128c6039cc",
+    "DVRPlaceAlgEquiv.lean": "3f7dd678600c4b94a2ef6149995af4a5a6c0a121fbc7548d78fc232aa5bd7b2c",
+    "DVRPlaceLocalUnramifiedValuation.lean": "e5c172f7f2ebbbfc281be398f286077facb04d6a554f7f76b9d831bd49786034",
+    "DVRPlaceRecovery.lean": "a2898ea3380d6620bebb93712d40b26daf59be631e7648134407bb763489d974",
+    "DVRPlaceValuation.lean": "363064091ddbb4c011cbb04a463f6108fd36137672e061cdba5044169d7c4b2a",
+    "FaithfullyFlatIntegrallyClosed.lean": "cd0f08a00a140cf385cdca23abd63e9de33d3fac30517c207d3c9bdda8a0f6aa",
+    "FieldGeometricJ.lean": "992743897a441e98d94799d3b12cc134a0d99ce6c24014a35fa7bc4974a4a9a3",
+    "FiniteFieldPointClosed.lean": "01684af0afa95f5732b06ef6629d6a511b3b95dcc0641cffe9d7f3a1d7621ba6",
+    "FiniteFlatFunctionFieldDegree.lean": "6405935361d6aa44a1ef735f01d67adb3e7eadb967ed3d60f5ee5142ec5708e4",
+    "FiniteFunctionField.lean": "d592c0357c72b40265574b3c825b28caa7f70c8576ba41115dd0aa4fbe9279cc",
+    "FinsuppFiniteFiberPullback.lean": "c0f43e6848629ec55baa6b9c0e8ded5d81a2d794599e5c03ce51311136288a2c",
+    "FlatStalkIntegrallyClosed.lean": "eeb8dff44ff15fefee3ef470d5981f960975f0d31c263f509c3d429cd4363c16",
+    "FullConstantFieldDescent.lean": "7b2a23551d481abffbe796ba104f3854c3a5dc31817dd7d38c8f5db63e52eb05",
+    "FunctionFieldBaseAlgebra.lean": "9e32357342d395c82e82fe61d3e50f21519633b237a1514495e9c44e5d81dd59",
+    "FunctionFieldConstantsNaturality.lean": "eb8ffff2be247e9b8bc74b648934467ef55638cc010f74925c7861667fd76391",
+    "FunctionFieldEtale.lean": "606a5fc9a92e13126b5a1c6c91ae67af1e7a3b9ed1b5b391f31c854a11f4d8e3",
+    "FunctionFieldFormallyUnramified.lean": "f0cf34fc727048d6d4fdc330c45ba34823126ebf31e5da6e75a30434c4bbf893",
+    "GenericPointOverBase.lean": "003005ef864d037a45df3264b153024fc1718b65e530453ed47b8dfc15701b7a",
+    "GeometricJ.lean": "793f538cbce3c240093eb813612ce0fe03d801a478730198bdd487206435a9b9",
+    "IntegrallyClosedLocalizationCover.lean": "49bb58dfd5dfb31c9b6fc5e7b135683c305eecff5600bf12a8395de689d0329c",
+    "IntrinsicPlaceResidueFinite.lean": "0459523ce7449ff033434768beedb909ad5df5a9f02ac6d88ff198ab5213aadd",
+    "LocallySmoothIntegrallyClosed.lean": "fe56a5c6e67640283afabbc037c7ab87fc3f32568ff21f4abeffafad275f15f5",
+    "ModelGeometricJ.lean": "2c852d800ab7ba165e1eef8d879b41a76d555bbb82b22c43a8165b85ef939ef7",
+    "NativeChartIntegrallyClosed.lean": "5dabad8f5112068192c01d41752d576ca100754af24166027d8b290682b2ccd0",
+    "NativeCoordinateFractionField.lean": "f0d3c86b5cc1c789a1bddc804eff12ab186321fb45f36ece0f10527961d4cdfa",
+    "NativeCoordinateTowerObstruction.lean": "9518c05e4d132ba0247c8a596e572f3489ffc9b4f8345875d2c53777abeb6821",
+    "NativeFieldFunctionFieldAlgEquiv.lean": "4d15b82bc3f21e158601d8b0453e75a970204d0521118399a1d6ec2d63e141b5",
+    "NativeFieldFunctionFieldEquiv.lean": "6771234f92f3eaaeb376d9c859c3510d329da00b35de351292e76b3d9aba3ebe",
+    "NativeFieldWeierstrassModel.lean": "925aea83b165dbfbc6fd6bf3df9477535c1dc3b07833ffd4dbf6ce7fddf3d7ab",
+    "NativeFullConstantField.lean": "40450b851f2f20fae22ea6c982a68c57c2e7548981b81c87e5c4c6be4c2eeefd",
+    "NativeFunctionFieldStructure.lean": "42ebb05904d7254234d78ca199d34ae829c8f2afb0b273821301904d9a8e7d23",
+    "NativeGenus.lean": "26f006dc6ef42e7adba7bfa4ac033fafc6b936c70372b3ca0d34c4ef9de2296e",
+    "NativePatchBaseField.lean": "8c094ea8885c68da06bd2e96af380098b85728fa5fea12b3c64049236c2e54c3",
+    "NativePlaceGeometry.lean": "d1ffbd6663f9c75d93fbbbee9ee8248c54172070bf9af7c33f97cfa9b4154a13",
+    "NativePlaceResidueFinite.lean": "0032658a38843a6b938c98ba2ffb77e9d6635a4f52a00c401fb28f9a5c886d65",
+    "NativePolynomialScalars.lean": "1b95aec71cd122011ad0fca7a142fbe8eb5a65d8610ca389464143d598b0971a",
+    "NativeRatFuncScalars.lean": "b57878716090858304375d3e75c5d05864ae192b216ab84d3b2a6b3bd045e22f",
+    "PlaceCenterStalkSquare.lean": "8378448602451a011e8d0a504cedd9dd816d89fc8d98cc5c586566dfd133a986",
+    "PrincipalDivisorPullback.lean": "76effc965b8be75b79fbadd383004a16461d3303a476b4563f12d0e081183de2",
+    "PrincipalDivisorValuation.lean": "0513a0cdc400a6ed2efd77f21fc5770111846e47b09dc42b6b31bef51c276e86",
+    "ProjModelFunctionFieldConstants.lean": "2855cec94626258f833472b78c9f59d46b3416140313493336e273b6b5d0d7f7",
+    "ProperPlaceClosedCenter.lean": "642ea2ad55eaaa8e33015300dd3255f0b740837967ecbc05a649988ec72cbbdf",
+    "ProperPlaceLift.lean": "9ad941e93939b95efd3973bab5684ee75907b3742e182938738cd4dbfc0688c1",
+    "ProperPlaceRecovery.lean": "7a8d054c38861b19b36ed71cc8a866c5f9ebb6e94f30c92364732adadde3847d",
+    "RatFuncParameterScalars.lean": "181736a18eb25c66e122498561c0b9af5ee18f7c20ce1a054aae7f1deece809c",
+    "RatFuncSubfieldParameter.lean": "f5def847425d3ac083c5e85eb0a57276bc695e002fa2ac724278862230622dd7",
+    "RatFuncTranscendentalParameter.lean": "aa9a04b31606780121c0aea2d14ac070217fb9216c13ad1209afee8b9e1a7054",
+    "RatFuncTranscendentalParameterFinite.lean": "3654ee00691c2ee943809c93f36f44e640b1bb414cfb31e1d7fa175fd20bec4a",
+    "SchemeClosedPointPlace.lean": "9f153745732694fbad46f3f848364d8660ed6522d4adfec5fd427798317d02ad",
+    "SchemeClosedPointPlaceEquiv.lean": "05e82df5ccebebea719f6201e00e710815f76387d144a96760ac1546f421693f",
+    "SchemeClosedPointPlaceInjective.lean": "6c782a11978e9f793e6d9ebccec966ac4a24076f8ae3fe3edd7ddbbf83ceb39c",
+    "SchemeClosedPointPlaceLift.lean": "3a0100953f371b3ce7fef56500cc622062c8a9f4488432c3efc7da892262facd",
+    "SchemeClosedPointPlaceValuation.lean": "b7973f797252817bd15524613b9202a3e7c64d19a96fda3db1f45dfa5b7bfed3",
+    "StalkBaseAlgebra.lean": "e9f6d7f3e136b01b07f943776bbd319bf905b5d7fcd993319b6734bc4365b822",
+    "StalkFunctionFieldSquare.lean": "b4fb7ddf00988a3124239486c740b67aac6d4e23a3e489164ca380894fbed1e9",
+    "StalkMapMaximalIdeal.lean": "9b5ce76b37e58549af7323b062517d187d18c536cf322b7a051a47eff285a1da",
+    "StalkPointOverBase.lean": "7faeee008a1097ead9c82f6764298b2044825e385fe0eab327ddb784b0843885",
+    "StalkRamificationIndex.lean": "fb93f3d6ff99f36b3c7a7d3f63f76c9bae1527550a2565c5e07c210f3f3657d0",
+    "UpstreamAudit.lean": "ac4045a15f6f917dcefa7705421313be1ba87817bd9307a47068e72e758648cf",
+    "YZeroCoarseAxisGenerator.lean": "d102529f57067ea5c5bb5eb2478551c2097c32a102cea007284aa233dd43b31f",
+    "YZeroCoarseBorelAxis.lean": "9ee3ab2ae2024383b9a5712038ba2f238aa43678eae04166e9f2d6a34eb68703",
+    "YZeroCoarseChartCoinvariantsKaehlerRank.lean": "649103470193dd4192905e72dab40543d3ae656f587bcf3ef5bceb1308740bba",
+    "YZeroCoarseChartKaehlerRank.lean": "1be20a89f8e8d4964244e0a9b906613dee6fccb510dd15c5fdef6f36c52e6cfc",
+    "YZeroCoarseChartQuotientRelativeDimension.lean": "352e33e2278d7e7593602fc024edf713134c62f4830e15d47fe9578b036bdc7e",
+    "YZeroCoarseClassifierPointIso.lean": "3ea4c8b5b922cb56253c24be6668a5763b52d1f53f63cdeb536238af7de8522e",
+    "YZeroCoarseComplexPointOrbits.lean": "1748d03839445c539ee36dab3726c771bd8b7a79d015b39ebe4a76dbfa338ac1",
+    "YZeroCoarseComplexPoints.lean": "5ff63d37a9ebb1eb61517a2c5a5e30f13cd6eeacc8425169fd0283c2570e2b83",
+    "YZeroCoarseConstantAxis.lean": "9e12d3f519116c86e09e9d52cdf5f22caa3f6eaf11c6e1c916b27960fe8a3072",
+    "YZeroCoarseConstantAxisEtale.lean": "5643897d64343233f0f7ad7834460172950448b149a415f93b545538e60248bb",
+    "YZeroCoarseEllIsoHomOver.lean": "17023dc57e5fd6b912e0e2516b24483a2fa06b9675747d0ccb92d62290369220",
+    "YZeroCoarseFineComplexPoints.lean": "1ba0db31b8273ae6a42f37e45dcb2ef1e3642718d491ad721d5e83225c02c9b3",
+    "YZeroCoarseFiniteType.lean": "bccad4edd7456c4b5f1f43111fab1a2e1829e5a4aca6651f57e4c0c67a0bec22",
+    "YZeroCoarseGluedQuotientRank.lean": "0782f711c8611c50cd94dc52bdca8baf0f97842a594b3f397c4aa885c010b529",
+    "YZeroCoarseGroupRingStalkRank.lean": "dd0f35c3187f1981e7faafe8391df3b998a46ab1962ebb8f91d6bfce5bf12a8f",
+    "YZeroCoarseHomOverClassifiers.lean": "cbd657598d8d85a28a8ed30928888fd5e0c716d4314f35fb39294ee308581f65",
+    "YZeroCoarseHopfEtale.lean": "59a6b4bee0d7490f93aa77a5ef0bfe15ff64ad84b3a58c2565036c55373da2b7",
+    "YZeroCoarseHopfFinite.lean": "fae6683c1c80fbbefd618bcd998960f86c10d7667c04c1aba46a49d0e357eb77",
+    "YZeroCoarseHopfGaloisLeft.lean": "2bd96940fc2fea8688a9317739e0362987b0f478333070a1dc9de2c9762826e6",
+    "YZeroCoarseHopfSmooth.lean": "89803a6654740134a57bab10ed17990141e35c88b7d40ffdec6f4b5fdf405bfd",
+    "YZeroCoarseHopfStalkRank.lean": "94cd6216c8567120a45cc5a6b42988b43af62aafb81e0ff1a0642ce1206b34e4",
+    "YZeroCoarseInvariantSpec.lean": "12da3edb94512c89cd04f3ee9826595ca22bee77632e2e6c021bf34e10ebb0cf",
+    "YZeroCoarseJ.lean": "4077accf5d4f35961bef7f7938ec5b8c998673c276511678c80e91fb27e48f4a",
+    "YZeroCoarseJInvariants.lean": "e97b21ce1b4e88f2a68b0d0354294c8f7ee7923409a8967a240253088abde2e5",
+    "YZeroCoarseKaehlerRank.lean": "b7c17ca009d3070f04e96b5ef38317178a560bc01e3d78c8830d4b703ac6081c",
+    "YZeroCoarseKaehlerRankDescent.lean": "9d38d992215a8f72b7704e3c2e5e3382f97198024ebf433fd0416e4c4303f559",
+    "YZeroCoarseLocalQuotientFiniteType.lean": "323e93e57d5bb8d95c350879aeedf039d40235d927c7904f3beaa8e9fa558022",
+    "YZeroCoarseLocalQuotientGeometry.lean": "b35a853f68fb75b26361e689f236734f972ec2da52959a40e199a4269423b7e8",
+    "YZeroCoarseLocalQuotientRank.lean": "166f822db5c6f1068b521689753542909b31ee2aac0c41ceda6e34f030941ce4",
+    "YZeroCoarseLocallyStandardSmoothRank.lean": "4caaf8a0e9f811f49c95d62f3954e4bfad81c98ec25de6e6db4e2bceac794c1f",
+    "YZeroCoarseMarkedComplexCurves.lean": "f8bb25f74e3b3d10868794d02e2c09be90f56738361570602733213116c28bda",
+    "YZeroCoarseMarkingClassifiers.lean": "a5f2207e5493c363e7a6524c9ada1f3caa04c9452ed389f8d3be5d77c9b318d1",
+    "YZeroCoarseNativeClasses.lean": "90353b439ca8098e902eaed1cc32dce37ab59166727ce4f6ad40fcb415b0339b",
+    "YZeroCoarseNativeRoundtrip.lean": "38b4f33a1c91525ab22cbb816c65c4389a87ca6a9fb5d55b65b0507db4807f9a",
+    "YZeroCoarsePointLifting.lean": "51431ee27ab7c5a93fa07bf09340b7039b0e605d43e58e0eedb09431b25cd1ae",
+    "YZeroCoarsePointOrbits.lean": "20f8b19dd1e78eb5952cf1eee72829f4fd78200df6ee3620ca2a86ba0856a27a",
+    "YZeroCoarseProjection.lean": "c1ea5d95caa335e73d896e8a513339c0be83d74df4325041b29b08f189d874b0",
+    "YZeroCoarseQuasiCompact.lean": "3b288e6e58e9ca28bef611e9fd3e62f009a51758f2d80fcb2ed1091d5eddc9b8",
+    "YZeroCoarseRawLocalQuotientRank.lean": "274a4ed17e4fc332fc5711bb3b423aa7fd9464e80631bc9a8a34d29e5fcadbca",
+    "YZeroCoarseReduced.lean": "e0031ac120a0273284cc0c0e19ddb58f046026f896b1e2d10a0c8d513c843424",
+    "YZeroCoarseSmoothRankCriterion.lean": "166737e182a18330d0946d307580cf28f42335f55636a786acc76e96dcfa4b6d",
+    "YZeroCoarseSourceJPolynomial.lean": "544862a397e5cc6fb79643414f3de4daaed5ece4fee7b7ef8b9906f09be0ece5",
+    "YZeroCoarseSourceJSurjective.lean": "9c7d77aba7b8d1b5bd6aa5ef4739194f75d9bb391d437d38e70a11c0690d8760",
+    "YZeroCoarseStandardSmoothRank.lean": "6cbf56b6b03e609df4094cec270c4f387b39e049e5f19f63c381435410ef9ef2",
+    "YZeroCoarseStandardSmoothRankConverse.lean": "a8a185937346d05cbddfc22dbdfed22516eee961d4996f6a97bef27c449fb6eb",
+    "YZeroCoarseSubgroupQuotientAffineIntegrallyClosed.lean": "c8eed67b89005a2550e57fb8cc91e58ba551678db503b97ac3ece8fbe855dfeb",
+    "YZeroCoarseSubgroupQuotientBaseAlgHom.lean": "f5ea5516f25308b695c11885477e5d42ef734ec81a44f285c8c73265b42f4652",
+    "YZeroCoarseSubgroupQuotientChartPullback.lean": "71e18b26c3eea713f11c1e86ce5c30d101788bf4c8b60752d08f5c9cc79fcec5",
+    "YZeroCoarseSubgroupQuotientClosedPointPlaceValuation.lean": "6e326c78180f6cfb18fb78b6a4c049d8f6726957c48effd9b6838936ed8b8ce0",
+    "YZeroCoarseSubgroupQuotientDivisorPullback.lean": "0264e701538f96da6902740f917a0b628574b5254e4638cc53cc8c776d6421f1",
+    "YZeroCoarseSubgroupQuotientEtale.lean": "cfe54fd24eeb2f53bb10881ef373b2e6f2d2dc4b867cc5dd7e26e3c87b4f82e2",
+    "YZeroCoarseSubgroupQuotientFinite.lean": "5c1f70e292b4e2443217f9e1fd2e29f8b305e17c317a251567cb0a51f0e7ff70",
+    "YZeroCoarseSubgroupQuotientFiniteType.lean": "f60f224d08800a83f55af35b8faf37a80cc2b5614a1354b72051e4568b38e2c3",
+    "YZeroCoarseSubgroupQuotientFullConstantField.lean": "dbc9563b99d63339fe9de4c422db530d1f68f979938d6b4f29e794975186db00",
+    "YZeroCoarseSubgroupQuotientFunctionField.lean": "55b414d14df7d149ba6965ffb5efb25cf09eb47b36a223d12a53a077ab70fcc3",
+    "YZeroCoarseSubgroupQuotientFunctionFieldDegree.lean": "fa8c23229cde4cda6adab461dbcdbab22970a00b4d2deb3ec294f0b1b86a44ac",
+    "YZeroCoarseSubgroupQuotientFunctionFieldEtale.lean": "72f5ec021866bb0ec7cce478fbccb14a737cb5c03a45fe748fb7b0653e6b874c",
+    "YZeroCoarseSubgroupQuotientGeometry.lean": "5f1810a5dbd2318367161746dc3c9252683dbe7cf1aa86a92881f946f543e334",
+    "YZeroCoarseSubgroupQuotientIntegral.lean": "229fe068e8eea0bcfa48e87335c31e0072b9b4d42ef4b6526d77906452add2b3",
+    "YZeroCoarseSubgroupQuotientParameterFinite.lean": "5730c620cf0821be975e0d04e7ee07c998b53a2724155a5272f25ddbcc259888",
+    "YZeroCoarseSubgroupQuotientParameterFunctionField.lean": "4eee237db83cd3f6aec44a8d3fd82e1e5028b3939f94f20f6149d34586758649",
+    "YZeroCoarseSubgroupQuotientPlaceEquiv.lean": "5a6425625f66cb60062f9bb26b1dad8e524bb53298f240be83e0e5aafc5d7766",
+    "YZeroCoarseSubgroupQuotientPlaceGeometry.lean": "755fd186e3efbd29ea5f4f2d2eea0948bc62a21d49c7ec8b54ee7c6444a42e3d",
+    "YZeroCoarseSubgroupQuotientPlaceMap.lean": "9b6cc2f91e8f32d0a28d27a27baf1f3b215f23725f38f5662587cb7e8c207593",
+    "YZeroCoarseSubgroupQuotientPlaceMapFiniteFibers.lean": "68d2a06e1a79b0ab9bf89e566b2cb6794394ce744e157941c36c67648190b436",
+    "YZeroCoarseSubgroupQuotientPlaceResidueFinite.lean": "463f1169ef893930c0a22aa273087c63fccfce2bad5d2c7165ea722c46eadbd8",
+    "YZeroCoarseSubgroupQuotientPlaceRestriction.lean": "885cfd8cc12645b14548972e1dd49b846b119cfa1e83088ec6c2eb85e5b24e6f",
+    "YZeroCoarseSubgroupQuotientPrincipalDivisorPullback.lean": "1858a819152f7fa1281f9e94dcf1f3cf7d3c1505dbd03a00dde8a53c2655a5da",
+    "YZeroCoarseSubgroupQuotientRelativeDimension.lean": "d5e312b1eff31d61eb8a77cfef58cd41b6aba3d25e323272c0e9cc7bc7c021da",
+    "YZeroCoarseSubgroupQuotientSeparated.lean": "27502f8ec523a72c6b531501cbd3d6a729ed6cd25a91c3621a26dfee45d6083f",
+    "YZeroCoarseSubgroupQuotientSmooth.lean": "39b4d0ea79b88c3b1d839b434296273631e767ad572e52901660a2b5dfdb370f",
+    "YZeroCoarseSubgroupQuotientStalkIntegrallyClosed.lean": "0068668f15eca08c46dddc78a9237f195fc4208f1edf5748790fa5ad391fdfc2",
+    "YZeroCoarseSubgroupQuotientStalkMap.lean": "d6b9e0a9fbae53be916b239098d4ff1bdd0aac48984cb3e7b4de3f211e8e6e3b",
+    "YZeroCoarseSubgroupQuotientTranscendental.lean": "71b74fa509acd1ba563d93ff4a5f382ccbefb15adea72eb83e527dbfc8906daf"
+  },
+  "source_counts": {
+    "ClosedPointStalkDVR.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "ComplexPointSeparation.lean": {
+      "checks": 4,
+      "examples": 1
+    },
+    "DVRPlace.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "DVRPlaceAlgEquiv.lean": {
+      "checks": 7,
+      "examples": 2
+    },
+    "DVRPlaceLocalUnramifiedValuation.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "DVRPlaceRecovery.lean": {
+      "checks": 4,
+      "examples": 2
+    },
+    "DVRPlaceValuation.lean": {
+      "checks": 6,
+      "examples": 2
+    },
+    "FaithfullyFlatIntegrallyClosed.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "FieldGeometricJ.lean": {
+      "checks": 6,
+      "examples": 0
+    },
+    "FiniteFieldPointClosed.lean": {
+      "checks": 5,
+      "examples": 2
+    },
+    "FiniteFlatFunctionFieldDegree.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "FiniteFunctionField.lean": {
+      "checks": 16,
+      "examples": 3
+    },
+    "FinsuppFiniteFiberPullback.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "FlatStalkIntegrallyClosed.lean": {
+      "checks": 7,
+      "examples": 2
+    },
+    "FullConstantFieldDescent.lean": {
+      "checks": 4,
+      "examples": 2
+    },
+    "FunctionFieldBaseAlgebra.lean": {
+      "checks": 7,
+      "examples": 2
+    },
+    "FunctionFieldConstantsNaturality.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "FunctionFieldEtale.lean": {
+      "checks": 9,
+      "examples": 1
+    },
+    "FunctionFieldFormallyUnramified.lean": {
+      "checks": 7,
+      "examples": 1
+    },
+    "GenericPointOverBase.lean": {
+      "checks": 6,
+      "examples": 2
+    },
+    "GeometricJ.lean": {
+      "checks": 6,
+      "examples": 0
+    },
+    "IntegrallyClosedLocalizationCover.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "IntrinsicPlaceResidueFinite.lean": {
+      "checks": 7,
+      "examples": 2
+    },
+    "LocallySmoothIntegrallyClosed.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "ModelGeometricJ.lean": {
+      "checks": 2,
+      "examples": 0
+    },
+    "NativeChartIntegrallyClosed.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "NativeCoordinateFractionField.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "NativeCoordinateTowerObstruction.lean": {
+      "checks": 5,
+      "examples": 2
+    },
+    "NativeFieldFunctionFieldAlgEquiv.lean": {
+      "checks": 14,
+      "examples": 4
+    },
+    "NativeFieldFunctionFieldEquiv.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "NativeFieldWeierstrassModel.lean": {
+      "checks": 13,
+      "examples": 1
+    },
+    "NativeFullConstantField.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "NativeFunctionFieldStructure.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "NativeGenus.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "NativePatchBaseField.lean": {
+      "checks": 7,
+      "examples": 2
+    },
+    "NativePlaceGeometry.lean": {
+      "checks": 7,
+      "examples": 2
+    },
+    "NativePlaceResidueFinite.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "NativePolynomialScalars.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "NativeRatFuncScalars.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "PlaceCenterStalkSquare.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "PrincipalDivisorPullback.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "PrincipalDivisorValuation.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "ProjModelFunctionFieldConstants.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "ProperPlaceClosedCenter.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "ProperPlaceLift.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "ProperPlaceRecovery.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "RatFuncParameterScalars.lean": {
+      "checks": 5,
+      "examples": 2
+    },
+    "RatFuncSubfieldParameter.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "RatFuncTranscendentalParameter.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "RatFuncTranscendentalParameterFinite.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "SchemeClosedPointPlace.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "SchemeClosedPointPlaceEquiv.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "SchemeClosedPointPlaceInjective.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "SchemeClosedPointPlaceLift.lean": {
+      "checks": 14,
+      "examples": 2
+    },
+    "SchemeClosedPointPlaceValuation.lean": {
+      "checks": 14,
+      "examples": 2
+    },
+    "StalkBaseAlgebra.lean": {
+      "checks": 6,
+      "examples": 2
+    },
+    "StalkFunctionFieldSquare.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "StalkMapMaximalIdeal.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "StalkPointOverBase.lean": {
+      "checks": 6,
+      "examples": 2
+    },
+    "StalkRamificationIndex.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "UpstreamAudit.lean": {
+      "checks": 7,
+      "examples": 0
+    },
+    "YZeroCoarseAxisGenerator.lean": {
+      "checks": 26,
+      "examples": 4
+    },
+    "YZeroCoarseBorelAxis.lean": {
+      "checks": 7,
+      "examples": 3
+    },
+    "YZeroCoarseChartCoinvariantsKaehlerRank.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseChartKaehlerRank.lean": {
+      "checks": 8,
+      "examples": 3
+    },
+    "YZeroCoarseChartQuotientRelativeDimension.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "YZeroCoarseClassifierPointIso.lean": {
+      "checks": 5,
+      "examples": 2
+    },
+    "YZeroCoarseComplexPointOrbits.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseComplexPoints.lean": {
+      "checks": 5,
+      "examples": 2
+    },
+    "YZeroCoarseConstantAxis.lean": {
+      "checks": 28,
+      "examples": 0
+    },
+    "YZeroCoarseConstantAxisEtale.lean": {
+      "checks": 5,
+      "examples": 2
+    },
+    "YZeroCoarseEllIsoHomOver.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "YZeroCoarseFineComplexPoints.lean": {
+      "checks": 11,
+      "examples": 1
+    },
+    "YZeroCoarseFiniteType.lean": {
+      "checks": 13,
+      "examples": 0
+    },
+    "YZeroCoarseGluedQuotientRank.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseGroupRingStalkRank.lean": {
+      "checks": 13,
+      "examples": 2
+    },
+    "YZeroCoarseHomOverClassifiers.lean": {
+      "checks": 7,
+      "examples": 1
+    },
+    "YZeroCoarseHopfEtale.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "YZeroCoarseHopfFinite.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "YZeroCoarseHopfGaloisLeft.lean": {
+      "checks": 6,
+      "examples": 2
+    },
+    "YZeroCoarseHopfSmooth.lean": {
+      "checks": 24,
+      "examples": 4
+    },
+    "YZeroCoarseHopfStalkRank.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "YZeroCoarseInvariantSpec.lean": {
+      "checks": 5,
+      "examples": 0
+    },
+    "YZeroCoarseJ.lean": {
+      "checks": 10,
+      "examples": 3
+    },
+    "YZeroCoarseJInvariants.lean": {
+      "checks": 7,
+      "examples": 0
+    },
+    "YZeroCoarseKaehlerRank.lean": {
+      "checks": 7,
+      "examples": 3
+    },
+    "YZeroCoarseKaehlerRankDescent.lean": {
+      "checks": 4,
+      "examples": 2
+    },
+    "YZeroCoarseLocalQuotientFiniteType.lean": {
+      "checks": 11,
+      "examples": 3
+    },
+    "YZeroCoarseLocalQuotientGeometry.lean": {
+      "checks": 13,
+      "examples": 2
+    },
+    "YZeroCoarseLocalQuotientRank.lean": {
+      "checks": 13,
+      "examples": 2
+    },
+    "YZeroCoarseLocallyStandardSmoothRank.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseMarkedComplexCurves.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "YZeroCoarseMarkingClassifiers.lean": {
+      "checks": 2,
+      "examples": 2
+    },
+    "YZeroCoarseNativeClasses.lean": {
+      "checks": 13,
+      "examples": 5
+    },
+    "YZeroCoarseNativeRoundtrip.lean": {
+      "checks": 4,
+      "examples": 1
+    },
+    "YZeroCoarsePointLifting.lean": {
+      "checks": 3,
+      "examples": 1
+    },
+    "YZeroCoarsePointOrbits.lean": {
+      "checks": 3,
+      "examples": 1
+    },
+    "YZeroCoarseProjection.lean": {
+      "checks": 5,
+      "examples": 0
+    },
+    "YZeroCoarseQuasiCompact.lean": {
+      "checks": 7,
+      "examples": 2
+    },
+    "YZeroCoarseRawLocalQuotientRank.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseReduced.lean": {
+      "checks": 10,
+      "examples": 0
+    },
+    "YZeroCoarseSmoothRankCriterion.lean": {
+      "checks": 11,
+      "examples": 5
+    },
+    "YZeroCoarseSourceJPolynomial.lean": {
+      "checks": 3,
+      "examples": 1
+    },
+    "YZeroCoarseSourceJSurjective.lean": {
+      "checks": 3,
+      "examples": 2
+    },
+    "YZeroCoarseStandardSmoothRank.lean": {
+      "checks": 6,
+      "examples": 2
+    },
+    "YZeroCoarseStandardSmoothRankConverse.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientAffineIntegrallyClosed.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientBaseAlgHom.lean": {
+      "checks": 12,
+      "examples": 3
+    },
+    "YZeroCoarseSubgroupQuotientChartPullback.lean": {
+      "checks": 8,
+      "examples": 1
+    },
+    "YZeroCoarseSubgroupQuotientClosedPointPlaceValuation.lean": {
+      "checks": 16,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientDivisorPullback.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientEtale.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientFinite.lean": {
+      "checks": 9,
+      "examples": 1
+    },
+    "YZeroCoarseSubgroupQuotientFiniteType.lean": {
+      "checks": 13,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientFullConstantField.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientFunctionField.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientFunctionFieldDegree.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientFunctionFieldEtale.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientGeometry.lean": {
+      "checks": 11,
+      "examples": 1
+    },
+    "YZeroCoarseSubgroupQuotientIntegral.lean": {
+      "checks": 12,
+      "examples": 4
+    },
+    "YZeroCoarseSubgroupQuotientParameterFinite.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientParameterFunctionField.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientPlaceEquiv.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientPlaceGeometry.lean": {
+      "checks": 9,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientPlaceMap.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientPlaceMapFiniteFibers.lean": {
+      "checks": 11,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientPlaceResidueFinite.lean": {
+      "checks": 10,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientPlaceRestriction.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientPrincipalDivisorPullback.lean": {
+      "checks": 15,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientRelativeDimension.lean": {
+      "checks": 16,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientSeparated.lean": {
+      "checks": 8,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientSmooth.lean": {
+      "checks": 15,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientStalkIntegrallyClosed.lean": {
+      "checks": 14,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientStalkMap.lean": {
+      "checks": 12,
+      "examples": 2
+    },
+    "YZeroCoarseSubgroupQuotientTranscendental.lean": {
+      "checks": 12,
+      "examples": 2
+    }
+  },
+  "driver_sha256": "574297903cfe907f5fa5a6ea7d42110e98dd885ac802b1c6919620fa8b7b399c",
+  "exact_compiler": "/private/tmp/xyin-y0-elan/toolchains/leanprover--lean4---v4.35.0-rc3/bin/lean",
+  "exact_compiler_sha256": "d1d9c26a539f54fe839d2aa7760bf1ac1dd76a30b26e2c9684bebf2900038fcf",
+  "config_files": {
+    "lakefile.toml": {
+      "path": "/private/tmp/xyin-y0-aintlib-work/lakefile.toml",
+      "sha256": "80b6315f4617edbeb15fe0b35659f832bede54e4d86b5d0de91ba21943527f77"
+    },
+    "lake-manifest.json": {
+      "path": "/private/tmp/xyin-y0-aintlib-work/lake-manifest.json",
+      "sha256": "7996ec2638728a7367b36a8c15828457a8dd6adb18ce38cfac97fdf2306e47e8"
+    },
+    "lean-toolchain": {
+      "path": "/private/tmp/xyin-y0-aintlib-work/lean-toolchain",
+      "sha256": "bc84812c94489d1e3e191baa1dc10d5eb684382d7fe9d2a5ab085e72c1c67e47"
+    }
+  },
+  "aintlib_revision": "ab1451487da02cd4483d0e2cdb2cc9e44bbbac17",
+  "mathlib_revision": "300d0e535721bc098547106fc297d8ba2a63f6bb",
+  "toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "historical99_receipt": "/private/tmp/Cumulative99Baseline/receipt.json",
+  "historical99_receipt_sha256": "68e7577379b1c9437041b69fc446da10374ea34226e58a38f118be44a20f0b04",
+  "historical99_independent_audit": "/private/tmp/Cumulative99Baseline/independent-audit.json",
+  "historical99_independent_audit_sha256": "5303be5536bed1ffc78138bdc5f371aaf97502c73ab4b28052751eee6a1b63c4",
+  "historical99_build_log": "/private/tmp/Cumulative99Baseline/build.log",
+  "historical99_build_log_sha256": "6ee059ff33170d0cc45a465dece62a3c97231b3f2a4f757b29a5a84bb5d9af11",
+  "historical99_archive_manifest": "/private/tmp/Cumulative99Baseline/manifest.json",
+  "historical99_archive_manifest_sha256": "08df58ce9ebbd8f76393717f952d7e922d50e4ec247d37f28520fc25bd56b93a"
+}

@@ -6,9 +6,10 @@
 `MMeromorphicOn I f s`、`MMeromorphic I f` 提供直接作用于原始函数的接口。
 普通复解析流形足以覆盖上半平面，又可以推广到高维乃至无限维复赋范模型。
 一维 preferred-chart 版本应保留为与现有 `MeromorphicAt` 对接的简单刻画。
-这里只是实验命名空间，没有修改 mathlib 或项目既有的 modular-function 定义。
+最初的独立设计保留在实验命名空间中。本次 cusp 条件跟进另外修改了 production 的
+modular-function 定义，见文末新增说明；没有修改 mathlib。
 
-本轮没有读取 `XYin/PhD/ModularFunctions` 的内容。设计先独立提出，再对照
+最初独立设计轮没有读取 `XYin/PhD/ModularFunctions` 的内容。设计先独立提出，再对照
 mathlib、指定 Zulip 讨论和其中的外部 sheaf 实现验证。
 
 | 文件 | 定义/目的 | 已证明的主要结果 | 主要取舍 |
@@ -321,3 +322,85 @@ modular conditions。ambient fields 的同构不会自动证明后面这些 modu
 这些不是给当前 field proofs 留下的假设洞：本轮的一维 global comparison 已经完成。
 更广 setting 的比较需要重建对应 holomorphic structure sheaf，并选择适合其 exceptional
 sets 的 equality，不能直接复制一变量的 codiscrete quotient。
+
+
+## 后续：指定的指数增长 cusp 条件与 X(1) 源码核查
+
+这一次先复用了已存在的 production 增长、normal-form 和 cusp-period 定理，再将正式
+`ModularFunction` 的结构改成：
+
+```lean
+meromorphic' : MMeromorphicNF toFun
+bdd_at_cusps' {c : OnePoint ℝ} (hc : IsCusp c Γ) : c.IsExpBoundedAt toFun 0
+```
+
+`MMeromorphicNF` 在独立的 `ModularFunctions/ManifoldMeromorphic.lean` 中定义，只依赖
+mathlib。它作用于 f 本身，不是 field membership。`toMeromorphicField` 随后由该
+predicate 构造；`toFun_toMeromorphicField`、injectivity 和 field transport 均是证明。
+
+normal representative 的选择沿用此前生产版本的约定；现在用独立 analytic predicate
+表达它。不能以此给 NF raw pointwise sums/products 的 coercion 定理，因为 cancellation
+后仍需 normalize。此前 quotient ↔ NF ↔ sheaf 的测试继续保留。
+
+新的 cusp predicate 完全使用指定的 all-weight 公式：
+
+```lean
+def OnePoint.IsExpBoundedAt (c : OnePoint ℝ) (f : ℍ → ℂ) (k : ℤ) : Prop :=
+  ∀ g : GL (Fin 2) ℝ, g • ∞ = c → IsOfExponentialGrowth (f ∣[k] g)
+```
+
+它与旧 weight-zero growth predicate 是 `Iff.rfl`；并不是把旧 q-meromorphy
+condition 偷换一个名字。与常规 q-meromorphic cusp 条件的等价性是单独证明的。
+
+| 新增文件 | 真正检查的内容 |
+| --- | --- |
+| `CuspGrowth.lean` | production 的 weighted-bound growth ↔ 正指数 big-O；requested formula 的展开 |
+| `CuspGrowthCoordinates.lean` | all-weight scaling independence、单 scaling 双向测试、不同 weights 的乘法 |
+| `CuspQEquivalence.lean` | 直接存在 exact meromorphic q-germ ↔ canonical cuspFunction meromorphic；raw eventual-holomorphy 和 NF 两个增长 iff |
+| `BoundedNormalForm.lean` | punctured bound ⇒ NF analytic；normalize 后的 continuous bound 保留 |
+| `ExpModularFunction.lean` | production 的独立 predicate 与 cusp 结构字段、之后才构造 field element、Field/ℂ-algebra/逆律 |
+| `ManifoldPredicateChecks.lean` | production ↔ 原 independent chart predicate；C¹ 坐标独立性/复合、算术与 NF inverse |
+| `OrbitCoordinate.lean`、`LevelOneOrbit.lean` | abstract bridge 及本地 j 实际实例化的 orbit quotient ≃ ℂ；明确只是集合层次 |
+| `LevelOneField.lean` | 实际 `RatFunc ℂ ≃ₐ[ℂ] ModularFunction 𝒮ℒ`，保持常数并将 X 映到 j |
+| `AffineFunctionField.lean`、`GeometricFunctionField.lean` | 独立 integral scheme 的 polynomial affine chart ⇒ function field 与 level-one modular field 同构；chart 为显式假设 |
+| `P1Basic.lean`、`P1ChartRing.lean`、`P1Chart.lean`、`P1Proper.lean` | 独立的 Proj ℂ[X₀,X₁]、integral/非空实际 affine chart/ℂ-polynomial chart/实际 proper structure morphism |
+| `P1Field.lean` | 无 chart 假设的实际 scheme function field ↔ modular field；geometric germ X₁/X₀ 映到 j |
+| `PolynomialSpectrumPoints.lean` | over-Spec ℂ 的 affine-line points 与 ℂ 的实际等价；不混淆素理想与值点 |
+| `LevelOneTopology.lean` | 实际 open quotient topology 下 ℍ/SL₂(ℤ) ≃ₜ ℂ |
+| `AINTLIBSourceAudit.md` | 固定 main/dev 版本、j 的实际定理、X(1) 对象与解析比较的缺口 |
+
+对于一张给定的 cusp chart，等价性只要求 NF、正 period 和 periodicity。
+对于一般 slash-invariant Γ，all-cusp theorem 使用 `[DiscreteTopology Γ]` 与
+`[Γ.HasDetPlusMinusOne]`，从 cusp stabilizer 得出正 period。`𝒮ℒ` 自动满足这些前提。
+等价性的内容为 `c.IsExpBoundedAt f 0 ↔ c.IsMeromorphicAt f`；右端是周期 q 参数
+在 0 处 meromorphic，允许有限阶 pole，不是 holomorphic/bounded-at-cusp。
+
+这套 NF 假设有实质作用。raw meromorphy 允许在可去点任意修改值；一列这样的异常值
+可以趋向 cusp，使 boundedness 不能推出 exact meromorphic q-germ，或使 inverse
+失去 exponential growth。`CuspQEquivalence` 的 raw 版本明确保留 eventual holomorphy。
+
+本地 Cox 理论已经证明 modular functions = ℂ(j)，本轮包装了实际的 ℂ-algebra
+同构，不需要重新移植 AINTLIB 的 j-generation 证明。AINTLIB 有可复用的 j 满射
+与 equal-j ⇒ same orbit 证明，但检索版本没有完成的
+compact X(1) 以及其 meromorphic field 比较。不能把 source audit、条件式桥梁或
+现有 SL₂(ℤ) field instance 报告成 `C(X(1)) ≃ₐ[ℂ] ModularFunction 𝒮ℒ` 的证明。
+具体源文件、版本和后续路线见 `AINTLIBSourceAudit.md`。
+
+
+进一步的几何实验已经完成标准 projective j-line 模型本身的 scheme function-field
+同构。这里的左端独立定义为 `Proj ℂ[X₀,X₁]`，不是 modular functions 的别名；
+其实际 polynomial chart、integral 性和 properness 都有 Lean 证明。
+`P1Field.functionFieldModularEquiv` 将几何函数域的 ratio coordinate 送到 actual j。
+这完成了标准代数模型意义下的函数域结论。
+
+仍需区分另一项要求：将这个所选模型识别为一个独立构造的 compact analytic X(1)，
+或某个 AINTLIB coarse-moduli/compactification 对象。当前上游没有完成的目标对象，
+本轮没有捏造这种识别；open quotient 的 homeomorphism 也不能取代 compact analytic
+structure / cusp / sheaf 比较。这个范围边界在源码核查文档中逐项说明。
+
+
+本次最终累计验证：`lake build XYin.PhD.Test.MMeromorphic` 成功（4061 jobs）。
+全部 49 个保留的 Test Lean 模块都由该入口覆盖。该次日志无 warning、error 或 sorryAx；
+关键 predicate/cusp iff、field inverse law、实际 RatFunc 与 projective-line function-field
+同构、properness 和 quotient-homeomorphism 的 axiom checks 均只有
+`propext`、`Classical.choice`、`Quot.sound`。`git diff --check` 通过。

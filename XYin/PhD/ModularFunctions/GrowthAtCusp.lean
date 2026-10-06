@@ -41,12 +41,59 @@ end UpperHalfPlane
 
 namespace OnePoint
 
+/-- A weight-`k` function has at most exponential growth at a cusp if every scaling
+transform taking infinity to that cusp has at most exponential growth at infinity. -/
+def IsExpBoundedAt (c : OnePoint ℝ) (f : ℍ → ℂ) (k : ℤ) : Prop :=
+  ∀ g : GL (Fin 2) ℝ, g • ∞ = c → IsOfExponentialGrowth (f ∣[k] g)
+
 /-- A weight-zero function has at most exponential growth at a cusp if each scaling transform
 has at most exponential growth at infinity, uniformly in the real part. -/
 def IsOfExponentialGrowthAt (c : OnePoint ℝ) (f : ℍ → ℂ) : Prop :=
   ∀ g : GL (Fin 2) ℝ, g • ∞ = c → IsOfExponentialGrowth (f ∣[(0 : ℤ)] g)
 
-variable {c : OnePoint ℝ} {f : ℍ → ℂ} {g : GL (Fin 2) ℝ}
+variable {c : OnePoint ℝ} {f f' : ℍ → ℂ} {k k' : ℤ} {g : GL (Fin 2) ℝ}
+
+/-- The existing weight-zero condition is the specialization of the weighted condition. -/
+lemma IsExpBoundedAt.iff_at_zero :
+    IsExpBoundedAt c f 0 ↔ IsOfExponentialGrowthAt c f := Iff.rfl
+
+/-- The existing weight-zero condition is the specialization of the weighted condition. -/
+lemma isExpBoundedAt_zero_iff :
+    IsExpBoundedAt c f 0 ↔ IsOfExponentialGrowthAt c f := IsExpBoundedAt.iff_at_zero
+
+/-- Moving the cusp is equivalent to applying the same slash transform to the function. -/
+lemma IsExpBoundedAt.smul_iff :
+    IsExpBoundedAt (g • c) f k ↔ IsExpBoundedAt c (f ∣[k] g) k := by
+  rw [IsExpBoundedAt, IsExpBoundedAt, (Equiv.mulLeft g⁻¹).forall_congr_left]
+  simp [mul_smul, ← SlashAction.slash_mul]
+
+/-- The intrinsic cusp condition at infinity is the ordinary growth condition. -/
+lemma isExpBoundedAt_infty_iff : IsExpBoundedAt ∞ f k ↔ IsOfExponentialGrowth f :=
+  ⟨fun h ↦ by simpa using h 1 (by simp),
+    fun h _ hg ↦ h.slash (smul_infty_eq_self_iff.mp hg)⟩
+
+/-- One scaling matrix is enough to test exponential growth at a cusp, in every weight. -/
+lemma isExpBoundedAt_iff (hg : g • ∞ = c) :
+    IsExpBoundedAt c f k ↔ IsOfExponentialGrowth (f ∣[k] g) :=
+  ⟨fun hc ↦ hc g hg,
+    by simp [← hg, IsExpBoundedAt.smul_iff, isExpBoundedAt_infty_iff]⟩
+
+/-- Boundedness at a cusp implies at most exponential growth there. -/
+lemma IsBoundedAt.isExpBoundedAt (h : IsBoundedAt c f k) : IsExpBoundedAt c f k :=
+  fun g hg ↦ IsOfExponentialGrowth.of_isBoundedAtImInfty (h g hg)
+
+lemma IsExpBoundedAt.add (hf : IsExpBoundedAt c f k) (hf' : IsExpBoundedAt c f' k) :
+    IsExpBoundedAt c (f + f') k :=
+  fun g hg ↦ by simpa only [SlashAction.add_slash] using (hf g hg).add (hf' g hg)
+
+lemma IsExpBoundedAt.neg (hf : IsExpBoundedAt c f k) : IsExpBoundedAt c (-f) k :=
+  fun g hg ↦ by simpa only [SlashAction.neg_slash] using (hf g hg).neg
+
+/-- Multiplication adds the two weights and preserves the exponential cusp condition. -/
+lemma IsExpBoundedAt.mul (hf : IsExpBoundedAt c f k) (hf' : IsExpBoundedAt c f' k') :
+    IsExpBoundedAt c (f * f') (k + k') := fun g hg ↦ by
+  rw [ModularForm.mul_slash]
+  exact ((hf g hg).mul (hf' g hg)).smul _
 
 lemma IsOfExponentialGrowthAt.smul_iff :
     IsOfExponentialGrowthAt (g • c) f ↔
@@ -98,6 +145,10 @@ lemma const (a : ℂ) : IsOfExponentialGrowthAt c fun _ ↦ a := fun g _ ↦ by
   simp [ModularForm.slash_apply]
 
 end IsOfExponentialGrowthAt
+
+/-- Constant functions have at most exponential growth at every cusp in weight zero. -/
+lemma isExpBoundedAt_const (a : ℂ) : IsExpBoundedAt c (fun _ ↦ a) 0 :=
+  IsOfExponentialGrowthAt.const a
 
 section SL2Z
 

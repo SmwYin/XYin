@@ -1,0 +1,682 @@
+{
+  "prepared_source_sha256": "0e2cc8a84c2be4fa22e10b1329e39de35ba4f95e505c78ccc7dea998c53fc1a8",
+  "removed_count": 135,
+  "only_owned_olean": true,
+  "artifacts": [
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/ClosedPointStalkDVR.olean",
+      "sha256": "9817f14a748e4815416f8499ce21d067286ad26f2d570ca0d85298e83d82774f",
+      "bytes": 13760
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/ComplexPointSeparation.olean",
+      "sha256": "43bab96c8576230800cf9610436a38c1dd3c475a0e4a45dfba5abbfe32d338fc",
+      "bytes": 23480
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/DVRPlace.olean",
+      "sha256": "cb51c31c67815c8172666f8b0f01d41d36f5b9d6eda0f6300f3c50637b516d9a",
+      "bytes": 53488
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/DVRPlaceAlgEquiv.olean",
+      "sha256": "9ae020b988b0d88371b124f4b516b32f65b8d9bee89a410e44dec29ce2684d89",
+      "bytes": 58904
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/DVRPlaceLocalUnramifiedValuation.olean",
+      "sha256": "24d36751b388c7e0bd2bc8167a3cc8c90064f8ba145e90b808afe35ffe7ccb49",
+      "bytes": 32720
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/DVRPlaceRecovery.olean",
+      "sha256": "9cda9725d1143db23e9ee9cdabe1595a27cd459cc5e22bf909b409c0f65aa20b",
+      "bytes": 15384
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/DVRPlaceValuation.olean",
+      "sha256": "d3a515a9da8035e06b950030a7488a68192e2d8d80e9490345f1fd6f8e975347",
+      "bytes": 16688
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FaithfullyFlatIntegrallyClosed.olean",
+      "sha256": "68b9a5ad6b94c53258346e0ce1cbb78fa0a19905de3ef63681d7aa6af9537578",
+      "bytes": 8096
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FieldGeometricJ.olean",
+      "sha256": "e9e59dfa001caa81139a9017e6f2914cede708b4ff57c8352add4a16e4935f8f",
+      "bytes": 27784
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FiniteFieldPointClosed.olean",
+      "sha256": "ff6c3f265d42738d97e34af043fab9eb204476647e340d3d27bb89b27518ff2c",
+      "bytes": 17904
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FiniteFlatFunctionFieldDegree.olean",
+      "sha256": "44784d048da89650c4ae718e2d951799426285c2ba741574163c7bad21faade6",
+      "bytes": 13336
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FiniteFunctionField.olean",
+      "sha256": "7e9d7c2a3adb2813823e7e8dcb45ef9a23f4462df4174c037a0b55441077ccbe",
+      "bytes": 12976
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FinsuppFiniteFiberPullback.olean",
+      "sha256": "a4c4ea4f3f6dcaff7af6ad3eb850ecf5ee822fea338898328709cb6ab18fda5e",
+      "bytes": 33944
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FlatStalkIntegrallyClosed.olean",
+      "sha256": "663d880c58bcfb25d68c6bb13c2b0b5d70fc737078837cfa45bfeb9d1708d4d9",
+      "bytes": 15312
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FullConstantFieldDescent.olean",
+      "sha256": "c86297f1121bc47bc81db57ed8c574941c0b41156a56618e862045bc1a6c9120",
+      "bytes": 8856
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FunctionFieldBaseAlgebra.olean",
+      "sha256": "244932e99f3f1093275ec00b30ba4f5cb162b5dd48956c3882f8ef59c94acf1f",
+      "bytes": 28504
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FunctionFieldConstantsNaturality.olean",
+      "sha256": "14975f8bc439b73458b5ccd69c58a40dde2eaa3a2b7eeac1111aa64095e758f3",
+      "bytes": 25896
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FunctionFieldEtale.olean",
+      "sha256": "95e567c9c0eab155a7e55705f161ceb00e6b4f80ba4eb99a9bdfff0f778605ed",
+      "bytes": 8664
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/FunctionFieldFormallyUnramified.olean",
+      "sha256": "2e5857308bcb616147a180e9ac489ff9ca81add98db436a0856a1bbb1f470f39",
+      "bytes": 9472
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/GenericPointOverBase.olean",
+      "sha256": "48c8cc0bc13ee8fd6f0f2904004d50d829998661b12c64f5065a6ba5e99161de",
+      "bytes": 11848
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/GeometricJ.olean",
+      "sha256": "360808445e93d1fd843ccae165db2e1a6c1249eeba5dd83900a49bffef083a6f",
+      "bytes": 135408
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/IntegrallyClosedLocalizationCover.olean",
+      "sha256": "e01a185de153f6020952cbc677cad733a8a6a6a7bf0745c91cc66f8e02a1d410",
+      "bytes": 11336
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/IntrinsicPlaceResidueFinite.olean",
+      "sha256": "eac64cb91c4e860065ad17891ce4e9a60ca7193cae4aa9c2c7af40d165dffb63",
+      "bytes": 24320
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/LocallySmoothIntegrallyClosed.olean",
+      "sha256": "7b624efd735d4dff81bb2702075bb1a7d3ef6bfea37324e4a782c82fa61578ac",
+      "bytes": 10696
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/ModelGeometricJ.olean",
+      "sha256": "2f647504a54c86d51eb1716e72fe853d9df4c9ebab1f092fa8a0478596b04f2d",
+      "bytes": 123552
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeChartIntegrallyClosed.olean",
+      "sha256": "b72aa62006068f42dde75cd61d9b926d93f12b6039dab0bfdde60aa2170e2afb",
+      "bytes": 15768
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeCoordinateFractionField.olean",
+      "sha256": "837faf3c5eda8ae4f5a8445f9370ecf45fb060ae8c78a20674b5e45fe7bcb571",
+      "bytes": 45328
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeCoordinateTowerObstruction.olean",
+      "sha256": "e80989c3a2a37833f368fea28e05821cb7a58c6ac70bf2da625aab223ebce893",
+      "bytes": 32040
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeFieldFunctionFieldAlgEquiv.olean",
+      "sha256": "4742b4bc3c8212409569d72df3f0594c342ca51e89ea57ccf696ed52b57a486c",
+      "bytes": 37824
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeFieldFunctionFieldEquiv.olean",
+      "sha256": "9a2f2ae0c9bbeac82787c084835029f67d22bf2c9f035109c94e110920788b22",
+      "bytes": 34600
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeFieldWeierstrassModel.olean",
+      "sha256": "adf0769881824b406e1c93c238de42757b2dabae195b794706bae6ce40f414e4",
+      "bytes": 55384
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeFullConstantField.olean",
+      "sha256": "241b8c1f4cfe2056d0792129a74946a05d19cbc371159549c8577c05a8cdd73e",
+      "bytes": 9416
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeFunctionFieldStructure.olean",
+      "sha256": "484897eef0dd4b668481173ffca0c3c914eae6da457f683d4e2e61c096f9eb5e",
+      "bytes": 11152
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeGenus.olean",
+      "sha256": "1b677ea81b06108dff9a4b10762d9698d4d5a160a23ff6d97b33bf94e41e2104",
+      "bytes": 10400
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativePatchBaseField.olean",
+      "sha256": "e5bef5deb1da97374943f37fcfded9187da321606b22c045fd28bcdcd168fa5f",
+      "bytes": 24640
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativePlaceGeometry.olean",
+      "sha256": "6abb43bdb348966eaaad018a537fcf3356ffa693209f4ff3470392c71959f2ab",
+      "bytes": 16464
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativePlaceResidueFinite.olean",
+      "sha256": "58ab3e0a118c92201eb8dd683b17a594aefcf82739853ea265a48031f2dd21f5",
+      "bytes": 17368
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativePolynomialScalars.olean",
+      "sha256": "1f367522fa8b95b770258bc5b4062fc46d5f0e02538468c8d3e2734b4b1e28aa",
+      "bytes": 24760
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/NativeRatFuncScalars.olean",
+      "sha256": "7f4d36b0ac2dd073cc7ed641a7dcb4f71bd0d5ab6f3ece528b7fbfb230dc4378",
+      "bytes": 40152
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/PlaceCenterStalkSquare.olean",
+      "sha256": "b16ce2110e177b04a768a3b0525b01d139ec5cf2124f6516554ba6155e9d09c7",
+      "bytes": 19080
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/PrincipalDivisorPullback.olean",
+      "sha256": "d94cff527693f6f2a0eac4a330b0b5494abed3e23cf1121ff8df5ce584556836",
+      "bytes": 63768
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/PrincipalDivisorValuation.olean",
+      "sha256": "58156096e423cc793705850d818404fa1d6da676131d272b666cd3417f2aee61",
+      "bytes": 30008
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/ProjModelFunctionFieldConstants.olean",
+      "sha256": "98393efc1e3c33db0c41aeb6779035a4ed1fe87dc8b7f957381d946fe70a88c0",
+      "bytes": 29368
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/ProperPlaceClosedCenter.olean",
+      "sha256": "c9adddde51c401b307d9028e448c97b39d71357f8b16aa60f8c45521da4a8cc3",
+      "bytes": 34728
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/ProperPlaceLift.olean",
+      "sha256": "71497d91108068f4dfcce5ed448fd6cb97dfae6744062fddb44378bd7a7bc475",
+      "bytes": 21304
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/ProperPlaceRecovery.olean",
+      "sha256": "662d8e61a779c633390e259f812a862497d3b597800cdbb6254466541505b13a",
+      "bytes": 39800
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/RatFuncParameterScalars.olean",
+      "sha256": "82bed56448b44fcb44938ba85748289b27de1e07db848fe55ad74e111bea4f86",
+      "bytes": 17672
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/RatFuncSubfieldParameter.olean",
+      "sha256": "56de737c52106d2cccbe8aabf2e1cdc2ccc09e82abf771b0fae0610e6d93ff7b",
+      "bytes": 19040
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/RatFuncTranscendentalParameter.olean",
+      "sha256": "d92f1340d512a707882c0c6848e4de98f65749d9675aa0a48f4eef25dc760055",
+      "bytes": 42024
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/RatFuncTranscendentalParameterFinite.olean",
+      "sha256": "4277b6f8203d39321edcefe9bab2af4b3428f9670a4a6c78656794fa998f7292",
+      "bytes": 29712
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/SchemeClosedPointPlace.olean",
+      "sha256": "9c3c282d48e3fd9a5b4c507b0d23456c460da50877fdcd83f0c78901ce45f752",
+      "bytes": 34656
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/SchemeClosedPointPlaceEquiv.olean",
+      "sha256": "923223782232f5a703028e499e1da3059489afc17ba78041242ab85baba6087a",
+      "bytes": 74496
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/SchemeClosedPointPlaceInjective.olean",
+      "sha256": "f9671f1ba5fc80de01187ada7c28b5ef73bd5053584c518e868ea859f673b29b",
+      "bytes": 16952
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/SchemeClosedPointPlaceLift.olean",
+      "sha256": "7ba670c19983471db09d0988dd264e9c01672bb0c9724b3dd0207b1ad0d68085",
+      "bytes": 52136
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/SchemeClosedPointPlaceValuation.olean",
+      "sha256": "3c1b6477c06cc3b1093c868939ddb333cd9e34f77f937e6f865ca863fda2c5bd",
+      "bytes": 30408
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/StalkBaseAlgebra.olean",
+      "sha256": "fa49c222fc17d523540a41ba58278cbd7564ff8a4f0cce378820e5931a56248b",
+      "bytes": 27512
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/StalkFunctionFieldSquare.olean",
+      "sha256": "a91426d5d7599bdf22980cf73ce607b7ec9c2f66fc789836911d22a08fce73a8",
+      "bytes": 17744
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/StalkMapMaximalIdeal.olean",
+      "sha256": "f4c1eeedbe9d154b9560577d715ffdfbc9f81046c4e562c3c34ae0665cd06008",
+      "bytes": 15624
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/StalkPointOverBase.olean",
+      "sha256": "7f5c94a079bbf255c3fe06b4ea5e231e79d125e53ba04333a2cb727cd6478067",
+      "bytes": 12848
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/StalkRamificationIndex.olean",
+      "sha256": "d48d5a9bfed84cca480b5130c3ec9cb33b082369eeac35ac32e8f8b7b4b45d58",
+      "bytes": 36224
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/UpstreamAudit.olean",
+      "sha256": "75b045477c3ef543bd7aaab3217ae3fdf9cac605a1838d6e9bd89a2771de5f4c",
+      "bytes": 1384
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseAxisGenerator.olean",
+      "sha256": "3f07440193faa076869f9c8c42e106a2e5b0822ba6b56ad85be3074ee31cdfe8",
+      "bytes": 78056
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseBorelAxis.olean",
+      "sha256": "c454ea2ac4c805330226526170835e31668eeb1ba9bbd3280bea68873cb4cce0",
+      "bytes": 39608
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseChartCoinvariantsKaehlerRank.olean",
+      "sha256": "5c4a9c0c11144c2429a0bbcb980052fbadfe7ec415d0010eb05bbaf8e8592798",
+      "bytes": 20264
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseChartKaehlerRank.olean",
+      "sha256": "d61b5c7a2adc2b8815ba664525cfb2c23c42e0b9667f6f525c46fa5ead6bd568",
+      "bytes": 9912
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseChartQuotientRelativeDimension.olean",
+      "sha256": "e14353d8eef06bd788b20bb044a10b3db79e8aebba4770eeddbd65899174fb14",
+      "bytes": 27712
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseClassifierPointIso.olean",
+      "sha256": "7c1e760cd0d93d0cb1e6240c4fd3fbbcc4e912330d9b54f1050ec9f167ab7143",
+      "bytes": 22880
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseComplexPointOrbits.olean",
+      "sha256": "79b63258d737cd4433d698ce51bc13d445932b676b5d7f3a24e133af398cb083",
+      "bytes": 65648
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseComplexPoints.olean",
+      "sha256": "e1c2b857e5b85dc7392483a62116db649324ae2f8fe4200a8d37d8f5a22c5581",
+      "bytes": 43584
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseConstantAxis.olean",
+      "sha256": "ab5d902819a713e160e1604552240794c88d43a609a98e765116be034fe8ca63",
+      "bytes": 146056
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseConstantAxisEtale.olean",
+      "sha256": "401d3626f53a4b0fdce13f8aa8c958d53f27c6f11a3a3899bd58aff35bbbe455",
+      "bytes": 12728
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseEllIsoHomOver.olean",
+      "sha256": "663fa1430134ce1a8afbf57567b3413aab00803797f92fc17d5ea512d49f634f",
+      "bytes": 25888
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseFineComplexPoints.olean",
+      "sha256": "4a6544afe02dd238a89e637f45ebcb7050d8c9b65d866d447e24ec5c7dfec847",
+      "bytes": 76288
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseFiniteType.olean",
+      "sha256": "714ea6ebef6aa6f8bfaac489c51a2fa04713ff788a757b31481e6c3fe77362e6",
+      "bytes": 55840
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseGluedQuotientRank.olean",
+      "sha256": "40b0ac975c11cc23c778998c742cf34d56970a5042f78eafee4cb8a72beb2631",
+      "bytes": 12472
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseGroupRingStalkRank.olean",
+      "sha256": "684fa80fb6259e566cb376af109989456d12c3ca3f63db0715e2ac8c5cf4f81c",
+      "bytes": 9088
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseHomOverClassifiers.olean",
+      "sha256": "51c7bf164eeab77d6abd7874339c44c8c50fa58bb88d6483884cfb091f105373",
+      "bytes": 22528
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseHopfEtale.olean",
+      "sha256": "ba7910a0fa8c1dc80481c1f02724ce9613b9b6f02302573ad5cf2299c3101f1c",
+      "bytes": 25632
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseHopfFinite.olean",
+      "sha256": "8690b06846de686d246fcc20fe72b7f6f99b818129a77bc93a13d1f47d91d2bc",
+      "bytes": 24168
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseHopfGaloisLeft.olean",
+      "sha256": "f906332da833e33267fef3fd4129fa21847c3375a465956496066ba9a9b7efe5",
+      "bytes": 66224
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseHopfSmooth.olean",
+      "sha256": "2bdcc37236a5171f8878c3c87ae7d6793595dab08a3ee28a5163b7d975755d97",
+      "bytes": 30344
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseHopfStalkRank.olean",
+      "sha256": "c2418a9eb06b05a6e270c8458a8d20c7433c9ac30c6b4920eb020de5a0ce64b8",
+      "bytes": 19840
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseInvariantSpec.olean",
+      "sha256": "d4eb5e06ecd0ac4d4bec83a5c4e92e7ff5a6fa76e8ae3a0b767c6b99ff44109a",
+      "bytes": 110856
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseJ.olean",
+      "sha256": "4b6d5fb91aea150aa738d33263afb6187607e0e4a3b1e630ed5977c5d0d55027",
+      "bytes": 88832
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseJInvariants.olean",
+      "sha256": "fed390c8dfbab8095bd847a5dea8548d967b546860359efbdb3f0af8fe7dbd7c",
+      "bytes": 87248
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseKaehlerRank.olean",
+      "sha256": "90c78b05b67a961f582be9021b006b6e29294a579c1984264614a84dac682674",
+      "bytes": 21976
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseKaehlerRankDescent.olean",
+      "sha256": "cbb4b727193d2dfca4ed8d1022ecf5ebcea8584b550149ea358d7a70e0bbd5d9",
+      "bytes": 16480
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseLocalQuotientFiniteType.olean",
+      "sha256": "00b294ed5ffb53bee432293f333fe67055807002461f7eca0ce95d0db50bb325",
+      "bytes": 94400
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseLocalQuotientGeometry.olean",
+      "sha256": "6d4fa2eeb1a80c41de461acfbfa84b6677fcb050b221fc50600858cff8d9a21c",
+      "bytes": 24056
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseLocalQuotientRank.olean",
+      "sha256": "faf2b2517f21d1f00780140b582a4fc798273890986461f1b3d6a60f0d5af49f",
+      "bytes": 12416
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseLocallyStandardSmoothRank.olean",
+      "sha256": "59cf195c861d0463e50fdc62fb01630f1cb80cc04d43c877f0edd8d7fdbed733",
+      "bytes": 11608
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseMarkedComplexCurves.olean",
+      "sha256": "de0d0c6189a6102f300ba3c1d6381653f7bc70c12558126fdca825a495486bc9",
+      "bytes": 37640
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseMarkingClassifiers.olean",
+      "sha256": "b5def9066f25c7c03a1178c02c424516f3311e991b5b6c77cda0f7419094ab9e",
+      "bytes": 25744
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseNativeClasses.olean",
+      "sha256": "24e66951ffd5a3e93120844bf169547ad7542381802f7503233d5fd35bc0c531",
+      "bytes": 43776
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseNativeRoundtrip.olean",
+      "sha256": "3935d45bcd5c7638f8529b05bf84da8e6e994b2185f40c89c805c5f99f159cad",
+      "bytes": 23216
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarsePointLifting.olean",
+      "sha256": "6d5d27e4bdb42a63f777e661d9049661ce2537b21bdb27dd7571cb582f7fe65b",
+      "bytes": 45408
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarsePointOrbits.olean",
+      "sha256": "a808f7ddd4adc07b6fe1e2962c2e03a49bab9e56d7a959623566571c3f315ab7",
+      "bytes": 74808
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseProjection.olean",
+      "sha256": "1c10aaae3a2fa7718fb517483e21773f02a87b96279643775abb79c6c285b751",
+      "bytes": 40104
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseQuasiCompact.olean",
+      "sha256": "f1eb5d18aea631aaad9dc80a770962044eedab27c140460bd93bfb099a4a728b",
+      "bytes": 16736
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseRawLocalQuotientRank.olean",
+      "sha256": "643c564189976ded8a9b5aaf7ce530fcd506943f7c38ea887b5d1404a0bd127f",
+      "bytes": 12456
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseReduced.olean",
+      "sha256": "d2754ba3753dd5abb01be03da346bb9f3584e5bc87bf6fa41f57b8dc1e226ecf",
+      "bytes": 38592
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSmoothRankCriterion.olean",
+      "sha256": "b8910ec35e977b45fd3de1b3d262b8027f1356e114877edabc634fd22dbb18c3",
+      "bytes": 19728
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSourceJPolynomial.olean",
+      "sha256": "2270c87cc0bf949c0c395906ff96b4103ecec3f5702dbc43fb6c61d247fb4bc2",
+      "bytes": 19464
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSourceJSurjective.olean",
+      "sha256": "9a7efae545e4dbe6663826462aeed148d8cac9e9f1c65c0ec2e6fd6d2cbd6e40",
+      "bytes": 15616
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseStandardSmoothRank.olean",
+      "sha256": "65564c8ba9f19e9183c232ad8b2060b53abaf86cae78c9b7d70647e58f18b6fc",
+      "bytes": 9512
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseStandardSmoothRankConverse.olean",
+      "sha256": "2b4e2dc00ce3069e9ab79d8fdc6c2512dce42b9947743e02788556097e38d1ab",
+      "bytes": 9960
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientAffineIntegrallyClosed.olean",
+      "sha256": "734e8fb3fe515e877f9974e4782186775e589a4286f713de60f98ec291e08e27",
+      "bytes": 26536
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientBaseAlgHom.olean",
+      "sha256": "7adcb035fb14701c63602e7c348acd0ff17575f08671debb8870a7e252348e92",
+      "bytes": 68160
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientChartPullback.olean",
+      "sha256": "3dfc22753d9026b1647f257af9eeb634ad5de0ead6e715a4eb476d431f27c9a9",
+      "bytes": 31176
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientClosedPointPlaceValuation.olean",
+      "sha256": "e0452a27b397edb4b8a732ad39c6ed8f12fa548289470863ddd6374bde3cbd17",
+      "bytes": 60696
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientDivisorPullback.olean",
+      "sha256": "9dcb202a2984aa2c892c26a44f2c63b23d506cf6cc5f4442652f6a693d4f087e",
+      "bytes": 72176
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientEtale.olean",
+      "sha256": "90d4eb658c095cf74cec45caa974f847dd23142c291c63a9f7160bf74d9886a7",
+      "bytes": 15888
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientFinite.olean",
+      "sha256": "21a0e9bd1fc9bbb7ca05765e4365cc6c0cb17ee7a3ff7895dda5aeeb5e494d62",
+      "bytes": 15168
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientFiniteType.olean",
+      "sha256": "57bf1529444326db404a069781b04023b3850cc8466c8ecdcd44aedecf403f83",
+      "bytes": 41216
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientFullConstantField.olean",
+      "sha256": "90b05591e0001de4f98c9ca38ed410dc6345b807c2e7a76c638894bf4d7af983",
+      "bytes": 19176
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientFunctionField.olean",
+      "sha256": "06cc9810c903841916a101838d60f23ff3e28f1013c8e7515422560a9e9a65bf",
+      "bytes": 31864
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientFunctionFieldDegree.olean",
+      "sha256": "c99f833166f257c533cc3dc63d697a64192d49f88b0547cfba392d019a0f44d6",
+      "bytes": 32760
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientFunctionFieldEtale.olean",
+      "sha256": "f82e02a385b303e49ec9c67923f761bb4d0586d865393def73189e30b43ee6fa",
+      "bytes": 26720
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientGeometry.olean",
+      "sha256": "8e6b331a76128b45947a39a758d8b5dfd36a3b4f87df524154b7a6f077388395",
+      "bytes": 19360
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientIntegral.olean",
+      "sha256": "104b055b918a9b447c557d54eea9f5fde48628c735b6ce0b146738ce7f70996a",
+      "bytes": 18616
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientParameterFinite.olean",
+      "sha256": "1ff21f2a69c2111e4d0a1635a063059f13671987f5a6eb7bc7706c88f68a4706",
+      "bytes": 27560
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientParameterFunctionField.olean",
+      "sha256": "23fc4e7f1954f4702830aa582a871868cee021118e14096461c00651bede5575",
+      "bytes": 56216
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientPlaceEquiv.olean",
+      "sha256": "28adf547b3e9ea9938910cf91e61a8104c23b3340600b8f28f4baba298d6482e",
+      "bytes": 66864
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientPlaceGeometry.olean",
+      "sha256": "f11f88f5c0e34d3e3ad26eea2e846ce827fd80c97b4069bc1831d04136cb1c9d",
+      "bytes": 36624
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientPlaceMap.olean",
+      "sha256": "de222f21e6330f66a5861aec0d85cb43f795b090b7312a3e51a84cded172faf4",
+      "bytes": 94296
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientPlaceMapFiniteFibers.olean",
+      "sha256": "84e71169c6ce07f58a14fce9c0020fb0c6256ff1f9ae2f359c9c554126ded237",
+      "bytes": 38040
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientPlaceResidueFinite.olean",
+      "sha256": "9f981b684de0cb44a919698656c222038ad7b40dd4764a541cbfcd161056c736",
+      "bytes": 32984
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientPlaceRestriction.olean",
+      "sha256": "868416ffa22fd83c697161702eb850a062427cbf14def139d928f096949c547e",
+      "bytes": 42560
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientPrincipalDivisorPullback.olean",
+      "sha256": "9b7bc6c84d38684ea4cc3665faef0dba6c59e499e7994a2c03814092f88dbca3",
+      "bytes": 164680
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientRelativeDimension.olean",
+      "sha256": "841a528ebd51b084008353948ae75e21cd3343ee03cce9ae7d7ce3099f6a67f8",
+      "bytes": 34440
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientSeparated.olean",
+      "sha256": "04f8896b317304e9a2833599b8cc7bdd5e3bc88c10c35dde52d08401f49f2ddf",
+      "bytes": 18424
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientSmooth.olean",
+      "sha256": "a7a8bf55469caf3a6cf5a5c12697a9e05c11bcfbcf1a8b08a5e2282b0bdfca87",
+      "bytes": 22352
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientStalkIntegrallyClosed.olean",
+      "sha256": "6175fb7b72e2d65c8f08c30a35096415ff55d315990aea5418c9e3e62d0af1ef",
+      "bytes": 18016
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientStalkMap.olean",
+      "sha256": "5844688521df22f69b4dc38c45b2f23a6080c428d909a8d1fa4a8d65f56b597d",
+      "bytes": 33328
+    },
+    {
+      "path": "/private/tmp/xyin-y0-aintlib-work/.lake/build/lib/lean/AINTLIBDrafts/YZeroCoarseSubgroupQuotientTranscendental.olean",
+      "sha256": "3e06aa8c514f8b699a1e77a8e50082a6d87f0fbc1b0de71040827ce61b6b6bc1",
+      "bytes": 24176
+    }
+  ]
+}

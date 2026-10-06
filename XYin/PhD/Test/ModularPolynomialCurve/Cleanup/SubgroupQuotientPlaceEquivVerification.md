@@ -1,0 +1,11 @@
+# Actual subgroup-quotient closed-point and place equivalences
+
+`G.gluedQuotientClosedPointPlaceEquiv N hkill` applies the genuine generic equivalence to the actual raw quotient over a characteristic-zero field, for an actual finite locally free subgroup with étale structure map. It installs the already proved quotient integrality, smooth relative dimension one and properness; the proved all-place residue-finiteness theorem supplies the generic input. The function-field constants remain those of the original actual quotient structure morphism.
+
+The raw forward formula equals the existing closed-point-place constructor by definition. `G.quotientClosedPointPlaceEquiv` and its forward formula use exactly `G.killN` and `G.killN_spec`, retaining the native public quotient and its own geometric scalar map. Two actual raw/public API examples verify opposite roundtrips. No extra Noetherian, chart, model, genus, or function-field pullback premise is added. The explicit characteristic-zero and étale subgroup scopes remain present.
+
+The parent read the complete 95-line temporary source and full first log before authorizing retention. Owner **80748 CLOSED exit 0**, ten exact standard-three axiom prints, two actual APIs, no diagnostics and no failed attempts. Temporary no-output receipt: `/private/tmp/YZeroSubgroupQuotientPlaceEquivProbe-receipt.json`.
+
+Retained named source is **115 lines**, maximum width **93**. Only license and scope documentation were added; the entire accepted expose suffix is byte-exact and retained/work copies agree. Owner **67320 CLOSED exit 0** was explicitly polled. Full named log has the same ten exact standard-three checks, two actual API examples, no diagnostics or `sorryAx`. Strict setup has the correct module name, both implicit flags false and empty plugins/dynlibs. All six canonical named outputs plus C are independently hash/size verified.
+
+Exact source/setup/log and all seven artifact hashes are recorded in `/private/tmp/YZeroCoarseSubgroupQuotientPlaceEquiv-receipt.json`; full named log is `/private/tmp/YZeroCoarseSubgroupQuotientPlaceEquiv-named.log`. The receipt uses the combined newline-bounded parser in full-log order. Source and outputs are frozen. No restriction-map, finite-fiber, quotient-model or genus theorem is included in this leaf.
