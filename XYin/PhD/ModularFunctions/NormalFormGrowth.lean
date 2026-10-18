@@ -64,7 +64,8 @@ lemma eventually_analyticAt_of_meromorphicNFOn_of_isOfExponentialGrowth {f : ℍ
     Complex.continuous_im.continuousAt.eventually_lt continuousAt_const (lt_add_one τ.im)]
     with z hzA hz hz1
   have hbz : ‖f ⟨z, hz⟩‖ ≤ c * Real.exp (ρ * z.im) := by
-    simpa only [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)] using hA ⟨z, hz⟩ hzA.le
+    simpa only [Set.mem_ofPred_eq, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+      using! hA ⟨z, hz⟩ hzA.le
   rw [Function.comp_apply, ofComplex_apply_of_im_pos hz]
   exact hbz.trans (mul_le_mul_of_nonneg_left
     (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hz1.le hρ)) hc0.le)

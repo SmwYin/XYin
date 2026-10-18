@@ -113,7 +113,7 @@ lemma norm_tsum_logDeriv_expo_le {q : ℂ} (hq : ‖q‖ < 1) :
   have hsumm_nat : Summable (fun n : ℕ ↦ (n : ℝ) * r ^ n) := by
     simpa [pow_one] using summable_pow_mul_geometric_of_norm_lt_one 1 hr_norm_lt_one
   have hsumm_majorant : Summable (fun n : ℕ+ ↦ (n : ℝ) * r ^ (n : ℕ) / (1 - r)) := by
-    simpa [div_eq_mul_inv] using (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
+    simpa [div_eq_mul_inv] using! (hsumm_nat.subtype _).mul_right (1 - r)⁻¹
   have hterm_bound : ∀ n : ℕ+, ‖(n : ℂ) * q ^ (n : ℕ) / (1 - q ^ (n : ℕ))‖ ≤
       n * r ^ (n : ℕ) / (1 - r) := fun n ↦ by
     rw [norm_div, norm_mul, Complex.norm_natCast]

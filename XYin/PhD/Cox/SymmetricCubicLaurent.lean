@@ -272,7 +272,6 @@ theorem symmetric_bidegree_three_eq_zero_of_laurent_coeff
     P = 0 := by
   refine eq_zero_of_cubicCoeff_eq_zero P houter hinner hsymm fun k ↦
     wellFounded_gt.induction (C := fun k ↦ cubicCoeff P k = 0) k fun k ih ↦ ?_
-  dsimp only at ih ⊢
   rw [← symmetricCubicLaurentExpansionFin_coeff_eq T J P hTorder hJorder hTlead hJlead k ih,
     ← bivariateLaurentEvalHom_eq_symmetricCubicLaurentExpansionFin T J P houter hinner hsymm]
   exact hcoeff _ _ (cubicJ_le_cubicI k) (cubicI_le_three k)

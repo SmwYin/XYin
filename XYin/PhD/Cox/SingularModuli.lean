@@ -149,7 +149,7 @@ theorem isIntegral_j_of_isImaginaryQuadratic {τ : ℍ}
   obtain ⟨N, hN, hroot⟩ := exists_nonsquare_modularPolynomialDiagonal_root hτ
   obtain hlc | hlc := theorem_11_18_iv_leadingCoeff N hN
   · refine ⟨modularPolynomialDiagonal N, Polynomial.Monic.def.mpr hlc, ?_⟩
-    simpa only [Polynomial.aeval_def] using hroot
+    simpa only [Polynomial.aeval_def] using! hroot
   · refine ⟨-(modularPolynomialDiagonal N), ?_, ?_⟩
     · rw [Polynomial.Monic.def, Polynomial.leadingCoeff_neg, hlc, neg_neg]
     · have hroot' : (modularPolynomialDiagonal N).eval₂

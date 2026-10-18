@@ -69,7 +69,8 @@ private lemma natScale_smul_gamma0_comm_aux (N : ℕ) [NeZero N] (γ : SL(2, ℤ
     natScale N (γ • z) = gamma0Conjugate N γ hγ • natScale N z := by
   obtain ⟨c, hc⟩ := natCast_dvd_of_mem_Gamma0_aux hγ
   ext
-  simp only [coe_natScale, coe_specialLinearGroup_apply, gamma0Conjugate, Matrix.of_apply,
+  simp only [coe_natScale, coe_specialLinearGroup_apply]
+  simp only [gamma0Conjugate, Matrix.of_apply,
     Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one, hc,
     Int.mul_ediv_cancel_left _ (Nat.cast_ne_zero.mpr (NeZero.ne N))]
   push_cast

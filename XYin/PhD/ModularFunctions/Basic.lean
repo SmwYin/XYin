@@ -54,7 +54,7 @@ variable {Γ : Subgroup (GL (Fin 2) ℝ)}
 
 instance : FunLike (ModularFunction Γ) ℍ ℂ where
   coe f := f.toFun
-  coe_injective' f g h := by cases f; cases g; congr; exact DFunLike.ext' h
+  coe_injective f g h := by cases f; cases g; congr; exact DFunLike.ext' h
 
 instance : SlashInvariantFormClass (ModularFunction Γ) Γ 0 where
   slash_action_eq f := f.slash_action_eq'

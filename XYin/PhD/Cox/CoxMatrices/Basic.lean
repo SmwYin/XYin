@@ -316,8 +316,8 @@ private theorem rightRel_of_coxInput_eq_mul (m : ℕ+) (γ δ U : SL(2, ℤ))
     Matrix.cons_val_zero, Matrix.cons_val_one] at h10 h00
   have hentry : (δ * γ⁻¹) 1 0 = (m : ℤ) * U 1 0 := by
     change (δ.1 * (γ⁻¹).1) 1 0 = (m : ℤ) * U 1 0
-    rw [Matrix.SpecialLinearGroup.SL2_inv_expl]
-    simp only [Matrix.mul_apply, Fin.sum_univ_two,
+    rw [Matrix.SpecialLinearGroup.coe_inv, Matrix.adjugate_fin_two]
+    simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.of_apply,
       Matrix.cons_val_zero, Matrix.cons_val_one]
     have hdet := γ.prop
     rw [Matrix.det_fin_two] at hdet
@@ -455,12 +455,14 @@ private theorem coxMatrix_smith_normalization {m : ℕ+} (σ : CoxMatrix m) :
   have hdet := L.prop
   rw [Matrix.det_fin_two] at hdet
   have hN00 : N 0 0 = 1 := by
-    simp only [N, Matrix.mul_apply, Matrix.SpecialLinearGroup.SL2_inv_expl, Fin.sum_univ_two,
+    simp only [N, Matrix.mul_apply, Matrix.SpecialLinearGroup.coe_inv, Matrix.adjugate_fin_two,
+      Fin.sum_univ_two, Matrix.of_apply,
       Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one,
       Matrix.cons_val_fin_one, hM00, hM10, ← hL00, ← hL10]
     linear_combination hdet
   have hN10 : N 1 0 = 0 := by
-    simp only [N, Matrix.mul_apply, Matrix.SpecialLinearGroup.SL2_inv_expl, Fin.sum_univ_two,
+    simp only [N, Matrix.mul_apply, Matrix.SpecialLinearGroup.coe_inv, Matrix.adjugate_fin_two,
+      Fin.sum_univ_two, Matrix.of_apply,
       Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one,
       Matrix.cons_val_fin_one, hM00, hM10, ← hL00, ← hL10]
     ring

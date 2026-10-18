@@ -154,7 +154,7 @@ private lemma formalCoxPolynomial_coeff_eq_int
     (IsGalois.mem_range_algebraMap_iff_fixed x).2 hfixed
   obtain ⟨q, hq⟩ := hxrange
   have hqint : IsIntegral ℤ q :=
-    (isIntegral_algebraMap_iff (algebraMap ℚ K).injective).mp <| by
+    (isIntegral_algebraMap_iff (B := K)).mp <| by
       simpa [x, hq] using hxint
   obtain ⟨z, hz⟩ := IsIntegrallyClosed.algebraMap_eq_of_integral hqint
   refine ⟨z, ?_⟩

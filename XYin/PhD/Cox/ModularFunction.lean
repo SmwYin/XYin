@@ -45,7 +45,7 @@ private theorem levelOne_constant_of_holomorphic {f : ℍ → ℂ}
         rw [OnePoint.isBoundedAt_iff_exists_SL2Z hc]
         obtain ⟨γ, hγ⟩ := isCusp_SL2Z_iff'.mp hc
         exact ⟨γ, hγ.symm, by simpa only [hf.slash_sl2 γ] using hfbdd⟩ }
-  simpa only [F, Function.const_def] using ModularFormClass.levelOne_weight_zero_const F
+  simpa only [F, Function.const_def] using! ModularFormClass.levelOne_weight_zero_const F
 
 private lemma cuspData_sub_const_mul_pow
     (N : ℕ+) {f g : ℍ → ℂ} (hf : CuspData N f)

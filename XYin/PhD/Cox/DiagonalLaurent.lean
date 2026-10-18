@@ -97,7 +97,6 @@ theorem modularPolynomialC_eval_X_leadingCoeff_pow
       (laurentqExpansion_j_leadingCoeff_widthM m), modularPolynomialC_eval_X_eval₂_j]
   exact Finset.prod_induction _ (fun F : LaurentSeries ℂ ↦ F.leadingCoeff ^ (2 * (m : ℕ)) = 1)
     (fun a b ha hb ↦ by
-      dsimp only at ha hb ⊢
       rw [HahnSeries.leadingCoeff_mul, mul_pow, ha, hb, one_mul])
     (by simp)
     fun σ _ ↦ cox_diagonal_factor_leadingCoeff_pow m hm σ

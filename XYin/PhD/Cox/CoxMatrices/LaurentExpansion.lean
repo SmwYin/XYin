@@ -192,8 +192,11 @@ series is the width-`a²` Laurent series of `j`. -/
 theorem transformedJSeries_eq_jLaurentSeriesWidth {K : Type*} [Field K] {m : ℕ+} (ζ : K)
     (σ : CoxMatrix m) (hζ : ζ ^ ((σ.a : ℤ) * σ.b) = 1) :
     transformedJSeries ζ σ = jLaurentSeriesWidth K ⟨σ.a ^ 2, pow_pos σ.a_pos 2⟩ := by
+  let w : ℕ+ := ⟨σ.a ^ 2, pow_pos σ.a_pos 2⟩
+  change transformedJSeries ζ σ = jLaurentSeriesWidth K w
   ext k
-  simp only [transformedJSeries_coeff, jLaurentSeriesWidth_coeff, PNat.mk_coe, Nat.cast_pow,
+  rw [transformedJSeries_coeff, jLaurentSeriesWidth_coeff]
+  simp only [w, PNat.mk_coe, Nat.cast_pow,
     zpow_mul, hζ, one_zpow, mul_one]
 
 /-- The coefficient of a transformed series at its principal exponent `-a²` is its phase. -/
@@ -356,7 +359,7 @@ private theorem toQExpansion_coxAction_aux (m : ℕ+) (σ : CoxMatrix m) :
       exact hn ⟨k, rfl⟩
     simp [P, PowerSeries.coeff_expand, hnotdvd]
   -- `qExpansion_coeff_unique` is stated for `FunLike` types; view `g` as one.
-  letI : FunLike (ℍ → ℂ) ℍ ℂ := { coe := id, coe_injective' := fun _ _ h ↦ h }
+  letI : FunLike (ℍ → ℂ) ℍ ℂ := { coe := id, coe_injective := fun _ _ h ↦ h }
   ext n
   exact (qExpansion_coeff_unique g (by positivity) hgan hsum n).symm
 

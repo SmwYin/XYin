@@ -215,7 +215,7 @@ private theorem coxCoefficientPolynomialAux_eval
     (m : ℕ+) (n : ℕ) (τ : ℍ) :
     (coxCoefficientPolynomialAux m n).eval (j τ) =
       (coxPhiFunction m).coeff n τ := by
-  simpa [polynomialIn] using congrFun
+  simpa [coxCoefficientPolynomialAux, polynomialIn] using congrFun
     (coxPhiFunction_coeff_polynomialInJ m n).choose_spec.symm τ
 
 private noncomputable def modularPolynomialCandidateAux (m : ℕ+) : ℂ[X][Y] :=

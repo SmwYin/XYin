@@ -94,7 +94,8 @@ lemma cuspFunction_const (h : ℝ) (a : ℂ) :
     cuspFunction h (fun _ : ℍ ↦ a) = fun _ ↦ a := by
   ext q
   rcases eq_or_ne q 0 with rfl | hq
-  · simpa [cuspFunction, Periodic.cuspFunction] using tendsto_const_nhds.limUnder_eq
+  · simpa [cuspFunction, Periodic.cuspFunction, Function.comp_def] using
+      tendsto_const_nhds.limUnder_eq
   · exact cuspFunction_apply_of_ne_zero h _ hq
 
 /-- The cusp function of a constant function is analytic at `0`. -/

@@ -32,7 +32,7 @@ theorem mapRingHom_comp_eval₂RingHom (f : R →+* S) {J : HahnSeries Γ R}
       (Polynomial.eval₂RingHom C J').comp (Polynomial.mapRingHom f) := by
   apply Polynomial.ringHom_ext
   · intro r
-    simpa using map_C r f
+    simpa [C] using map_C r f
   · simp [hJ]
 
 end HahnSeries

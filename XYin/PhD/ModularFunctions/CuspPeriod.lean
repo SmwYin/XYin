@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
 import Mathlib.NumberTheory.ModularForms.QExpansion
+import Mathlib.NumberTheory.ModularForms.NormTrace
 
 /-!
 # Positive periods at cusps
@@ -52,7 +53,7 @@ theorem exists_pos_period_at_cusp {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ}
     (hg : g • OnePoint.infty = c) :
     ∃ h : ℝ, 0 < h ∧ Function.Periodic (((f : ℍ → ℂ) ∣[k] g) ∘ ofComplex) h := by
   let Γ' := ConjAct.toConjAct g⁻¹ • Γ
-  haveI : DiscreteTopology Γ' := Γ.discreteTopology_conj g⁻¹
+  have : DiscreteTopology Γ' := Γ.discreteTopology_conj g⁻¹
   have hc' : IsCusp OnePoint.infty Γ' := by
     simpa [Γ', ← hg] using hc.smul g⁻¹
   exact ⟨Γ'.strictWidthInfty, Γ'.strictWidthInfty_pos_iff.mpr hc',

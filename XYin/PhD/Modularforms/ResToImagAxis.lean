@@ -42,11 +42,11 @@ noncomputable def resToImagAxis (F : ℍ → ℂ) : ℝ → ℂ :=
 
 @[simp] lemma resToImagAxis_of_pos (F : ℍ → ℂ) {t : ℝ} (ht : 0 < t) :
     F.resToImagAxis t = F ⟨I * t, by simp [ht]⟩ :=
-  dif_pos ht
+  dite_eq_left ht
 
 @[simp] lemma resToImagAxis_of_nonpos (F : ℍ → ℂ) {t : ℝ} (ht : t ≤ 0) :
     F.resToImagAxis t = 0 :=
-  dif_neg ht.not_gt
+  dite_eq_right ht.not_gt
 
 @[simp] lemma resToImagAxis_add_apply (F G : ℍ → ℂ) (t : ℝ) :
     (F + G).resToImagAxis t = F.resToImagAxis t + G.resToImagAxis t := by
@@ -93,9 +93,10 @@ theorem ResToImagAxis.Differentiable (F : ℍ → ℂ) (hF : MDiff F) (t : ℝ)
   rw [mdifferentiableAt_iff] at hcdiff
   have h_diff :
       DifferentiableAt ℝ (fun t : ℝ ↦ F (ofComplex (Complex.I * t))) t := by
-    haveI : IsScalarTower ℝ ℂ ℂ := IsScalarTower.complexToReal
+    have : IsScalarTower ℝ ℂ ℂ := IsScalarTower.complexToReal
     convert hcdiff.restrictScalars ℝ |> DifferentiableAt.comp t <|
       DifferentiableAt.const_mul ofRealCLM.differentiableAt _ using 1
+    simp only [Function.comp_def, ofRealCLM_apply]
   apply h_diff.congr_of_eventuallyEq
   filter_upwards [lt_mem_nhds ht] with t ht
   rw [Function.resToImagAxis_of_pos _ ht, ofComplex_apply_of_im_pos]
@@ -301,8 +302,10 @@ One application is to cusp forms, which satisfy such exponential decay bounds.
 lemma tendsto_ofComplex_I_mul_atTop :
     Tendsto (fun t : ℝ ↦ ofComplex (I * t)) atTop atImInfty := by
   apply tendsto_comap_im_ofComplex.comp
-  simpa [tendsto_comap_iff, Function.comp_def] using
-    (tendsto_id : Tendsto (fun t : ℝ ↦ t) atTop atTop)
+  rw [tendsto_comap_iff]
+  convert (tendsto_id : Tendsto (@id ℝ) atTop atTop) using 1
+  ext t
+  simp
 
 /--
 If `F : ℍ → ℂ` is `O(exp(-c * im τ))` at `atImInfty`, then the restriction to the imaginary axis

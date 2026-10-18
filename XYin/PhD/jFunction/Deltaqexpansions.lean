@@ -201,7 +201,9 @@ lemma discriminant_qExpansion_eq_smul_eisenstein_difference :
 /-- The q-expansion of the modular discriminant has integral coefficients. -/
 lemma discriminant_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 discriminant) := by
   rw [discriminant_qExpansion_eq_smul_eisenstein_difference]
-  apply IsIntegralPowerSeriesmod (by decide) ⟨_, map_integralE4_pow_three_sub_integralE6_pow_two⟩
+  have hIntegral : IsIntegralPowerSeries (qExpansion 1 (E₄ ^ 3 - E₆ ^ 2)) :=
+    ⟨_, map_integralE4_pow_three_sub_integralE6_pow_two⟩
+  apply IsIntegralPowerSeriesmod (by decide) hIntegral
   intro n
   rw [toIntegralPowerSeries_eq_of_map_eq _ map_integralE4_pow_three_sub_integralE6_pow_two]
   exact eisenstein_difference_coeff_modEq_zero n

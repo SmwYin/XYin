@@ -104,7 +104,7 @@ lemma isBoundedAtImInfty_add (hf : IsBoundedAtImInfty f) (hg : IsBoundedAtImInft
 @[qexp_simps]
 lemma isBoundedAtImInfty_sub (hf : IsBoundedAtImInfty f) (hg : IsBoundedAtImInfty g) :
     IsBoundedAtImInfty (f - g) := by
-  simpa [sub_eq_add_neg] using hf.add hg.neg
+  simpa only [sub_eq_add_neg, IsBoundedAtImInfty] using hf.add hg.neg
 
 @[qexp_simps]
 lemma isBoundedAtImInfty_neg (hf : IsBoundedAtImInfty f) : IsBoundedAtImInfty (-f) :=

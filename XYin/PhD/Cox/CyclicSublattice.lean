@@ -76,7 +76,7 @@ private theorem hnfPeriod_eq (S : CyclicSublattice L m) (j : Fin 2) :
         (S.hermiteNormalForm.matrix 1 j : ℂ) * L.ω₂ := by
   have h := congrArg (fun x : L.lattice ↦ (x : ℂ))
     (L.latticeBasis.sum_repr ((S.hermiteNormalForm.bN j : S.carrier) : L.lattice)).symm
-  simpa only [Fin.sum_univ_two, S.hermiteNormalForm.repr_apply,
+  simpa only [hnfPeriod, Fin.sum_univ_two, S.hermiteNormalForm.repr_apply,
     Submodule.coe_add, SetLike.val_smul, PeriodPair.latticeBasis_zero,
     PeriodPair.latticeBasis_one, zsmul_eq_mul] using h
 
@@ -91,7 +91,7 @@ private theorem hnfPeriods_linearIndependent (S : CyclicSublattice L m) :
       (R := ℝ) (S := ℝ) (x := L.ω₁) (y := L.ω₂)
       (H 0 0 : ℝ) (H 1 0 : ℝ) (H 0 1 : ℝ) (H 1 1 : ℝ)).2 ⟨L.indep, hdet⟩
   rw [hnfPeriod_eq S 0, hnfPeriod_eq S 1]
-  simpa only [Complex.real_smul, Int.cast_ofNat] using htrans
+  simpa only [H, Complex.real_smul, Complex.ofReal_intCast] using htrans
 
 /-- The canonical period pair attached to a finite-index sublattice, chosen through its HNF
 basis relative to `L.latticeBasis`. -/

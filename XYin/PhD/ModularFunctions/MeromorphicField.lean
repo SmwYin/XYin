@@ -208,7 +208,7 @@ one along `codiscreteWithin U`.
 theorem MeromorphicOn.self_mul_inv_eventuallyEq_one_codiscreteWithin (hs : MeromorphicOn s U)
     (h : ∀ x ∈ U, meromorphicOrderAt s x ≠ ⊤) :
     s * s⁻¹ =ᶠ[codiscreteWithin U] 1 :=
-  (MeromorphicAt.MeromorphicOn.codiscreteWithin_setOf_ne_zero hs h).mono
+  (hs.codiscreteWithin_setOfPred_ne_zero h).mono
     fun _ hz ↦ mul_inv_cancel₀ hz
 
 end VanishingGerms
@@ -724,7 +724,7 @@ theorem eventually_codiscreteWithin_comp_ofComplex_iff {p : ℍ → Prop} :
     (∀ᶠ z in codiscreteWithin upperHalfPlaneSet, p (ofComplex z)) ↔
       ∀ᶠ τ in codiscrete ℍ, p τ := by
   rw [eventually_codiscreteWithin_iff_forall_eventually_nhdsNE isOpen_upperHalfPlaneSet,
-    eventually_codiscrete_iff_forall_eventually_nhdsNE]
+    Filter.eventually_codiscrete_iff_forall_eventually_nhdsNE]
   refine ⟨fun h τ ↦ eventually_nhdsNE_comp_ofComplex_iff.1 (h τ τ.im_pos), fun h z hz ↦ ?_⟩
   simpa using eventually_nhdsNE_comp_ofComplex_iff.2 (h ⟨z, hz⟩)
 

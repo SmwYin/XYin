@@ -152,7 +152,8 @@ private lemma meromorphicAt_zero_of_bounded_pow {g : ℂ → ℂ} (n : ℕ)
     MeromorphicAt g 0 := by
   have hz : ZeroAtFilter (𝓝[≠] (0 : ℂ)) (fun q ↦ q) := nhdsWithin_le_nhds
   have ht : Tendsto (fun q ↦ q ^ (n + 1) * g q) (𝓝[≠] 0) (𝓝 0) := by
-    simpa only [Pi.mul_apply, pow_succ', mul_assoc] using hz.mul_boundedAtFilter hb
+    simpa only [ZeroAtFilter, Pi.mul_apply, pow_succ', mul_assoc]
+      using! hz.mul_boundedAtFilter hb
   refine ⟨n + 1, ?_⟩
   simp only [sub_zero, smul_eq_mul]
   apply Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt
@@ -183,8 +184,9 @@ theorem isOfExponentialGrowth_of_meromorphicAt_cuspFunction {h : ℝ} (hh : 0 < 
   refine ⟨2 * Real.pi * n / h, by positivity, (weighted_bound_iff h n f).mpr ?_⟩
   have ht := hn.continuousAt.tendsto.comp (qParam_tendsto_atImInfty hh)
   have hb := ht.isBigO_one ℝ
-  simpa only [Function.comp_def, sub_zero, smul_eq_mul, eq_cuspFunction _ hh.ne' hfper]
-    using hb
+  simpa only [IsBoundedAtImInfty, BoundedAtFilter, Function.comp_def, sub_zero, smul_eq_mul,
+    eq_cuspFunction _ hh.ne' hfper]
+    using! hb
 
 /-- A periodic function holomorphic sufficiently high in the upper half plane has exponential
 growth if and only if its cusp function is meromorphic at zero. -/

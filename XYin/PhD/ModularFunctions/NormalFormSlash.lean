@@ -40,7 +40,7 @@ lemma AnalyticAt.conj_conj {f : ℂ → ℂ} {x : ℂ} (hf : AnalyticAt ℂ f (c
     AnalyticAt ℂ (fun z ↦ conj (f (conj z))) x := by
   rw [analyticAt_iff_eventually_differentiableAt]
   filter_upwards [continuous_conj.continuousAt.eventually hf.eventually_analyticAt] with z hz
-  simpa using hz.differentiableAt.star_star
+  simpa using! hz.differentiableAt.star_star
 
 /-- Conjugating the source and target preserves meromorphic normal form. -/
 lemma MeromorphicNFAt.conj_conj {f : ℂ → ℂ} {x : ℂ}

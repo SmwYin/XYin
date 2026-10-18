@@ -22,9 +22,7 @@ open scoped Real
 
 /-- `E₂` is 1-periodic: `E₂(z + 1) = E₂(z)`. -/
 lemma E₂_periodic (z : ℍ) : E2 ((1 : ℝ) +ᵥ z) = E2 z := by
-  have h := congrFun (E2_slash_action ModularGroup.T) z
-  rw [D2_T, smul_zero, sub_zero, SL_slash_apply, modular_T_smul] at h
-  simpa [ModularGroup.T, denom] using h
+  simpa only [modular_T_smul] using E2_T_smul z
 
 /-- `E₂` transforms under `S` as `E₂(-1/z) = z² (E₂(z) + 6/(π i z))`. -/
 lemma E₂_S_transform (z : ℍ) :

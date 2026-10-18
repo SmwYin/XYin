@@ -155,7 +155,7 @@ theorem SlashInvariantForm.isBoundedAtImInfty_quotientFunc [ModularFormClass F �
   | h r =>
     have hc : IsCusp ∞ (toConjAct (r : GL (Fin 2) ℝ)⁻¹⁻¹ • 𝒢) := by
       simpa using (Fact.out : IsCusp ∞ ℋ).of_isFiniteRelIndex_conj r.2
-    simpa using isBoundedAt_infty_iff.mp
+    simpa only [ModularForm.coe_translate, quotientFunc_mk] using isBoundedAt_infty_iff.mp
       (ModularFormClass.bdd_at_cusps (ModularForm.translate f (r : GL (Fin 2) ℝ)⁻¹) hc)
 
 /-- If `∞` is a cusp of `ℋ`, then the norm of a modular form `f` down to `ℋ` is `O(f)` as

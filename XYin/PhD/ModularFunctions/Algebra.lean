@@ -47,7 +47,7 @@ namespace UpperHalfPlane
 /-- The slash action preserves agreement away from discrete subsets of `ℍ`. -/
 theorem slash_eventuallyEq_codiscrete {f g : ℍ → ℂ} (k : ℤ) (γ : GL (Fin 2) ℝ)
     (h : f =ᶠ[codiscrete ℍ] g) : f ∣[k] γ =ᶠ[codiscrete ℍ] g ∣[k] γ := by
-  rw [EventuallyEq, eventually_codiscrete_iff_forall_eventually_nhdsNE] at h ⊢
+  rw [EventuallyEq, Filter.eventually_codiscrete_iff_forall_eventually_nhdsNE] at h ⊢
   exact fun τ ↦ slash_eventuallyEq_nhdsNE k γ (h (γ • τ))
 
 /-- A function in normal form which agrees away from a discrete set with a function invariant
@@ -64,7 +64,7 @@ theorem IsOfExponentialGrowth.of_eventuallyEq_codiscrete {f g : ℍ → ℂ}
     (hg : IsOfExponentialGrowth g) (hf : MeromorphicNFOn (f ∘ ofComplex) upperHalfPlaneSet)
     (hgd : ∀ᶠ τ in atImInfty, MDiffAt g τ) (hfg : f =ᶠ[codiscrete ℍ] g) :
     IsOfExponentialGrowth f := by
-  rw [EventuallyEq, eventually_codiscrete_iff_forall_eventually_nhdsNE] at hfg
+  rw [EventuallyEq, Filter.eventually_codiscrete_iff_forall_eventually_nhdsNE] at hfg
   refine hg.congr ((eventually_analyticAt_of_eventually_mdifferentiableAt hgd).mono
     fun τ hτ ↦ ?_)
   exact (apply_eq_of_eventuallyEq_nhdsNE (hf τ.im_pos) hτ.meromorphicNFAt (hfg τ)).symm
@@ -327,7 +327,7 @@ theorem coe_neg (f : ModularFunction Γ) : ⇑(-f) = -⇑f := by
 /-- The canonical representative of a sum agrees with the pointwise sum away from a discrete
 subset of `ℍ`. -/
 theorem coe_add_eventuallyEq (f g : ModularFunction Γ) : ⇑(f + g) =ᶠ[codiscrete ℍ] ⇑f + ⇑g := by
-  simpa only [toFun_toMeromorphicField] using
+  simpa only [toFun_toMeromorphicField] using!
     toFun_add_eventuallyEq f.toMeromorphicField g.toMeromorphicField
 
 /-!
@@ -393,7 +393,7 @@ theorem coe_one : ⇑(1 : ModularFunction Γ) = 1 :=
 /-- The canonical representative of a product agrees with the pointwise product away from a
 discrete subset of `ℍ`. -/
 theorem coe_mul_eventuallyEq (f g : ModularFunction Γ) : ⇑(f * g) =ᶠ[codiscrete ℍ] ⇑f * ⇑g := by
-  simpa only [toFun_toMeromorphicField] using
+  simpa only [toFun_toMeromorphicField] using!
     toFun_mul_eventuallyEq f.toMeromorphicField g.toMeromorphicField
 
 variable (Γ) in

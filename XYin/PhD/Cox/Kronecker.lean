@@ -228,7 +228,7 @@ private theorem phasePolynomial_eval_zeta (p : ℕ+) (e : ℤ) :
       simpa [u] using (zeta_isPrimitiveRoot p).pow_eq_one
     have hemod := zpow_eq_zpow_emod' (x := u) e hu
     have hval := congrArg (fun v : ℂˣ ↦ (v : ℂ)) hemod
-    simpa only [Units.val_zpow_eq_zpow_val] using hval.symm
+    simpa only [Units.val_zpow_eq_zpow_val, u, Units.val_mk0] using hval.symm
   · exact Int.emod_nonneg e (by exact_mod_cast PNat.ne_zero p)
 
 /-- The integral cyclotomic lift of a transformed `j`-series. -/

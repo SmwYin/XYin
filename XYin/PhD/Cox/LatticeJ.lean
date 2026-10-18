@@ -557,6 +557,7 @@ private theorem weight_zero_cuspForm_eq_zero_aux {f : ℍ → ℂ}
   have hc0 : c = 0 :=
     tendsto_nhds_unique tendsto_const_nhds (hc ▸ show IsZeroAtImInfty ⇑F from hzero)
   ext z
+  change F z = 0
   simpa [hc0] using congrFun hc z
 
 private theorem inv_j_sub_slashInvariant_aux (c : ℂ) :
@@ -574,7 +575,7 @@ private lemma E₄_tendsto_atImInfty_aux : Tendsto (E₄ : ℍ → ℂ) atImInft
 
 private lemma qj_tendsto_atImInfty_aux : Tendsto qj atImInfty (nhds 1) := by
   rw [← E₄_pow_three_mul_qOverDelta_eq_qj]
-  simpa using (E₄_tendsto_atImInfty_aux.pow 3).mul qOverDelta_tendsto_atImInfty
+  simpa using! (E₄_tendsto_atImInfty_aux.pow 3).mul qOverDelta_tendsto_atImInfty
 
 private theorem inv_j_sub_isZeroAtImInfty_aux (c : ℂ) :
     IsZeroAtImInfty (fun τ : ℍ ↦ (j τ - c)⁻¹) := by
@@ -585,7 +586,7 @@ private theorem inv_j_sub_isZeroAtImInfty_aux (c : ℂ) :
     simpa using qj_tendsto_atImInfty_aux.sub (tendsto_const_nhds.mul hq)
   have hratio : Tendsto (fun τ : ℍ ↦ q τ / (qj τ - c * q τ))
       atImInfty (nhds 0) := by
-    simpa using hq.mul (hden.inv₀ (by norm_num : (1 : ℂ) ≠ 0))
+    simpa [div_eq_mul_inv] using hq.mul (hden.inv₀ (by norm_num : (1 : ℂ) ≠ 0))
   have hEq : (fun τ : ℍ ↦ (j τ - c)⁻¹) =ᶠ[atImInfty]
       fun τ : ℍ ↦ q τ / (qj τ - c * q τ) := by
     refine Eventually.of_forall fun τ ↦ ?_

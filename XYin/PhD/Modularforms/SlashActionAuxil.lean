@@ -28,30 +28,30 @@ open Matrix UpperHalfPlane CongruenceSubgroup ModularGroup
 local notation "Γ " n:100 => Gamma n
 
 /-- The generator `α = [[1, 2], [0, 1]] = T²` of `Γ(2)`. -/
-def α : Γ 2 := ⟨⟨!![1, 2; 0, 1], by simp⟩, by
-  simp only [Gamma_mem, Fin.isValue, of_apply, cons_val', cons_val_zero, cons_val_fin_one,
-    Int.cast_one, cons_val_one, Int.cast_ofNat, Int.cast_zero, and_self, and_true, true_and]
-  decide⟩
+def α : Γ 2 := by
+  let A : SL(2, ℤ) := ⟨!![1, 2; 0, 1], by simp⟩
+  exact ⟨A, Gamma_mem.mpr (by decide)⟩
 
 /-- The generator `β = [[1, 0], [2, 1]]` of `Γ(2)`. -/
-def β : Γ 2 := ⟨⟨!![1, 0; 2, 1], by simp⟩, by
-  simp only [Gamma_mem, Fin.isValue, of_apply, cons_val', cons_val_zero, cons_val_fin_one,
-    Int.cast_one, cons_val_one, Int.cast_zero, Int.cast_ofNat, and_true, true_and]
-  decide⟩
+def β : Γ 2 := by
+  let A : SL(2, ℤ) := ⟨!![1, 0; 2, 1], by simp⟩
+  exact ⟨A, Gamma_mem.mpr (by decide)⟩
 
 /-- The element `-I` of `Γ(2)`. -/
-def negI : Γ 2 := ⟨⟨!![-1, 0; 0, -1], by simp⟩, by simp⟩
+def negI : Γ 2 := by
+  let A : SL(2, ℤ) := ⟨!![-1, 0; 0, -1], by simp⟩
+  exact ⟨A, Gamma_mem.mpr (by decide)⟩
 
 theorem α_eq_T_sq :
     α = ⟨T ^ 2, by simp only [Gamma_mem, Fin.isValue, SpecialLinearGroup.coe_pow]; decide⟩ := by
-  ext; simp [α, T, sq]
+  decide
 
-theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by ext; simp [β, S, α, negI]
+theorem β_eq_negI_mul_S_mul_α_inv_mul_S : β = negI * S * α⁻¹ * S := by decide
 
 theorem ModularGroup.modular_negI_sq : negI ^ 2 = 1 := by
   ext i j; fin_cases i <;> fin_cases j <;> rfl
 
-theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by ext i j; simp [negI]
+theorem ModularGroup.modular_negI_inv : negI⁻¹ = negI := by decide
 
 section slash_action
 
@@ -67,7 +67,8 @@ theorem modular_slash_negI_of_even (hk : Even k) : f ∣[k] negI.1 = f := by
 /-- The slash action of `T` is translation by `1` (the analogue of mathlib's
 `SlashInvariantForm.slash_S_apply`). -/
 theorem modular_slash_T_apply : (f ∣[k] T) z = f ((1 : ℝ) +ᵥ z) := by
-  rw [SL_slash_apply, denom, UpperHalfPlane.modular_T_smul]; simp [T]
+  rw [SL_slash_apply, ModularGroup.denom_apply, UpperHalfPlane.modular_T_smul]
+  simp
 
 end slash_action
 
@@ -115,8 +116,8 @@ lemma Γ2_c_eq_zero (A : Γ 2) (h : A.1 1 0 = 0) : A ∈ Subgroup.closure {α, �
       apply Subtype.ext
       rw [α_zpow_val]
       ext i j; fin_cases i <;> fin_cases j <;> simp_all
-    simpa only [Subtype.ext_iff, SubgroupClass.coe_zpow, heq] using
-      Subgroup.zpow_mem (Subgroup.closure {α, β, negI}) hα k
+    convert Subgroup.zpow_mem (Subgroup.closure {α, β, negI}) hα k using 1
+    exact Subtype.ext heq
   · have heq : A = negI * α ^ (-k) := by
       apply Subtype.ext
       rw [SpecialLinearGroup.coe_mul, α_zpow_val]

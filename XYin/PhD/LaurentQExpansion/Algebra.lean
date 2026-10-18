@@ -385,7 +385,8 @@ lemma toQExpansion_nat_mul {h : ℝ} {m : ℕ} (hm : m ≠ 0) {f : ℍ → ℂ}
     AnalyticAt.comp (by simpa [hm] using hGan) (analyticAt_id.pow m)
   have hEq := (hFan.continuousAt.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE
     hGcomp.continuousAt).mp (cuspFunction_poleRemoved_nat_mul_eventuallyEq hm hmero hfper)
-  simpa only [analyticTaylor_cuspFunction] using analyticTaylor_comp_pow hm hFan hGan hEq
+  simpa only [analyticTaylor_cuspFunction, toQExpansion] using
+    analyticTaylor_comp_pow hm hFan hGan hEq
 
 /-- For `m ≠ 0`, multiplication by `m` as an order embedding of `ℤ`. Extending the domain of a
 Laurent series along it (`HahnSeries.embDomain`) substitutes `q ↦ q ^ m`. -/

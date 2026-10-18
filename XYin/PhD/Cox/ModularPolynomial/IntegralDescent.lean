@@ -76,7 +76,7 @@ private theorem coxNegativeRoot_laurentqExpansion_aux (m : ℕ+) (σ : CoxMatrix
     laurentqExpansion ((m : ℕ) : ℝ) (coxNegativeRoot m σ) =
       coxNegativeRootSeries m σ := by
   have hmpos : (0 : ℝ) < (m : ℕ) := by exact_mod_cast PNat.pos m
-  simpa [coxNegativeRoot, coxNegativeRootSeries] using
+  simpa [coxNegativeRoot, coxNegativeRootSeries] using!
     (laurentqExpansion_neg hmpos (coxRoot_cuspMeromorphicAt m σ)).trans
       (congrArg Neg.neg (laurentqExpansion_coxAction m σ))
 

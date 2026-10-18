@@ -229,7 +229,8 @@ module instances provided by mathlib. -/
 noncomputable scoped instance modularFormModuleofIsScalarTower (R : Type*) [Semiring R]
     [Module R ℂ] [IsScalarTower R ℂ ℂ] {Γ : Subgroup (GL (Fin 2) ℝ)} {k : ℤ} [Γ.HasDetOne] :
     Module R (ModularForm Γ k) :=
-  Function.Injective.module R ModularForm.coeHom DFunLike.coe_injective fun _ _ => rfl
+  Function.Injective.module R (FunLike.coeAddMonoidHom (ModularForm Γ k) ℍ ℂ)
+    DFunLike.coe_injective fun _ _ ↦ rfl
 
 /-- Taking `q`-expansions commutes with scalar multiplication by elements of `R`, acting through
 `algebraMap R ℂ`. -/

@@ -40,7 +40,8 @@ lemma eventually_arg_pow {α : Type*} {l : Filter α}
   rcases n.eq_zero_or_pos with rfl | hn
   · simp
   have harg : Tendsto (fun x ↦ arg (1 + f x)) l (𝓝 0) := by
-    simpa using (Complex.continuousAt_arg Complex.one_mem_slitPlane).tendsto.comp
+    simpa [Function.comp_def] using
+      (Complex.continuousAt_arg Complex.one_mem_slitPlane).tendsto.comp
       (by simpa using hf.const_add 1)
   filter_upwards [(tendsto_order.1 harg.abs).2 (π / n)
     (by simpa using div_pos Real.pi_pos (Nat.cast_pos.mpr hn))] with x hx

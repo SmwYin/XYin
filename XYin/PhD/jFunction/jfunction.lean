@@ -77,9 +77,9 @@ def j : ℍ → ℂ := fun τ ↦ E₄ τ ^ 3 / discriminant τ
 
 /-- The modular invariant is holomorphic on the upper half-plane. -/
 lemma j_mdifferentiable : MDiff j := by
-  simpa only [j, Function.comp_def] using
-    ((ModularFormClass.holo E₄).pow 3).div (ModularFormClass.holo CuspForm.discriminant)
-      discriminant_ne_zero
+  change MDiff ((⇑E₄) ^ 3 / ⇑CuspForm.discriminant)
+  exact ((ModularFormClass.holo E₄).pow 3).div
+    (ModularFormClass.holo CuspForm.discriminant) discriminant_ne_zero
 
 /-- The modular invariant `j` is invariant under the weight-zero slash action of `SL₂(ℤ)`. -/
 lemma j_slash_invariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
@@ -118,7 +118,8 @@ lemma deltaOverQ_ne_zero (z : ℍ) : deltaOverQ z ≠ 0 := by
 
 /-- The function `deltaOverQ` tends to `1` at infinity. -/
 lemma deltaOverQ_tendsto_atImInfty : Tendsto deltaOverQ atImInfty (𝓝 (1 : ℂ)) := by
-  simpa [deltaOverQ, eta_q_eq_cexp] using tendsto_atImInfty_tprod_one_sub_eta_q_pow
+  unfold deltaOverQ
+  simpa only [eta_q_eq_cexp] using tendsto_atImInfty_tprod_one_sub_eta_q_pow
 
 private lemma deltaOverQ_vadd_one_aux (τ : ℍ) : deltaOverQ ((1 : ℝ) +ᵥ τ) = deltaOverQ τ := by
   simp only [deltaOverQ_eq_qParam_inv_mul_discriminant, Pi.mul_apply, cexp_vadd_one_aux,
@@ -217,8 +218,8 @@ lemma qOverDelta_cuspFunction_analyticAt : AnalyticAt ℂ (cuspFunction 1 qOverD
 
 /-- The cusp function of `E₄ ^ 3` is analytic at `q = 0`. -/
 lemma E₄_pow_three_cuspFunction_analyticAt : AnalyticAt ℂ (cuspFunction 1 (E₄ ^ 3)) 0 := by
-  simpa [ModularForm.coe_pow] using
-    ModularFormClass.analyticAt_cuspFunction_zero (E₄.pow 3) one_pos one_mem_strictPeriods_SL
+  rw [← ModularForm.coe_pow]
+  exact ModularFormClass.analyticAt_cuspFunction_zero (E₄.pow 3) one_pos one_mem_strictPeriods_SL
 
 /-- The q-expansions of `deltaOverQ` and `qOverDelta` are multiplicative inverses. -/
 lemma integralDeltaOverQ_mul_qExpansion_qOverDelta :
@@ -235,8 +236,10 @@ private lemma qOverDelta_isIntegralPowerSeries_aux :
   obtain ⟨u, hu⟩ := integralDeltaOverQ_isUnit_aux
   refine ⟨(↑(u⁻¹) : PowerSeries ℤ), ?_⟩
   exact (Units.map (coeToComplexPowerSeries.ringHom ℤ).toMonoidHom u).inv_eq_of_mul_eq_one_right
-    (by simpa only [Units.coe_map, MonoidHom.coe_coe, hu] using
-      integralDeltaOverQ_mul_qExpansion_qOverDelta)
+    (by
+      change (coeToComplexPowerSeries.ringHom ℤ) ↑u * qExpansion 1 qOverDelta = 1
+      rw [hu]
+      exact integralDeltaOverQ_mul_qExpansion_qOverDelta)
 
 /-- The q-expansion of the regularized modular invariant `qj` has integral coefficients. -/
 theorem qj_isIntegralPowerSeries : IsIntegralPowerSeries (qExpansion 1 qj) := by
@@ -271,8 +274,10 @@ lemma qj_differentiableAt_of_im_pos : ∀ z : ℂ, 0 < Complex.im z →
 /-- The regularized modular invariant `qj` is bounded at infinity. -/
 lemma qj_isBoundedAtImInfty : IsBoundedAtImInfty qj := by
   rw [← E₄_pow_three_mul_qOverDelta_eq_qj]
-  exact (by simpa [ModularForm.coe_pow] using bdd_at_infty (E₄.pow 3) :
-    IsBoundedAtImInfty (⇑E₄ ^ 3)).mul (isBoundedAtImInfty_of_tendsto qOverDelta_tendsto_atImInfty)
+  have hE₄ : IsBoundedAtImInfty (⇑E₄ ^ 3) := by
+    rw [← ModularForm.coe_pow]
+    exact bdd_at_infty (E₄.pow 3)
+  exact hE₄.mul (isBoundedAtImInfty_of_tendsto qOverDelta_tendsto_atImInfty)
 
 /-- The q-expansion of `qj` converges to `qj` at every point of the upper half-plane. -/
 lemma hasSum_qExpansion_qj {τ : ℍ} :
@@ -332,7 +337,7 @@ lemma j_poleOrder : poleOrder 1 j = 1 := by
   have hqj0 : cuspFunction 1 qj 0 = 1 := by
     simpa [qExpansion_coeff] using qj_qExpansion_coeff_zero
   have hqinvord : meromorphicOrderAt (fun q : ℂ ↦ q⁻¹) (0 : ℂ) = (-1 : WithTop ℤ) := by
-    simpa using (meromorphicOrderAt_inv (f := id) (x := (0 : ℂ)))
+    simpa [Pi.inv_def, id_eq] using (meromorphicOrderAt_inv (f := id) (x := (0 : ℂ)))
   rw [meromorphicOrderAt_congr inv_mul_cuspFunction_qj_eq_j_aux.symm]
   change meromorphicOrderAt (((fun q : ℂ ↦ q⁻¹) * cuspFunction 1 qj)) (0 : ℂ) = _
   rw [mul_comm, meromorphicOrderAt_mul_of_ne_zero qj_cuspFunction_analyticAt (by simp [hqj0]),
