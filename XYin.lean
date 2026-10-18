@@ -2,6 +2,7 @@ import XYin.PhD.IntegralPowerSeries.IntegralPowerSeries
 import XYin.PhD.LaurentQExpansion.LaurentQExpansion
 import XYin.PhD.ModularFunctions.Algebra
 import XYin.PhD.ModularFunctions.Basic
+import XYin.PhD.ModularFunctions.CuspMeromorphy
 import XYin.PhD.ModularFunctions.JInvariant
 import XYin.PhD.Modularforms.AtImInfty
 import XYin.PhD.Modularforms.Delta
