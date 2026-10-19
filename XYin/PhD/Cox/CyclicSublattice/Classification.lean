@@ -28,8 +28,9 @@ variable {L : PeriodPair} {m : ℕ+}
 
 /-- Extract the unique Cox representative encoded by the HNF inclusion matrix. -/
 noncomputable def toCoxMatrix (S : CyclicSublattice L m) : Cox.CoxMatrix m :=
-  .ofColumnHNF S.hermiteNormalForm.matrix S.hermiteNormalForm.isColumnHermiteNormalForm
-    S.det_hermiteNormalForm_matrix S.rankTwoContent_hermiteNormalForm_matrix
+  .ofRowHNF S.hermiteNormalForm.matrix.antiTranspose S.hermiteNormalForm.isHermiteNormalForm
+    (by simpa using S.det_hermiteNormalForm_matrix)
+    (by simpa only [Matrix.content_antiTranspose] using S.content_hermiteNormalForm_matrix)
 
 @[simp]
 theorem toCoxMatrix_a (S : CyclicSublattice L m) :
@@ -50,8 +51,9 @@ theorem toCoxMatrix_d (S : CyclicSublattice L m) :
 representative. -/
 @[simp]
 theorem toCoxMatrix_inclusionMatrix (S : CyclicSublattice L m) :
-    S.toCoxMatrix.inclusionMatrix = S.hermiteNormalForm.matrix :=
-  Cox.CoxMatrix.inclusionMatrix_ofColumnHNF ..
+    S.toCoxMatrix.inclusionMatrix = S.hermiteNormalForm.matrix := by
+  exact (Cox.CoxMatrix.inclusionMatrix_ofRowHNF _ _ _ _).trans
+    (Matrix.antiTranspose_antiTranspose _)
 
 end CyclicSublattice
 
@@ -72,28 +74,34 @@ def sublatticeOfPeriodPair (σ : CoxMatrix m) (L : PeriodPair) :
 
 private noncomputable def inclusionHermiteNormalForm (σ : CoxMatrix m)
     (L : PeriodPair) :
-    Module.Basis.HermiteNormalForm L.latticeBasis (σ.sublatticeOfPeriodPair L) :=
-  .ofToLin L.latticeBasis σ.inclusionMatrix_isColumnHermiteNormalForm <|
+    InclusionNormalForm L.latticeBasis (σ.sublatticeOfPeriodPair L) :=
+  .ofToLin L.latticeBasis (by
+    simpa only [σ.antiTranspose_inclusionMatrix] using σ.mobiusMatrix_isHermiteNormalForm) <|
     (Matrix.toLin_injective_iff_det_ne_zero _ _).mpr <| by
       rw [σ.inclusionMatrix_det]
       exact_mod_cast PNat.ne_zero m
+
+@[simp]
+private theorem inclusionHermiteNormalForm_matrix (σ : CoxMatrix m) (L : PeriodPair) :
+    (σ.inclusionHermiteNormalForm L).matrix = σ.inclusionMatrix :=
+  InclusionNormalForm.ofToLin_matrix ..
 
 /-- A Cox matrix produces a cyclic index-`m` sublattice in any period lattice. -/
 noncomputable def toCyclicSublatticeOfPeriodPair (σ : CoxMatrix m)
     (L : PeriodPair) : PeriodPair.CyclicSublattice L m where
   carrier := σ.sublatticeOfPeriodPair L
   index_eq := (σ.inclusionHermiteNormalForm L).index_eq_natAbs_det.trans <| by
-    change σ.inclusionMatrix.det.natAbs = _
-    rw [σ.inclusionMatrix_det, Int.natAbs_natCast]
-  cyclic := (σ.inclusionHermiteNormalForm L).quotient_isAddCyclic_iff_rankTwoContent_eq_one.mpr
-    σ.inclusionMatrix_content_eq_one
+    rw [inclusionHermiteNormalForm_matrix, σ.inclusionMatrix_det, Int.natAbs_natCast]
+  cyclic := (σ.inclusionHermiteNormalForm L).quotient_isAddCyclic_iff_content_eq_one.mpr <| by
+    rw [inclusionHermiteNormalForm_matrix]
+    exact σ.inclusionMatrix_content_eq_one
 
 @[simp]
 theorem toCyclicSublatticeOfPeriodPair_hermiteNormalForm_matrix
     (σ : CoxMatrix m) (L : PeriodPair) :
-    (σ.toCyclicSublatticeOfPeriodPair L).hermiteNormalForm.matrix = σ.inclusionMatrix :=
-  (σ.toCyclicSublatticeOfPeriodPair L).hermiteNormalForm.matrix_eq
-    (σ.inclusionHermiteNormalForm L)
+    (σ.toCyclicSublatticeOfPeriodPair L).hermiteNormalForm.matrix = σ.inclusionMatrix := by
+  exact ((σ.toCyclicSublatticeOfPeriodPair L).hermiteNormalForm.matrix_eq
+    (σ.inclusionHermiteNormalForm L)).trans (inclusionHermiteNormalForm_matrix σ L)
 
 @[simp]
 theorem toCyclicSublatticeOfPeriodPair_toCoxMatrix

@@ -1,3 +1,4 @@
 import XYinTest.Tactic2.LaurentQExpSimpTests
+import XYinTest.HermiteNormalForm
 import XYinTest.Tactic2.QExpSimpConditionTests
 import XYinTest.qExpansion_tactic.Examples

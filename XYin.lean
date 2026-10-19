@@ -1,4 +1,5 @@
 import XYin.PhD.IntegralPowerSeries.IntegralPowerSeries
+import XYin.PhD.HermiteNormalForm.HermiteNormalForm
 import XYin.PhD.LaurentQExpansion.LaurentQExpansion
 import XYin.PhD.ModularFunctions.Algebra
 import XYin.PhD.ModularFunctions.Basic

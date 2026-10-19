@@ -68,7 +68,7 @@ theorem coprime_gcd_b (σ : CoxMatrix m) : (Nat.gcd σ.a σ.d).Coprime σ.b := b
 def mobiusMatrix (σ : CoxMatrix m) : Matrix (Fin 2) (Fin 2) ℤ :=
   !![(σ.a : ℤ), (σ.b : ℤ); 0, (σ.d : ℤ)]
 
-/-- The column-HNF inclusion matrix for the associated sublattice `[d,aτ+b]`. -/
+/-- The inclusion matrix for the associated sublattice `[d,aτ+b]`. -/
 def inclusionMatrix (σ : CoxMatrix m) : Matrix (Fin 2) (Fin 2) ℤ :=
   !![(σ.d : ℤ), (σ.b : ℤ); 0, (σ.a : ℤ)]
 
@@ -86,27 +86,31 @@ def inclusionMatrix (σ : CoxMatrix m) : Matrix (Fin 2) (Fin 2) ℤ :=
 
 /-- The Möbius matrix is the anti-transpose of the inclusion matrix. -/
 theorem antiTranspose_inclusionMatrix (σ : CoxMatrix m) :
-    σ.inclusionMatrix.antiTranspose = σ.mobiusMatrix :=
-  rfl
+    σ.inclusionMatrix.antiTranspose = σ.mobiusMatrix := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> rfl
 
 /-- The inclusion matrix is the anti-transpose of the Möbius matrix. -/
 theorem antiTranspose_mobiusMatrix (σ : CoxMatrix m) :
-    σ.mobiusMatrix.antiTranspose = σ.inclusionMatrix :=
-  rfl
+    σ.mobiusMatrix.antiTranspose = σ.inclusionMatrix := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> rfl
 
-theorem inclusionMatrix_isColumnHermiteNormalForm (σ : CoxMatrix m) :
-    σ.inclusionMatrix.IsColumnHermiteNormalForm :=
-  Matrix.isColumnHermiteNormalForm_fin_two (by exact_mod_cast σ.d_pos)
-    (by exact_mod_cast σ.a_pos) (Int.natCast_nonneg σ.b) (by exact_mod_cast σ.b_lt)
+/-- Cox's Möbius representatives are integer row Hermite normal forms. -/
+theorem mobiusMatrix_isHermiteNormalForm (σ : CoxMatrix m) :
+    σ.mobiusMatrix.IsHermiteNormalForm :=
+  Matrix.isHermiteNormalForm_fin_two (by exact_mod_cast σ.a_pos)
+    (by exact_mod_cast σ.d_pos) (Int.natCast_nonneg σ.b) (by exact_mod_cast σ.b_lt)
 
 theorem inclusionMatrix_det (σ : CoxMatrix m) :
     σ.inclusionMatrix.det = (m : ℕ) := by
-  rw [σ.inclusionMatrix_isColumnHermiteNormalForm.det_eq, ← σ.determinant]
-  simp [mul_comm]
+  simpa [inclusionMatrix, Matrix.det_fin_two_of, mul_comm] using
+    congrArg (fun n : ℕ ↦ (n : ℤ)) σ.determinant
 
 theorem inclusionMatrix_content_eq_one (σ : CoxMatrix m) :
-    Matrix.rankTwoContent σ.inclusionMatrix = 1 := by
-  simpa [σ.inclusionMatrix_isColumnHermiteNormalForm.rankTwoContent_eq] using σ.primitive
+    Matrix.content σ.inclusionMatrix = 1 := by
+  simpa [Matrix.content_fin_two, inclusionMatrix, Nat.gcd_comm, Nat.gcd_left_comm] using
+    σ.primitive
 
 /-- A Cox representative is determined by its sublattice inclusion matrix. -/
 theorem inclusionMatrix_injective :
@@ -114,41 +118,51 @@ theorem inclusionMatrix_injective :
   CoxMatrix.ext (by simpa using congrFun (congrFun h 1) 1)
     (by simpa using congrFun (congrFun h 0) 1) (by simpa using congrFun (congrFun h 0) 0)
 
-/-- The Cox matrix whose inclusion matrix is a given column Hermite normal form of
-determinant `m` and content `1`. -/
-def ofColumnHNF (H : Matrix (Fin 2) (Fin 2) ℤ) (hH : H.IsColumnHermiteNormalForm)
-    (hdet : H.det = (m : ℤ)) (hcontent : H.rankTwoContent = 1) : CoxMatrix m where
-  a := (H 1 1).natAbs
+/-- A primitive row HNF of determinant `m` determines a Cox representative directly. -/
+def ofRowHNF (H : Matrix (Fin 2) (Fin 2) ℤ) (hH : H.IsHermiteNormalForm)
+    (hdet : H.det = (m : ℤ)) (hcontent : H.content = 1) : CoxMatrix m where
+  a := (H 0 0).natAbs
   b := (H 0 1).natAbs
-  d := (H 0 0).natAbs
-  a_pos := Int.natAbs_pos.mpr hH.one_one_pos.ne'
+  d := (H 1 1).natAbs
+  a_pos := Int.natAbs_pos.mpr (hH.diagonal_pos (by rw [hdet]; positivity) 0).ne'
   determinant := by
-    rw [← Int.natAbs_mul, mul_comm, ← hH.det_eq, hdet, Int.natAbs_natCast]
-  b_lt := Int.natAbs_lt_natAbs_of_nonneg_of_lt hH.zero_one_mem.1 hH.zero_one_mem.2
-  primitive := hH.rankTwoContent_eq.symm.trans hcontent
+    have hd : H 0 0 * H 1 1 = H.det := by
+      rw [Matrix.det_fin_two, hH.isUpperTriangular (show (0 : Fin 2) < 1 by decide),
+        mul_zero, sub_zero]
+    rw [← Int.natAbs_mul, hd, hdet, Int.natAbs_natCast]
+  b_lt := by
+    have hb := (Matrix.isHermiteNormalForm_fin_two_iff
+      (by rw [hdet]; positivity)).mp hH
+    exact Int.natAbs_lt_natAbs_of_nonneg_of_lt hb.2.2.2.1 hb.2.2.2.2
+  primitive := by
+    simpa [Matrix.content_fin_two,
+      hH.isUpperTriangular (show (0 : Fin 2) < 1 by decide)] using hcontent
 
-section ofColumnHNF
+section ofRowHNF
 
-variable (H : Matrix (Fin 2) (Fin 2) ℤ) (hH : H.IsColumnHermiteNormalForm)
-  (hdet : H.det = (m : ℤ)) (hcontent : H.rankTwoContent = 1)
+variable (H : Matrix (Fin 2) (Fin 2) ℤ) (hH : H.IsHermiteNormalForm)
+  (hdet : H.det = (m : ℤ)) (hcontent : H.content = 1)
 
-@[simp] theorem ofColumnHNF_a : (ofColumnHNF H hH hdet hcontent).a = (H 1 1).natAbs := rfl
+@[simp] theorem ofRowHNF_a : (ofRowHNF H hH hdet hcontent).a = (H 0 0).natAbs := rfl
 
-@[simp] theorem ofColumnHNF_b : (ofColumnHNF H hH hdet hcontent).b = (H 0 1).natAbs := rfl
+@[simp] theorem ofRowHNF_b : (ofRowHNF H hH hdet hcontent).b = (H 0 1).natAbs := rfl
 
-@[simp] theorem ofColumnHNF_d : (ofColumnHNF H hH hdet hcontent).d = (H 0 0).natAbs := rfl
+@[simp] theorem ofRowHNF_d : (ofRowHNF H hH hdet hcontent).d = (H 1 1).natAbs := rfl
 
 @[simp]
-theorem inclusionMatrix_ofColumnHNF : (ofColumnHNF H hH hdet hcontent).inclusionMatrix = H := by
-  conv_rhs => rw [hH.eq_fin_two]
-  simp [inclusionMatrix, abs_of_pos hH.zero_zero_pos, abs_of_nonneg hH.zero_one_mem.1,
-    abs_of_pos hH.one_one_pos]
+theorem mobiusMatrix_ofRowHNF : (ofRowHNF H hH hdet hcontent).mobiusMatrix = H := by
+  obtain ⟨h10, h00, h11, hb⟩ :=
+    (Matrix.isHermiteNormalForm_fin_two_iff (by rw [hdet]; positivity)).mp hH
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [ofRowHNF, mobiusMatrix, h10, abs_of_pos h00, abs_of_pos h11, abs_of_nonneg hb.1]
 
-theorem mobiusMatrix_ofColumnHNF :
-    (ofColumnHNF H hH hdet hcontent).mobiusMatrix = H.antiTranspose := by
-  rw [← antiTranspose_inclusionMatrix, inclusionMatrix_ofColumnHNF]
+@[simp]
+theorem inclusionMatrix_ofRowHNF :
+    (ofRowHNF H hH hdet hcontent).inclusionMatrix = H.antiTranspose := by
+  rw [← antiTranspose_mobiusMatrix, mobiusMatrix_ofRowHNF]
 
-end ofColumnHNF
+end ofRowHNF
 
 /-- The Möbius action `(aτ+b)/d`. -/
 def act (σ : CoxMatrix m) (τ : ℍ) : ℍ :=
@@ -267,8 +281,9 @@ private def determinantScaleDual (m : ℕ+) : Matrix (Fin 2) (Fin 2) ℤ :=
   !![1, 0; 0, (m : ℤ)]
 
 private theorem antiTranspose_determinantScale (m : ℕ+) :
-    (determinantScale m).antiTranspose = determinantScaleDual m :=
-  rfl
+    (determinantScale m).antiTranspose = determinantScaleDual m := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> rfl
 
 private theorem determinantScale_mul_eq (m : ℕ+) (γ : SL(2, ℤ)) :
     determinantScale m * γ.1 = !![(m : ℤ) * γ 0 0, (m : ℤ) * γ 0 1; γ 1 0, γ 1 1] := by
@@ -282,7 +297,8 @@ private theorem coxInput_eq (m : ℕ+) (γ : SL(2, ℤ)) :
     coxInput m γ =
       !![γ 1 1, (m : ℤ) * γ 0 1; γ 1 0, (m : ℤ) * γ 0 0] := by
   rw [coxInput, determinantScale_mul_eq]
-  rfl
+  ext i j
+  fin_cases i <;> fin_cases j <;> rfl
 
 private theorem coxInput_det (m : ℕ+) (γ : SL(2, ℤ)) :
     (coxInput m γ).det = (m : ℤ) := by
@@ -291,13 +307,13 @@ private theorem coxInput_det (m : ℕ+) (γ : SL(2, ℤ)) :
   ring
 
 private theorem coxInput_content_eq_one (m : ℕ+) (γ : SL(2, ℤ)) :
-    Matrix.rankTwoContent (coxInput m γ) = 1 := by
+    Matrix.content (coxInput m γ) = 1 := by
   have hcop := ModularGroup.bottom_row_coprime γ
   rw [Int.isCoprime_iff_gcd_eq_one] at hcop
   change Nat.gcd (γ 1 0).natAbs (γ 1 1).natAbs = 1 at hcop
   rw [coxInput_eq]
-  exact Nat.eq_one_of_dvd_one <| (Nat.dvd_gcd (Matrix.rankTwoContent_dvd_entry _ 1 0)
-    (Matrix.rankTwoContent_dvd_entry _ 0 0)).trans hcop.dvd
+  exact Nat.eq_one_of_dvd_one <| (Nat.dvd_gcd (Matrix.content_dvd_entry _ 1 0)
+    (Matrix.content_dvd_entry _ 0 0)).trans hcop.dvd
 
 private def slStar (γ : SL(2, ℤ)) : SL(2, ℤ) :=
   ⟨γ.1.antiTranspose, by simp⟩
@@ -351,23 +367,37 @@ private theorem exists_coxInput_eq_mul_of_rightRel (m : ℕ+) (γ δ : SL(2, ℤ
 private theorem exists_coxMatrix_reduction (m : ℕ+) (γ : SL(2, ℤ)) :
     ∃ (σ : CoxMatrix m) (U : SL(2, ℤ)),
       coxInput m γ * U.1 = σ.inclusionMatrix := by
-  obtain ⟨U, hU⟩ := (coxInput m γ).exists_right_mul_SL2_isColumnHermiteNormalForm (by
-    rw [coxInput_det]
+  obtain ⟨V, hV⟩ := (coxInput m γ).antiTranspose.exists_SL2_mul_isHermiteNormalForm (by
+    rw [Matrix.det_antiTranspose, coxInput_det]
     exact_mod_cast PNat.pos m)
-  refine ⟨.ofColumnHNF _ hU ?_ ?_, U, (CoxMatrix.inclusionMatrix_ofColumnHNF ..).symm⟩
-  · rw [Matrix.det_mul, coxInput_det, Matrix.SpecialLinearGroup.det_coe, mul_one]
-  · rw [Matrix.rankTwoContent_mul_of_isUnit_det _ (by simp), coxInput_content_eq_one]
+  have hd : (V.1 * (coxInput m γ).antiTranspose).det = (m : ℤ) := by
+    simp [coxInput_det]
+  have hc : (V.1 * (coxInput m γ).antiTranspose).content = 1 := by
+    rw [Matrix.content_isUnit_det_mul (by simp), Matrix.content_antiTranspose,
+      coxInput_content_eq_one]
+  refine ⟨.ofRowHNF _ hV hd hc, slStar V, ?_⟩
+  rw [CoxMatrix.inclusionMatrix_ofRowHNF, Matrix.antiTranspose_mul,
+    Matrix.antiTranspose_antiTranspose, coe_slStar]
 
 private theorem coxMatrix_reduction_unique (m : ℕ+) (γ : SL(2, ℤ))
     {σ τ : CoxMatrix m} {U V : SL(2, ℤ)}
     (hσ : coxInput m γ * U.1 = σ.inclusionMatrix)
     (hτ : coxInput m γ * V.1 = τ.inclusionMatrix) : σ = τ := by
-  refine CoxMatrix.inclusionMatrix_injective <|
-    σ.inclusionMatrix_isColumnHermiteNormalForm.eq_of_mul_isUnit_det
-      τ.inclusionMatrix_isColumnHermiteNormalForm (U := (U⁻¹ * V).1)
-      (by rw [Matrix.SpecialLinearGroup.det_coe]; exact isUnit_one) ?_
-  rw [← hσ, Matrix.SpecialLinearGroup.coe_mul, ← Matrix.mul_assoc,
-    Matrix.SpecialLinearGroup.mul_coe_mul_coe_inv, hτ]
+  have hm : σ.inclusionMatrix * (U⁻¹ * V).1 = τ.inclusionMatrix := by
+    rw [← hσ, Matrix.SpecialLinearGroup.coe_mul, ← Matrix.mul_assoc,
+      Matrix.SpecialLinearGroup.mul_coe_mul_coe_inv, hτ]
+  have hn : σ.mobiusMatrix.det ≠ 0 := by
+    rw [← σ.antiTranspose_inclusionMatrix, Matrix.det_antiTranspose, σ.inclusionMatrix_det]
+    exact_mod_cast PNat.ne_zero m
+  have he := σ.mobiusMatrix_isHermiteNormalForm.eq_of_isUnit_det_mul_fin_two
+    τ.mobiusMatrix_isHermiteNormalForm hn
+    (U := (U⁻¹ * V).1.antiTranspose) (by
+      rw [Matrix.det_antiTranspose, Matrix.SpecialLinearGroup.det_coe]
+      exact isUnit_one) (by
+      rw [← σ.antiTranspose_inclusionMatrix, ← Matrix.antiTranspose_mul, hm,
+        τ.antiTranspose_inclusionMatrix])
+  apply CoxMatrix.inclusionMatrix_injective
+  simpa only [CoxMatrix.antiTranspose_mobiusMatrix] using congrArg Matrix.antiTranspose he
 
 private noncomputable def coxRepresentative (m : ℕ+) (γ : SL(2, ℤ)) : CoxMatrix m :=
   (exists_coxMatrix_reduction m γ).choose
@@ -638,16 +668,11 @@ theorem j_act_sigmaZero (m : ℕ+) :
 after left multiplication by an element of `SL₂(ℤ)` (Report Lemma 5.8). -/
 theorem exists_sl2_mul_eq_coxMatrix {m : ℕ+}
     (M : Matrix (Fin 2) (Fin 2) ℤ) (hdet : M.det = (m : ℤ))
-    (hprimitive : Matrix.rankTwoContent M = 1) :
+    (hprimitive : Matrix.content M = 1) :
     ∃ γ : SL(2, ℤ), ∃ σ : CoxMatrix m, γ.1 * M = σ.mobiusMatrix := by
-  obtain ⟨γ, a, b, d, ha, hd, hb, -, hγ⟩ :=
-    M.exists_SL2_mul_eq_upperTriangular (by rw [hdet]; positivity)
-  have hH : (γ.1 * M).antiTranspose.IsColumnHermiteNormalForm := by
-    rw [hγ]
-    exact Matrix.isColumnHermiteNormalForm_fin_two hd ha hb.1 hb.2
-  refine ⟨γ, .ofColumnHNF _ hH (by simp [hdet]) ?_, ?_⟩
-  · rw [Matrix.rankTwoContent_antiTranspose, Matrix.rankTwoContent_isUnit_det_mul (by simp),
-      hprimitive]
-  · rw [CoxMatrix.mobiusMatrix_ofColumnHNF, Matrix.antiTranspose_antiTranspose]
+  obtain ⟨γ, hγ⟩ := M.exists_SL2_mul_isHermiteNormalForm (by rw [hdet]; positivity)
+  refine ⟨γ, .ofRowHNF _ hγ (by simp [hdet]) ?_, ?_⟩
+  · rw [Matrix.content_isUnit_det_mul (by simp), hprimitive]
+  · rw [CoxMatrix.mobiusMatrix_ofRowHNF]
 
 end Cox

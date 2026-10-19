@@ -87,8 +87,9 @@ theorem exists_positive_nonsquare_det :
 
 /-- Every fixing matrix attached to a primitive quadratic equation is primitive. -/
 theorem fixingMatrix_content_eq_one (n : ℤ) :
-    Matrix.rankTwoContent (q.fixingMatrix n) = 1 := by
-  rw [fixingMatrix, Matrix.rankTwoContent_fin_two_of, Int.natAbs_neg]
+    Matrix.content (q.fixingMatrix n) = 1 := by
+  simp only [fixingMatrix, Matrix.content_fin_two, Matrix.of_apply, Matrix.cons_val_zero,
+    Matrix.cons_val_one, Matrix.cons_val_fin_one, Int.natAbs_neg]
   calc
     _ = Nat.gcd (Int.gcd n (n + q.B)) (Nat.gcd q.A.natAbs q.C.natAbs) := by
       unfold Int.gcd

@@ -618,10 +618,10 @@ theorem exists_inverse_of_isProper [Algebra.IsQuadraticExtension ℚ K]
     rw [hβdef, hτ']
     field_simp
     linear_combination -hq
-  refine ⟨⟨Jsub, hfrac⟩, ?_⟩
-  apply FractionalIdeal.coeToSubmodule_injective
-  dsimp only
-  rw [FractionalIdeal.coe_mul, FractionalIdeal.coe_one]
+  let J : FractionalIdeal O⁰ K := ⟨Jsub, hfrac⟩
+  refine ⟨J, FractionalIdeal.coeToSubmodule_injective ?_⟩
+  refine (FractionalIdeal.coe_mul I J).trans (Eq.trans ?_ FractionalIdeal.coe_one.symm)
+  change (I : Submodule O K) * Jsub = (1 : Submodule O K)
   apply Submodule.restrictScalars_injective ℤ O K
   rw [Submodule.restrictScalars_mul]
   change (I : Submodule O K).restrictScalars ℤ * Jsub.restrictScalars ℤ = _
@@ -1176,7 +1176,7 @@ theorem exists_integralBasis_of_squarefree (N : ℤ) (hN : Squarefree N)
       simp only [map_add, zsmul_eq_mul, mul_one]
       rfl
     rw [e, hab, hωdef]
-  exact ⟨Module.Basis.mk hZ hsp, by simp, by simp [ω']⟩
+  exact ⟨Module.Basis.mk hZ hsp, by simp, by simp [ω']; rfl⟩
 
 omit hO in
 include hIQ in
@@ -1431,7 +1431,7 @@ theorem idealNorm_principal_mul (α : O) (a : Ideal O) (hα : α ≠ 0) :
     idealNorm O (Ideal.span {α} * a) = elementNorm O α * idealNorm O a := by
   let Kα := (Ideal.span {α}).toAddSubgroup
   let H := (Ideal.span {α} * a).toAddSubgroup
-  have hle : H ≤ Kα := Ideal.mul_le_right
+  have hle : H ≤ Kα := Ideal.mul_le_left
   let φ : O →+ Kα :=
     { toFun := fun x => ⟨α * x, Ideal.mem_span_singleton'.mpr ⟨x, mul_comm x α⟩⟩
       map_zero' := Subtype.ext (mul_zero α)
@@ -1991,7 +1991,6 @@ theorem ideal_mul_conjugate (a : Ideal O) (ha : IsUnit (a : FractionalIdeal O⁰
   dsimp only
   rw [FractionalIdeal.coe_mul, FractionalIdeal.coe_spanSingleton]
   apply Submodule.restrictScalars_injective ℤ
-  dsimp only
   rw [Submodule.restrictScalars_mul, hcoord, restrictScalars_map_conj O a σ hσ α τ hcoord,
     restrictScalars_span_singleton, hcτ, smul_mul_smul_submodule,
     normalized_span_mul τ A B C hA.ne' hq hprim, ← hOspan, smul_smul_submodule, key]
@@ -2140,12 +2139,17 @@ theorem relIndex_coeIdeal_mul (a b : Ideal O) (ha : IsUnit (a : FractionalIdeal 
   have hle1 : (((a * b : Ideal O) : FractionalIdeal O⁰ K) : Submodule O K).toAddSubgroup ≤
       ((b : FractionalIdeal O⁰ K) : Submodule O K).toAddSubgroup := by
     intro x hx
-    obtain ⟨x', hx', rfl⟩ := (FractionalIdeal.mem_coeIdeal O⁰).mp hx
-    exact (FractionalIdeal.mem_coeIdeal O⁰).mpr ⟨x', Ideal.mul_le_left hx', rfl⟩
+    change x ∈ ((a * b : Ideal O) : FractionalIdeal O⁰ K) at hx
+    change x ∈ (b : FractionalIdeal O⁰ K)
+    obtain ⟨x', hx', rfl⟩ := (FractionalIdeal.mem_coeIdeal O⁰ (I := a * b)).mp hx
+    exact FractionalIdeal.mem_coeIdeal_of_mem O⁰ (Ideal.mul_le_right hx')
   have hle2 : ((b : FractionalIdeal O⁰ K) : Submodule O K).toAddSubgroup ≤
       O.toSubmodule.toAddSubgroup := by
     intro x hx
-    obtain ⟨x', -, rfl⟩ := (FractionalIdeal.mem_coeIdeal O⁰).mp hx
+    change x ∈ (b : FractionalIdeal O⁰ K) at hx
+    obtain ⟨x', _, hxx'⟩ := (FractionalIdeal.mem_coeIdeal O⁰ (I := b)).mp hx
+    change x ∈ O
+    rw [← hxx']
     exact x'.2
   have hmul := AddSubgroup.relIndex_mul_relIndex _ _ _ hle1 hle2
   rw [relIndex_coeIdeal, relIndex_coeIdeal, idealNorm_mul O a b ha hb] at hmul
@@ -2186,24 +2190,24 @@ theorem not_isAddCyclic_iff_exists_scalar {M : Type*} [AddCommGroup M] [Module �
   classical
   let A := LinearMap.toMatrix bN bM N.subtype
   have hA : ∀ i j, A i j = bM.repr (bN j : M) i := fun i j => LinearMap.toMatrix_apply _ _ _ _ _
-  rw [Module.Basis.HermiteNormalForm.quotient_isAddCyclic_iff_rankTwoContent_toMatrix_eq_one
+  rw [Module.Basis.quotient_isAddCyclic_iff_content_toMatrix_eq_one
     bM N bN]
   constructor
   · intro hne
-    refine ⟨A.rankTwoContent, ?_, ?_⟩
-    · rcases Nat.lt_or_ge 1 A.rankTwoContent with h | h
+    refine ⟨A.content, ?_, ?_⟩
+    · rcases Nat.lt_or_ge 1 A.content with h | h
       · exact h
-      · interval_cases hc : A.rankTwoContent
+      · interval_cases hc : A.content
         · exfalso
           have hzero : ∀ i, bM.repr (bN 0 : M) i = 0 := fun i => by
-            have := Matrix.rankTwoContent_dvd_entry A i 0
+            have := Matrix.content_dvd_entry A i 0
             rw [hc, zero_dvd_iff, Int.natAbs_eq_zero, hA] at this
             exact this
           have h0 : (bN 0 : M) = 0 := bM.repr.injective (Finsupp.ext fun i => by simp [hzero i])
           exact bN.ne_zero 0 (Subtype.ext h0)
         · exact absurd rfl hne
     · intro x hx
-      have hdiv : ∀ i, (A.rankTwoContent : ℤ) ∣ bM.repr x i := by
+      have hdiv : ∀ i, (A.content : ℤ) ∣ bM.repr x i := by
         intro i
         have h : bM.repr x i = ∑ j, bN.repr ⟨x, hx⟩ j * A i j := by
           have hx' := congrArg (fun z : N => bM.repr (z : M) i) (bN.sum_repr ⟨x, hx⟩)
@@ -2213,14 +2217,14 @@ theorem not_isAddCyclic_iff_exists_scalar {M : Type*} [AddCommGroup M] [Module �
           simp [hA]
         rw [h]
         exact Finset.dvd_sum fun j _ => dvd_mul_of_dvd_right
-          (Int.natCast_dvd.mpr (Matrix.rankTwoContent_dvd_entry A i j)) _
-      refine ⟨∑ i, (bM.repr x i / A.rankTwoContent) • bM i, ?_⟩
+          (Int.natCast_dvd.mpr (Matrix.content_dvd_entry A i j)) _
+      refine ⟨∑ i, (bM.repr x i / A.content) • bM i, ?_⟩
       rw [Finset.smul_sum]
       conv_lhs => rw [← bM.sum_repr x]
       refine Finset.sum_congr rfl fun i _ => ?_
       rw [smul_smul, Int.mul_ediv_cancel' (hdiv i)]
   · rintro ⟨d, hd, hN⟩ h1
-    have hdvd : d ∣ A.rankTwoContent := Matrix.dvd_rankTwoContent fun i j => by
+    have hdvd : d ∣ A.content := Matrix.dvd_content fun i j => by
       obtain ⟨y, hy⟩ := hN (bN j : M) (bN j).2
       rw [← Int.natCast_dvd, hA, hy, map_zsmul, Finsupp.smul_apply, smul_eq_mul]
       exact dvd_mul_right _ _
@@ -2362,8 +2366,8 @@ theorem exists_cyclicSublattice (a : Ideal O) (ha : IsUnit (a : FractionalIdeal 
   let carrier : Submodule ℤ (periodPair O I).lattice :=
     (productSubmodule O a I).map e.toLinearMap
   have hindex : carrier.toAddSubgroup.index = ((⟨idealNorm O a, hpos⟩ : ℕ+) : ℕ) := by
-    rw [Submodule.map_toAddSubgroup]
-    exact (AddSubgroup.index_map_equiv _ e.toAddEquiv).trans (index_productSubmodule O a ha I)
+    exact (AddSubgroup.index_map_equiv (productSubmodule O a I).toAddSubgroup
+      e.toAddEquiv).trans (index_productSubmodule O a ha I)
   have hcyc : IsAddCyclic ((periodPair O I).lattice ⧸ carrier) := by
     haveI : IsAddCyclic (IZ ⧸ productSubmodule O a I) :=
       (quotient_isAddCyclic_iff O a ha I).mpr hprim
@@ -2374,10 +2378,16 @@ theorem exists_cyclicSublattice (a : Ideal O) (ha : IsUnit (a : FractionalIdeal 
       ⟨idealNorm O a, hpos⟩).toPeriodPair.lattice =
       complexLattice O ((integralIdealUnit O a ha * I : (FractionalIdeal O⁰ K)ˣ) :
         FractionalIdeal O⁰ K) := by
-    rw [PeriodPair.CyclicSublattice.toPeriodPair_lattice, Units.val_mul, coe_integralIdealUnit,
-      complexLattice, ← map_subtype_productSubmodule, ← Submodule.map_comp,
-      ← Submodule.map_comp]
-    rfl
+    refine (PeriodPair.CyclicSublattice.toPeriodPair_lattice
+      (m := (⟨idealNorm O a, hpos⟩ : ℕ+)) ⟨carrier, hindex, hcyc⟩).trans ?_
+    change carrier.map (periodPair O I).lattice.subtype = _
+    rw [Units.val_mul, coe_integralIdealUnit, complexLattice, ← map_subtype_productSubmodule]
+    ext x
+    constructor
+    · rintro ⟨y, ⟨z, hz, rfl⟩, rfl⟩
+      exact ⟨(z : K), ⟨z, hz, rfl⟩, rfl⟩
+    · rintro ⟨y, ⟨z, hz, rfl⟩, rfl⟩
+      exact ⟨e z, ⟨z, hz, rfl⟩, rfl⟩
   exact (idealJ_eq_of_lattice_eq O _ _ hlat).symm
 
 include hIQ in
@@ -2402,9 +2412,9 @@ theorem exists_principal_cyclicSublattice (α : O) (hα : α ≠ 0)
     rw [coe_integralIdealUnit, FractionalIdeal.coeIdeal_span_singleton, coe_toPrincipalIdeal]
     rfl
   refine ⟨S', ?_⟩
-  have hj : S'.j = S.j := PeriodPair.j_congr (by
-    rw [PeriodPair.CyclicSublattice.toPeriodPair_lattice,
-      PeriodPair.CyclicSublattice.toPeriodPair_lattice])
+  have hj : S'.j = S.j := PeriodPair.j_congr
+    ((PeriodPair.CyclicSublattice.toPeriodPair_lattice S').trans
+      (PeriodPair.CyclicSublattice.toPeriodPair_lattice S).symm)
   rw [hj, hS, hunitEq, mul_comm, idealJ_mul_principal]
 
 omit hNF in
@@ -2513,8 +2523,8 @@ theorem idealNorm_contract (a : Ideal (𝓞 K))
         refine ⟨s, ?_⟩
         rw [← ht, map_mul, map_natCast, nsmul_eq_mul]
     refine ⟨Ideal.Quotient.mk _ ⟨(conductor O : K) * (s : K), conductor_mul_mem O s⟩, ?_⟩
-    rw [Ideal.quotientMap_mk, ← hs]
-    rfl
+    exact (Ideal.quotientMap_mk (I := a) (f := toRingOfIntegers O)
+      (H := le_refl (contractIdeal O a))).trans hs
   exact Nat.card_congr (Equiv.ofBijective φ ⟨Ideal.quotientMap_injective, hsurj⟩)
 
 omit hNF in
@@ -2572,8 +2582,12 @@ theorem extend_contract (a : Ideal (𝓞 K))
   have hfK : (conductor O : K) ≠ 0 := Nat.cast_ne_zero.mpr (conductor_pos O).ne'
   refine le_antisymm Ideal.map_comap_le fun y hy => ?_
   let fy : O := ⟨(conductor O : K) * y, conductor_mul_mem O y⟩
-  have hfy : toRingOfIntegers O fy = (conductor O : 𝓞 K) * y :=
-    NumberField.RingOfIntegers.ext (by simp [fy, toRingOfIntegers])
+  have hfy : toRingOfIntegers O fy = (conductor O : 𝓞 K) * y := by
+    apply NumberField.RingOfIntegers.ext
+    rw [toRingOfIntegers_coe]
+    change (conductor O : K) * (y : K) =
+      (algebraMap (𝓞 K) K) ((conductor O : 𝓞 K) * y)
+    simp only [map_mul, map_natCast]
   have hfy_mem : fy ∈ contractIdeal O a := by
     change toRingOfIntegers O fy ∈ a
     rw [hfy]

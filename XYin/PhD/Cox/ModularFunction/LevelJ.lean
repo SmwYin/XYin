@@ -3,7 +3,7 @@ Copyright (c) 2026 The XYin contributors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The XYin contributors
 -/
-import XYin.PhD.Cox.HermiteNormalForm
+import XYin.PhD.HermiteNormalForm.RankTwo
 import XYin.PhD.Cox.ModularFunction.CuspData
 import XYin.PhD.jFunction.jLevelN
 
@@ -143,12 +143,19 @@ private lemma exists_levelJ_cusp_normalization (N : ℕ+) (γ : SL(2, ℤ)) :
     rw [Matrix.det_fin_two] at hγ
     rw [Matrix.det_fin_two_of]
     linear_combination (N : ℤ) * hγ
-  obtain ⟨δ, g, r, s, hg, hs, -, hgs, h⟩ :=
-    M.exists_SL2_mul_eq_upperTriangular (by rw [hdet]; positivity)
-  lift g to ℕ using hg.le
-  lift s to ℕ using hs.le
-  exact ⟨δ, g, s, by exact_mod_cast hg, by exact_mod_cast hs,
-    by exact_mod_cast hgs.trans hdet, r, h⟩
+  obtain ⟨δ, hH⟩ := M.exists_SL2_mul_isHermiteNormalForm (by rw [hdet]; positivity)
+  have hHdet : (δ.1 * M).det = N := by simp [Matrix.det_mul, hdet]
+  obtain ⟨h10, hg, hs, -⟩ :=
+    (Matrix.isHermiteNormalForm_fin_two_iff (by rw [hHdet]; positivity)).mp hH
+  have hgs : (δ.1 * M) 0 0 * (δ.1 * M) 1 1 = (N : ℤ) := by
+    calc
+      _ = (δ.1 * M).det := by rw [Matrix.det_fin_two, h10, mul_zero, sub_zero]
+      _ = N := hHdet
+  refine ⟨δ, ((δ.1 * M) 0 0).natAbs, ((δ.1 * M) 1 1).natAbs,
+    Int.natAbs_pos.mpr hg.ne', Int.natAbs_pos.mpr hs.ne', ?_, (δ.1 * M) 0 1, ?_⟩
+  · rw [← Int.natAbs_mul, hgs, Int.natAbs_natCast]
+  · conv_lhs => rw [Matrix.eta_fin_two (δ.1 * M), h10]
+    simp only [Int.natCast_natAbs, abs_of_pos hg, abs_of_pos hs]
 
 private lemma affine_j_cuspFunction_meromorphicAt
     (g s : ℕ) (hg : 0 < g) (hs : 0 < s) (r : ℤ) :

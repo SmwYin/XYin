@@ -54,8 +54,8 @@ theorem carrier_finrank (S : CyclicSublattice L m) :
 
 /-- The HNF attached to the carrier of a cyclic sublattice. -/
 noncomputable def hermiteNormalForm (S : CyclicSublattice L m) :
-    Module.Basis.HermiteNormalForm L.latticeBasis S.carrier :=
-  S.carrier.hermiteNormalForm L.latticeBasis S.carrier_finrank
+    Cox.InclusionNormalForm L.latticeBasis S.carrier :=
+  Cox.inclusionNormalForm L.latticeBasis S.carrier S.carrier_finrank
 
 /-- The HNF matrix of a cyclic sublattice has determinant equal to its index. -/
 theorem det_hermiteNormalForm_matrix (S : CyclicSublattice L m) :
@@ -63,19 +63,19 @@ theorem det_hermiteNormalForm_matrix (S : CyclicSublattice L m) :
   rw [S.hermiteNormalForm.det_eq_index, S.index_eq]
 
 /-- The HNF matrix of a cyclic sublattice is primitive. -/
-theorem rankTwoContent_hermiteNormalForm_matrix (S : CyclicSublattice L m) :
-    S.hermiteNormalForm.matrix.rankTwoContent = 1 :=
-  S.hermiteNormalForm.quotient_isAddCyclic_iff_rankTwoContent_eq_one.mp S.cyclic
+theorem content_hermiteNormalForm_matrix (S : CyclicSublattice L m) :
+    S.hermiteNormalForm.matrix.content = 1 :=
+  S.hermiteNormalForm.quotient_isAddCyclic_iff_content_eq_one.mp S.cyclic
 
 private noncomputable def hnfPeriod (S : CyclicSublattice L m) (i : Fin 2) : ℂ :=
-  (((S.hermiteNormalForm.bN i : S.carrier) : L.lattice) : ℂ)
+  (((S.hermiteNormalForm.basis i : S.carrier) : L.lattice) : ℂ)
 
 private theorem hnfPeriod_eq (S : CyclicSublattice L m) (j : Fin 2) :
     hnfPeriod S j =
       (S.hermiteNormalForm.matrix 0 j : ℂ) * L.ω₁ +
         (S.hermiteNormalForm.matrix 1 j : ℂ) * L.ω₂ := by
   have h := congrArg (fun x : L.lattice ↦ (x : ℂ))
-    (L.latticeBasis.sum_repr ((S.hermiteNormalForm.bN j : S.carrier) : L.lattice)).symm
+    (L.latticeBasis.sum_repr ((S.hermiteNormalForm.basis j : S.carrier) : L.lattice)).symm
   simpa only [hnfPeriod, Fin.sum_univ_two, S.hermiteNormalForm.repr_apply,
     Submodule.coe_add, SetLike.val_smul, PeriodPair.latticeBasis_zero,
     PeriodPair.latticeBasis_one, zsmul_eq_mul] using h
@@ -84,7 +84,7 @@ private theorem hnfPeriods_linearIndependent (S : CyclicSublattice L m) :
     LinearIndependent ℝ ![hnfPeriod S 0, hnfPeriod S 1] := by
   let H := S.hermiteNormalForm.matrix
   have hdet : (H 0 0 : ℝ) * (H 1 1 : ℝ) ≠ (H 1 0 : ℝ) * (H 0 1 : ℝ) := by
-    have h := S.hermiteNormalForm.isColumnHermiteNormalForm.det_pos.ne'
+    have h := S.hermiteNormalForm.det_pos.ne'
     rw [Matrix.det_fin_two, sub_ne_zero, mul_comm (H 0 1)] at h
     exact_mod_cast h
   have htrans := (LinearIndependent.pair_add_smul_add_smul_iff
@@ -103,7 +103,7 @@ noncomputable def toPeriodPair (S : CyclicSublattice L m) : PeriodPair where
 /-- The first period of the sublattice is the first HNF column `d ω₁`. -/
 theorem toPeriodPair_ω₁ (S : CyclicSublattice L m) :
     S.toPeriodPair.ω₁ = (S.hermiteNormalForm.matrix 0 0 : ℂ) * L.ω₁ := by
-  simp [toPeriodPair, hnfPeriod_eq, S.hermiteNormalForm.isColumnHermiteNormalForm.one_zero]
+  simp [toPeriodPair, hnfPeriod_eq, S.hermiteNormalForm.one_zero]
 
 /-- The second period of the sublattice is the second HNF column `b ω₁ + a ω₂`. -/
 theorem toPeriodPair_ω₂ (S : CyclicSublattice L m) :
@@ -115,10 +115,10 @@ theorem toPeriodPair_ω₂ (S : CyclicSublattice L m) :
 theorem toPeriodPair_lattice (S : CyclicSublattice L m) :
     S.toPeriodPair.lattice = S.carrier.map L.lattice.subtype := by
   let f : S.carrier →ₗ[ℤ] ℂ := L.lattice.subtype.comp S.carrier.subtype
-  have hspan := congrArg (Submodule.map f) S.hermiteNormalForm.bN.span_eq
+  have hspan := congrArg (Submodule.map f) S.hermiteNormalForm.basis.span_eq
   rw [Submodule.map_span, Submodule.map_top, LinearMap.range_comp,
     Submodule.range_subtype] at hspan
-  have hrange : Set.range (f ∘ S.hermiteNormalForm.bN) =
+  have hrange : Set.range (f ∘ S.hermiteNormalForm.basis) =
       {hnfPeriod S 0, hnfPeriod S 1} := by
     ext z
     simp [Set.mem_range, Fin.exists_fin_two, f, hnfPeriod, eq_comm]
@@ -230,12 +230,12 @@ private noncomputable def carrierEquiv (S : CyclicSublattice L m) :
 
 private noncomputable def transportedBasis (S : CyclicSublattice L m) :
     Module.Basis (Fin 2) ℤ S.toPeriodPair.lattice :=
-  S.hermiteNormalForm.bN.map (carrierEquiv S)
+  S.hermiteNormalForm.basis.map (carrierEquiv S)
 
 private theorem transportedBasis_repr_carrierEquiv
     (S : CyclicSublattice L m) (x : S.carrier) (i : Fin 2) :
     (transportedBasis S).repr (carrierEquiv S x) i =
-      S.hermiteNormalForm.bN.repr x i := by
+      S.hermiteNormalForm.basis.repr x i := by
   simp [transportedBasis]
 
 private theorem index_nsmul_mem_carrier (S : CyclicSublattice L m)
@@ -296,13 +296,13 @@ private theorem dual_index_eq (S : CyclicSublattice L m) :
     rfl
   simp [hmatrix, Matrix.det_adjugate, S.det_hermiteNormalForm_matrix]
 
-open Module.Basis.HermiteNormalForm in
+open Module.Basis in
 private theorem dual_cyclic (S : CyclicSublattice L m) :
     IsAddCyclic (S.toPeriodPair.lattice ⧸ dualCarrier S) := by
-  apply (quotient_isAddCyclic_iff_rankTwoContent_toMatrix_eq_one
+  apply (quotient_isAddCyclic_iff_content_toMatrix_eq_one
     (transportedBasis S) (dualCarrier S) (dualBasis S)).mpr
-  rw [dualToMatrix_eq, Matrix.rankTwoContent_adjugate]
-  exact S.rankTwoContent_hermiteNormalForm_matrix
+  rw [dualToMatrix_eq, Matrix.content_adjugate]
+  exact S.content_hermiteNormalForm_matrix
 
 /-- The index `m` as a unit of `ℂ`, the scaling factor relating `mL` to `L`. -/
 def indexUnit (m : ℕ+) : ℂˣ :=

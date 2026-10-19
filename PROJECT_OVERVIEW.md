@@ -1,5 +1,19 @@
 # Project Overview: XYin
 
+## HNF API update — 2026-10-19
+
+The independent row-HNF API is in `XYin/PhD/HermiteNormalForm/`. Its predicate supports
+rectangular integer matrices; direct Bézout reduction and uniqueness currently cover
+nonsingular `2 × 2` matrices. Matrix content and the cyclic-quotient criterion are separate
+from the normal-form predicate. Cox now uses `Cox.InclusionNormalForm` and `CoxMatrix.ofRowHNF`;
+the former stores a basis with a row-HNF certificate and derives its inclusion matrix.
+The old column-HNF development has been removed. References to its declarations in the dated
+audit below describe the earlier implementation.
+
+On Lean/mathlib v4.35.0, `lake build XYin XYinTest XYin.PhD.Cox.Theorem11_1.Orders`
+passes, including 23 HNF examples. The previously deferred statements in `Orders.lean` remain;
+the new HNF API contains no proof placeholders.
+
 ## Current status — after the 2026-09-26 cleanup and API pass
 
 `lake build` green (3,713 jobs, 0 warnings) · **0 `sorry`** · 27/27 audited theorems use only
