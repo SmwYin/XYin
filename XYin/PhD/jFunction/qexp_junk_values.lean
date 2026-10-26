@@ -81,7 +81,8 @@ lemma meromorphicOrderAt_deriv_at_zero_of_neg {f : ℂ → ℂ} {m : ℤ}
     meromorphicOrderAt (deriv f) 0 = ((m - 1 : ℤ) : WithTop ℤ) := by
   obtain ⟨g, hg, hg0, hfg⟩ := (meromorphicOrderAt_eq_int_iff hf).mp ho
   have hfg' : f =ᶠ[𝓝[≠] (0 : ℂ)] fun z ↦ z ^ m * g z := by
-    simpa only [sub_zero, smul_eq_mul] using hfg
+    filter_upwards [hfg] with z hz
+    simpa only [sub_zero, smul_eq_mul] using hz
   refine (meromorphicOrderAt_eq_int_iff hf.deriv).mpr
     ⟨fun z ↦ (m : ℂ) * g z + z * deriv g z, ?_, ?_, ?_⟩
   · exact (analyticAt_const.mul hg).add (analyticAt_id.mul hg.deriv)
