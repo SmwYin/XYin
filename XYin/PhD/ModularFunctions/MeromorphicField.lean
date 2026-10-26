@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Stefan Kebekus. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Stefan Kebekus, The XYin contributors
+Authors: Stefan Kebekus, Samuel Yin
 -/
 import Mathlib.Order.Filter.Germ.Basic
 import Mathlib.Topology.Perfect
