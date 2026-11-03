@@ -199,13 +199,13 @@ def modularFormQExpansionSubmodule (R : Type*) [CommRing R] [Algebra R ℂ]
   carrier := {f | HasCoeffsIn R ℂ (qExpansion h f)}
   zero_mem' := by
     change HasCoeffsIn R ℂ (qExpansion h (0 : ModularForm Γ k))
-    rw [ModularForm.coe_zero, UpperHalfPlane.qExpansion_zero]
+    rw [FunLike.coe_zero, UpperHalfPlane.qExpansion_zero]
     exact hasCoeffsIn_zero R ℂ
   add_mem' := by
     intro f g hf hg
     change HasCoeffsIn R ℂ (qExpansion h (f + g))
     rw [ModularForm.qExpansion_add hh hΓ]
-    simpa [ModularForm.coe_add] using hasCoeffsIn_add R ℂ hf hg
+    simpa [FunLike.coe_add] using hasCoeffsIn_add R ℂ hf hg
   smul_mem' := by
     intro r f hf
     change HasCoeffsIn R ℂ (qExpansion h ((r • f : ModularForm Γ k)))

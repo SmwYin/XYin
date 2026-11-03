@@ -212,15 +212,15 @@ theorem existsUnique_rowEquivalent_isHermiteNormalForm (A : Matrix m n ℤ) :
   exact ⟨H, ⟨hAH, hH⟩, fun H' ⟨hAH', hH'⟩ ↦ hH'.eq_of_rowEquivalent hH (hAH'.symm.trans hAH)⟩
 
 /-- Any two Hermite normal forms of a matrix have the same matrix `H`. -/
-theorem HermiteNormalForm.H_unique {A : Matrix m n ℤ} (h₁ h₂ : A.HermiteNormalForm) :
-    h₁.H = h₂.H :=
+theorem HermiteNormalForm.Decomposition.H_unique {A : Matrix m n ℤ}
+    (h₁ h₂ : HermiteNormalForm.Decomposition A) : h₁.H = h₂.H :=
   h₁.isHermiteNormalForm.eq_of_rowEquivalent h₂.isHermiteNormalForm
     (h₁.rowEquivalent.symm.trans h₂.rowEquivalent)
 
 /-- A matrix in Hermite normal form is equal to its Hermite normal form. -/
 theorem IsHermiteNormalForm.hermiteNormalForm_H {A : Matrix m n ℤ} (hA : A.IsHermiteNormalForm) :
     A.hermiteNormalForm.H = A :=
-  HermiteNormalForm.H_unique _ hA.hermiteNormalForm
+  HermiteNormalForm.Decomposition.H_unique _ hA.hermiteNormalForm
 
 /-- Two integer matrices are row equivalent if and only if they have the same Hermite normal
 form. -/

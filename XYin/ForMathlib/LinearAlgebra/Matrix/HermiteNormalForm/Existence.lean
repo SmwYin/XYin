@@ -17,8 +17,8 @@ Every integer matrix, with finite linearly ordered rows and columns, has a Hermi
 
 ## Main definitions
 
-* `Matrix.HermiteNormalForm`: a Hermite normal form of `A`, bundling a unimodular matrix `U`, a
-  matrix `H` in Hermite normal form, and the equation `H = U * A`.
+* `Matrix.HermiteNormalForm.Decomposition`: a Hermite normal form of `A`, bundling a unimodular
+  matrix `U`, a matrix `H` in Hermite normal form, and the equation `H = U * A`.
 
 ## Main results
 
@@ -28,8 +28,8 @@ Every integer matrix, with finite linearly ordered rows and columns, has a Hermi
 
 ## Implementation notes
 
-`Matrix.HermiteNormalForm A` is data rather than a proposition, since `U` is not determined by `A`
-when the rows of `A` are linearly dependent.
+`Matrix.HermiteNormalForm.Decomposition A` is data rather than a proposition, since `U` is not
+determined by `A` when the rows of `A` are linearly dependent.
 
 The proof of existence is by induction on the number of columns. Suppose the first `l` columns
 are in Hermite normal form, and let `S` be the set of rows vanishing on those columns. A Euclidean
@@ -54,7 +54,7 @@ variable [Fintype m] [DecidableEq m] [LT m] [LT n]
 
 /-- A Hermite normal form of an integer matrix `A`: a unimodular matrix `U` and a matrix `H` in
 Hermite normal form such that `H = U * A`. -/
-structure HermiteNormalForm (A : Matrix m n ℤ) where
+structure HermiteNormalForm.Decomposition (A : Matrix m n ℤ) where
   /-- The unimodular matrix taking `A` to `H`. -/
   U : GL m ℤ
   /-- The matrix in Hermite normal form. -/
@@ -68,22 +68,22 @@ variable {A : Matrix m n ℤ}
 
 /-- A matrix in Hermite normal form is its own Hermite normal form, with `U = 1`. -/
 @[expose] def IsHermiteNormalForm.hermiteNormalForm (hA : A.IsHermiteNormalForm) :
-    A.HermiteNormalForm where
+    HermiteNormalForm.Decomposition A where
   U := 1
   H := A
   isHermiteNormalForm := hA
   H_eq := by simp
 
-namespace HermiteNormalForm
+namespace HermiteNormalForm.Decomposition
 
 /-- A Hermite normal form is determined by its unimodular matrix. -/
 @[ext]
-theorem ext {h₁ h₂ : A.HermiteNormalForm} (hU : h₁.U = h₂.U) : h₁ = h₂ := by
+theorem ext {h₁ h₂ : Decomposition A} (hU : h₁.U = h₂.U) : h₁ = h₂ := by
   obtain ⟨U₁, H₁, _, rfl⟩ := h₁
   obtain ⟨U₂, H₂, _, rfl⟩ := h₂
   simp_all
 
-variable (h : A.HermiteNormalForm)
+variable (h : Decomposition A)
 
 theorem rowEquivalent : RowEquivalent A h.H :=
   ⟨h.U, h.H_eq.symm⟩
@@ -95,12 +95,13 @@ theorem isUnit_det_U : IsUnit (h.U : Matrix m m ℤ).det :=
 theorem eq_inv_mul : A = ((h.U⁻¹ : GL m ℤ) : Matrix m m ℤ) * h.H := by
   rw [h.H_eq, ← Matrix.mul_assoc, ← Units.val_mul, inv_mul_cancel, Units.val_one, Matrix.one_mul]
 
-end HermiteNormalForm
+end HermiteNormalForm.Decomposition
 
 /-- A Hermite normal form of `A` exists if and only if `A` is row equivalent to a matrix in
 Hermite normal form. -/
 theorem nonempty_hermiteNormalForm_iff :
-    Nonempty A.HermiteNormalForm ↔ ∃ H, RowEquivalent A H ∧ H.IsHermiteNormalForm := by
+    Nonempty (HermiteNormalForm.Decomposition A) ↔
+      ∃ H, RowEquivalent A H ∧ H.IsHermiteNormalForm := by
   refine ⟨fun ⟨h⟩ ↦ ⟨h.H, h.rowEquivalent, h.isHermiteNormalForm⟩, ?_⟩
   rintro ⟨_, ⟨U, rfl⟩, hH⟩
   exact ⟨⟨U, _, hH, rfl⟩⟩
@@ -348,11 +349,11 @@ theorem exists_rowEquivalent_isHermiteNormalForm (A : Matrix m n ℤ) :
   ext i j
   simp [Matrix.mul_apply]
 
-instance (A : Matrix m n ℤ) : Nonempty A.HermiteNormalForm :=
+instance (A : Matrix m n ℤ) : Nonempty (HermiteNormalForm.Decomposition A) :=
   nonempty_hermiteNormalForm_iff.2 (exists_rowEquivalent_isHermiteNormalForm A)
 
 /-- A choice of Hermite normal form of an integer matrix. -/
-noncomputable def hermiteNormalForm (A : Matrix m n ℤ) : A.HermiteNormalForm :=
+noncomputable def hermiteNormalForm (A : Matrix m n ℤ) : HermiteNormalForm.Decomposition A :=
   Classical.arbitrary _
 
 end Exists
