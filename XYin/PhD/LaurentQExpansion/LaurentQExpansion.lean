@@ -33,6 +33,8 @@ function is reassembled into a Laurent series.
   `_div`, `_polynomial_eval`, `_finset_sum`, `_finset_prod`: meromorphy at the cusp is closed
   under pointwise operations.
 * `analyticAt_cuspFunction_poleRemoved`: multiplying by `q ^ poleOrder` removes the pole.
+* `poleOrder_eq_of_regularization`: an analytic regularization by `q ^ N` with nonzero value
+  at the cusp certifies pole order `N`, without a separate meromorphy assumption.
 * `meromorphicAt_cuspFunction_of_nat_mul`: meromorphy at the cusp descends from a natural
   multiple of the period back to the period itself.
 * `laurentqExpansion_coeff_eq_circleIntegral`: every Laurent coefficient is given by the
@@ -517,6 +519,52 @@ lemma cuspFunction_qpow_mul_eventuallyEq {h : ℝ} (hh : 0 < h) (f : ℍ → ℂ
       fun q ↦ q ^ n * cuspFunction h f q := by
   filter_upwards [eventually_ne_zero_and_norm_lt_one] with q hq
   exact cuspFunction_qpow_mul_eq hh f hq.1 hq.2
+
+/-- An explicit regularization expresses the original cusp function as a negative power of
+`q` times the regularized cusp function, on a punctured neighbourhood of zero. -/
+lemma cuspFunction_eventuallyEq_zpow_mul_of_regularization
+    {h : ℝ} (hh : 0 < h) {f g : ℍ → ℂ} {N : ℕ}
+    (hg : g = fun τ : ℍ ↦ (𝕢 h τ) ^ N * f τ) :
+    cuspFunction h f =ᶠ[𝓝[≠] 0]
+      fun q ↦ q ^ (-(N : ℤ)) * cuspFunction h g q := by
+  have hqg := cuspFunction_qpow_mul_eventuallyEq hh f N
+  rw [← hg] at hqg
+  filter_upwards [hqg, self_mem_nhdsWithin] with q hqg (hq : q ≠ 0)
+  rw [hqg, zpow_neg, zpow_natCast, inv_mul_cancel_left₀ (pow_ne_zero N hq)]
+
+/-- An analytic regularization by `q ^ N` makes the original cusp function meromorphic.
+The regularized value may vanish. -/
+lemma meromorphicAt_cuspFunction_of_regularization
+    {h : ℝ} (hh : 0 < h) {f g : ℍ → ℂ} {N : ℕ}
+    (hg : g = fun τ : ℍ ↦ (𝕢 h τ) ^ N * f τ)
+    (hgan : AnalyticAt ℂ (cuspFunction h g) 0) :
+    MeromorphicAt (cuspFunction h f) 0 :=
+  (((MeromorphicAt.id (0 : ℂ)).zpow (-(N : ℤ))).mul hgan.meromorphicAt).congr
+    (cuspFunction_eventuallyEq_zpow_mul_of_regularization hh hg).symm
+
+/-- If multiplication by `q ^ N` gives an analytic cusp function with nonzero value at zero,
+then the original cusp function has signed meromorphic order `-N`. -/
+lemma meromorphicOrderAt_cuspFunction_eq_neg_of_regularization
+    {h : ℝ} (hh : 0 < h) {f g : ℍ → ℂ} {N : ℕ}
+    (hg : g = fun τ : ℍ ↦ (𝕢 h τ) ^ N * f τ)
+    (hgan : AnalyticAt ℂ (cuspFunction h g) 0) (hg0 : cuspFunction h g 0 ≠ 0) :
+    meromorphicOrderAt (cuspFunction h f) 0 = ((-(N : ℤ) : ℤ) : WithTop ℤ) := by
+  rw [meromorphicOrderAt_congr
+    (cuspFunction_eventuallyEq_zpow_mul_of_regularization hh hg)]
+  change meromorphicOrderAt (id ^ (-(N : ℤ)) * cuspFunction h g) 0 = _
+  rw [mul_comm, meromorphicOrderAt_mul_of_ne_zero hgan hg0,
+    meromorphicOrderAt_zpow (MeromorphicAt.id (0 : ℂ)), meromorphicOrderAt_id]
+  simp
+
+/-- An analytic regularization by `q ^ N` whose value at zero is nonzero certifies that the
+original function has pole order exactly `N`, including `N = 0`. -/
+lemma poleOrder_eq_of_regularization
+    {h : ℝ} (hh : 0 < h) {f g : ℍ → ℂ} {N : ℕ}
+    (hg : g = fun τ : ℍ ↦ (𝕢 h τ) ^ N * f τ)
+    (hgan : AnalyticAt ℂ (cuspFunction h g) 0) (hg0 : cuspFunction h g 0 ≠ 0) :
+    poleOrder h f = N :=
+  poleOrder_eq_of_meromorphicOrderAt_eq
+    (meromorphicOrderAt_cuspFunction_eq_neg_of_regularization hh hg hgan hg0)
 
 /-- If the cusp function of `f` agrees with `G` on a punctured neighbourhood of `0` and `G` is
 continuous at `0`, then the (`limUnder`-defined) value of the cusp function at `0` is `G 0`. -/

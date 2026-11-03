@@ -80,7 +80,7 @@ lemma laurentqExpansion_qParam_pow {h : ℝ} (hh : 0 < h) (n : ℕ) :
 `q ^ (-N)` times the power series of `𝕢 h τ ^ N * f τ`. For any `N` at least the pole order
 this recovers the Laurent q-expansion (`laurentqExpansion_eq_shiftedLaurent`), so sums and
 products can be computed with one common denominator exponent. -/
-private def shiftedLaurent (h : ℝ) (N : ℕ) (f : ℍ → ℂ) : LaurentSeries ℂ :=
+def shiftedLaurent (h : ℝ) (N : ℕ) (f : ℍ → ℂ) : LaurentSeries ℂ :=
   HahnSeries.single (-(N : ℤ)) 1 *
     (HahnSeries.ofPowerSeries ℤ ℂ)
       (qExpansion h (fun τ ↦ (𝕢 h τ) ^ N * f τ))
@@ -96,7 +96,7 @@ private lemma qpow_mul_eq_qpow_sub_mul_poleRemoved {h : ℝ} {f : ℍ → ℂ} {
 
 /-- The Laurent q-expansion is independent of the chosen denominator exponent: any
 `N ≥ poleOrder h f` gives the same series via the shifted presentation. -/
-private lemma laurentqExpansion_eq_shiftedLaurent
+lemma laurentqExpansion_eq_shiftedLaurent
     {h : ℝ} (hh : 0 < h) {f : ℍ → ℂ}
     (hf : MeromorphicAt (cuspFunction h f) 0) {N : ℕ}
     (hN : poleOrder h f ≤ N) :
@@ -110,7 +110,8 @@ private lemma laurentqExpansion_eq_shiftedLaurent
     HahnSeries.ofPowerSeries_X_pow, ← mul_assoc, HahnSeries.single_mul_single, one_mul,
     show -(N : ℤ) + ((N - poleOrder h f : ℕ) : ℤ) = -(poleOrder h f : ℤ) by omega]
 
-private lemma analyticAt_cuspFunction_qpow_of_poleOrder_le
+/-- Every exponent at least the pole order gives an analytic regularization at the cusp. -/
+lemma analyticAt_cuspFunction_qpow_of_poleOrder_le
     {h : ℝ} (hh : 0 < h) {f : ℍ → ℂ}
     (hf : MeromorphicAt (cuspFunction h f) 0) {N : ℕ}
     (hN : poleOrder h f ≤ N) :

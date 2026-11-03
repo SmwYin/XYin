@@ -1,6 +1,7 @@
 import XYin.PhD.IntegralPowerSeries.IntegralPowerSeries
 import XYin.PhD.HermiteNormalForm.HermiteNormalForm
 import XYin.PhD.LaurentQExpansion.LaurentQExpansion
+import XYin.PhD.LaurentQExpansion.Convergence
 import XYin.PhD.ModularFunctions.Algebra
 import XYin.PhD.ModularFunctions.Basic
 import XYin.PhD.ModularFunctions.CuspMeromorphy
@@ -16,6 +17,7 @@ import XYin.PhD.Modularforms.SlashActionAuxil
 import XYin.PhD.Modularforms.SturmBound
 import XYin.PhD.Modularforms.clog_arg_lems
 import XYin.PhD.Modularforms.multipliable_lems
+import XYin.PhD.NewQExpansion.ModularForm
 import XYin.PhD.Tactic2.QExpSimpAttr
 import XYin.PhD.Tactic2.qexp_simp
 import XYin.PhD.Cox.Section11BC
@@ -23,6 +25,7 @@ import XYin.PhD.jFunction.Deltaqexpansions
 import XYin.PhD.jFunction.jInvariantLink
 import XYin.PhD.jFunction.jLevelN
 import XYin.PhD.jFunction.jfunction
+import XYin.PhD.jFunction.jProperties
 import XYin.PhD.jFunction.qexp_coeffs
 import XYin.PhD.qExpansion_tactic.Qj
 import XYin.PhD.qExpansion_tactic.link

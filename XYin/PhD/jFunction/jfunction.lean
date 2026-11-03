@@ -8,7 +8,7 @@ import Mathlib.NumberTheory.ModularForms.QExpansion
 
 import XYin.PhD.IntegralPowerSeries.IntegralPowerSeries
 import XYin.PhD.jFunction.Deltaqexpansions
-import XYin.PhD.LaurentQExpansion.Algebra
+import XYin.PhD.LaurentQExpansion.Convergence
 
 /-!
 # The modular `j`-function and its Laurent q-expansion
@@ -32,6 +32,8 @@ of `j` at infinity.
 * `qj_isIntegralPowerSeries`: the q-expansion of `qj` has integral coefficients.
 * `j_eq_qjCoeffs_tsum`: the convergent q-series reconstruction of `j`.
 * `j_poleOrder`: the function `j` has a simple pole at infinity.
+* `hasSum_j_laurentQExpansion`: the Laurent q-expansion converges to `j`.
+* `j_laurentQExpansion_eq_of_hasSum`: convergent Laurent expansions of `j` are unique.
 * `j_laurentQExpansion_coeff`: the Laurent q-expansion coefficients of `j` with explicit integer
   witnesses; `j_laurentQExpansion_isIntegral` is its existential form.
 -/
@@ -98,6 +100,11 @@ lemma j_slash_invariant (γ : SL(2, ℤ)) : j ∣[(0 : ℤ)] γ = j := by
 lemma j_modularGroup_smul (γ : SL(2, ℤ)) (z : ℍ) : j (γ • z) = j z := by
   have h := congrFun (j_slash_invariant γ) z
   simpa only [SL_slash_apply, neg_zero, zpow_zero, mul_one] using h
+
+/-- The complex extension of the modular invariant is one-periodic. -/
+lemma j_periodic : Periodic (j ∘ UpperHalfPlane.ofComplex) 1 :=
+  periodic_comp_ofComplex_of_vadd fun τ ↦ by
+    simp only [j, E₄_vadd_one_aux, discriminant_vadd_one_aux]
 
 /-! ### The unit `Δ / q` -/
 
@@ -285,16 +292,6 @@ lemma hasSum_qExpansion_qj {τ : ℍ} :
   UpperHalfPlane.hasSum_qExpansion (h := 1) (f := qj) (by positivity) qj_periodic
     qj_mdifferentiable qj_isBoundedAtImInfty τ
 
-/-- The convergent q-series reconstruction of the modular invariant `j`. -/
-theorem j_eq_qjCoeffs_tsum (z : ℍ) :
-    j z = qjCoeffs 0 / cexp (2 * π * Complex.I * z) +
-      ∑' n, qjCoeffs (n + 1) * cexp (2 * π * Complex.I * z) ^ n := by
-  have hs : HasSum (fun n : ℕ ↦ (qjCoeffs n : ℂ) * cexp (2 * π * Complex.I * z) ^ n) (qj z) := by
-    simpa [smul_eq_mul, Periodic.qParam, qjCoeffs_cast] using hasSum_qExpansion_qj (τ := z)
-  rw [show j z = qj z / cexp (2 * π * Complex.I * z) by simp [qj], ← hs.tsum_eq,
-    hs.summable.tsum_eq_zero_add, add_div, ← tsum_div_const]
-  simp [pow_succ, ← mul_assoc]
-
 /-- The regularized modular invariant `qj` has constant coefficient one. -/
 lemma qj_qExpansion_coeff_zero : (qExpansion 1 qj).coeff 0 = 1 := by
   have hE₄ : constantCoeff (qExpansion 1 E₄) = 1 := by
@@ -316,33 +313,21 @@ lemma qjCoeffs_zero : qjCoeffs 0 = 1 := by
 lemma qj_cuspFunction_analyticAt : AnalyticAt ℂ (cuspFunction 1 qj) 0 :=
   analyticAt_cuspFunction_zero one_pos qj_periodic qj_mdifferentiable qj_isBoundedAtImInfty
 
-/-! ### The pole of `j` at infinity -/
+/-- The analytic regularization of `j` takes the value one at the cusp. -/
+@[simp] lemma qj_cuspFunction_zero : cuspFunction 1 qj 0 = 1 := by
+  simpa [qExpansion_coeff] using qj_qExpansion_coeff_zero
 
-private lemma inv_mul_cuspFunction_qj_eq_j_aux :
-    (fun q : ℂ ↦ q⁻¹ * cuspFunction 1 qj q) =ᶠ[𝓝[≠] (0 : ℂ)] cuspFunction 1 j := by
-  have hqj : qj = fun τ : ℍ ↦ 𝕢 1 τ ^ 1 * j τ := funext fun τ ↦ by rw [qj_apply, pow_one]
-  have h := cuspFunction_qpow_mul_eventuallyEq one_pos j 1
-  rw [← hqj] at h
-  filter_upwards [h, self_mem_nhdsWithin] with q hq (hq0 : q ≠ 0)
-  rw [hq, pow_one, inv_mul_cancel_left₀ hq0]
+/-! ### The pole of `j` at infinity -/
 
 /-- The cusp function of `j` is meromorphic at `q = 0`. -/
 lemma j_cuspFunction_meromorphicAt : MeromorphicAt (cuspFunction 1 j) (0 : ℂ) :=
-  (((MeromorphicAt.id (0 : ℂ)).inv).mul
-    qj_cuspFunction_analyticAt.meromorphicAt).congr inv_mul_cuspFunction_qj_eq_j_aux
+  meromorphicAt_cuspFunction_of_regularization one_pos (g := qj)
+    (N := 1) (by ext τ; simp [qj_apply]) qj_cuspFunction_analyticAt
 
 /-- The modular invariant `j` has a simple pole at infinity. -/
-lemma j_poleOrder : poleOrder 1 j = 1 := by
-  refine poleOrder_eq_of_meromorphicOrderAt_eq (r := 1) ?_
-  have hqj0 : cuspFunction 1 qj 0 = 1 := by
-    simpa [qExpansion_coeff] using qj_qExpansion_coeff_zero
-  have hqinvord : meromorphicOrderAt (fun q : ℂ ↦ q⁻¹) (0 : ℂ) = (-1 : WithTop ℤ) := by
-    simpa [Pi.inv_def, id_eq] using (meromorphicOrderAt_inv (f := id) (x := (0 : ℂ)))
-  rw [meromorphicOrderAt_congr inv_mul_cuspFunction_qj_eq_j_aux.symm]
-  change meromorphicOrderAt (((fun q : ℂ ↦ q⁻¹) * cuspFunction 1 qj)) (0 : ℂ) = _
-  rw [mul_comm, meromorphicOrderAt_mul_of_ne_zero qj_cuspFunction_analyticAt (by simp [hqj0]),
-    hqinvord]
-  rfl
+lemma j_poleOrder : poleOrder 1 j = 1 :=
+  poleOrder_eq_of_regularization one_pos (g := qj)
+    (by ext τ; simp [qj_apply]) qj_cuspFunction_analyticAt (by simp)
 
 /-- The pole of `j` at infinity is not a removable singularity. -/
 lemma j_cuspFunction_not_analyticAt : ¬ AnalyticAt ℂ (cuspFunction 1 j) 0 := by
@@ -391,5 +376,32 @@ theorem j_laurentQExpansion_coeff (n : ℤ) :
 theorem j_laurentQExpansion_isIntegral {n : ℤ} :
     ∃ m : ℤ, (laurentqExpansion 1 j).coeff n = m :=
   ⟨_, j_laurentQExpansion_coeff n⟩
+
+/-- The Laurent q-expansion of `j`, summed over all integer exponents, converges to `j`. -/
+theorem hasSum_j_laurentQExpansion (τ : ℍ) :
+    HasSum (fun n : ℤ ↦ (laurentqExpansion 1 j).coeff n * 𝕢 1 τ ^ n) (j τ) :=
+  hasSum_laurentqExpansion one_pos j_periodic j_mdifferentiable
+    j_cuspFunction_meromorphicAt τ
+
+/-- The integral coefficients of the regularization give the convergent Laurent series of `j`. -/
+theorem hasSum_j_qjCoeffs (τ : ℍ) :
+    HasSum (fun n : ℕ ↦ (qjCoeffs n : ℂ) * 𝕢 1 τ ^ ((n : ℤ) - 1)) (j τ) := by
+  simpa only [j_poleOrder, Nat.cast_one, j_laurentQExpansion_coeff_sub_one, qjCoeffs_cast] using
+    hasSum_laurentqExpansion_natCast_sub one_pos j_periodic j_mdifferentiable
+      j_cuspFunction_meromorphicAt τ
+
+/-- A convergent Laurent series for `j` is its canonical Laurent q-expansion. -/
+theorem j_laurentQExpansion_eq_of_hasSum {L : LaurentSeries ℂ}
+    (hsum : ∀ τ : ℍ, HasSum (fun n : ℤ ↦ L.coeff n * 𝕢 1 τ ^ n) (j τ)) :
+    laurentqExpansion 1 j = L :=
+  laurentqExpansion_eq_of_hasSum one_pos j_cuspFunction_meromorphicAt hsum
+
+/-- The convergent q-series reconstruction of the modular invariant `j`. -/
+theorem j_eq_qjCoeffs_tsum (z : ℍ) :
+    j z = qjCoeffs 0 / cexp (2 * π * Complex.I * z) +
+      ∑' n, qjCoeffs (n + 1) * cexp (2 * π * Complex.I * z) ^ n := by
+  have hs := hasSum_j_qjCoeffs z
+  rw [← hs.tsum_eq, hs.summable.tsum_eq_zero_add]
+  simp [Periodic.qParam, div_eq_mul_inv]
 
 end
