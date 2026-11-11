@@ -1,0 +1,776 @@
+{
+  "schemaVersion": 1,
+  "categories": [
+    {
+      "id": "formathlib",
+      "label": "ForMathlib",
+      "description": "Shared implementations organised by mathematical topic. An existing copy here does not imply that downstream projects have adopted it."
+    },
+    {
+      "id": "phd",
+      "label": "PhD",
+      "description": "PhD work: foundations, Cox theorems and modular curve comparisons. Categories are recorded in configuration only."
+    },
+    {
+      "id": "nfil",
+      "label": "NFIL",
+      "description": "A separate category reserved for future work. Add projects and file assignments through the interface."
+    },
+    {
+      "id": "others",
+      "label": "Others",
+      "description": "Repository entry points, supporting material and files not yet assigned to a mathematical project."
+    }
+  ],
+  "projects": [
+    {
+      "id": "fm-number-theory",
+      "categoryId": "formathlib",
+      "parentId": null,
+      "label": "NumberTheory",
+      "description": "Candidate shared implementations of q-expansions, Laurent expansions and the j-function."
+    },
+    {
+      "id": "fm-linear-algebra",
+      "categoryId": "formathlib",
+      "parentId": null,
+      "label": "LinearAlgebra",
+      "description": "General Hermite normal form implementations."
+    },
+    {
+      "id": "fm-ring-theory",
+      "categoryId": "formathlib",
+      "parentId": null,
+      "label": "RingTheory",
+      "description": "General algebra interfaces, including coefficient rings for power series."
+    },
+    {
+      "id": "foundation",
+      "categoryId": "phd",
+      "parentId": null,
+      "label": "Foundation",
+      "description": "Prerequisites shared by the research projects. This is a logical grouping; files remain in place."
+    },
+    {
+      "id": "foundation-qexp",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "q-expansion",
+      "description": "The q-expansion API at arbitrary cusp representatives."
+    },
+    {
+      "id": "foundation-laurent",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "Laurent q-expansion",
+      "description": "Laurent q-expansions of meromorphic functions, algebraic operations and convergence."
+    },
+    {
+      "id": "foundation-modular",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "Modular functions",
+      "description": "Definitions of modular functions, meromorphy interfaces and parallel experiments with alternative definitions."
+    },
+    {
+      "id": "foundation-integral",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "Integral power series",
+      "description": "Power series with integral coefficients and coefficient-ring interfaces."
+    },
+    {
+      "id": "foundation-j",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "j-function",
+      "description": "The j-function, Delta expansions, special values and links to elliptic curves."
+    },
+    {
+      "id": "foundation-hnf",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "Hermite normal form",
+      "description": "Rank-two applications, the general matrix implementation and its organised copies."
+    },
+    {
+      "id": "foundation-modularforms",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "Modular forms",
+      "description": "Eisenstein series, dimensions, the Sturm bound and other modular form prerequisites."
+    },
+    {
+      "id": "foundation-tactics",
+      "categoryId": "phd",
+      "parentId": "foundation",
+      "label": "q-expansion tactics",
+      "description": "Automation for q-expansions and its tests."
+    },
+    {
+      "id": "cox",
+      "categoryId": "phd",
+      "parentId": null,
+      "label": "Cox",
+      "description": "Results related to Chapter 11 of Cox. Subprojects may share dependencies."
+    },
+    {
+      "id": "cox-11bc",
+      "categoryId": "phd",
+      "parentId": "cox",
+      "label": "Section 11.B–C",
+      "description": "The foundational chain for modular polynomials, modular function fields, lattices and singular moduli."
+    },
+    {
+      "id": "cox-11-1",
+      "categoryId": "phd",
+      "parentId": "cox",
+      "label": "Theorem 11.1",
+      "description": "Integrality of ideal j-values and the ring class field theorem, with an existing separate ticket board."
+    },
+    {
+      "id": "modular-curve",
+      "categoryId": "phd",
+      "parentId": null,
+      "label": "Modular Curve",
+      "description": "Connecting modular function fields, modular polynomials and the actual modular curve. The final normalisation comparison still has gaps."
+    },
+    {
+      "id": "others-support",
+      "categoryId": "others",
+      "parentId": null,
+      "label": "Repository support",
+      "description": "Aggregate entry points and standalone supporting files."
+    }
+  ],
+  "approaches": [
+    {
+      "id": "fm-qexp",
+      "projectId": "fm-number-theory",
+      "label": "Shared q-expansion copy",
+      "description": "The existing ForMathlib copy. Adoption relative to the PhD version is tracked separately.",
+      "environmentId": "xyin",
+      "role": "shared",
+      "entryModules": [
+        "XYin.ForMathlib.NumberTheory.ModularForms.QExpansion.ModularForm"
+      ]
+    },
+    {
+      "id": "fm-laurent",
+      "projectId": "fm-number-theory",
+      "label": "Shared Laurent copy",
+      "description": "The existing ForMathlib Laurent API, with some interface differences from the PhD version.",
+      "environmentId": "xyin",
+      "role": "shared",
+      "entryModules": [
+        "XYin.ForMathlib.NumberTheory.ModularFunctions.LaurentQExpansion.Convergence"
+      ]
+    },
+    {
+      "id": "fm-j",
+      "projectId": "fm-number-theory",
+      "label": "Shared j-function copy",
+      "description": "The j-function, Delta and Eisenstein expansions organised by mathematical topic.",
+      "environmentId": "xyin",
+      "role": "shared",
+      "entryModules": [
+        "XYin.ForMathlib.NumberTheory.ModularFunctions.JFunction.Properties",
+        "XYin.ForMathlib.NumberTheory.ModularFunctions.JFunction.EllipticCurve"
+      ]
+    },
+    {
+      "id": "fm-hnf",
+      "projectId": "fm-linear-algebra",
+      "label": "Shared general HNF copy",
+      "description": "HNF for arbitrary finite integer matrices. This does not mark every downstream project as having switched.",
+      "environmentId": "xyin",
+      "role": "shared",
+      "entryModules": [
+        "XYin.ForMathlib.LinearAlgebra.Matrix.HermiteNormalForm.Uniqueness"
+      ]
+    },
+    {
+      "id": "fm-coeffs",
+      "projectId": "fm-ring-theory",
+      "label": "Generalised HasCoeffsIn",
+      "description": "The version for general coefficient rings, compared with the specialised integer/complex interface in PhD.",
+      "environmentId": "xyin",
+      "role": "shared",
+      "entryModules": [
+        "XYin.ForMathlib.RingTheory.PowerSeries.HasCoeffsIn"
+      ]
+    },
+    {
+      "id": "phd-qexp",
+      "projectId": "foundation-qexp",
+      "label": "Current PhD implementation",
+      "description": "The NewQExpansion modules used by the current root entry point.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.NewQExpansion.ModularForm"
+      ]
+    },
+    {
+      "id": "phd-laurent",
+      "projectId": "foundation-laurent",
+      "label": "Current PhD implementation",
+      "description": "The Laurent q-expansion interface currently used by PhD consumers.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.LaurentQExpansion.Convergence"
+      ]
+    },
+    {
+      "id": "mf-production",
+      "projectId": "foundation-modular",
+      "label": "Current modular function definition",
+      "description": "Normal forms in preferred manifold charts and exponential cusp growth, incorporated into the current project interface.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.ModularFunctions.Algebra"
+      ]
+    },
+    {
+      "id": "mf-prototype",
+      "projectId": "foundation-modular",
+      "label": "Bundled-class interface experiment",
+      "description": "The retained ModularFunctionClass experiment. Some predicates have entered the current implementation.",
+      "environmentId": "xyin",
+      "role": "alternative",
+      "entryModules": [
+        "XYin.PhD.ModularFunctions.Test.Definition"
+      ]
+    },
+    {
+      "id": "mmero-uhp",
+      "projectId": "foundation-modular",
+      "label": "Upper half-plane predicate",
+      "description": "A minimal meromorphy wrapper specifically for the upper half-plane.",
+      "environmentId": "xyin",
+      "role": "alternative",
+      "entryModules": [
+        "XYin.PhD.Test.MMeromorphic.UpperHalfPlaneChecks"
+      ]
+    },
+    {
+      "id": "mmero-charts",
+      "projectId": "foundation-modular",
+      "label": "Preferred-chart predicate",
+      "description": "A chart definition on one-dimensional complex manifolds. Its scope is recorded separately from the local-fraction approach.",
+      "environmentId": "xyin",
+      "role": "alternative",
+      "entryModules": [
+        "XYin.PhD.Test.MMeromorphic.ChartsChecks"
+      ]
+    },
+    {
+      "id": "mmero-fraction",
+      "projectId": "foundation-modular",
+      "label": "Local analytic fractions",
+      "description": "Scalar-valued local analytic fractions for more general complex analytic models.",
+      "environmentId": "xyin",
+      "role": "alternative",
+      "entryModules": [
+        "XYin.PhD.Test.MMeromorphic.LocalFractionChecks"
+      ]
+    },
+    {
+      "id": "mmero-sheaf",
+      "projectId": "foundation-modular",
+      "label": "Sheaf construction",
+      "description": "The reference sheaf implementation, global sections and comparison with the analytic quotient.",
+      "environmentId": "xyin",
+      "role": "alternative",
+      "entryModules": [
+        "XYin.PhD.Test.MMeromorphic.SheafEquivalence"
+      ]
+    },
+    {
+      "id": "mmero-common",
+      "projectId": "foundation-modular",
+      "label": "Comparison and integration experiments",
+      "description": "Bridges between definitions, field constructions and geometry experiments. The initial assignments can be refined manually.",
+      "environmentId": "xyin",
+      "role": "shared",
+      "entryModules": [
+        "XYin.PhD.Test.MMeromorphic"
+      ]
+    },
+    {
+      "id": "phd-integral",
+      "projectId": "foundation-integral",
+      "label": "Integral power series",
+      "description": "The interface for power series with integral coefficients used by PhD.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.IntegralPowerSeries.IntegralPowerSeries"
+      ]
+    },
+    {
+      "id": "phd-j",
+      "projectId": "foundation-j",
+      "label": "Current PhD implementation",
+      "description": "The j-function and its q-expansion applications in the current project.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.jFunction.jProperties"
+      ]
+    },
+    {
+      "id": "hnf-rank-two",
+      "projectId": "foundation-hnf",
+      "label": "Rank-two application approach",
+      "description": "Direct Bézout row operations and interfaces for rank-two HNF applications.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.HermiteNormalForm.HermiteNormalForm"
+      ]
+    },
+    {
+      "id": "hnf-general",
+      "projectId": "foundation-hnf",
+      "label": "General matrix approach",
+      "description": "The implementation for arbitrary finite integer matrices retained in PhD. Compatibility with the rank-two imports is not assumed.",
+      "environmentId": "xyin",
+      "role": "alternative",
+      "entryModules": [
+        "XYin.PhD.HermiteNormalForm.ForMathlib.Uniqueness"
+      ]
+    },
+    {
+      "id": "cox-core",
+      "projectId": "cox-11bc",
+      "label": "Existing Cox foundation chain",
+      "description": "Current implementations of the Cox product, modular polynomials and modular function fields.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.Cox.Section11BC"
+      ]
+    },
+    {
+      "id": "cox-main",
+      "projectId": "cox-11-1",
+      "label": "Current approach",
+      "description": "Theorem 11.1(i) reuses integrality of singular moduli; 11.1(ii) uses an independent class field construction. Ticket status comes from the existing detailed records.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.Cox.Theorem11_1.Main"
+      ]
+    },
+    {
+      "id": "cox-book",
+      "projectId": "cox-11-1",
+      "label": "Book alternative for 11.1(i)",
+      "description": "The nonsquare-norm approach from Cox, p. 237. Eleven exclusive tickets are deferred; other results are shared with the main approach.",
+      "environmentId": "xyin",
+      "role": "reference",
+      "entryModules": [
+        "XYin.PhD.Cox.Theorem11_1.Integrality"
+      ]
+    },
+    {
+      "id": "curve-local",
+      "projectId": "modular-curve",
+      "label": "Local plane model and function field",
+      "description": "Constructs the plane scheme from the modular polynomial and compares the analytic modular function field. It complements the AINTLIB side; normalisation is still outstanding.",
+      "environmentId": "xyin",
+      "role": "active",
+      "entryModules": [
+        "XYin.PhD.Test.ModularPolynomialCurve"
+      ]
+    },
+    {
+      "id": "curve-aintlib",
+      "projectId": "modular-curve",
+      "label": "Actual modular curve in AINTLIB",
+      "description": "Connects the actual YZeroCoarse object in a separate pinned environment. Historical checkpoints exist; target-j and normalisation gaps remain.",
+      "environmentId": "aintlib",
+      "role": "active",
+      "entryModules": [
+        "AINTLIBDrafts.UpstreamAudit"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "id": "xyin",
+      "label": "Current XYin environment",
+      "toolchain": "leanprover/lean4:v4.35.0",
+      "note": "Uses the root lean-toolchain and lake-manifest. Registering an entry point does not mean it has been rebuilt in this session."
+    },
+    {
+      "id": "aintlib",
+      "label": "Separate AINTLIB environment",
+      "toolchain": "leanprover/lean4:v4.35.0-rc3",
+      "note": "Historical pins: AINTLIB ab1451487da02cd4483d0e2cdb2cc9e44bbbac17 / mathlib 300d0e535721bc098547106fc297d8ba2a63f6bb. Imports cannot be mixed with the main environment. Current availability has not been rechecked."
+    }
+  ],
+  "assignments": [
+    {
+      "id": "fallback-xyin",
+      "pattern": "XYin/**/*.lean",
+      "projectId": "others-support",
+      "approachId": null
+    },
+    {
+      "id": "fallback-tests",
+      "pattern": "XYinTest/**/*.lean",
+      "projectId": "others-support",
+      "approachId": null
+    },
+    {
+      "id": "entry-xyin",
+      "pattern": "XYin.lean",
+      "projectId": "others-support",
+      "approachId": null
+    },
+    {
+      "id": "entry-tests",
+      "pattern": "XYinTest.lean",
+      "projectId": "others-support",
+      "approachId": null
+    },
+    {
+      "id": "fm-nt",
+      "pattern": "XYin/ForMathlib/NumberTheory/**/*.lean",
+      "projectId": "fm-number-theory",
+      "approachId": "fm-j"
+    },
+    {
+      "id": "fm-qe",
+      "pattern": "XYin/ForMathlib/NumberTheory/ModularForms/QExpansion/**/*.lean",
+      "projectId": "fm-number-theory",
+      "approachId": "fm-qexp"
+    },
+    {
+      "id": "fm-lqe",
+      "pattern": "XYin/ForMathlib/NumberTheory/ModularFunctions/LaurentQExpansion/**/*.lean",
+      "projectId": "fm-number-theory",
+      "approachId": "fm-laurent"
+    },
+    {
+      "id": "fm-la",
+      "pattern": "XYin/ForMathlib/LinearAlgebra/**/*.lean",
+      "projectId": "fm-linear-algebra",
+      "approachId": "fm-hnf"
+    },
+    {
+      "id": "fm-rt",
+      "pattern": "XYin/ForMathlib/RingTheory/**/*.lean",
+      "projectId": "fm-ring-theory",
+      "approachId": "fm-coeffs"
+    },
+    {
+      "id": "phd-qe",
+      "pattern": "XYin/PhD/NewQExpansion/**/*.lean",
+      "projectId": "foundation-qexp",
+      "approachId": "phd-qexp"
+    },
+    {
+      "id": "phd-lqe",
+      "pattern": "XYin/PhD/LaurentQExpansion/**/*.lean",
+      "projectId": "foundation-laurent",
+      "approachId": "phd-laurent"
+    },
+    {
+      "id": "phd-mf",
+      "pattern": "XYin/PhD/ModularFunctions/**/*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mf-production"
+    },
+    {
+      "id": "phd-mf-test",
+      "pattern": "XYin/PhD/ModularFunctions/Test/**/*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mf-prototype"
+    },
+    {
+      "id": "phd-integral",
+      "pattern": "XYin/PhD/IntegralPowerSeries/**/*.lean",
+      "projectId": "foundation-integral",
+      "approachId": "phd-integral"
+    },
+    {
+      "id": "phd-j",
+      "pattern": "XYin/PhD/jFunction/**/*.lean",
+      "projectId": "foundation-j",
+      "approachId": "phd-j"
+    },
+    {
+      "id": "phd-hnf",
+      "pattern": "XYin/PhD/HermiteNormalForm/**/*.lean",
+      "projectId": "foundation-hnf",
+      "approachId": "hnf-rank-two"
+    },
+    {
+      "id": "phd-hnf-general",
+      "pattern": "XYin/PhD/HermiteNormalForm/ForMathlib/**/*.lean",
+      "projectId": "foundation-hnf",
+      "approachId": "hnf-general"
+    },
+    {
+      "id": "phd-modularforms",
+      "pattern": "XYin/PhD/Modularforms/**/*.lean",
+      "projectId": "foundation-modularforms",
+      "approachId": null
+    },
+    {
+      "id": "phd-tactics-one",
+      "pattern": "XYin/PhD/Tactic2/**/*.lean",
+      "projectId": "foundation-tactics",
+      "approachId": null
+    },
+    {
+      "id": "phd-tactics-two",
+      "pattern": "XYin/PhD/qExpansion_tactic/**/*.lean",
+      "projectId": "foundation-tactics",
+      "approachId": null
+    },
+    {
+      "id": "test-tactics-one",
+      "pattern": "XYinTest/Tactic2/**/*.lean",
+      "projectId": "foundation-tactics",
+      "approachId": null
+    },
+    {
+      "id": "test-tactics-two",
+      "pattern": "XYinTest/qExpansion_tactic/**/*.lean",
+      "projectId": "foundation-tactics",
+      "approachId": null
+    },
+    {
+      "id": "test-hnf",
+      "pattern": "XYinTest/HermiteNormalForm.lean",
+      "projectId": "foundation-hnf",
+      "approachId": "hnf-rank-two"
+    },
+    {
+      "id": "cox-core",
+      "pattern": "XYin/PhD/Cox/**/*.lean",
+      "projectId": "cox-11bc",
+      "approachId": "cox-core"
+    },
+    {
+      "id": "cox-main",
+      "pattern": "XYin/PhD/Cox/Theorem11_1/**/*.lean",
+      "projectId": "cox-11-1",
+      "approachId": "cox-main"
+    },
+    {
+      "id": "cox-book",
+      "pattern": "XYin/PhD/Cox/Theorem11_1/Integrality.lean",
+      "projectId": "cox-11-1",
+      "approachId": "cox-book"
+    },
+    {
+      "id": "mmero-entry",
+      "pattern": "XYin/PhD/Test/MMeromorphic.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mmero-common"
+    },
+    {
+      "id": "mmero-all",
+      "pattern": "XYin/PhD/Test/MMeromorphic/**/*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mmero-common"
+    },
+    {
+      "id": "mmero-uhp",
+      "pattern": "XYin/PhD/Test/MMeromorphic/UpperHalfPlane*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mmero-uhp"
+    },
+    {
+      "id": "mmero-chart",
+      "pattern": "XYin/PhD/Test/MMeromorphic/Charts*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mmero-charts"
+    },
+    {
+      "id": "mmero-fraction",
+      "pattern": "XYin/PhD/Test/MMeromorphic/LocalFraction*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mmero-fraction"
+    },
+    {
+      "id": "mmero-sheaf",
+      "pattern": "XYin/PhD/Test/MMeromorphic/Sheaf*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mmero-sheaf"
+    },
+    {
+      "id": "mmero-reference",
+      "pattern": "XYin/PhD/Test/MMeromorphic/Reference/**/*.lean",
+      "projectId": "foundation-modular",
+      "approachId": "mmero-sheaf"
+    },
+    {
+      "id": "curve-entry",
+      "pattern": "XYin/PhD/Test/ModularPolynomialCurve.lean",
+      "projectId": "modular-curve",
+      "approachId": "curve-local"
+    },
+    {
+      "id": "curve-all",
+      "pattern": "XYin/PhD/Test/ModularPolynomialCurve/**/*.lean",
+      "projectId": "modular-curve",
+      "approachId": "curve-local"
+    },
+    {
+      "id": "curve-aintlib",
+      "pattern": "XYin/PhD/Test/ModularPolynomialCurve/AINTLIBDrafts/**/*.lean",
+      "projectId": "modular-curve",
+      "approachId": "curve-aintlib"
+    }
+  ],
+  "overrides": {},
+  "relations": [
+    {
+      "id": "qexp-mirror",
+      "fromApproachId": "phd-qexp",
+      "toApproachId": "fm-qexp",
+      "kind": "mirror",
+      "note": "PhD and ForMathlib copies of the same API. Differences are checked per module; downstream adoption is tracked separately."
+    },
+    {
+      "id": "laurent-mirror",
+      "fromApproachId": "phd-laurent",
+      "toApproachId": "fm-laurent",
+      "kind": "mirror",
+      "note": "The organised copy omits some interfaces and has different imports. Its location alone does not establish that it can replace the original."
+    },
+    {
+      "id": "integral-generalization",
+      "fromApproachId": "fm-coeffs",
+      "toApproachId": "phd-integral",
+      "kind": "generalizes",
+      "note": "The general coefficient-ring interface in HasCoeffsIn compared with the specialised integer/complex interface in PhD."
+    },
+    {
+      "id": "j-mirror",
+      "fromApproachId": "phd-j",
+      "toApproachId": "fm-j",
+      "kind": "mirror",
+      "note": "An organised copy of the j-function and expansions. Some declarations have been split or have not been migrated."
+    },
+    {
+      "id": "hnf-mirror",
+      "fromApproachId": "hnf-general",
+      "toApproachId": "fm-hnf",
+      "kind": "mirror",
+      "note": "The general HNF implementation exists both within PhD and in the top-level ForMathlib tree."
+    },
+    {
+      "id": "hnf-scope",
+      "fromApproachId": "hnf-rank-two",
+      "toApproachId": "hnf-general",
+      "kind": "specializes",
+      "note": "The rank-two and general matrix approaches have different scopes. A complete interface migration proof has not been registered in the dashboard."
+    },
+    {
+      "id": "mf-integrated",
+      "fromApproachId": "mf-prototype",
+      "toApproachId": "mf-production",
+      "kind": "partial_integration",
+      "note": "The manifold predicates and growth API have entered the current implementation. The bundled-class interface remains experimental."
+    },
+    {
+      "id": "mmero-equivalence",
+      "fromApproachId": "mmero-fraction",
+      "toApproachId": "mmero-charts",
+      "kind": "equivalent_scope",
+      "note": "Comparison.lean establishes equivalence of local fractions and chart predicates on one-dimensional analytic complex manifolds. The equivalence is restricted to those hypotheses."
+    },
+    {
+      "id": "mmero-sheaf-comparison",
+      "fromApproachId": "mmero-common",
+      "toApproachId": "mmero-sheaf",
+      "kind": "complementary",
+      "note": "Bridge modules compare the analytic quotient with sheaf sections and record a RingEquiv within the stated scope."
+    },
+    {
+      "id": "cox-alternative",
+      "fromApproachId": "cox-book",
+      "toApproachId": "cox-main",
+      "kind": "alternative",
+      "note": "An alternative proof of 11.1(i) only. Its exclusive deferred tickets are kept separate from results still shared by other work."
+    },
+    {
+      "id": "curve-complementary",
+      "fromApproachId": "curve-local",
+      "toApproachId": "curve-aintlib",
+      "kind": "complementary",
+      "note": "The two sides establish results about the plane model/function field and the actual modular curve respectively. The final comparison must connect them."
+    }
+  ],
+  "migrations": [
+    {
+      "id": "migration-qexp-basic",
+      "title": "q-expansion Basic: confirm the shared copy and switch consumers",
+      "sourcePaths": [
+        "XYin/PhD/NewQExpansion/Basic.lean"
+      ],
+      "targetPaths": [
+        "XYin/ForMathlib/NumberTheory/ModularForms/QExpansion/Basic.lean"
+      ],
+      "stage": "preparing",
+      "notes": "A corresponding copy already exists. Check dependencies and the API, then select the downstream scope. This is a manually recorded preparation stage, not a claim that the current target or its consumers have been verified.",
+      "consumerProjectIds": [
+        "foundation-qexp",
+        "cox-11bc",
+        "modular-curve"
+      ],
+      "adoptedProjectIds": []
+    },
+    {
+      "id": "migration-laurent",
+      "title": "Laurent q-expansion: reconcile differences and shared interfaces",
+      "sourcePaths": [
+        "XYin/PhD/LaurentQExpansion/LaurentQExpansion.lean",
+        "XYin/PhD/LaurentQExpansion/Algebra.lean",
+        "XYin/PhD/LaurentQExpansion/Convergence.lean"
+      ],
+      "targetPaths": [
+        "XYin/ForMathlib/NumberTheory/ModularFunctions/LaurentQExpansion/Basic.lean",
+        "XYin/ForMathlib/NumberTheory/ModularFunctions/LaurentQExpansion/Algebra.lean",
+        "XYin/ForMathlib/NumberTheory/ModularFunctions/LaurentQExpansion/Convergence.lean"
+      ],
+      "stage": "candidate",
+      "notes": "Some interfaces are omitted from one Basic version. Check which results are still used downstream. Candidate consumers are recorded in configuration; the snapshot helps inspect actual imports.",
+      "consumerProjectIds": [
+        "foundation-laurent",
+        "foundation-j",
+        "cox-11bc"
+      ],
+      "adoptedProjectIds": []
+    },
+    {
+      "id": "migration-hnf-general",
+      "title": "General HNF: adopt the top-level ForMathlib entry point",
+      "sourcePaths": [
+        "XYin/PhD/HermiteNormalForm/ForMathlib/Basic.lean",
+        "XYin/PhD/HermiteNormalForm/ForMathlib/Existence.lean",
+        "XYin/PhD/HermiteNormalForm/ForMathlib/Uniqueness.lean"
+      ],
+      "targetPaths": [
+        "XYin/ForMathlib/LinearAlgebra/Matrix/HermiteNormalForm/Basic.lean",
+        "XYin/ForMathlib/LinearAlgebra/Matrix/HermiteNormalForm/Existence.lean",
+        "XYin/ForMathlib/LinearAlgebra/Matrix/HermiteNormalForm/Uniqueness.lean"
+      ],
+      "stage": "candidate",
+      "notes": "This item covers only the organised copies of the general matrix version; the rank-two approach remains. Check each entry point for compatibility: the two definitions with the same names cannot simply be imported together.",
+      "consumerProjectIds": [
+        "foundation-hnf"
+      ],
+      "adoptedProjectIds": []
+    }
+  ]
+}
