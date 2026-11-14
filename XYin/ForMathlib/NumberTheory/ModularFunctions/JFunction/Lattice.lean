@@ -3,8 +3,8 @@ Copyright (c) 2026 Samuel Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Samuel Yin
 -/
-import Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass
 import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
+import XYin.ForMathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass.Uniqueness
 import XYin.ForMathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion
 import XYin.ForMathlib.NumberTheory.ModularFunctions.JFunction.Basic
 
@@ -108,16 +108,6 @@ theorem discriminant_smul (L : PeriodPair) (a : ℂˣ) :
     (a • L).discriminant = ((a : ℂ) ^ 12)⁻¹ * L.discriminant := by
   simp only [discriminant, g₂_smul, g₃_smul]
   ring
-
-/-- `g₂` depends only on the lattice, not on the chosen ordered period basis. -/
-theorem g₂_congr {L M : PeriodPair} (h : L.lattice = M.lattice) : L.g₂ = M.g₂ := by
-  unfold g₂ G
-  rw [h]
-
-/-- `g₃` depends only on the lattice, not on the chosen ordered period basis. -/
-theorem g₃_congr {L M : PeriodPair} (h : L.lattice = M.lattice) : L.g₃ = M.g₃ := by
-  unfold g₃ G
-  rw [h]
 
 end PeriodPair
 

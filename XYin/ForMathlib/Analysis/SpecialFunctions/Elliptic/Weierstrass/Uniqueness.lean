@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Samuel Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Samuel Yin
+Authors: Sayeb Salam, Samuel Yin
 -/
 import Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass
 
@@ -63,6 +63,16 @@ lemma iteratedDeriv_sq_mul {𝕜 : Type*} [NontriviallyNormedField 𝕜] (g : �
 namespace PeriodPair
 
 noncomputable section
+
+/-- `g₂` depends only on the lattice, not on the chosen ordered period basis. -/
+theorem g₂_congr {L M : PeriodPair} (h : L.lattice = M.lattice) : L.g₂ = M.g₂ := by
+  unfold g₂ G
+  rw [h]
+
+/-- `g₃` depends only on the lattice, not on the chosen ordered period basis. -/
+theorem g₃_congr {L M : PeriodPair} (h : L.lattice = M.lattice) : L.g₃ = M.g₃ := by
+  unfold g₃ G
+  rw [h]
 
 attribute [local fun_prop] AnalyticAt.contDiffAt
 

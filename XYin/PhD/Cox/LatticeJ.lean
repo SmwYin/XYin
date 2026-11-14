@@ -5,9 +5,9 @@ Authors: Samuel Yin
 -/
 import Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing
 
+import XYin.ForMathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass.Uniqueness
 import XYin.PhD.Modularforms.ForMathlib_Cusps
 import XYin.PhD.ModularFunctions.JInvariant
-import XYin.uniqueness
 
 /-!
 # The analytic and lattice `j`-invariants
@@ -130,16 +130,6 @@ theorem j_smul (L : PeriodPair) (a : ℂˣ) : (a • L).j = L.j := by
   rw [show 1728 * (((a : ℂ) ^ 4)⁻¹ * L.g₂) ^ 3
         = ((a : ℂ) ^ 12)⁻¹ * (1728 * L.g₂ ^ 3) by ring,
     mul_div_mul_left _ _ ha]
-
-/-- `g₂` depends only on the lattice, not on the chosen ordered period basis. -/
-theorem g₂_congr {L M : PeriodPair} (h : L.lattice = M.lattice) : L.g₂ = M.g₂ := by
-  unfold g₂ G
-  rw [h]
-
-/-- `g₃` depends only on the lattice, not on the chosen ordered period basis. -/
-theorem g₃_congr {L M : PeriodPair} (h : L.lattice = M.lattice) : L.g₃ = M.g₃ := by
-  unfold g₃ G
-  rw [h]
 
 /-- The lattice `j`-invariant is independent of the chosen ordered period basis. -/
 theorem j_congr {L M : PeriodPair} (h : L.lattice = M.lattice) : L.j = M.j := by
