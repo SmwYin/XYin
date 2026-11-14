@@ -8,8 +8,9 @@ from pathlib import Path
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 
-from generate import collect_snapshot, generate, parse_imports, validate_config
+from generate import collect_snapshot, discover_formathlib_projects, generate, parse_imports, validate_config
 from server import ConfigConflict, Dashboard, handler_for
 
 
@@ -43,6 +44,20 @@ def fixture(root):
     for name in ("style.css", "model.js", "app.js"):
         (web / name).write_text("")
     (root / "progress/config.json").write_text(json.dumps(sample_config(), ensure_ascii=False))
+
+
+def discovery_config():
+    config = sample_config()
+    config["categories"].append({"id": "formathlib", "label": "Shared library", "description": "Keep my category name"})
+    config["projects"].append({"id": "others-support", "categoryId": "phd", "parentId": None,
+                               "label": "Support", "description": ""})
+    config["assignments"] = [
+        {"id": ident, "pattern": pattern, "projectId": "others-support", "approachId": None}
+        for ident, pattern in (("fallback-xyin", "XYin/**/*.lean"),
+                               ("fallback-tests", "XYinTest/**/*.lean"),
+                               ("entry-xyin", "XYin.lean"), ("entry-tests", "XYinTest.lean"))
+    ] + config["assignments"]
+    return config
 
 
 class ConfigValidationTests(unittest.TestCase):
@@ -88,6 +103,151 @@ class ConfigValidationTests(unittest.TestCase):
         config["approaches"][0]["role"] = []
         config["migrations"][0]["stage"] = {}
         self.assertTrue(validate_config(config))
+
+    def test_optional_discovery_metadata_is_backward_compatible_and_validated(self):
+        self.assertEqual(validate_config(sample_config()), [])
+        config = sample_config()
+        config["discoveredForMathlibDirectories"] = ["Analysis", "LinearAlgebra"]
+        self.assertEqual(validate_config(config), [])
+        for values in (None, ["Analysis", "Analysis"], ["../Outside"], ["Hidden/File"],
+                       [".Hidden"], ["."], ["Bad*Glob"], ["Bad?Glob"], ["Bad[Glob]"],
+                       ["Back\\Slash"], ["Control\nName"], ["a" * 1001]):
+            config["discoveredForMathlibDirectories"] = values
+            self.assertTrue(validate_config(config), values)
+
+
+class DiscoveryTests(unittest.TestCase):
+    def test_adds_empty_directory_and_preserves_all_manual_rows_and_precedence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("Analysis", "Algebra", ".Hidden", "Bad[Glob]"):
+                (root / "XYin/ForMathlib" / name).mkdir(parents=True)
+            (root / "XYin/ForMathlib/Linked").symlink_to(root / "XYin/ForMathlib/Algebra", target_is_directory=True)
+            config = discovery_config()
+            config["assignments"].extend([
+                {"id": "manual-analysis", "pattern": "XYin/ForMathlib/Analysis/**", "projectId": "foundation", "approachId": "current"},
+                {"id": "manual-algebra", "pattern": "XYin/ForMathlib/Algebra/Special/**/*.lean", "projectId": "foundation", "approachId": "current"},
+            ])
+            config["overrides"]["XYin/ForMathlib/Algebra/Override.lean"] = {"projectId": "foundation", "approachId": "current"}
+            before = deepcopy(config)
+            result, report = discover_formathlib_projects(config, root)
+            self.assertEqual(config, before)
+            self.assertEqual(result["categories"], before["categories"])
+            self.assertEqual(result["overrides"], before["overrides"])
+            self.assertEqual(report["directories"], ["Algebra", "Analysis"])
+            self.assertEqual(report["projectsAdded"], ["fm-algebra"])
+            self.assertEqual(report["rulesAdded"], ["fm-algebra"])
+            self.assertEqual(result["assignments"][4]["id"], "fm-algebra")
+            original_rules = [r for r in result["assignments"] if r["id"] not in report["rulesAdded"]]
+            self.assertEqual(original_rules, before["assignments"])
+            self.assertTrue(any("Bad[Glob]" in warning for warning in report["warnings"]))
+            self.assertNotIn("Linked", result["discoveredForMathlibDirectories"])
+            self.assertEqual(validate_config(result), [])
+
+    def test_tombstones_preserve_deleted_or_narrowed_items_after_refresh(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            topic = root / "XYin/ForMathlib/Analysis"
+            topic.mkdir(parents=True)
+            config, _ = discover_formathlib_projects(discovery_config(), root)
+            config["projects"] = [p for p in config["projects"] if p["id"] != "fm-analysis"]
+            config["assignments"] = [r for r in config["assignments"] if r["id"] != "fm-analysis"]
+            result, report = discover_formathlib_projects(config, root)
+            self.assertEqual(result, config)
+            self.assertEqual(report["projectsAdded"], [])
+            self.assertEqual(report["directories"], [])
+            topic.rmdir()
+            result, _ = discover_formathlib_projects(config, root)
+            self.assertEqual(result["discoveredForMathlibDirectories"], ["Analysis"])
+
+    def test_project_reuse_ambiguous_labels_and_missing_category(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "XYin/ForMathlib/Analysis").mkdir(parents=True)
+            config = discovery_config()
+            config["projects"].append({"id": "my-analysis", "categoryId": "formathlib", "parentId": None,
+                                       "label": "Analysis", "description": "Keep this description"})
+            result, report = discover_formathlib_projects(config, root)
+            self.assertEqual(report["projectsAdded"], [])
+            rule = next(r for r in result["assignments"] if r["id"] in report["rulesAdded"])
+            self.assertEqual(rule["projectId"], "my-analysis")
+            self.assertEqual(result["projects"], config["projects"])
+            config["projects"].append({**config["projects"][-1], "id": "second-analysis"})
+            result, report = discover_formathlib_projects(config, root)
+            self.assertEqual(result, config)
+            self.assertTrue(report["warnings"])
+            result, report = discover_formathlib_projects(sample_config(), root)
+            self.assertEqual(result, sample_config())
+            self.assertTrue(report["warnings"])
+
+    def test_collision_safe_ids_and_stop_at_manual_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("New Topic", "New-Topic"):
+                (root / "XYin/ForMathlib" / name).mkdir(parents=True)
+            config = discovery_config()
+            config["assignments"][1]["pattern"] = "XYinTest/Custom/**"
+            config["projects"].append({"id": "fm-new-topic", "categoryId": "phd", "parentId": None,
+                                       "label": "Unrelated", "description": ""})
+            result, report = discover_formathlib_projects(config, root)
+            self.assertEqual(len(set(report["projectsAdded"])), 2)
+            self.assertNotIn("fm-new-topic", report["projectsAdded"])
+            self.assertEqual(result["assignments"][0], config["assignments"][0])
+            self.assertEqual(result["assignments"][3:], config["assignments"][1:])
+            self.assertEqual(validate_config(result), [])
+
+    def test_generator_idempotence_and_external_configuration_race(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            (root / "XYin/ForMathlib/Analysis").mkdir(parents=True)
+            path = root / "progress/config.json"
+            path.write_text(json.dumps(discovery_config()))
+            first = generate(root)
+            self.assertEqual(first["discovery"]["projectsAdded"], ["fm-analysis"])
+            raw = json.dumps(first["config"], separators=(",", ":")).encode()
+            path.write_bytes(raw)
+            second = generate(root)
+            self.assertEqual(path.read_bytes(), raw)
+            self.assertEqual(second["discovery"]["directories"], [])
+            # A user edits the configuration while scanning; that edit must win.
+            (root / "XYin/ForMathlib/Topology").mkdir()
+            external = deepcopy(first["config"])
+            external["categories"][0]["label"] = "External edit"
+            original_collect = collect_snapshot
+            def concurrent_edit(repo_root):
+                snapshot = original_collect(repo_root)
+                path.write_text(json.dumps(external))
+                return snapshot
+            with patch("generate.collect_snapshot", side_effect=concurrent_edit):
+                with self.assertRaises(ConfigConflict):
+                    generate(root)
+            self.assertEqual(json.loads(path.read_text()), external)
+
+    def test_server_reads_do_not_discover_and_stale_refresh_has_no_effect(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            (root / "XYin/ForMathlib/Analysis").mkdir(parents=True)
+            path = root / "progress/config.json"
+            raw = json.dumps(discovery_config()).encode()
+            path.write_bytes(raw)
+            dashboard = Dashboard(root)
+            self.assertEqual(path.read_bytes(), raw)
+            self.assertEqual(dashboard.get_state()["config"], discovery_config())
+            with self.assertRaises(ConfigConflict):
+                dashboard.refresh("stale-revision")
+            self.assertEqual(path.read_bytes(), raw)
+            result = dashboard.refresh(dashboard.state["revision"])
+            self.assertEqual(result["discovery"]["projectsAdded"], ["fm-analysis"])
+            external = deepcopy(result["config"])
+            external["categories"][0]["label"] = "External edit"
+            external_raw = json.dumps(external).encode()
+            path.write_bytes(external_raw)
+            (root / "XYin/ForMathlib/Topology").mkdir()
+            dashboard.get_state()
+            self.assertEqual(path.read_bytes(), external_raw)
+            self.assertNotIn("Topology", dashboard.state["config"]["discoveredForMathlibDirectories"])
 
 
 class SnapshotTests(unittest.TestCase):
@@ -154,6 +314,37 @@ def s := "\nimport Nope4\n"
 
 
 class SaveTests(unittest.TestCase):
+    def test_external_edit_during_save_is_retained(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture(root)
+            dashboard = Dashboard(root)
+            source = root / "XYin/PhD/Basic.lean"
+            source_before = source.read_bytes()
+            config_path = root / "progress/config.json"
+            snapshot_before = (root / "progress/snapshot.json").read_bytes()
+            html_before = (root / "progress/index.html").read_bytes()
+            original_revision = dashboard.state["revision"]
+            submitted = sample_config()
+            submitted["categories"][0]["label"] = "Browser draft"
+            external = sample_config()
+            external["categories"][0]["label"] = "External editor change"
+            external_bytes = json.dumps(external).encode("utf-8")
+
+            def edit_during_scan(repo_root):
+                snapshot = collect_snapshot(repo_root)
+                config_path.write_bytes(external_bytes)
+                return snapshot
+
+            with patch("server.collect_snapshot", side_effect=edit_during_scan):
+                with self.assertRaises(ConfigConflict):
+                    dashboard.save(submitted, original_revision)
+            self.assertEqual(config_path.read_bytes(), external_bytes)
+            self.assertEqual((root / "progress/snapshot.json").read_bytes(), snapshot_before)
+            self.assertEqual((root / "progress/index.html").read_bytes(), html_before)
+            self.assertEqual(dashboard.state["revision"], original_revision)
+            self.assertEqual(source.read_bytes(), source_before)
+
     def test_atomic_save_conflict_and_invalid_config_leave_sources(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -207,6 +398,10 @@ class SaveTests(unittest.TestCase):
                 self.assertEqual(request("PUT", "/api/config", payload, "https://example.com")[0], 403)
                 self.assertEqual(request("PUT", "/api/config", payload, "http://" + host)[0], 200)
                 self.assertEqual(request("PUT", "/api/config", payload, "http://" + host)[0], 409)
+                self.assertEqual(request("POST", "/api/refresh", {"baseRevision": "stale"}, "http://" + host)[0], 409)
+                self.assertEqual(request("POST", "/api/refresh", {"baseRevision": []}, "http://" + host)[0], 400)
+                self.assertEqual(request("POST", "/api/refresh", {"extra": True}, "http://" + host)[0], 400)
+                self.assertEqual(request("POST", "/api/refresh", {"baseRevision": dashboard.state["revision"]}, "http://" + host)[0], 200)
                 self.assertEqual(request("POST", "/api/refresh", {}, "http://" + host)[0], 200)
             finally:
                 server.shutdown()

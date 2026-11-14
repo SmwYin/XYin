@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -16,12 +17,24 @@ import tempfile
 
 SCHEMA_KEYS = {"schemaVersion", "categories", "projects", "approaches", "environments",
                "assignments", "overrides", "relations", "migrations"}
+OPTIONAL_SCHEMA_KEYS = {"discoveredForMathlibDirectories"}
 ID_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_-]*$")
 MODULE_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_'.]*$")
 ROLES = {"active", "alternative", "reference", "shared"}
 RELATIONS = {"alternative", "complementary", "mirror", "generalizes", "specializes",
              "equivalent_scope", "partial_integration", "unknown"}
 STAGES = {"candidate", "preparing", "ready", "switching", "complete"}
+
+
+class ConfigConflict(Exception):
+    """The configuration changed after a scan or save began."""
+
+
+def safe_directory_name(value: object) -> bool:
+    return (isinstance(value, str) and 0 < len(value) <= 1000
+            and not value.startswith(".")
+            and not any(c in value for c in "/\\*?[]")
+            and not any(ord(c) < 32 for c in value))
 
 
 def safe_path(value: object, pattern: bool = False) -> bool:
@@ -42,10 +55,17 @@ def validate_config(config: object) -> list[str]:
     errors: list[str] = []
     if not isinstance(config, dict):
         return ["Configuration must be a JSON object"]
-    if set(config) != SCHEMA_KEYS:
+    if not SCHEMA_KEYS <= set(config) or not set(config) <= SCHEMA_KEYS | OPTIONAL_SCHEMA_KEYS:
         errors.append("Configuration has missing or unknown fields")
     if type(config.get("schemaVersion")) is not int or config["schemaVersion"] != 1:
         errors.append("schemaVersion must be 1")
+    if "discoveredForMathlibDirectories" in config:
+        directories = config["discoveredForMathlibDirectories"]
+        if (not isinstance(directories, list) or len(directories) > 10000
+                or any(not safe_directory_name(name) for name in directories)):
+            errors.append("discoveredForMathlibDirectories must be an array of safe direct directory names")
+        elif len(directories) != len(set(directories)):
+            errors.append("discoveredForMathlibDirectories contains duplicate names")
     sets: dict[str, dict] = {}
     fields = {
         "categories": {"id", "label", "description"},
@@ -163,6 +183,90 @@ def validate_config(config: object) -> list[str]:
             if any(a not in consumers for a in adopted):
                 errors.append(f"{ident}: adopted projects must be included among the planned consumers")
     return errors[:100]
+
+
+def _available_id(name: str, used: set[str]) -> str:
+    words = re.sub(r"([a-z0-9])([A-Z])", r"\1-\2", name)
+    slug = re.sub(r"[^a-z0-9]+", "-", words.lower()).strip("-")[:60] or "topic"
+    candidate = "fm-" + slug
+    if candidate in used:
+        candidate += "-" + hashlib.sha256(name.encode("utf-8")).hexdigest()[:8]
+    base, suffix = candidate, 2
+    while candidate in used:
+        candidate = f"{base}-{suffix}"
+        suffix += 1
+    return candidate
+
+
+def discover_formathlib_projects(config: dict, repo_root: Path | str) -> tuple[dict, dict]:
+    """Add defaults once per direct directory, retaining every existing row verbatim."""
+    result = deepcopy(config)
+    summary = {"projectsAdded": [], "rulesAdded": [], "directories": [], "warnings": []}
+    directory = Path(repo_root) / "XYin" / "ForMathlib"
+    if not directory.is_dir() or directory.is_symlink():
+        return result, summary
+    children = sorted((p for p in directory.iterdir()
+                       if not p.name.startswith(".") and p.is_dir() and not p.is_symlink()),
+                      key=lambda p: p.name)
+    if not any(row["id"] == "formathlib" for row in result["categories"]):
+        if children:
+            summary["warnings"].append("ForMathlib discovery was skipped because the formathlib category is absent. Existing categories were left unchanged.")
+        return result, summary
+    considered = set(result.get("discoveredForMathlibDirectories", []))
+    project_ids = {p["id"] for p in result["projects"]}
+    rule_ids = {r["id"] for r in result["assignments"]}
+    defaults = []
+    for child in children:
+        name = child.name
+        if not safe_directory_name(name):
+            summary["warnings"].append(f"Skipped ForMathlib directory {name!r}: its name cannot be represented safely by an assignment pattern.")
+            continue
+        if name in considered:
+            continue
+        prefix = f"XYin/ForMathlib/{name}/"
+        canonical_patterns = {prefix + "**/*.lean", prefix + "**"}
+        if any(rule["pattern"] in canonical_patterns for rule in result["assignments"]):
+            considered.add(name)
+            summary["directories"].append(name)
+            continue
+        matches = [p for p in result["projects"] if p["categoryId"] == "formathlib"
+                   and p["parentId"] is None and p["label"] == name]
+        if len(matches) > 1:
+            summary["warnings"].append(f"Skipped ForMathlib directory {name!r}: more than one top-level project has that label. Choose its project manually before refreshing again.")
+            continue
+        if matches:
+            project = matches[0]
+        else:
+            ident = _available_id(name, project_ids)
+            project = {"id": ident, "categoryId": "formathlib", "parentId": None,
+                       "label": name,
+                       "description": f"Shared {name} modules discovered in XYin/ForMathlib/{name}. Classification is configurable; source files remain in place."}
+            result["projects"].append(project)
+            project_ids.add(ident)
+            summary["projectsAdded"].append(ident)
+        ident = _available_id(name, rule_ids)
+        rule_ids.add(ident)
+        defaults.append({"id": ident, "pattern": prefix + "**/*.lean",
+                         "projectId": project["id"], "approachId": None})
+        summary["rulesAdded"].append(ident)
+        considered.add(name)
+        summary["directories"].append(name)
+    if defaults:
+        recognised_fallbacks = {
+            "fallback-xyin": "XYin/**/*.lean", "fallback-tests": "XYinTest/**/*.lean",
+            "entry-xyin": "XYin.lean", "entry-tests": "XYinTest.lean",
+        }
+        insertion = 0
+        for rule in result["assignments"]:
+            if (recognised_fallbacks.get(rule["id"]) != rule["pattern"]
+                    or rule["projectId"] != "others-support" or rule["approachId"] is not None):
+                break
+            insertion += 1
+        result["assignments"][insertion:insertion] = defaults
+    if summary["directories"]:
+        result["discoveredForMathlibDirectories"] = (
+            result.get("discoveredForMathlibDirectories", []) + summary["directories"])
+    return result, summary
 
 
 def _without_comments_and_strings(text: str) -> str:
@@ -383,7 +487,7 @@ def render_html(progress: Path, state: dict) -> str:
     return template
 
 
-def generate(repo_root: Path | str) -> dict:
+def generate(repo_root: Path | str, *, discover: bool = True) -> dict:
     root = Path(repo_root).resolve()
     progress = root / "progress"
     raw = (progress / "config.json").read_bytes()
@@ -391,9 +495,24 @@ def generate(repo_root: Path | str) -> dict:
     errors = validate_config(config)
     if errors:
         raise ValueError("Invalid configuration: " + "; ".join(errors))
-    state = {"config": config, "snapshot": collect_snapshot(root),
-             "revision": hashlib.sha256(raw).hexdigest()}
+    original = config
+    summary = {"projectsAdded": [], "rulesAdded": [], "directories": [], "warnings": []}
+    if discover:
+        config, summary = discover_formathlib_projects(config, root)
+        errors = validate_config(config)
+        if errors:
+            raise ValueError("Invalid discovered configuration: " + "; ".join(errors))
+    updated_raw = ((json.dumps(config, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+                   if config != original else raw)
+    snapshot = collect_snapshot(root)
+    snapshot["warnings"].extend(summary["warnings"])
+    state = {"config": config, "snapshot": snapshot,
+             "revision": hashlib.sha256(updated_raw).hexdigest(), "discovery": summary}
     html = render_html(progress, state)
+    if (progress / "config.json").read_bytes() != raw:
+        raise ConfigConflict("The configuration changed while the scan was running. Your saved configuration was left unchanged; refresh to load the latest version.")
+    if updated_raw != raw:
+        _atomic_write(progress / "config.json", updated_raw)
     _atomic_write(progress / "snapshot.json", json.dumps(state["snapshot"], ensure_ascii=False, indent=2) + "\n")
     _atomic_write(progress / "index.html", html)
     return state

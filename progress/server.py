@@ -10,11 +10,7 @@ from pathlib import Path
 import threading
 from urllib.parse import urlsplit, unquote
 
-from generate import _atomic_write, collect_snapshot, generate, render_html, validate_config
-
-
-class ConfigConflict(Exception):
-    pass
+from generate import ConfigConflict, _atomic_write, collect_snapshot, generate, render_html, validate_config
 
 
 class Dashboard:
@@ -22,18 +18,22 @@ class Dashboard:
         self.root = root.resolve()
         self.progress = self.root / "progress"
         self.lock = threading.RLock()
-        self.state = generate(self.root)
+        self.state = generate(self.root, discover=False)
 
-    def refresh(self):
+    def refresh(self, base_revision=None):
         with self.lock:
-            self.state = generate(self.root)
+            if base_revision is not None:
+                raw = (self.progress / "config.json").read_bytes()
+                if hashlib.sha256(raw).hexdigest() != base_revision:
+                    raise ConfigConflict("The configuration has changed since this page was loaded. Your draft is retained; load the latest configuration before refreshing.")
+            self.state = generate(self.root, discover=True)
             return self.state
 
     def get_state(self):
         with self.lock:
             raw = (self.progress / "config.json").read_bytes()
             if hashlib.sha256(raw).hexdigest() != self.state["revision"]:
-                return self.refresh()
+                self.state = generate(self.root, discover=False)
             return self.state
 
     def save(self, config: dict, base_revision: str):
@@ -49,6 +49,8 @@ class Dashboard:
                      "revision": hashlib.sha256(new_raw).hexdigest()}
             # Prepare all outputs before replacing the one authoritative editable file.
             html = render_html(self.progress, state)
+            if (self.progress / "config.json").read_bytes() != raw:
+                raise ConfigConflict("The configuration changed while saving was being prepared. Your saved configuration was left unchanged; load the latest version before saving your draft.")
             _atomic_write(self.progress / "config.json", new_raw)
             _atomic_write(self.progress / "snapshot.json", json.dumps(state["snapshot"], ensure_ascii=False, indent=2) + "\n")
             _atomic_write(self.progress / "index.html", html)
@@ -102,6 +104,8 @@ def handler_for(dashboard: Dashboard):
             if path == "/api/state":
                 try:
                     self._send(200, dashboard.get_state())
+                except ConfigConflict as exc:
+                    self._send(409, {"error": str(exc)})
                 except (OSError, ValueError) as exc:
                     self._send(422, {"error": str(exc)})
                 return
@@ -137,8 +141,13 @@ def handler_for(dashboard: Dashboard):
             if urlsplit(self.path).path != "/api/refresh":
                 self._send(404, {"error": "Not found"})
                 return
+            if body and (set(body) != {"baseRevision"} or not isinstance(body["baseRevision"], str)):
+                self._send(400, {"error": "Refresh accepts an empty object or a baseRevision string"})
+                return
             try:
-                self._send(200, dashboard.refresh())
+                self._send(200, dashboard.refresh(body.get("baseRevision")))
+            except ConfigConflict as exc:
+                self._send(409, {"error": str(exc)})
             except (OSError, ValueError) as exc:
                 self._send(422, {"error": str(exc)})
 

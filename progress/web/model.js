@@ -6,17 +6,22 @@
   const ID = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
   const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const safePath = (value, glob = false) => typeof value === 'string' && value.length > 0 && value.length <= 1000 && !value.startsWith('/') && !value.includes('\\') && !/[\u0000-\u001f]/.test(value) && !value.split('/').some(p => p === '..' || p === '.' || p === '') && (value === 'XYin.lean' || value === 'XYinTest.lean' || value.startsWith('XYin/') || value.startsWith('XYinTest/')) && (glob || !/[?*\[\]]/.test(value));
+  const safeDirectory = value => typeof value === 'string' && value.length > 0 && value.length <= 1000 && !value.startsWith('.') && !/[\/\\\u0000-\u001f*?\[\]]/.test(value);
 
   function validate(config) {
     const errors = [];
     if (!isObject(config)) return ['The configuration must be a JSON object.'];
     const arrays = ['categories', 'projects', 'approaches', 'environments', 'assignments', 'relations', 'migrations'];
     const fields = {categories:['id','label','description'],projects:['id','categoryId','parentId','label','description'],approaches:['id','projectId','label','description','environmentId','role','entryModules'],environments:['id','label','toolchain','note'],assignments:['id','pattern','projectId','approachId'],relations:['id','fromApproachId','toApproachId','kind','note'],migrations:['id','title','sourcePaths','targetPaths','stage','notes','consumerProjectIds','adoptedProjectIds']};
-    const allowed = new Set(['schemaVersion', 'overrides', ...arrays]);
+    const allowed = new Set(['schemaVersion', 'overrides', 'discoveredForMathlibDirectories', ...arrays]);
     for (const key of Object.keys(config)) if (!allowed.has(key)) errors.push(`Unknown configuration field: ${key}`);
     if (config.schemaVersion !== 1) errors.push('Only schemaVersion: 1 is supported.');
     for (const key of arrays) if (!Array.isArray(config[key]) || config[key].length > 10000) errors.push(`${key} must be an array with at most 10,000 entries.`);
     if (!isObject(config.overrides)) errors.push('overrides must be an object.');
+    if (Object.hasOwn(config, 'discoveredForMathlibDirectories')) {
+      const directories = config.discoveredForMathlibDirectories;
+      if (!Array.isArray(directories) || directories.length > 10000 || directories.some(name => !safeDirectory(name)) || new Set(directories).size !== directories.length) errors.push('discoveredForMathlibDirectories must contain unique, safe direct folder names, with at most 10,000 entries.');
+    }
     if (errors.length) return errors;
     const maps = {};
     for (const key of arrays) {
@@ -88,6 +93,70 @@
     return errors;
   }
 
+  function equal(left, right) {
+    if (left === right) return true;
+    if (Array.isArray(left) || Array.isArray(right)) return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => equal(value, right[index]));
+    if (!isObject(left) || !isObject(right)) return false;
+    const keys = Object.keys(left);
+    return keys.length === Object.keys(right).length && keys.every(key => Object.hasOwn(right, key) && equal(left[key], right[key]));
+  }
+
+  const fallbackRules = new Map([
+    ['fallback-xyin', 'XYin/**/*.lean'],
+    ['fallback-tests', 'XYinTest/**/*.lean'],
+    ['entry-xyin', 'XYin.lean'],
+    ['entry-tests', 'XYinTest.lean'],
+  ].map(([id, pattern]) => [id, {id, pattern, projectId: 'others-support', approachId: null}]));
+
+  function mergeDiscovery(base, draft, remote) {
+    for (const [label, config] of [['baseline', base], ['draft', draft], ['repository configuration', remote]]) {
+      const errors = validate(config);
+      if (errors.length) throw new Error(`Cannot merge discovered folders: the ${label} is invalid. ${errors[0]}`);
+    }
+    const permitted = new Set(['projects', 'assignments', 'discoveredForMathlibDirectories']);
+    const changedElsewhere = field => new Error(`Cannot merge discovered folders: ${field} changed outside automatic discovery. Your draft has been retained.`);
+    for (const key of new Set([...Object.keys(base), ...Object.keys(remote)])) {
+      if (!permitted.has(key) && !equal(base[key], remote[key])) throw changedElsewhere(key);
+    }
+    const additions = {};
+    for (const key of ['projects', 'assignments']) {
+      const ids = new Set(base[key].map(row => row.id));
+      if (!equal(base[key], remote[key].filter(row => ids.has(row.id)))) throw changedElsewhere(`existing ${key} or their order`);
+      additions[key] = remote[key].filter(row => !ids.has(row.id));
+    }
+    const baseNames = base.discoveredForMathlibDirectories || [];
+    const remoteNames = remote.discoveredForMathlibDirectories || [];
+    if (remoteNames.length < baseNames.length || !baseNames.every((name, index) => name === remoteNames[index])) throw changedElsewhere('previously discovered folder names');
+
+    const merged = structuredClone(draft);
+    const projectIds = new Map();
+    for (const key of ['projects', 'assignments']) {
+      const existing = new Map(merged[key].map(row => [row.id, row]));
+      const rows = [];
+      for (const original of additions[key]) {
+        const row = key === 'assignments' && projectIds.has(original.projectId) ? {...original, projectId: projectIds.get(original.projectId)} : original;
+        if (existing.has(row.id)) {
+          if (!equal(existing.get(row.id), row)) throw new Error(`Cannot merge discovered folders: ${key} ID “${row.id}” conflicts with your draft. Your draft has been retained.`);
+        } else if (key === 'projects') {
+          const matches = draft.projects.filter(project => project.categoryId === row.categoryId && project.parentId === row.parentId && project.label === row.label);
+          if (matches.length > 1) throw new Error(`Cannot merge discovered folders: more than one draft project matches “${row.label}” in this category and parent. Your draft has been retained.`);
+          if (matches.length === 1) projectIds.set(row.id, matches[0].id);
+          else rows.push(structuredClone(row));
+        } else rows.push(structuredClone(row));
+      }
+      if (key === 'projects') merged.projects.push(...rows);
+      else {
+        let index = 0;
+        while (index < merged.assignments.length && equal(merged.assignments[index], fallbackRules.get(merged.assignments[index].id))) index++;
+        merged.assignments.splice(index, 0, ...rows);
+      }
+    }
+    if (Object.hasOwn(draft, 'discoveredForMathlibDirectories') || Object.hasOwn(remote, 'discoveredForMathlibDirectories')) merged.discoveredForMathlibDirectories = [...new Set([...(draft.discoveredForMathlibDirectories || []), ...remoteNames])];
+    const errors = validate(merged);
+    if (errors.length) throw new Error(`Cannot merge discovered folders with your draft. ${errors[0]} Your draft has been retained.`);
+    return equal(merged, remote) ? structuredClone(remote) : merged;
+  }
+
   const globCache = new Map();
   function matches(path, pattern) {
     let regex = globCache.get(pattern);
@@ -156,7 +225,7 @@
     if (kind === 'environments' && config.approaches.some(a => a.environmentId === id)) return 'This environment is still used by an approach. Update the approach\'s environment first.';
     return null;
   }
-  const api = {STAGES, RELATIONS, ROLES, validate, matches, assignment, descendants, projectFiles, adoption, deletionIssue, safePath};
+  const api = {STAGES, RELATIONS, ROLES, validate, mergeDiscovery, matches, assignment, descendants, projectFiles, adoption, deletionIssue, safePath};
   root.XYinModel = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(globalThis);

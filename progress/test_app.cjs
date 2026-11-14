@@ -26,7 +26,7 @@ function memoryStorage(initial = []) {
 function fixture() {
   const config = {
     schemaVersion: 1,
-    categories: [{id: 'phd', label: 'PhD', description: ''}],
+    categories: [{id: 'phd', label: 'PhD', description: ''}, {id: 'formathlib', label: 'ForMathlib', description: ''}],
     projects: [{id: 'project', categoryId: 'phd', parentId: null, label: 'Project', description: ''}],
     approaches: [], environments: [], assignments: [], overrides: {}, relations: [],
     migrations: [{
@@ -49,7 +49,9 @@ async function harness({state = fixture(), storage = memoryStorage(), session = 
   const documentEvents = new Map(), windowEvents = new Map(), requests = [], exports = [];
   const app = {innerHTML: ''};
   const toast = {textContent: '', classList: {add() {}, remove() {}}};
-  const dialog = {open: false};
+  const editorForm = {}, formError = {textContent:''};
+  const dialog = {open: false, innerHTML:'', showModal(){this.open=true;},close(){this.open=false;},
+    querySelector(selector){return selector==='form'?editorForm:selector==='#form-error'?formError:null;}};
   const importer = {addEventListener() {}};
   const elements = {'#app': app, '#editor': dialog, '#toast': toast, '#config-import': importer};
   const document = {
@@ -67,6 +69,7 @@ async function harness({state = fixture(), storage = memoryStorage(), session = 
     setTimeout() {}, clearTimeout() {},
     URL: {createObjectURL() { return 'blob:fixture'; }, revokeObjectURL() {}},
     Blob: class { constructor(parts) { exports.push(JSON.parse(parts.join(''))); } },
+    FormData: class {constructor(values){this.values=values;}get(key){return this.values[key]??null;}getAll(key){return this.values[key]??[];}},
     addEventListener(name, callback) { windowEvents.set(name, callback); },
     fetch(url, options = {}) {
       if (url === '/api/state') return Promise.resolve({ok: true, json: async () => structuredClone(state)});
@@ -85,6 +88,10 @@ async function harness({state = fixture(), storage = memoryStorage(), session = 
     app, requests, storage, session, exports, windowEvents,
     click(action, fields = {}) {
       return documentEvents.get('click')({target: {closest() { return {dataset: {action, ...fields}}; }}});
+    },
+    async submit(values) {
+      await editorForm.onsubmit({preventDefault(){},target:values});
+      assert.equal(formError.textContent,'');
     },
     stage(value) {
       documentEvents.get('change')({target: {
@@ -144,7 +151,7 @@ test('a save conflict preserves the edited configuration and does not advance it
   h.requests[0].resolve({ok: false, status: 409, json: async () => ({error: 'Configuration changed'})});
   await save;
   assert.equal((await h.exported()).migrations[0].stage, 'preparing');
-  assert.match(h.app.innerHTML, /The configuration has changed in another window/);
+  assert.match(h.app.innerHTML, /The repository configuration and this draft need reconciling/);
   assert.match(h.app.innerHTML, /Unsaved changes/);
   assert.ok(h.storage.entries().some(([, raw]) => {
     const value = JSON.parse(raw);
@@ -212,4 +219,137 @@ test('different sessions retain independent drafts, and saving one leaves the ot
   assert.match(reopened.app.innerHTML, /1 other or earlier draft is stored separately/);
   await reopened.click('export-draft', {id: '0'});
   assert.equal(reopened.exports.at(-1).migrations[0].stage, 'switching', 'B remains recoverable after server changes');
+});
+
+function discoveredState(base = fixture()) {
+  const state = structuredClone(base);
+  state.config.projects.push({id:'fm-topology',categoryId:'formathlib',parentId:null,label:'Topology',description:'Shared topology results.'});
+  state.config.assignments.unshift({id:'fm-topology',pattern:'XYin/ForMathlib/Topology/**/*.lean',projectId:'fm-topology',approachId:null});
+  state.config.discoveredForMathlibDirectories=['Topology'];
+  state.revision='revision-discovered';
+  state.discovery={projectsAdded:['fm-topology'],rulesAdded:['fm-topology'],directories:['Topology'],warnings:[]};
+  return state;
+}
+
+test('refresh preserves edits before and during discovery, and undo retains persisted additions', async () => {
+  const h = await harness();
+  h.stage('preparing');
+  const refresh = h.click('refresh');
+  assert.deepEqual(h.requests[0].body,{baseRevision:'revision-1'});
+  await h.click('view',{id:'migrations'});
+  await h.click('save');
+  assert.equal(h.requests.length,1,'saving cannot race an in-flight discovery');
+  h.stage('switching');
+  h.requests[0].resolve({ok:true,json:async()=>discoveredState()});
+  await refresh;
+  let exported=await h.exported();
+  assert.equal(exported.migrations[0].stage,'switching');
+  assert.ok(exported.projects.some(p=>p.id==='fm-topology'));
+  assert.match(h.app.innerHTML,/Added 1 project and 1 matching rule/);
+  assert.match(h.app.innerHTML,/Your unsaved edits remain in the draft/);
+  assert.ok(h.storage.entries().some(([,raw])=>{
+    const d=JSON.parse(raw);return d.baseRevision==='revision-discovered'&&d.config.migrations[0].stage==='switching';
+  }));
+  await h.click('undo');
+  exported=await h.exported();
+  assert.equal(exported.migrations[0].stage,'preparing');
+  assert.ok(exported.assignments.some(r=>r.id==='fm-topology'));
+  await h.click('undo');
+  exported=await h.exported();
+  assert.equal(exported.migrations[0].stage,'candidate');
+  assert.ok(exported.projects.some(p=>p.id==='fm-topology'));
+  assert.doesNotMatch(h.app.innerHTML,/Unsaved changes/);
+});
+
+test('clean refresh adopts new defaults as saved configuration and repeated scans do not dirty it', async () => {
+  const h = await harness();
+  const state=discoveredState();
+  const refresh=h.click('refresh');
+  h.requests[0].resolve({ok:true,json:async()=>state});
+  await refresh;
+  assert.deepEqual(await h.exported(),state.config);
+  assert.doesNotMatch(h.app.innerHTML,/Unsaved changes/);
+  const again=h.click('refresh');
+  assert.equal(h.requests[1].body.baseRevision,'revision-discovered');
+  h.requests[1].resolve({ok:true,json:async()=>({...state,discovery:{projectsAdded:[],rulesAdded:[],directories:[],warnings:[]}})});
+  await again;
+  assert.deepEqual(await h.exported(),state.config);
+  assert.doesNotMatch(h.app.innerHTML,/Unsaved changes/);
+  h.stage('ready');
+  const save=h.click('save');
+  assert.equal(h.requests[2].body.baseRevision,'revision-discovered');
+  assert.ok(h.requests[2].body.config.projects.some(p=>p.id==='fm-topology'));
+  h.finishSave(h.requests[2],'revision-saved');
+  await save;
+});
+
+test('refresh rejects unrelated remote changes without losing the draft or advancing its base', async () => {
+  const h=await harness();
+  h.stage('preparing');
+  const before=await h.exported();
+  const refresh=h.click('refresh');
+  const state=discoveredState();
+  state.config.projects[0].label='Changed by another window';
+  h.requests[0].resolve({ok:true,json:async()=>state});
+  await refresh;
+  assert.deepEqual(await h.exported(),before);
+  assert.match(h.app.innerHTML,/need reconciling/);
+  assert.ok(h.storage.entries().some(([,raw])=>JSON.parse(raw).baseRevision==='revision-1'));
+  const retry=h.click('refresh');
+  assert.equal(h.requests[1].body.baseRevision,'revision-1');
+  h.requests[1].resolve({ok:false,status:409,json:async()=>({error:'Configuration changed'})});
+  await retry;
+  assert.deepEqual(await h.exported(),before);
+});
+
+test('refresh can reuse a newly saved project even when older undo steps predate it', async () => {
+  const h=await harness();
+  await h.click('edit',{kind:'projects',category:'formathlib'});
+  await h.submit({id:'fm-analysis',label:'My analysis',description:'Keep my name',categoryId:'formathlib',parentId:''});
+  const save=h.click('save');
+  h.finishSave(h.requests[0],'revision-project');
+  await save;
+  h.stage('preparing');
+  const refresh=h.click('refresh');
+  const remote=structuredClone(h.requests[0].body.config);
+  remote.assignments.push({id:'fm-analysis',pattern:'XYin/ForMathlib/Analysis/**/*.lean',projectId:'fm-analysis',approachId:null});
+  remote.discoveredForMathlibDirectories=['Analysis'];
+  h.requests[1].resolve({ok:true,json:async()=>({config:remote,snapshot:fixture().snapshot,revision:'revision-rule',discovery:{projectsAdded:[],rulesAdded:['fm-analysis'],directories:['Analysis'],warnings:[]}})});
+  await refresh;
+  let exported=await h.exported();
+  assert.equal(exported.migrations[0].stage,'preparing');
+  assert.equal(exported.projects.find(p=>p.id==='fm-analysis').label,'My analysis');
+  assert.ok(exported.assignments.some(r=>r.id==='fm-analysis'));
+  assert.doesNotMatch(h.app.innerHTML,/need reconciling/);
+  assert.match(h.app.innerHTML,/Some older undo steps were cleared/);
+  await h.click('undo');
+  exported=await h.exported();
+  assert.equal(exported.migrations[0].stage,'candidate');
+  assert.ok(exported.projects.some(p=>p.id==='fm-analysis'));
+  assert.doesNotMatch(h.app.innerHTML,/Unsaved changes/);
+  h.stage('ready');
+  const nextSave=h.click('save');
+  assert.equal(h.requests[2].body.baseRevision,'revision-rule');
+  h.finishSave(h.requests[2],'revision-ready');
+  await nextSave;
+});
+
+test('a project created while refresh is running is reused without duplicate labels or lost notes', async () => {
+  const h=await harness();
+  const refresh=h.click('refresh');
+  await h.click('edit',{kind:'projects',category:'formathlib'});
+  await h.submit({id:'my-topology',label:'Topology',description:'My unsaved notes',categoryId:'formathlib',parentId:''});
+  const state=discoveredState();
+  h.requests[0].resolve({ok:true,json:async()=>state});
+  await refresh;
+  const exported=await h.exported();
+  const matches=exported.projects.filter(p=>p.label==='Topology');
+  assert.equal(matches.length,1);
+  assert.equal(matches[0].id,'my-topology');
+  assert.equal(matches[0].description,'My unsaved notes');
+  assert.equal(exported.assignments.find(r=>r.id==='fm-topology').projectId,'my-topology');
+  assert.match(h.app.innerHTML,/Unsaved changes/);
+  await h.click('undo');
+  assert.deepEqual(await h.exported(),state.config);
+  assert.doesNotMatch(h.app.innerHTML,/Unsaved changes/);
 });

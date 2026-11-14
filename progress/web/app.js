@@ -4,6 +4,7 @@
   const boot = window.XYIN_DATA;
   let config = structuredClone(boot.config), snapshot = boot.snapshot, revision = boot.revision;
   let savedConfig = JSON.stringify(config), connected = false, busy = false, pendingDrafts = [], conflict = false;
+  let scanReport = null;
   let view = 'overview', categoryId = null, projectId = null, approachFilter = '', query = '', limit = 60;
   let selected = new Set(), undo = [];
   const app = document.querySelector('#app'), dialog = document.querySelector('#editor');
@@ -24,7 +25,7 @@
   const newId = prefix => `${prefix}-${typeof crypto.randomUUID === 'function' ? crypto.randomUUID().slice(0,8) : Date.now().toString(36)}`;
   const fullProject = id => { const parts = []; let row = find('projects', id); const seen = new Set(); while (row && !seen.has(row.id)) { seen.add(row.id); parts.unshift(row.label); row = find('projects', row.parentId); } return parts.join(' / '); };
   const projectOptions = () => config.projects.map(row => ({id:row.id, label:`${label('categories', row.categoryId)} / ${fullProject(row.id)}`}));
-  const notices = () => `${conflict ? `<div class="notice warning">The configuration has changed in another window. Export your draft before reloading the repository version.${button('Reload', 'reload-state', '', 'small')}</div>` : ''}${pendingDrafts.length ? `<div class="notice warning">${count(pendingDrafts.length, 'other or earlier draft')} ${pendingDrafts.length === 1 ? 'is' : 'are'} stored separately.${button('View retained drafts', 'drafts', '', 'small')}</div>` : ''}`;
+  const notices = () => `${conflict ? `<div class="notice warning">The repository configuration and this draft need reconciling. Export your draft before reloading the repository version.${button('Reload', 'reload-state', '', 'small')}</div>` : ''}${pendingDrafts.length ? `<div class="notice warning">${count(pendingDrafts.length, 'other or earlier draft')} ${pendingDrafts.length === 1 ? 'is' : 'are'} stored separately.${button('View retained drafts', 'drafts', '', 'small')}</div>` : ''}${scanReport ? `<div class="notice ${scanReport.warnings.length?'warning':'success'}" role="status"><div>${esc(scanReport.message)}${scanReport.warnings.map(w=>`<p>${esc(w)}</p>`).join('')}</div>${button('Dismiss','dismiss-scan','','quiet small')}</div>` : ''}`;
 
   function toast(message) { const node = document.querySelector('#toast'); node.textContent = message; node.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => node.classList.remove('show'), 4200); }
   function remember() {
@@ -65,7 +66,7 @@
   function render() {
     const focusId = document.activeElement?.id;
     const selection = typeof document.activeElement?.selectionStart === 'number' ? document.activeElement.selectionStart : null;
-    app.innerHTML = `${sidebar()}<div class="workspace"><header class="topbar"><div class="breadcrumbs">XYin <span>/</span> ${esc(title())}</div><div class="toolbar"><span class="draft-indicator ${dirty()?'dirty':''}">${dirty()?'● Unsaved changes':'Configuration saved'}</span>${undo.length?button('Undo','undo','','quiet small'):''}${button('Refresh scan','refresh',`${busy||!connected?'disabled':''} title="Rescan source files and records locally; does not run Lean"`,'quiet small')}${button('Import','import','','quiet small')}${button('Export configuration','export','','small')}${button(connected?'Save to repository':'Offline · export to save','save',`${busy||!connected||!dirty()?'disabled':''} title="Writes only progress/config.json; export configuration when offline"`,'primary small')}</div></header><main id="main">${notices()}${({overview:overview,catalog:catalog,migrations:migrations,matrix:matrix,evidence:evidence,settings:settings})[view]()}</main><footer class="footer-note">Snapshot ${esc(date(snapshot.generatedAt))} · Categories and approaches are configuration-based · Lean files remain in place</footer></div>`;
+    app.innerHTML = `${sidebar()}<div class="workspace"><header class="topbar"><div class="breadcrumbs">XYin <span>/</span> ${esc(title())}</div><div class="toolbar"><span class="draft-indicator ${dirty()?'dirty':''}">${dirty()?'● Unsaved changes':'Configuration saved'}</span>${undo.length?button('Undo','undo','','quiet small'):''}${button('Refresh scan','refresh',`${busy||!connected?'disabled':''} title="Rescan files and add defaults for new ForMathlib directories; preserves manual settings"`,'quiet small')}${button('Import','import','','quiet small')}${button('Export configuration','export','','small')}${button(connected?'Save to repository':'Offline · export to save','save',`${busy||!connected||!dirty()?'disabled':''} title="Writes only progress/config.json; export configuration when offline"`,'primary small')}</div></header><main id="main">${notices()}${({overview:overview,catalog:catalog,migrations:migrations,matrix:matrix,evidence:evidence,settings:settings})[view]()}</main><footer class="footer-note">Snapshot ${esc(date(snapshot.generatedAt))} · Categories and approaches are configuration-based · Lean files remain in place</footer></div>`;
     if (focusId) { const node=document.getElementById(focusId); if(node) {node.focus(); if(selection!==null && node.setSelectionRange) node.setSelectionRange(selection,selection);} }
   }
   function heading(eyebrow, text, description, actions = '') { return `<div class="page-heading"><div><div class="eyebrow">${esc(eyebrow)}</div><h1>${esc(text)}</h1><p class="lede">${esc(description)}</p></div><div class="heading-actions">${actions}</div></div>`; }
@@ -209,6 +210,7 @@
       else if(action==='category'||action==='project'){view='catalog';projectId=action==='project'?id:null;categoryId=action==='category'?id:find('projects',id).categoryId;selected.clear();query='';approachFilter='';limit=60;render();}
       else if(action==='edit')edit(kind,id,target.dataset);
       else if(action==='close')dialog.close();
+      else if(action==='dismiss-scan'){scanReport=null;render();}
       else if(action==='file')fileDetails(id);
       else if(action==='copy')await copy(target.dataset.value);
       else if(action==='filter-approach'){approachFilter=id;limit=60;render();document.querySelector('#file-search')?.scrollIntoView({block:'center'});}
@@ -242,9 +244,29 @@
         revision=state.revision;if(!hasNewEdits)config=state.config;snapshot=state.snapshot;savedConfig=JSON.stringify(state.config);conflict=false;remember();toast(hasNewEdits?'Submitted configuration saved; later edits remain in your draft':'Configuration saved to progress/config.json');
       }
       else if(action==='refresh'){
-        if(!connected||busy)return;busy=true;ownsBusy=true;render();const state=await api('/api/refresh','POST',{});snapshot=state.snapshot;
-        if(state.revision!==revision){if(dirty()){conflict=true;toast('Repository configuration changed; your current draft is retained.');}else{config=state.config;revision=state.revision;savedConfig=JSON.stringify(config);}}
-        else toast('Files and historical records refreshed; Lean was not run');
+        if(!connected||busy)return;busy=true;ownsBusy=true;render();
+        const baseline=JSON.parse(savedConfig);
+        const state=await api('/api/refresh','POST',{baseRevision:revision});
+        let merged;
+        try {
+          merged=M.mergeDiscovery(baseline,config,state.config);
+        } catch(error) {
+          snapshot=state.snapshot;conflict=true;scanReport=null;remember();
+          throw new Error(`The scan finished, but its additions could not be merged into your draft. Your edits are retained. ${error.message}`);
+        }
+        // Old undo steps can predate a saved project that discovery now relies on.
+        // Keep the usable suffix rather than rejecting a valid current draft.
+        const mergedUndo=[];
+        for(let i=undo.length-1;i>=0;i--){
+          try{mergedUndo.unshift(M.mergeDiscovery(baseline,undo[i],state.config));}
+          catch(_){break;}
+        }
+        const historyTrimmed=mergedUndo.length<undo.length;
+        config=dirty()?merged:state.config;undo=mergedUndo;snapshot=state.snapshot;
+        revision=state.revision;savedConfig=JSON.stringify(state.config);conflict=false;remember();
+        const additions=state.discovery||{};
+        scanReport={message:`Scan refreshed. Added ${count(additions.projectsAdded?.length||0,'project')} and ${count(additions.rulesAdded?.length||0,'matching rule')}. Manual settings retained.${dirty()?' Your unsaved edits remain in the draft.':''}`,warnings:[...(additions.warnings||[]),...(historyTrimmed?['Some older undo steps were cleared because the new directory rules depend on a project saved since those steps. Your current edits are retained.']:[])]};
+        toast('Scan refreshed; Lean was not run');
       }
       else if(action==='reload-state')confirmAction('Reload repository configuration','Your unsaved draft will be replaced. Export it first to retain your changes.',()=>loadState(true),'Load repository version');
     }catch(error){toast(error.message);}

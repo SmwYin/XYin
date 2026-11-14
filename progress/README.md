@@ -22,6 +22,18 @@ python3 -B progress/generate.py
 
 This refreshes `snapshot.json` and the self-contained `index.html`. While the server is running, you can also refresh the scan from the interface.
 
+## Discover new ForMathlib directories
+
+**Refresh scan** and `generate.py` detect new immediate subdirectories of `XYin/ForMathlib/`, including empty directories. For example, a new `Topology/` directory receives a **ForMathlib → Topology** project and a rule matching `XYin/ForMathlib/Topology/**/*.lean`. New defaults are saved to `config.json` and included in the regenerated HTML. No Lean files or imports change.
+
+Existing directory-wide rules are retained. When a rule is needed, discovery reuses an unambiguous matching top-level project or creates one with the directory's name. It does not create an approach or infer a proof status. New rules sit above the built-in catch-all rules in priority, but below existing manual rules and individual overrides. Existing names, descriptions, project relationships, approaches, migration records and rule order are preserved.
+
+Each directory is recorded as already considered. Later scans do not undo your edits, restore deleted projects or rules, or remove entries when a directory disappears. Hidden directories and symbolic links are ignored. Unsupported directory names, ambiguous existing projects or a missing ForMathlib category are reported without guessing a replacement.
+
+Unsaved interface edits are retained when new defaults arrive, including edits made while a scan is running. A matching project you have just created in the draft is reused instead of being duplicated. Undo still reverses your edits without removing defaults already saved by the scan. If older undo steps would remove a project now required by discovered rules, those steps are cleared with a notice; recent compatible steps remain available. If another window has changed the saved configuration, the scan reports a conflict and retains your draft. Save your own edits with **Save to repository** when ready.
+
+After updating the dashboard's Python or JavaScript sources, restart an already-running local server and reload the page to use the new behaviour. Starting the server or merely opening a page does not add configuration entries; discovery runs on **Refresh scan** or when you run `generate.py`.
+
 ## Available in the first version
 
 - Browse ForMathlib, PhD, NFIL and Others in the sidebar. PhD contains logical projects such as Foundation, Cox and Modular Curve. NFIL is initially empty.
@@ -47,6 +59,7 @@ This refreshes `snapshot.json` and the self-contained `index.html`. While the se
 | `overrides` | Manual file assignments, taking precedence over every rule |
 | `relations` | Manually recorded relationships between approaches and their scope |
 | `migrations` | Migration items, source and target files, stages, intended consumers and manual adoption confirmation |
+| `discoveredForMathlibDirectories` | Optional list of directories already considered by discovery; retained so later scans respect manual edits and deletions |
 
 Paths are relative to the repository root and use `/`. `*` matches within one path component, `**` matches across components, and `**/` can match zero components. Editing rules does not reorganise Lean files. Moving an approach to another logical project also updates the rules and individual file assignments that reference it. IDs remain stable; display names can change.
 

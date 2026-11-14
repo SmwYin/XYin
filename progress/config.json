@@ -24,6 +24,13 @@
   ],
   "projects": [
     {
+      "id": "fm-analysis",
+      "categoryId": "formathlib",
+      "parentId": null,
+      "label": "Analysis",
+      "description": "Shared analysis results, including complex lattice uniqueness and Weierstrass elliptic functions."
+    },
+    {
       "id": "fm-number-theory",
       "categoryId": "formathlib",
       "parentId": null,
@@ -439,6 +446,12 @@
       "approachId": null
     },
     {
+      "id": "fm-analysis",
+      "pattern": "XYin/ForMathlib/Analysis/**/*.lean",
+      "projectId": "fm-analysis",
+      "approachId": null
+    },
+    {
       "id": "fm-nt",
       "pattern": "XYin/ForMathlib/NumberTheory/**/*.lean",
       "projectId": "fm-number-theory",
@@ -772,5 +785,11 @@
       ],
       "adoptedProjectIds": []
     }
+  ],
+  "discoveredForMathlibDirectories": [
+    "Analysis",
+    "LinearAlgebra",
+    "NumberTheory",
+    "RingTheory"
   ]
 }

@@ -1,14 +1,23 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T22:09:37.157662+00:00",
+  "generatedAt": "2026-11-14T14:44:27.420400+00:00",
   "repoRoot": "/Users/dfa25dxu/Projects/Lean/XYin",
   "git": {
     "branch": "PhD_Experiment",
-    "head": "6c35c8f064168567956660d8d7265ee02a42c4e7",
+    "head": "f70b7cf547b2c2a234405dc5e8d5985ce2b8b16d",
     "dirty": true
   },
   "toolchain": "leanprover/lean4:v4.35.0",
   "files": [
+    {
+      "path": "XYin/ForMathlib/Analysis/SpecialFunctions/Elliptic/Weierstrass/Uniqueness.lean",
+      "module": "XYin.ForMathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass.Uniqueness",
+      "imports": [
+        "Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass"
+      ],
+      "lines": 315,
+      "sha256": "4abd99f4d1b8575d8878259c337c97d9c97a91e9cdd1462d574d79bf3ad4e56d"
+    },
     {
       "path": "XYin/ForMathlib/LinearAlgebra/Matrix/HermiteNormalForm/Basic.lean",
       "module": "XYin.ForMathlib.LinearAlgebra.Matrix.HermiteNormalForm.Basic",
@@ -153,13 +162,13 @@
       "path": "XYin/ForMathlib/NumberTheory/ModularFunctions/JFunction/Lattice.lean",
       "module": "XYin.ForMathlib.NumberTheory.ModularFunctions.JFunction.Lattice",
       "imports": [
-        "Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass",
         "Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing",
+        "XYin.ForMathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass.Uniqueness",
         "XYin.ForMathlib.NumberTheory.ModularForms.EisensteinSeries.QExpansion",
         "XYin.ForMathlib.NumberTheory.ModularFunctions.JFunction.Basic"
       ],
-      "lines": 257,
-      "sha256": "cdd89d8a100cefd2bfa476f18b7b2e3006b778e1170359dc15e1312abdff4967"
+      "lines": 247,
+      "sha256": "fc2df34323308fc1725ae297a390cc58aefd480c667729698d4e219a7647636a"
     },
     {
       "path": "XYin/ForMathlib/NumberTheory/ModularFunctions/JFunction/Properties.lean",
@@ -355,12 +364,12 @@
       "module": "XYin.PhD.Cox.LatticeJ",
       "imports": [
         "Mathlib.NumberTheory.ModularForms.LevelOne.GradedRing",
+        "XYin.ForMathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass.Uniqueness",
         "XYin.PhD.Modularforms.ForMathlib_Cusps",
-        "XYin.PhD.ModularFunctions.JInvariant",
-        "XYin.uniqueness"
+        "XYin.PhD.ModularFunctions.JInvariant"
       ],
-      "lines": 604,
-      "sha256": "538b4f55be7c58ef2f0f1a344a7e22ede848dcca7246da9e41fdc8e341ce023c"
+      "lines": 594,
+      "sha256": "bfa0e950ef272f2ab3bcc87ccb4ef9a9d8e886cc64c8a1915ce167d2f2263a59"
     },
     {
       "path": "XYin/PhD/Cox/LaurentPolynomialEvaluation.lean",
@@ -5792,15 +5801,6 @@
       ],
       "lines": 309,
       "sha256": "24bfdd4a545bc0b6bc36257428f5c3efa41c68741f5da40afd7c0d514825f04e"
-    },
-    {
-      "path": "XYin/uniqueness.lean",
-      "module": "XYin.uniqueness",
-      "imports": [
-        "Mathlib.Analysis.SpecialFunctions.Elliptic.Weierstrass"
-      ],
-      "lines": 305,
-      "sha256": "64e782a439b1a0a3f005fa811974cab0cb97f9c7b11dfb6a924a141f94be0cbc"
     },
     {
       "path": "XYin.lean",
